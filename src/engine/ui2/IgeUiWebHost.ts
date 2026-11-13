@@ -138,8 +138,14 @@ function webTextEntry (): IgeUiHost["textEntry"] {
 			if (events.key({ key: e.key, code: e.code, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey })) e.preventDefault();
 		});
 		// (The page took focus from the field (a click outside the UI): the field loses it. Focus the UI moved on
-		// itself (a button pressed, which blurs this input as it goes) stays where it went)
-		el.addEventListener("blur", () => events?.blur());
+		// itself (a button pressed, which blurs this input as it goes) stays where it went. The window losing the
+		// system's focus blurs this input too, but a page keeps its focused element through that and gives it the
+		// focus back as the window has it again: so does the UI)
+		el.addEventListener("blur", () => {
+			setTimeout(() => {
+				if (events && document.hasFocus() && document.activeElement !== el) events.blur();
+			}, 0);
+		});
 		// An IME's composition: where it starts as it begins (over what was selected), as long as what's composed
 		let composeFrom = 0;
 		el.addEventListener("compositionstart", () => {
@@ -154,24 +160,25 @@ function webTextEntry (): IgeUiHost["textEntry"] {
 		});
 		return el;
 	};
-	/** The field's selection onto the hidden input (as it takes over the typing), else the caret at the end. */
-	const takeSelection = (f: IgeUiTextEntryField) => {
+	/** The field's selection onto the hidden input (as it takes over the typing, or the field's changed), else the caret at the end. */
+	const takeSelection = (f: IgeUiTextEntryField, start0: number | null = f.selectionStart, end0: number | null = f.selectionEnd) => {
 		if (!input) return;
 		const len = input.value.length;
-		const end = Math.max(0, Math.min(len, f.selectionEnd ?? len));
-		const start = Math.max(0, Math.min(end, f.selectionStart ?? end));
+		const end = Math.max(0, Math.min(len, end0 ?? len));
+		const start = Math.max(0, Math.min(end, start0 ?? end));
 		try {
 			input.setSelectionRange(start, end);
 		} catch {
 			// (A type without a selection)
 		}
+		// (The field told where it is, as the typing has it)
 		const sel = f.el as unknown as Selectable;
-		sel.selectionStart = start;
-		sel.selectionEnd = end;
+		if (sel.selectionStart !== start || sel.selectionEnd !== end) events?.selection(start, end);
 	};
 	return {
 		focus (f, ev) {
 			if (typeof document === "undefined") return;
+			const prev = field;
 			field = f;
 			events = ev;
 			if (!f) {
@@ -179,8 +186,12 @@ function webTextEntry (): IgeUiHost["textEntry"] {
 				return;
 			}
 			input ??= make();
+			// (Another field, or this one's value changed by code: its value and selection given to the input)
+			const fresh = input.value !== f.value || prev?.el !== f.el;
 			if (input.value !== f.value) input.value = f.value;
 			input.type = f.type;
+			if (f.maxLength >= 0) input.maxLength = f.maxLength;
+			else input.removeAttribute("maxlength");
 			// (Over the field, at a size a phone won't zoom in on: an IME's window beside it, a phone's keyboard scrolled to it)
 			const r = f.rect();
 			const st = input.style;
@@ -189,12 +200,12 @@ function webTextEntry (): IgeUiHost["textEntry"] {
 			st.width = `${Math.max(1, Math.round(r.w))}px`;
 			st.height = `${Math.max(1, Math.round(r.h))}px`;
 			st.fontSize = "16px";
-			if (document.activeElement !== input) takeSelection(f);
+			if (fresh || document.activeElement !== input) takeSelection(f);
 			input.focus({ preventScroll: true });
 		},
 		select (start, end) {
 			if (!input || !field || input.value !== field.value) return;
-			takeSelection({ ...field, el: field.el, value: field.value, selectionStart: start, selectionEnd: end, rect: field.rect });
+			takeSelection(field, start, end);
 		},
 		reopen () {
 			input?.focus({ preventScroll: true });

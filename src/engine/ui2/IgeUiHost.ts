@@ -99,6 +99,8 @@ export interface IgeUiTextEntryField {
 	readonly selectionEnd: number | null;
 	/** "password" (shown as dots, a password keyboard) or "text". */
 	readonly type: "text" | "password";
+	/** The most it takes (its maxlength, in UTF-16 units, as a browser counts), or -1 for no limit: typing, an IME and a paste stop there. */
+	readonly maxLength: number;
 	/** Where it is on the surface (CSS px): an IME's window beside it, an on-screen keyboard scrolled to it. */
 	rect (): { x: number; y: number; w: number; h: number };
 }

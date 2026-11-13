@@ -10,6 +10,9 @@
  * - The typing itself is the host's (IgeUiHost.textEntry: on the web a
  *   hidden page input kept over the field, IgeUiWebHost.ts), its selection
  *   mirrored onto the field (`selectionStart`, `selectionEnd`).
+ * - A press in the field's text puts the caret at the character pressed, a
+ *   drag selects, a double press selects a word and a triple the whole value
+ *   (`textFieldIndexAt`, `wordAt`: IgeUiRoot's presses).
  */
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import { contentLeft, contentTop, type IgeUiBox } from "@/engine/ui2/layout/IgeUiBox";
@@ -29,9 +32,59 @@ const HIGHLIGHT = { r: 51, g: 144, b: 255, a: 0.4 };
 
 /** A field the keyboard types into (not a slider, checkbox or button). */
 export function isTextField (el: IgeUiElement | null | undefined): el is IgeUiElement {
-	if (!el) return false;
-	if (el.localName === "textarea") return true;
-	return el.localName === "input" && !["range", "checkbox", "radio", "button", "submit", "reset", "hidden", "file", "color"].includes(el.getAttribute("type") ?? "text");
+	return !!el && el._typesText();
+}
+
+/**
+ * A field's text as it's drawn: what's shown (a password's dots), its font, and `at(i)`, how far the boundary before
+ * character i is from the box's left (px); its baseline from the box's top.
+ */
+function fieldText (layout: IgeUiLayoutEngine, b: IgeUiBox) {
+	const s = b.style;
+	const value = b.el?.value ?? "";
+	const shown = b.el?.getAttribute("type") === "password" ? "•".repeat(value.length) : value;
+	const font = layout.font(s);
+	const m = layout.metrics(font);
+	const ls = layout.letterSpacing(s);
+	// Where the value's text starts and its baseline: its run, else (empty: the placeholder's, or none) the content box
+	const run = value ? b.runs?.[0] : undefined;
+	const x0 = run ? run.x : contentLeft(b);
+	const inner = b.borderH - b.borderTop - b.borderBottom - b.paddingTop - b.paddingBottom;
+	const baseline = run ? run.y : contentTop(b) + Math.max(0, (inner - m.ascent - m.descent) / 2) + m.ascent;
+	const at = (i: number) => x0 + layout.fonts.measure(shown.slice(0, i), font) + ls * i;
+	return { value, shown, m, at, baseline };
+}
+
+/**
+ * Where a press `x` px from a field's left (its border box's, the UI's own px) falls in its text: the boundary
+ * nearest it (for the caret) and the character it's over (for a word).
+ */
+export function textFieldIndexAt (layout: IgeUiLayoutEngine, b: IgeUiBox, x: number): { at: number; char: number } {
+	const t = fieldText(layout, b);
+	const len = t.shown.length;
+	let at = 0, best = Infinity, char = 0;
+	for (let i = 0; i <= len; i++) {
+		const xi = t.at(i);
+		const d = Math.abs(xi - x);
+		if (d < best) {
+			best = d;
+			at = i;
+		}
+		if (i < len && xi <= x) char = i;
+	}
+	return { at, char };
+}
+
+/** The word round character i (a run of letters and digits, of spaces, or of other marks), as a double press selects it. */
+export function wordAt (value: string, i: number): [number, number] {
+	if (!value) return [0, 0];
+	const kind = (c: string) => (/\s/.test(c) ? 0 : /[\p{L}\p{N}_'’]/u.test(c) ? 1 : 2);
+	const at = Math.max(0, Math.min(value.length - 1, i));
+	const k = kind(value[at]);
+	let start = at, end = at + 1;
+	while (start > 0 && kind(value[start - 1]) === k) start--;
+	while (end < value.length && kind(value[end]) === k) end++;
+	return [start, end];
 }
 
 /**
@@ -105,21 +158,11 @@ export function textFieldPaint (layout: IgeUiLayoutEngine, active: () => IgeUiEl
 		const el = b.el;
 		if (!el || b.pseudo || el !== active() || !isTextField(el)) return;
 		const s = b.style;
-		const value = el.value ?? "";
-		const shown = el.getAttribute("type") === "password" ? "•".repeat([...value].length) : value;
+		const { value, shown, m, at, baseline } = fieldText(layout, b);
 		const sel = el as unknown as Selectable;
 		const len = shown.length;
 		const end = Math.max(0, Math.min(len, sel.selectionEnd ?? len));
 		const start = Math.max(0, Math.min(end, sel.selectionStart ?? end));
-		const font = layout.font(s);
-		const m = layout.metrics(font);
-		const ls = layout.letterSpacing(s);
-		// Where the value's text starts and its baseline: its run, else (empty: the placeholder's, or none) the content box
-		const run = value ? b.runs?.[0] : undefined;
-		const x0 = run ? run.x : contentLeft(b);
-		const inner = b.borderH - b.borderTop - b.borderBottom - b.paddingTop - b.paddingBottom;
-		const baseline = run ? run.y : contentTop(b) + Math.max(0, (inner - m.ascent - m.descent) / 2) + m.ascent;
-		const at = (i: number) => x0 + layout.fonts.measure(shown.slice(0, i), font) + ls * i;
 		const x = b.ax + ctx.dx, y = b.ay + ctx.dy + baseline - m.ascent, h = m.ascent + m.descent;
 		const base = { radii: [0, 0, 0, 0] as [number, number, number, number], opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el } as const;
 		// What an IME is composing: underlined in the text's colour, 1px at the foot of the text, a pixel in at each end

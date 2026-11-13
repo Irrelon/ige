@@ -17,7 +17,7 @@
  */
 import type { IgeCssStylesheet } from "@/engine/ui2/css/IgeCssParser";
 import { parseColor } from "@/engine/ui2/css/IgeCssValues";
-import { IgeUiCaretBlink, isTextField, textFieldPaint } from "@/engine/ui2/dom/IgeUiTextField";
+import { IgeUiCaretBlink, isTextField, textFieldIndexAt, textFieldPaint, wordAt } from "@/engine/ui2/dom/IgeUiTextField";
 import type { IgeUiHost, IgeUiInputEvent, IgeUiInputResult, IgeUiTextEntryEvents, IgeUiTextEntryField } from "@/engine/ui2/IgeUiHost";
 import { igeUiAttachWebInput, webUiHost } from "@/engine/ui2/IgeUiWebHost";
 import { type IgeUiAdoption, igeUiEventClock, igeUiSameStart, IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
@@ -610,8 +610,14 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** A text field's selection set by code (select(), setSelectionRange()): drawn, and given to the hidden input if it's focused. */
 	selectionChanged (el: IgeUiElement): void {
 		if (el !== this.document.activeElement) return;
-		const sel = el as unknown as { selectionStart?: number | null; selectionEnd?: number | null };
-		this.host.textEntry.select(sel.selectionStart ?? 0, sel.selectionEnd ?? 0);
+		this.host.textEntry.select(el.selectionStart ?? 0, el.selectionEnd ?? 0);
+		this._paintDirty = true;
+	}
+
+	/** A text field's value set by code: the field being typed in has its typing given the new value (and the caret, at its end). */
+	valueChanged (el: IgeUiElement): void {
+		if (el !== this.document.activeElement || !typesThroughHost(el)) return;
+		this._syncTextInput();
 		this._paintDirty = true;
 	}
 
@@ -1449,6 +1455,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				this._setHover(t, e);
 			}
 			if (d) pressMoved(d, e.clientX, e.clientY);
+			// (A mouse held down in a field's text: the selection follows it)
+			if (d && this._caretDrag?.id === id) this._dragCaret(e);
 			if (d?.pointerType === "touch" && d.scroller) {
 				// A touch drag scrolls the box it started in
 				const dy = e.clientY - (d.lastY ?? d.y);
@@ -1495,7 +1503,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			const md = d.compat && !touch ? this._event("mousedown", e) : undefined;
 			if (md) t.dispatchEvent(md);
 			if (!ev.defaultPrevented) this.drag.down(t, e);
-			if (md && !md.defaultPrevented) this._pressFocus(t);
+			if (md && !md.defaultPrevented) {
+				this._pressFocus(t);
+				this._pressCaret(t, e, id);
+			}
 			e.stopImmediatePropagation();
 			if (ev.defaultPrevented) e.preventDefault();
 			this._hideTooltip();
@@ -1504,6 +1515,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		if (ends) {
 			const d = this._presses.get(id);
 			this._presses.delete(id);
+			if (this._caretDrag?.id === id) this._caretDrag = undefined;
 			this._unpress(d);
 			if (d?.dragging && d.scroller) {
 				// Momentum
@@ -1520,7 +1532,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				if (tap && d!.compat) {
 					const md = this._event("mousedown", e);
 					t!.dispatchEvent(md);
-					if (!md.defaultPrevented) this._pressFocus(t!);
+					if (!md.defaultPrevented) {
+						this._pressFocus(t!);
+						this._pressCaret(t!, e);
+					}
 					t!.dispatchEvent(this._event("mouseup", e));
 				}
 			} else if (primary && (d ? d.compat : true)) target.dispatchEvent(this._event("mouseup", e));
@@ -1545,6 +1560,57 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		const focusable = t.closest("input, textarea, select, button, [tabindex]");
 		if (focusable && focusable.tabIndex >= 0 && !focusable.isDisabled) this.focus(focusable, { preventScroll: true, focusVisible: false });
 		else if (this.document.activeElement && !this.document.activeElement.contains(t)) this.focus(null);
+	}
+
+	/** A mouse held down in a field's text (from where it went down): the selection's other end follows it. */
+	_caretDrag?: { id: number; el: IgeUiElement; anchor: number };
+	/** The last press in a field (where and when, and how many in a row): a second selects a word, a third the whole value. */
+	_lastPress?: { t: number; x: number; y: number; n: number };
+
+	/** Where in a field's text a pointer at clientX, clientY falls (its box's, its transforms and scrolling allowed for). */
+	_fieldIndexAt (el: IgeUiElement, clientX: number, clientY: number): { at: number; char: number } | undefined {
+		this.hitTest(clientX, clientY);
+		const b = el._box;
+		const h = this.hitList.find((x) => x.el === el);
+		if (!b || !h) return undefined;
+		const ux = (clientX - this.pageOffset.x - this.safe.x) / this.scale, uy = (clientY - this.pageOffset.y - this.safe.y) / this.scale;
+		const [x] = h.inv ? apply(h.inv, ux, uy) : [ux, uy];
+		return textFieldIndexAt(this.layoutEngine, b, x - h.x);
+	}
+
+	/**
+	 * A press in the focused field's text, as a browser has it: the caret at the character pressed (and, held, a drag
+	 * selects from there); pressed again at once, the word; a third time, the whole value.
+	 */
+	_pressCaret (t: IgeUiElement, e: PointerEvent, id?: number): void {
+		const el = this.document.activeElement;
+		if (!isTextField(el) || t.closest("input, textarea") !== el) return;
+		const last = this._lastPress;
+		const n = last && e.timeStamp - last.t < 500 && Math.abs(e.clientX - last.x) < 5 && Math.abs(e.clientY - last.y) < 5 ? last.n + 1 : 1;
+		this._lastPress = { t: e.timeStamp, x: e.clientX, y: e.clientY, n };
+		const hit = this._fieldIndexAt(el, e.clientX, e.clientY);
+		if (!hit) return;
+		if (n === 2) {
+			const [start, end] = wordAt(el.value, hit.char);
+			el.setSelectionRange(start, end);
+		} else if (n >= 3) el.select();
+		else {
+			el.setSelectionRange(hit.at, hit.at);
+			if (id !== undefined) this._caretDrag = { id, el, anchor: hit.at };
+		}
+	}
+
+	/** The mouse moved, held down in a field's text: the selection from where it went down to where it is. */
+	_dragCaret (e: PointerEvent): void {
+		const c = this._caretDrag!;
+		if (c.el !== this.document.activeElement) {
+			this._caretDrag = undefined;
+			return;
+		}
+		const hit = this._fieldIndexAt(c.el, e.clientX, e.clientY);
+		if (!hit) return;
+		const [start, end] = hit.at < c.anchor ? [hit.at, c.anchor] : [c.anchor, hit.at];
+		if (start !== c.el.selectionStart || end !== c.el.selectionEnd) c.el.setSelectionRange(start, end);
 	}
 
 	/** A press over: :active off what it held, unless another pointer still holds it. */
@@ -1659,13 +1725,20 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			this.host.textEntry.focus(null, this._typing);
 			return;
 		}
-		const sel = a as unknown as { selectionStart?: number | null; selectionEnd?: number | null };
+		// (Its value and selection as they are when asked: the typing compares them with its own)
 		const field: IgeUiTextEntryField = {
 			el: a,
-			value: a.value ?? "",
-			selectionStart: sel.selectionStart ?? null,
-			selectionEnd: sel.selectionEnd ?? null,
+			get value () {
+				return a.value ?? "";
+			},
+			get selectionStart () {
+				return a.selectionStart;
+			},
+			get selectionEnd () {
+				return a.selectionEnd;
+			},
 			type: a.getAttribute("type") === "password" ? "password" : "text",
+			maxLength: maxLengthOf(a),
 			rect: () => {
 				const r = a.getBoundingClientRect();
 				return { x: r.left, y: r.top, w: r.width, h: r.height };
@@ -1680,7 +1753,15 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		input: (value) => {
 			const el = this.document.activeElement;
 			if (!el) return;
-			el.value = value;
+			// (Past its maxlength (a host that doesn't keep to it): what was put in cut to fit, as a browser cuts a paste)
+			const max = maxLengthOf(el);
+			const was = el.value;
+			const fitted = max >= 0 && value.length > max && value.length > was.length ? fitInsert(was, value, max) : undefined;
+			el._typed(fitted ? fitted.value : value);
+			if (fitted) {
+				el._setSelection(fitted.caret, fitted.caret);
+				this._syncTextInput();
+			} else if ((el.selectionEnd ?? 0) > value.length) el._setSelection(value.length, value.length);
 			el.dispatchEvent(new IgeUiEvent("input", { bubbles: true }));
 		},
 		change: () => this.document.activeElement?.dispatchEvent(new IgeUiEvent("change", { bubbles: true })),
@@ -1694,9 +1775,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		selection: (start, end) => {
 			const el = this.document.activeElement;
 			if (!isTextField(el)) return;
-			const sel = el as unknown as { selectionStart?: number | null; selectionEnd?: number | null };
-			sel.selectionStart = start;
-			sel.selectionEnd = end;
+			el._setSelection(start, end);
 			this._paintDirty = true;
 		},
 		composition: (range) => {
@@ -1725,6 +1804,28 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 }
 
 /** Whether a focused element types through the host's text input (IgeUiHost.textEntry: the web's hidden input). */
+/** A text field's maxlength (-1: none, or not a number, as a browser reads it). */
+function maxLengthOf (el: IgeUiElement): number {
+	const v = el.getAttribute("maxlength");
+	const n = v === null ? NaN : Number(v.trim());
+	return Number.isInteger(n) && n >= 0 ? n : -1;
+}
+
+/**
+ * What was put into `was` to make `now` (a paste, an IME's text), cut to fit `max` (the part that went in, at the
+ * place it went in), and the caret after it.
+ */
+function fitInsert (was: string, now: string, max: number): { value: string; caret: number } {
+	let p = 0;
+	while (p < was.length && p < now.length && was[p] === now[p]) p++;
+	let q = 0;
+	while (q < was.length - p && q < now.length - p && was[was.length - 1 - q] === now[now.length - 1 - q]) q++;
+	// (What stays of what was there: before and after where it went in)
+	const room = Math.max(0, max - (p + q));
+	const put = now.slice(p, now.length - q).slice(0, room);
+	return { value: was.slice(0, p) + put + was.slice(was.length - q), caret: p + put.length };
+}
+
 function typesThroughHost (a: IgeUiElement): boolean {
 	return (a.localName === "input" || a.localName === "textarea") && !["range", "checkbox", "radio", "button"].includes(a.getAttribute("type") ?? "text");
 }

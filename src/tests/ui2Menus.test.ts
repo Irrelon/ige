@@ -64,21 +64,21 @@ describe("ui2: what the menus need (the journal, the controls overlay, the title
 		expect(r.document.defaultView!.getComputedStyle(c).transform).toBe("matrix(1, 0, 0, 1, 0, 0)");
 	});
 
-	it("a focused field shows its caret after its text, or its selection's highlight", () => {
+	it("a focused field shows its caret where its selection is, or its selection's highlight", () => {
 		const r = ui("input { width: 200px; padding: 2px; border: 1px solid #000; font: inherit; caret-color: #0f0; }");
 		r.document.body.innerHTML = `<input class="f" value="Rob">`;
 		r.update();
 		const f = r.document.querySelector(".f")!;
 		r.focus(f);
 		r.update();
-		const caret = r.items.filter((i) => i.op === "box" && i.el === f && (i as { w: number }).w === 1);
-		expect(caret.length).toBe(1);
-		// After "Rob" (15px), inside the border and padding
-		expect((caret[0] as { x: number }).x).toBe(3 + 15);
-		(f as unknown as { selectionStart: number; selectionEnd: number }).selectionStart = 0;
-		(f as unknown as { selectionStart: number; selectionEnd: number }).selectionEnd = 2;
-		// (As the hidden input's selection mirrored onto the field does: drawn again)
-		(r as unknown as { _paintDirty: boolean })._paintDirty = true;
+		const caretX = () => r.items.filter((i) => i.op === "box" && i.el === f && (i as { w: number }).w === 1).map((i) => (i as { x: number }).x);
+		// Focused by code, a field from the page's markup has its caret at the start (as a browser's), inside the border and padding
+		expect(caretX()).toEqual([3]);
+		f.setSelectionRange(3, 3);
+		r.update();
+		// After "Rob" (15px)
+		expect(caretX()).toEqual([3 + 15]);
+		f.setSelectionRange(0, 2);
 		r.update();
 		const sel = r.items.filter((i) => i.op === "box" && i.el === f && (i as { w: number }).w === 10);
 		expect(sel.length).toBe(1);

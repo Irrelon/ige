@@ -355,6 +355,9 @@ export class IgeUiClassList {
 	}
 }
 
+/** Input types the keyboard doesn't type into (no selection: null). */
+const NOT_TEXT = new Set(["range", "checkbox", "radio", "button", "submit", "reset", "hidden", "file", "color", "image"]);
+
 const camelToKebab = (s: string) => s.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 const kebabToCamel = (s: string) => s.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 
@@ -498,6 +501,9 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	/** A form control's live value and checked state (inputs). */
 	_value?: string;
 	_checked?: boolean;
+	/** A text field's selection (from, to: equal, the caret), from the start until something moves it, as a browser's. */
+	_selStart = 0;
+	_selEnd = 0;
 	/** A canvas element's drawing surface (the page's, when there is one). */
 	_canvas?: IgeUiSurface;
 	_canvasVersion = 0;
@@ -593,11 +599,57 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		return this._value ?? this._attrs.get("value") ?? "";
 	}
 
+	/**
+	 * Set by code: a text field's caret goes to the end of a value that's changed (as a browser's), and a field
+	 * being typed in has its typing told (the host's text input given the new value: IgeUiDocumentHost.valueChanged).
+	 */
 	set value (v: string) {
 		v = String(v);
-		if (v === this._value) return;
+		const was = this.value;
+		this._value = v;
+		if (v === was) return;
+		if (this._typesText()) this._selStart = this._selEnd = v.length;
+		this.ownerDocument._changed(this, "text");
+		this.ownerDocument.host?.valueChanged?.(this);
+	}
+
+	/** Typed (the host's text input's value): the value only, its selection as the typing says next. */
+	_typed (v: string): void {
+		if (v === this.value) return;
 		this._value = v;
 		this.ownerDocument._changed(this, "text");
+	}
+
+	/** A field the keyboard types into (a text input or a textarea; not a slider, checkbox or button). */
+	_typesText (): boolean {
+		if (this.localName === "textarea") return true;
+		return this.localName === "input" && !NOT_TEXT.has((this.getAttribute("type") ?? "text").toLowerCase());
+	}
+
+	/** Where a text field's selection starts (a number from the start, as a browser's; null for any other element). */
+	get selectionStart (): number | null {
+		return this._typesText() ? Math.min(this._selStart, this.value.length) : null;
+	}
+
+	set selectionStart (v: number | null) {
+		const start = Number(v) || 0;
+		this.setSelectionRange(start, Math.max(start, this.selectionEnd ?? 0));
+	}
+
+	get selectionEnd (): number | null {
+		return this._typesText() ? Math.min(this._selEnd, this.value.length) : null;
+	}
+
+	set selectionEnd (v: number | null) {
+		const end = Number(v) || 0;
+		this.setSelectionRange(Math.min(this.selectionStart ?? 0, end), end);
+	}
+
+	/** The selection as the typing has it (the host's text input's, mirrored): nothing told back. */
+	_setSelection (start: number | null, end: number | null): void {
+		const len = this.value.length;
+		this._selEnd = Math.max(0, Math.min(len, end ?? len));
+		this._selStart = Math.max(0, Math.min(this._selEnd, start ?? this._selEnd));
 	}
 
 	get checked (): boolean {
@@ -982,10 +1034,11 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 
 	/** A text field's selection, from `start` to `end` (equal: the caret there). */
 	setSelectionRange (start: number, end: number): void {
-		const len = (this.value ?? "").length;
-		const sel = this as unknown as { selectionStart?: number | null; selectionEnd?: number | null };
-		sel.selectionStart = Math.max(0, Math.min(len, start));
-		sel.selectionEnd = Math.max(sel.selectionStart, Math.min(len, end));
+		if (!this._typesText()) return;
+		const len = this.value.length;
+		// (Past the end: at the end; an end before the start: the start brought back to it, as a browser has it)
+		this._selEnd = Math.max(0, Math.min(len, Math.floor(end)));
+		this._selStart = Math.max(0, Math.min(this._selEnd, Math.floor(start)));
 		this.ownerDocument.host?.selectionChanged?.(this);
 	}
 
@@ -1399,6 +1452,8 @@ export interface IgeUiDocumentHost {
 	listened? (type: string): void;
 	/** A text field's selection set by code (select(), setSelectionRange()). */
 	selectionChanged? (el: IgeUiElement): void;
+	/** A text field's value set by code (to give the typing, if it's being typed in). */
+	valueChanged? (el: IgeUiElement): void;
 	/** The platform (IgeUiHost): canvases' surfaces, the display's pixel ratio. */
 	readonly host?: IgeUiHost;
 }
