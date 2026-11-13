@@ -36,6 +36,15 @@ describe("ui2: rounded clips", () => {
 		expect(green.clip!.round).toBeUndefined();
 	});
 
+	it("a picture (an image, a canvas) with a border-radius is cut to its content box's curve, the radii less its borders and padding", () => {
+		const r = page(".c { display: block; width: 100px; height: 50px; border: 3px solid #fff; padding: 2px; border-radius: 50%; }", `<canvas class="c" width="10" height="10"></canvas><canvas width="10" height="10"></canvas>`);
+		r.update();
+		const [round, square] = r.items.filter((i) => i.op === "image");
+		expect([...round.clip!]).toEqual([5, 5, 105, 55]);
+		expect(round.clip!.round).toEqual({ box: [5, 5, 105, 55], rx: [50, 50, 50, 50], ry: [25, 25, 25, 25] });
+		expect(square.clip?.round).toBeUndefined();
+	});
+
 	it("keeps a rounded clip through a move or a scale and drops it (the rectangle kept) through a turn", () => {
 		const r = page(".a { width: 100px; height: 100px; border-radius: 20px; overflow: hidden; } .s { transform: scale(2); transform-origin: 0 0; } .t { transform: rotate(10deg); } .k { width: 10px; height: 10px; background: #00f; }", `<div class="a"><div class="s"><div class="k"></div></div><div class="t"><div class="k"></div></div></div>`);
 		r.update();
@@ -71,6 +80,49 @@ describe("ui2: rounded clips", () => {
 		rx.forEach((v, i) => expect(Math.abs(v - r.rx[i])).toBeLessThan(0.1));
 		ry.forEach((v, i) => expect(Math.abs(v - r.ry[i])).toBeLessThan(0.1));
 		expect(packRound(undefined)[2]).toBeLessThan(packRound(undefined)[0]);
+	});
+
+	it("a 2D canvas's roundRect: corners shared out as border-radius shares them, scaled down where they'd overlap, flipped with a negative size; on the axes a clip to it is a rounded one, turned a mask", () => {
+		const size: [number, number] = [100, 100];
+		const c = new IgeUiCanvas2d(null, { measure: () => 0, metrics: () => ({ ascent: 8, descent: 2 }) }, () => size);
+		const clipOf = (draw: () => void) => {
+			c.resetTransform();
+			c.save();
+			c.beginPath();
+			draw();
+			c.clip();
+			const round = c._state.clip?.round;
+			const masked = c._state.masks.length > 0;
+			c.restore();
+			return { round, masked };
+		};
+		expect(clipOf(() => c.roundRect(10, 10, 60, 40, 8)).round).toEqual({ box: [10, 10, 70, 50], rx: [8, 8, 8, 8], ry: [8, 8, 8, 8] });
+		// (Two: top-left and bottom-right, then the others; an elliptical one)
+		expect(clipOf(() => c.roundRect(0, 0, 60, 40, [4, { x: 10, y: 6 }])).round).toEqual({ box: [0, 0, 60, 40], rx: [4, 10, 4, 10], ry: [4, 6, 4, 6] });
+		// (Too big for its height: all scaled down together, 40 high taking 2 x 30)
+		expect(clipOf(() => c.roundRect(0, 0, 100, 40, 30)).round!.ry).toEqual([20, 20, 20, 20]);
+		// (A negative width: the box from its other side, left and right corners swapped)
+		expect(clipOf(() => c.roundRect(60, 0, -60, 40, [1, 2, 3, 4])).round).toEqual({ box: [0, 0, 60, 40], rx: [2, 1, 4, 3], ry: [2, 1, 4, 3] });
+		expect(clipOf(() => {
+			c.rotate(0.4);
+			c.roundRect(10, 10, 40, 40, 8);
+		}).masked).toBe(true);
+		// Filled: the rectangle less what the corners cut away
+		c.beginPath();
+		c.roundRect(0, 0, 60, 40, 10);
+		c.fill();
+		const items: IgeUiPaintItem[] = [];
+		c.paint(items, 0, 0, 100, 100, 1, null);
+		const fill = items.find((i) => i.op === "fill") as Extract<IgeUiPaintItem, { op: "fill" }>;
+		let area = 0;
+		for (let i = 0; i < fill.tris.length; i += 6) {
+			const t = fill.tris;
+			area += Math.abs((t[i + 2] - t[i]) * (t[i + 5] - t[i + 1]) - (t[i + 4] - t[i]) * (t[i + 3] - t[i + 1])) / 2;
+		}
+		// (Its curves cut into chords within a fifth of a pixel: a little under the true area)
+		const exact = 60 * 40 - (4 - Math.PI) * 100;
+		expect(area).toBeLessThan(exact);
+		expect(area).toBeGreaterThan(exact - 10);
 	});
 
 	it("a 2D canvas's clip to a circle or an ellipse is a rounded clip (no stencil), shown where the canvas is", () => {

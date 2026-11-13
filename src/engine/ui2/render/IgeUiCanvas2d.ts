@@ -8,7 +8,7 @@
  *
  * What's there:
  * - paths: moveTo, lineTo, arc, ellipse, quadratic and cubic curves, rect,
- *   closePath; fill (nonzero or evenodd, as the SVG shapes are) and
+ *   roundRect, closePath; fill (nonzero or evenodd, as the SVG shapes are) and
  *   stroke (width, caps, joins, miter limit, dashes and their offset);
  * - a path that's only whole circles is drawn as the painter's round boxes
  *   (smooth edges, a ring for a stroke), as the SVG shapes are;
@@ -23,8 +23,8 @@
  *   resetTransform, getTransform), save and restore;
  * - globalAlpha, globalCompositeOperation "lighter" (added light),
  *   shadows (a drop shadow round what's drawn; a text shadow on text);
- * - clip: to the path (a rectangle as the painter's own clip; a circle or
- *   an ellipse on the axes as a rounded one, smooth, IgeUiRoundClip; any
+ * - clip: to the path (a rectangle as the painter's own clip; a circle, an
+ *   ellipse or a roundRect on the axes as a rounded one, smooth, IgeUiRoundClip; any
  *   other shape as a mask the renderer keeps in its stencil, with a sharp
  *   edge), clips in clips keeping to both;
  * - drawImage of an engine canvas or image, or a page canvas or image, the
@@ -47,7 +47,7 @@ import { gradientColorAt } from "@/engine/ui2/render/IgeUiTextClip";
 import { fontWeight, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 import type { IgeUiHost, IgeUiHostSurface, IgeUiSurface } from "@/engine/ui2/IgeUiHost";
 import { type IgeUiImageData, IgeUiPixelSurface } from "@/engine/ui2/render/IgeUiPixelSurface";
-import { combineRounds, intersectClips, roundThrough, withRound } from "@/engine/ui2/render/IgeUiRoundClip";
+import { combineRounds, type IgeUiRound, intersectClips, roundThrough, withRound } from "@/engine/ui2/render/IgeUiRoundClip";
 
 type M = [number, number, number, number, number, number];
 type Cap = "butt" | "round" | "square";
@@ -106,6 +106,8 @@ interface Sub {
 	circle?: [number, number, number];
 	/** The whole subpath is one full ellipse on the axes, a circle too (centre and radii in pixels): a clip to it is a rounded one. */
 	oval?: [number, number, number, number];
+	/** The whole subpath is a rounded rectangle on the axes (roundRect, in pixels): a clip to it is a rounded one. */
+	rrect?: IgeUiRound;
 }
 
 /** A drawn item, in the canvas's pixels; `own` items keep their coordinates in the space their matrix maps from. */
@@ -357,6 +359,53 @@ export class IgeUiCanvas2d {
 	rect (x: number, y: number, w: number, h: number): void {
 		const m = this._state.m;
 		this._subs.push({ pts: [...apply(m, x, y), ...apply(m, x + w, y), ...apply(m, x + w, y + h), ...apply(m, x, y + h)], closed: true });
+		this._subs.push({ pts: apply(m, x, y), closed: false });
+	}
+
+	/**
+	 * A rectangle with rounded corners, as the standard has it: `radii` one to four (a number, or { x, y } for an
+	 * elliptical corner), shared out tl, tr, br, bl as border-radius shares them, scaled down together where they'd
+	 * overlap; a negative width or height flips it (and its corners). On the axes, a clip to it is a rounded one.
+	 */
+	roundRect (x: number, y: number, w: number, h: number, radii: number | { x?: number; y?: number } | (number | { x?: number; y?: number })[] = 0): void {
+		const list = (Array.isArray(radii) ? radii : [radii]).map((r): [number, number] => (typeof r === "number" ? [r, r] : [r?.x ?? 0, r?.y ?? 0]));
+		// (A browser throws for these; nothing's added)
+		if (list.length < 1 || list.length > 4 || list.some(([a, b]) => !(a >= 0 && b >= 0)) || ![x, y, w, h].every(Number.isFinite)) return;
+		const [a, b = a, c = a, d = b] = list;
+		let k: [number, number][] = [a, b, list.length === 2 ? a : c, list.length === 3 ? b : d];
+		if (w < 0) {
+			x += w;
+			w = -w;
+			k = [k[1], k[0], k[3], k[2]];
+		}
+		if (h < 0) {
+			y += h;
+			h = -h;
+			k = [k[3], k[2], k[1], k[0]];
+		}
+		const fit = (len: number, r0: number, r1: number) => (r0 + r1 > len ? len / (r0 + r1) : 1);
+		const f = Math.min(fit(w, k[0][0], k[1][0]), fit(h, k[1][1], k[2][1]), fit(w, k[2][0], k[3][0]), fit(h, k[0][1], k[3][1]));
+		k = k.map(([rx, ry]) => [rx * f, ry * f]);
+		const m = this._state.m;
+		const pts: number[] = [];
+		// Each corner a quarter of an ellipse round its centre, clockwise from the top-left's (segments within a fifth of a pixel)
+		const corner = (cx: number, cy: number, [rx, ry]: [number, number], from: number, square: [number, number]) => {
+			// (Either radius 0: a square corner)
+			if (!(rx > 0 && ry > 0)) return void pts.push(...apply(m, square[0], square[1]));
+			const r = Math.max(rx, ry) * scaleOf(m);
+			const n = Math.max(2, Math.ceil(Math.PI / 2 / (2 * Math.acos(Math.max(-1, Math.min(1, 1 - 0.2 / Math.max(0.2, r)))))));
+			for (let i = 0; i <= n; i++) {
+				const t = from + (Math.PI / 2) * (i / n);
+				pts.push(...apply(m, cx + rx * Math.cos(t), cy + ry * Math.sin(t)));
+			}
+		};
+		corner(x + k[0][0], y + k[0][1], k[0], Math.PI, [x, y]);
+		corner(x + w - k[1][0], y + k[1][1], k[1], Math.PI * 1.5, [x + w, y]);
+		corner(x + w - k[2][0], y + h - k[2][1], k[2], 0, [x + w, y + h]);
+		corner(x + k[3][0], y + h - k[3][1], k[3], Math.PI / 2, [x, y + h]);
+		// (On the axes: its rounded shape in pixels, for a clip)
+		const rrect = Math.abs(m[1]) < 1e-9 && Math.abs(m[2]) < 1e-9 ? roundThrough({ box: [x, y, x + w, y + h], rx: k.map((v) => v[0]) as [number, number, number, number], ry: k.map((v) => v[1]) as [number, number, number, number] }, m) : undefined;
+		this._subs.push({ pts, closed: true, rrect });
 		this._subs.push({ pts: apply(m, x, y), closed: false });
 	}
 
@@ -685,10 +734,11 @@ export class IgeUiCanvas2d {
 		const rect: [number, number, number, number] = c ? [Math.max(c[0], x0), Math.max(c[1], y0), Math.min(c[2], x1), Math.min(c[3], y1)] : [x0, y0, x1, y1];
 		// A circle or an ellipse on the axes: a rounded clip, drawn analytically (smooth, as Chrome's: IgeUiRoundClip),
 		// unless it can't be one with a rounded clip already open
-		const oval = subs.length === 1 ? subs[0].oval : undefined;
-		if (oval) {
-			const [cx, cy, rx, ry] = oval;
-			const both = combineRounds(c?.round, { box: [cx - rx, cy - ry, cx + rx, cy + ry], rx: [rx, rx, rx, rx], ry: [ry, ry, ry, ry] });
+		const one = subs.length === 1 ? subs[0] : undefined;
+		const oval = one?.oval;
+		const shape: IgeUiRound | undefined = oval ? { box: [oval[0] - oval[2], oval[1] - oval[3], oval[0] + oval[2], oval[1] + oval[3]], rx: [oval[2], oval[2], oval[2], oval[2]], ry: [oval[3], oval[3], oval[3], oval[3]] } : one?.rrect;
+		if (shape) {
+			const both = combineRounds(c?.round, shape);
 			if (both.exact) {
 				this._state.clip = withRound(rect, both.round);
 				return;
@@ -731,11 +781,15 @@ export class IgeUiCanvas2d {
 		const k = own ? 1 : scaleOf(s.m);
 		const shadow = this._shadow();
 		const at = own ? [lx, by] : apply(s.m, lx, by);
-		this._push({
+		const item: IgeUiPaintItem = {
 			op: "text", text, x: at[0], y: at[1], w: w * k, font: { ...font, size: font.size * k }, letterSpacing: 0, color, opacity: s.alpha, clip: s.clip,
-			shadow: halo !== undefined ? { x: 0, y: 0, blur: halo * k, color } : shadow && { x: shadow.x, y: shadow.y, blur: shadow.blur, color: shadow.color },
 			matrix: own ? [...s.m] : undefined, additive: s.composite === "lighter" || undefined
-		}, own);
+		};
+		// Its shadow (or a stroke's halo) an item of its own under it, as the painter's text-shadows are (an item with a
+		// shadow is only the shadow), then the glyphs
+		const glow = halo !== undefined ? { x: 0, y: 0, blur: halo * k, color } : shadow && { x: shadow.x, y: shadow.y, blur: shadow.blur, color: shadow.color };
+		if (glow) this._push({ ...item, shadow: glow }, own);
+		this._push(item, own);
 		this.changed();
 	}
 

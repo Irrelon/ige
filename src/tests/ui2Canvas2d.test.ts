@@ -88,6 +88,21 @@ describe("ui2: the engine's 2D canvas", () => {
 		expect(items[2].matrix?.map((v) => Math.round(v * 1000) / 1000)).toEqual([0, 1, -1, 0, 0, 0]);
 	});
 
+	it("draws text's shadow as an item of its own under the glyphs (an item with a shadow is only the shadow); strokeText's halo likewise", () => {
+		const { c, paint } = canvas();
+		c.fillStyle = "#fff";
+		c.shadowColor = "#0ff";
+		c.shadowBlur = 10;
+		c.fillText("HI", 10, 20);
+		c.shadowBlur = 0;
+		c.strokeStyle = "#f00";
+		c.lineWidth = 2;
+		c.strokeText("LO", 10, 40);
+		const texts = paint().filter((i): i is Extract<IgeUiPaintItem, { op: "text" }> => i.op === "text");
+		expect(texts.map((t) => `${t.text}${t.shadow ? ` glow ${t.shadow.blur}` : ""}`)).toEqual(["HI glow 10", "HI", "LO glow 2", "LO"]);
+		expect(texts[1].color).toEqual({ r: 255, g: 255, b: 255, a: 1 });
+	});
+
 	it("gives a box its gradient as the CSS one over it: a concentric radial's stops out from its inner circle", () => {
 		const { c, paint } = canvas();
 		const g = c.createRadialGradient(50, 25, 5, 50, 25, 20);

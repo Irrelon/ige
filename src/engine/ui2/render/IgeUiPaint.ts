@@ -688,6 +688,15 @@ export class IgeUiPainter {
 				const fit = styleValue(s, "object-fit");
 				let [ix, iy, iw, ih] = [cx, cy, cw, ch];
 				let clip = ctx.clip;
+				// (Rounded, border-radius: the picture cut to its content box's curve, the radii less the borders and padding,
+				// as a browser cuts it: a round portrait, the discovery's disc)
+				const [rx, ry] = this._corners(b);
+				if (rx.some((v, i) => v > 0 && ry[i] > 0)) {
+					const l = cx - x, t = cy - y, r = x + w - (cx + cw), bt = y + h - (cy + ch);
+					const ox = [l, r, r, l], oy = [t, t, bt, bt];
+					const round = { box: [cx, cy, cx + cw, cy + ch] as [number, number, number, number], rx: rx.map((v, i) => Math.max(0, v - ox[i])) as [number, number, number, number], ry: ry.map((v, i) => Math.max(0, v - oy[i])) as [number, number, number, number] };
+					clip = intersect(clip, withRound([cx, cy, cx + cw, cy + ch], round));
+				}
 				// (A picture's own size: an <img>'s once it's arrived, a canvas's surface)
 				const nat = el.localName === "img" ? this.imageSizes?.get(el.getAttribute("src") ?? "") : undefined;
 				const nw = nat ? nat.w : el.width, nh = nat ? nat.h : el.height;
