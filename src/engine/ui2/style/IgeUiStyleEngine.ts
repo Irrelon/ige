@@ -33,6 +33,81 @@ function addKeys (to: Set<string>, compound: string): void {
 	else for (const k of found) to.add(k);
 }
 
+/** A selector's compounds at the top level (split at combinators outside parentheses). */
+function topCompounds (text: string): string[] {
+	const parts: string[] = [];
+	let depth = 0, cur = "";
+	for (const ch of text) {
+		if (ch === "(") depth++;
+		else if (ch === ")") depth--;
+		if (depth === 0 && /[\s>+~]/.test(ch)) {
+			if (cur) parts.push(cur);
+			cur = "";
+			continue;
+		}
+		cur += ch;
+	}
+	if (cur) parts.push(cur);
+	return parts;
+}
+
+/**
+ * The keys (tag, .class, #id; * when it has none) of the compounds a selector's :has() is in, its arguments left out:
+ * the elements a :has() is on (inside :is() too: then each of the :is()'s, a few more than need be).
+ */
+function hasAnchorKeys (text: string): string[] {
+	const out: string[] = [];
+	for (const part of topCompounds(text)) {
+		if (!part.includes(":has(")) continue;
+		// (Each :has(...) taken out, its parentheses balanced)
+		let rest = "", i = 0;
+		while (i < part.length) {
+			if (part.startsWith(":has(", i)) {
+				let depth = 0, j = i + 4;
+				for (; j < part.length; j++) {
+					if (part[j] === "(") depth++;
+					else if (part[j] === ")" && --depth === 0) break;
+				}
+				i = j + 1;
+				continue;
+			}
+			rest += part[i++];
+		}
+		const keys = rest.match(/[.#][\w-]+|^[a-zA-Z][\w-]*/g);
+		if (!keys?.length) out.push("*");
+		else out.push(...keys);
+	}
+	return out;
+}
+
+/**
+ * The classes a selector looks for on an element's ancestors: those in every compound but its last (the subject), and
+ * any inside a pseudo-class's parentheses with a combinator in them (:is(.a *), :not(.b .c)).
+ */
+function ancestorClassesOf (text: string): string[] {
+	const out: string[] = [];
+	// The compounds at the top level (combinators outside parentheses split them)
+	const parts: string[] = [];
+	let depth = 0, cur = "";
+	for (const ch of text) {
+		if (ch === "(") depth++;
+		else if (ch === ")") depth--;
+		if (depth === 0 && /[\s>+~]/.test(ch)) {
+			if (cur) parts.push(cur);
+			cur = "";
+			continue;
+		}
+		cur += ch;
+	}
+	if (cur) parts.push(cur);
+	parts.forEach((part, i) => {
+		const inner = [...part.matchAll(/\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g)].map((m) => m[1]);
+		if (i < parts.length - 1) for (const m of part.matchAll(/\.([\w-]+)/g)) out.push(m[1]);
+		else for (const arg of inner) if (/[\s>+~]/.test(arg.trim())) for (const m of arg.matchAll(/\.([\w-]+)/g)) out.push(m[1]);
+	});
+	return out;
+}
+
 /**
  * SVG presentation attributes (fill="#f00", font-size="12"): the properties an SVG element's attributes set as
  * declarations of the page's under every rule (CSS's "presentational hints"). Geometry (x, cx, r...) and transform
@@ -91,6 +166,18 @@ export class IgeUiStyleEngine {
 	combinatorAnchors = new Set<string>();
 	/** The keys of what :has() looks for. */
 	hasArguments = new Set<string>();
+	/**
+	 * The keys of the elements a :has() is on (its compound's, the :has() left out), and whether one looks at siblings
+	 * (:has(+ x), :has(~ x)): a change inside such an element is all a :has() on it can see (IgeUiRoot._restyle).
+	 */
+	hasAnchors = new Set<string>();
+	hasSiblingArgument = false;
+	/**
+	 * Classes some selector looks for on an ancestor (left of a descendant or child combinator, or inside :is(), :not()
+	 * or the like with one): a change to an element's other classes can't change what matches what's in it
+	 * (IgeUiRoot restyles only it, and what's in it only for what it passes down).
+	 */
+	ancestorClasses = new Set<string>();
 	/** States some selector depends on (an element's style is looked at again when one of these changes on it or an ancestor). */
 	stateDependent = new Set<string>();
 	/** The size the UI's laid out at (vw, vh, and the @container ui queries). */
@@ -135,7 +222,8 @@ export class IgeUiStyleEngine {
 		this._index.clear();
 		this._any = [];
 		this.usesHas = this.usesSiblings = this.siblingDeep = this.containerQueries = false;
-		for (const set of [this.hasSubjects, this.siblingSubjects, this.combinatorSubjects, this.combinatorAnchors, this.hasArguments, this.stateDependent]) set.clear();
+		for (const set of [this.hasSubjects, this.siblingSubjects, this.combinatorSubjects, this.combinatorAnchors, this.hasArguments, this.stateDependent, this.ancestorClasses, this.hasAnchors]) set.clear();
+		this.hasSiblingArgument = false;
 		this._subjectClasses.clear();
 		let order = 0;
 		for (const sh of this.sheets) {
@@ -175,7 +263,13 @@ export class IgeUiStyleEngine {
 				}
 				// What a :has() looks for (the element a change must be, or be in, to flip one)
 				for (const m of selector.text.matchAll(/:has\(([^)]*)\)/g)) addKeys(this.hasArguments, m[1].split(/[\s>+~]+/).filter(Boolean).pop() ?? "*");
+				// (The compound each :has() is on, and whether its argument starts at a sibling)
+				if (selector.text.includes(":has(")) {
+					for (const k of hasAnchorKeys(selector.text)) this.hasAnchors.add(k);
+					if (/:has\(\s*[+~]/.test(selector.text)) this.hasSiblingArgument = true;
+				}
 				for (const s of selector.states) this.stateDependent.add(s);
+				for (const c of ancestorClassesOf(selector.text)) this.ancestorClasses.add(c);
 				const entry: IndexedRule = { rule, selector, specificity: selector.specificity, ...(ua ? { ua } : {}) };
 				const key = selectorKey(selector);
 				if (key === "*") this._any.push(entry);
@@ -226,30 +320,48 @@ export class IgeUiStyleEngine {
 
 	/** The rules matching an element (and its ::before / ::after), least important first. */
 	_matching (el: IgeUiElement): { own: IndexedRule[]; before: IndexedRule[]; after: IndexedRule[]; placeholder: IndexedRule[] } {
-		const candidates: IndexedRule[] = [...this._any];
-		const add = (key: string) => {
-			const list = this._index.get(key);
-			if (list) for (const r of list) candidates.push(r);
+		const candidates = this._candidates(el);
+		const own: IndexedRule[] = [], before: IndexedRule[] = [], after: IndexedRule[] = [], placeholder: IndexedRule[] = [];
+		// (In the cascade's order already: what matches of them stays in it)
+		for (const r of candidates) {
+			if (!matchesSelector(el, r.selector) || !this._containerHolds(el, r.rule.container)) continue;
+			(r.selector.pseudoElement === "before" ? before : r.selector.pseudoElement === "after" ? after : r.selector.pseudoElement === "placeholder" ? placeholder : own).push(r);
+		}
+		return { own, before, after, placeholder };
+	}
+
+	/**
+	 * The rules that could be about an element, by its tag, id and classes (each once), in the cascade's order (the
+	 * defaults first, then by specificity, then by order): worked out once for each tag, id and set of classes, while
+	 * the rules stay as they are.
+	 */
+	_candidates (el: IgeUiElement): IndexedRule[] {
+		if (this._candidatesVersion !== this.version) {
+			this._candidateLists.clear();
+			this._candidatesVersion = this.version;
+		}
+		let key = el.localName;
+		if (el.id) key += `#${el.id}`;
+		if (el._classes.size) key += `.${el._classes.size > 1 ? [...el._classes].sort().join(".") : [...el._classes][0]}`;
+		let list = this._candidateLists.get(key);
+		if (list) return list;
+		const seen = new Set<IndexedRule>(this._any);
+		const add = (k: string) => {
+			const l = this._index.get(k);
+			if (l) for (const r of l) seen.add(r);
 		};
 		add(el.localName);
 		if (el.id) add(`#${el.id}`);
 		for (const c of el._classes) add(`.${c}`);
-		const own: IndexedRule[] = [], before: IndexedRule[] = [], after: IndexedRule[] = [], placeholder: IndexedRule[] = [];
-		const seen = new Set<IndexedRule>();
-		for (const r of candidates) {
-			if (seen.has(r)) continue;
-			seen.add(r);
-			if (!matchesSelector(el, r.selector) || !this._containerHolds(el, r.rule.container)) continue;
-			(r.selector.pseudoElement === "before" ? before : r.selector.pseudoElement === "after" ? after : r.selector.pseudoElement === "placeholder" ? placeholder : own).push(r);
-		}
 		// (The defaults first: a page's rule beats the user agent's however specific that is, button:disabled's colours)
-		const byOrder = (a: IndexedRule, b: IndexedRule) => (a.ua ? 0 : 1) - (b.ua ? 0 : 1) || compareSpecificity(a.specificity, b.specificity) || a.rule.order - b.rule.order;
-		own.sort(byOrder);
-		before.sort(byOrder);
-		after.sort(byOrder);
-		placeholder.sort(byOrder);
-		return { own, before, after, placeholder };
+		list = [...seen].sort((a, b) => (a.ua ? 0 : 1) - (b.ua ? 0 : 1) || compareSpecificity(a.specificity, b.specificity) || a.rule.order - b.rule.order);
+		if (this._candidateLists.size > 4000) this._candidateLists.clear();
+		this._candidateLists.set(key, list);
+		return list;
 	}
+
+	_candidateLists = new Map<string, IndexedRule[]>();
+	_candidatesVersion = -1;
 
 	/** Computes an element's style (and its pseudo-elements') from its parent's. */
 	compute (el: IgeUiElement, parent: IgeUiComputedStyle | undefined): IgeUiComputedStyle {

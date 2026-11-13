@@ -415,12 +415,16 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		switch (change) {
 			case "tree":
 				this._markStyle(el);
-				this._markHas(el);
+				// (Only when what came or went is, or holds, what a :has() looks for; not knowing, as if it is)
+				if (!tree || [...tree.added, ...tree.removed].some((n) => n.nodeType === 1 && this._holdsHasArgument(n as IgeUiElement))) this._markHas(el);
 				this._layoutDirty = true;
 				break;
 			case "class":
 			case "attr":
-				this._markStyle(el);
+				// (A class no selector looks for on an ancestor, added or taken off: what matches what's in it is as it was, so
+				// that's restyled only for what it passes down, as for an inline style: IgeUiStyleEngine.ancestorClasses)
+				if (change === "class" && el._computed && !this._classAnchors(el)) this._markStyle(el, false, true);
+				else this._markStyle(el);
 				// (A sibling's selectors can depend on it: the siblings after it that + and ~ could be about, each looked
 				// at by itself; all under its parent when one of those reaches into a sibling's contents)
 				// (Only when it is, or was, what a + or ~ looks at before them)
@@ -471,6 +475,16 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._layoutMarked.clear();
 	}
 
+	/** Whether a class added to or taken off an element since it was styled is one some selector looks for on an ancestor. */
+	_classAnchors (el: IgeUiElement): boolean {
+		const anchors = this.styles.ancestorClasses;
+		if (!anchors.size) return false;
+		const was = new Set((el._styledClass ?? "").split(/\s+/).filter(Boolean));
+		for (const c of el._classes) if (!was.has(c) && anchors.has(c)) return true;
+		for (const c of was) if (!el._classes.has(c) && anchors.has(c)) return true;
+		return false;
+	}
+
 	_markStyle (el: IgeUiElement, selfOnly: boolean = false, inline: boolean = false): void {
 		if (selfOnly) this._styleSelf.add(el);
 		else {
@@ -498,7 +512,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			return;
 		}
 		this._hasPending = true;
+		this._hasChanged.push(el);
 	}
+
+	/** Where the changes a :has() could see were, since the last restyle (_markHas). */
+	_hasChanged: IgeUiElement[] = [];
 
 	/** Whether an element, or something in it, is what some :has() looks for. */
 	_holdsHasArgument (el: IgeUiElement): boolean {
@@ -966,12 +984,27 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 	_restyle (): void {
 		if (this._hasPending && !this._styleAll) {
-			// Every element a :has() selector could be about, each looked at by itself
+			// The elements a :has() selector could be about, each looked at by itself: in (or being) an element a :has() is
+			// on that holds a change; every one, when a :has() looks at siblings
 			this._hasPending = false;
-			const keys = [...this.styles.hasSubjects].filter((k) => k !== "*");
-			if (keys.length) for (const e of this.document.querySelectorAll(keys.join(", "))) this._styleSelf.add(e);
+			const st = this.styles;
+			const keys = [...st.hasSubjects].filter((k) => k !== "*");
+			if (keys.length) {
+				const sel = keys.join(", ");
+				if (st.hasSiblingArgument || st.hasAnchors.has("*")) for (const e of this.document.querySelectorAll(sel)) this._styleSelf.add(e);
+				else {
+					const anchors = new Set<IgeUiElement>();
+					for (const c of this._hasChanged) for (let p: IgeUiElement | null = c; p; p = p.parentNode) if (st.subjectOf(p, st.hasAnchors)) anchors.add(p);
+					for (const a of anchors) {
+						if (!a.isConnected) continue;
+						if (st.subjectOf(a, st.hasSubjects)) this._styleSelf.add(a);
+						for (const e of a.querySelectorAll(sel)) this._styleSelf.add(e);
+					}
+				}
+			}
 		}
 		this._hasPending = false;
+		this._hasChanged.length = 0;
 		if (this._styleSelf.size && !this._styleAll) {
 			for (const e of this._styleSelf) {
 				if (!e.isConnected || e._styleDirty || !e._computed) continue;
