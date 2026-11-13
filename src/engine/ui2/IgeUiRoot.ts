@@ -673,20 +673,21 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			el._computed = cur;
 			if (el._box) el._box.style = cur;
 		}
-		if (layout) {
-			this._layoutDirty = true;
-			this._paintDirty = true;
-		} else if (this.rootBox) {
-			// Paint-only changes: the boxes keep their places, transforms are worked out again (those that just stopped too),
-			// and only the runs of items they're painted in are painted again
+		// Transforms worked out again (those that just stopped too): a box the layout keeps as it was keeps the one set here
+		if (this.rootBox) {
 			for (const el of moving) {
 				const b = el._box;
-				if (!b) continue;
+				if (!b || b.el !== el || b.pseudo) continue;
 				const tf = styleValue(b.style, "transform");
 				b.transform = tf === "none" ? undefined : this.layoutEngine.layoutBoxTransform(b);
-				this._repaintEls.add(el);
+				// (Paint-only changes: only the runs of items they're painted in are painted again)
+				if (!layout) this._repaintEls.add(el);
 			}
-		} else this._paintDirty = true;
+		}
+		if (layout || !this.rootBox) {
+			if (layout) this._layoutDirty = true;
+			this._paintDirty = true;
+		}
 	}
 
 	_restyle (): void {

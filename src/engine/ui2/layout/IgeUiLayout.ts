@@ -602,17 +602,7 @@ export class IgeUiLayoutEngine {
 			}
 			return { min, max };
 		}
-		if (d === "grid" || d === "inline-grid") {
-			const cols = this._gridColumnCount(b, undefined);
-			const gap = this.len(b.style, "column-gap") ?? 0;
-			let min = 0, max = 0;
-			for (const c of kids) {
-				const s = this._marginBox(c);
-				min = Math.max(min, s.min);
-				max = Math.max(max, s.max);
-			}
-			return { min: min * cols + gap * (cols - 1), max: max * cols + gap * (cols - 1) };
-		}
+		if (d === "grid" || d === "inline-grid") return this._gridIntrinsic(b, kids);
 		if (d === "table" || d === "inline-table") {
 			const t = this._tableColumns(b);
 			const spacing = this._tableSpacing(b);
@@ -644,6 +634,52 @@ export class IgeUiLayoutEngine {
 		}
 		endRun();
 		return { min, max };
+	}
+
+	/**
+	 * A grid's min- and max-content widths: its column tracks sized for each (CSS Grid 12.3, simplified): a fixed track
+	 * at its size; minmax() with a fixed maximum, its minimum then its maximum; an auto track at its items' min- or
+	 * max-content; fr tracks at their items' min-content, or all at one fr size that gives each its items' max-content.
+	 * Items over several columns widen the ones they cross (not fixed) by what they still need.
+	 */
+	_gridIntrinsic (b: IgeUiBox, kids: IgeUiBox[]): Size {
+		const tracks = this._tracks(b, undefined);
+		const n = tracks.length;
+		const gap = this.len(b.style, "column-gap") ?? 0;
+		const items = kids.filter((c) => c.display !== "text" || /\S/.test(c.text ?? ""));
+		const sizeOf = (c: IgeUiBox) => (c.display === "text" ? this._inlineIntrinsic([c], b.style) : this._marginBox(c));
+		const cells = this._gridPlace(items, n);
+		const isFr = (k: number) => tracks[k].kind === "fr" || tracks[k].maxFr !== undefined;
+		const frOf = (k: number) => (tracks[k].kind === "fr" ? tracks[k].v : tracks[k].maxFr!);
+		const size = (which: "min" | "max"): number => {
+			const w = new Array<number>(n).fill(0);
+			const content = new Array<number>(n).fill(0);
+			for (const cell of cells) if (cell.span === 1) content[cell.col] = Math.max(content[cell.col], sizeOf(cell.box)[which]);
+			for (let k = 0; k < n; k++) {
+				const t = tracks[k];
+				if (t.kind === "px") w[k] = t.v;
+				else if (t.kind === "minmax" && t.maxFr === undefined) w[k] = which === "min" ? t.min ?? 0 : t.v;
+				else if (t.kind === "auto") w[k] = content[k];
+				else w[k] = Math.max(t.min ?? 0, t.kind === "fr" ? (which === "min" ? content[k] : 0) : 0);
+			}
+			// fr tracks at max-content: one size of fr that gives each its items' max-content
+			if (which === "max") {
+				let unit = 0;
+				for (let k = 0; k < n; k++) if (isFr(k) && frOf(k) > 0) unit = Math.max(unit, Math.max(content[k], w[k]) / Math.max(1, frOf(k)));
+				for (let k = 0; k < n; k++) if (isFr(k)) w[k] = Math.max(w[k], unit * frOf(k));
+			}
+			// Items over several columns: what they still need, shared by the columns they cross that can grow
+			for (const cell of cells) {
+				if (cell.span === 1) continue;
+				const span = [...Array(cell.span).keys()].map((i) => cell.col + i).filter((k) => k < n);
+				const have = span.reduce((a, k) => a + w[k], 0) + gap * (span.length - 1);
+				const need = sizeOf(cell.box)[which] - have;
+				const grow = span.filter((k) => tracks[k].kind !== "px" && !(tracks[k].kind === "minmax" && tracks[k].maxFr === undefined));
+				if (need > 0 && grow.length) for (const k of grow) w[k] += need / grow.length;
+			}
+			return w.reduce((a, x) => a + x, 0) + gap * Math.max(0, n - 1);
+		};
+		return { min: size("min"), max: size("max") };
 	}
 
 	_marginBox (c: IgeUiBox): Size {
@@ -1967,31 +2003,8 @@ export class IgeUiLayoutEngine {
 		return Number.isFinite(start) ? { start: start - 1, span: 1 } : { span: 1 };
 	}
 
-	_layoutGrid (b: IgeUiBox, cw: number, innerH: number | undefined): number {
-		const s = b.style;
-		const tracks = this._tracks(b, cw);
-		const colGap = this._gap(s, "column-gap", cw), rowGap = this._gap(s, "row-gap", innerH);
-		const left = contentLeft(b), top = contentTop(b);
-		const items: IgeUiBox[] = [];
-		for (const c of b.children) {
-			if (this._outOfFlow(c)) {
-				this._noteStatic(c, b, left, top);
-				continue;
-			}
-			if (c.display === "text") {
-				if (!/\S/.test(c.text ?? "")) continue;
-				// (An anonymous item has only what its parent passes down, not its size or edges)
-				const anon = newBox(null, anonStyle(b.style), "block", b);
-				anon.children = [c];
-				c.parent = anon;
-				items.push(anon);
-				continue;
-			}
-			items.push(c);
-		}
-		b.children = [...items, ...b.children.filter((c) => this._outOfFlow(c))];
-		// Place items: those given a row and a column first, then the rest row by row round them
-		const n = tracks.length;
+	/** Where a grid's items go (row, column, spans) in `n` columns: those given a row and a column first, then the rest row by row round them. */
+	_gridPlace (items: IgeUiBox[], n: number): { box: IgeUiBox; row: number; col: number; span: number; rowSpan: number }[] {
 		const cells: { box: IgeUiBox; row: number; col: number; span: number; rowSpan: number }[] = [];
 		const taken = new Set<string>();
 		const fixedPlace = new Set<IgeUiBox>();
@@ -2039,6 +2052,35 @@ export class IgeUiLayoutEngine {
 				r++;
 			}
 		}
+		return cells;
+	}
+
+	_layoutGrid (b: IgeUiBox, cw: number, innerH: number | undefined): number {
+		const s = b.style;
+		const tracks = this._tracks(b, cw);
+		const colGap = this._gap(s, "column-gap", cw), rowGap = this._gap(s, "row-gap", innerH);
+		const left = contentLeft(b), top = contentTop(b);
+		const items: IgeUiBox[] = [];
+		for (const c of b.children) {
+			if (this._outOfFlow(c)) {
+				this._noteStatic(c, b, left, top);
+				continue;
+			}
+			if (c.display === "text") {
+				if (!/\S/.test(c.text ?? "")) continue;
+				// (An anonymous item has only what its parent passes down, not its size or edges)
+				const anon = newBox(null, anonStyle(b.style), "block", b);
+				anon.children = [c];
+				c.parent = anon;
+				items.push(anon);
+				continue;
+			}
+			items.push(c);
+		}
+		b.children = [...items, ...b.children.filter((c) => this._outOfFlow(c))];
+		// Place items: those given a row and a column first, then the rest row by row round them
+		const n = tracks.length;
+		const cells = this._gridPlace(items, n);
 		// Column widths: fixed, then auto at their content's max, then fr shares
 		const widths = tracks.map((t) => (t.kind === "px" ? t.v : t.kind === "minmax" && t.maxFr === undefined ? t.v : 0));
 		for (let k = 0; k < n; k++) {

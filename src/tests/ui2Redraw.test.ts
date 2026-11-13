@@ -208,4 +208,30 @@ describe("ui2: painting only what moved", () => {
 		// (What's under the pointer is still found)
 		expect(r.hitTest(20, 15)?.className).toBe("p");
 	});
+
+	it("a transform animation that ends while something else's size is animating: the box is drawn where it rests", () => {
+		const r = ui(`@keyframes slide { from { transform: translateX(100px); } to { transform: translateX(40px); } } @keyframes grow { from { width: 10px; } to { width: 50px; } } .t { width: 20px; height: 20px; animation: slide 1s linear; } .g { height: 5px; animation: grow 2s linear; }`, 400, 300);
+		r.root.innerHTML = `<div class="t"></div><div class="g"></div>`;
+		const t = r.root.querySelector(".t")!;
+		r.update(0);
+		r.update(500);
+		expect(t.getBoundingClientRect().left).toBe(70);
+		r.update(1100);
+		expect(t.getBoundingClientRect().left).toBe(0);
+		const now = snapshot(r);
+		expect(fresh(r, 1100)).toEqual(now);
+	});
+});
+
+describe("ui2: a grid's content width", () => {
+	it("is its tracks' (a fixed column and an fr one), not its widest item times its columns", () => {
+		const r = ui(`.g { display: inline-grid; grid-template-columns: 34px 1fr; } .n { grid-row: span 2; } .a { width: 120px; } .b { width: 60px; } .h { display: inline-grid; grid-template-columns: repeat(3, 1fr); column-gap: 10px; } .h i { display: block; } .w { width: 50px; } .v { width: 20px; } .s { display: inline-grid; grid-template-columns: auto auto; } .x { grid-column: span 2; width: 200px; } .y { width: 30px; }`, 800, 600);
+		r.root.innerHTML = `<div class="g"><span class="n">1</span><div class="a"></div><div class="b"></div></div><br><div class="h"><i class="w"></i><i class="v"></i><i class="v"></i></div><br><div class="s"><i class="x"></i><i class="y"></i><i class="y"></i></div>`;
+		r.update(0);
+		expect(r.root.querySelector(".g")!.getBoundingClientRect().width).toBe(154);
+		// (Equal fr columns: each as wide as the widest needs)
+		expect(r.root.querySelector(".h")!.getBoundingClientRect().width).toBe(170);
+		// (An item over both auto columns widens them to its width)
+		expect(r.root.querySelector(".s")!.getBoundingClientRect().width).toBe(200);
+	});
 });
