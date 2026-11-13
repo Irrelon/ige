@@ -28,7 +28,7 @@ export const INITIAL: Record<string, string> = {
 	transform: "none", "transform-origin": "50% 50%", "box-shadow": "none", "text-shadow": "none", "clip-path": "none", "text-overflow": "clip", "vertical-align": "baseline",
 	"table-layout": "auto", "border-collapse": "separate", "border-spacing": "0px", "grid-template-columns": "none", "grid-template-rows": "none", "grid-column": "auto", "grid-row": "auto",
 	"grid-auto-flow": "row", "justify-items": "normal", "object-fit": "fill", "outline-width": "medium", "outline-style": "none", "outline-color": "currentcolor", "outline-offset": "0px",
-	content: "normal", transition: "none", animation: "none", cursor: "auto", "word-break": "normal", "overflow-wrap": "normal", "text-indent": "0px", "aspect-ratio": "auto",
+	content: "normal", transition: "none", animation: "none", cursor: "auto", "caret-color": "auto", "word-break": "normal", "overflow-wrap": "normal", "text-indent": "0px", "aspect-ratio": "auto",
 	filter: "none", "backdrop-filter": "none", "mix-blend-mode": "normal", "text-decoration-line": "none", "text-decoration-color": "currentcolor", "text-decoration-style": "solid", "text-decoration-thickness": "auto", "font-variant-numeric": "normal", "user-select": "auto", "container-type": "normal",
 	"container-name": "none", "scrollbar-width": "auto", "scrollbar-gutter": "auto", "scrollbar-color": "auto", "overscroll-behavior": "auto", "list-style-type": "disc", float: "none", clear: "none", "image-rendering": "auto", "text-wrap": "wrap"
 };

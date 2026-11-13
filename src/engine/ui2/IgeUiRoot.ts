@@ -16,7 +16,7 @@
  * on its own with draw().
  */
 import type { IgeCssStylesheet } from "@/engine/ui2/css/IgeCssParser";
-import { isTextField, textFieldPaint } from "@/engine/ui2/dom/IgeUiTextField";
+import { IgeUiCaretBlink, isTextField, textFieldPaint } from "@/engine/ui2/dom/IgeUiTextField";
 import type { IgeUiHost, IgeUiInputEvent, IgeUiInputResult, IgeUiTextEntryEvents, IgeUiTextEntryField } from "@/engine/ui2/IgeUiHost";
 import { igeUiAttachWebInput, webUiHost } from "@/engine/ui2/IgeUiWebHost";
 import { type IgeUiAdoption, igeUiEventClock, igeUiSameStart, IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
@@ -181,6 +181,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_momentum?: { el: IgeUiElement; vx: number; vy: number };
 	_tooltip?: { el: IgeUiElement; at: number; x: number; y: number; shown?: IgeUiElement };
 	_now = 0;
+	/** The focused field's caret blink (dom/IgeUiTextField: `caretBlink.period = 0` holds it shown). */
+	readonly caretBlink = new IgeUiCaretBlink();
 	/**
 	 * The last thing the user did: a key (true), a press of the pointer (false), or nothing yet (undefined). Focus moved
 	 * by a script shows its ring after a key or before anything's been done, as Chrome's does.
@@ -217,8 +219,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			this._paintDirty = true;
 			for (const img of this.document.querySelectorAll("img")) if (img.getAttribute("src") === src) img.dispatchEvent(new IgeUiEvent(ok ? "load" : "error"));
 		};
-		// The focused field's caret or selection, over its text (dom/IgeUiTextField)
-		this.painter.fieldPaint = textFieldPaint(this.layoutEngine, () => this.document.activeElement);
+		// The focused field's caret (blinking) or selection, over its text (dom/IgeUiTextField)
+		this.painter.fieldPaint = textFieldPaint(this.layoutEngine, () => this.document.activeElement, this.caretBlink, () => this._now);
 		if (opts.width !== undefined && opts.height !== undefined) this.screen = { w: opts.width, h: opts.height };
 		else this.screen = this.host.display.size();
 		this.animator.keyframes = this.styles.keyframes;
@@ -758,6 +760,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._containerQueries();
 		this._momentumStep();
 		this._tooltipStep(now);
+		// (The focused field's caret showing or hiding as it blinks: its run of items painted again)
+		const blinked = this.caretBlink.due(this.document.activeElement, now);
+		if (blinked) this._repaintEls.add(blinked);
 		if (!this._paintDirty && this._repaintEls.size) {
 			// Only animations moved on: their runs of items painted again (all of it, if that can't be done)
 			const t0 = this.host.time.now();
@@ -797,6 +802,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		this.animator.settle(now);
 		this._animate(now);
+		// (A focused field's caret shown, its blink started again)
+		this.caretBlink.restart();
 		this._paintDirty = true;
 	}
 

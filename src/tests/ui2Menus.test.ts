@@ -1,5 +1,6 @@
 import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
 import { cssAlpha } from "@/engine/ui2/style/IgeUiComputed";
+import { styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import { IgeUiFixedFonts } from "@/engine/ui2/text/IgeUiFonts";
 
 /** A headless UI of w x h, its body unpadded, with the given stylesheet. */
@@ -80,5 +81,67 @@ describe("ui2: what the menus need (the journal, the controls overlay, the title
 		r.update();
 		const sel = r.items.filter((i) => i.op === "box" && i.el === f && (i as { w: number }).w === 10);
 		expect(sel.length).toBe(1);
+	});
+
+	it("the caret blinks as Chrome's does, shown again from the start as the text changes", () => {
+		const r = ui("input { width: 200px; padding: 2px; border: 1px solid #000; font: inherit; caret-color: #0f0; }");
+		r.document.body.innerHTML = `<input class="f" value="Rob">`;
+		r.update(0);
+		const f = r.document.querySelector(".f")!;
+		r.focus(f);
+		const caretAt = (t: number) => {
+			r.update(t);
+			return r.items.filter((i) => i.op === "box" && i.el === f && (i as { w: number }).w === 1).length;
+		};
+		// 500 ms shown, 500 ms hidden (its run of items painted again as it changes, not the whole list)
+		const partial = r.stats.partialPaint;
+		expect(caretAt(10)).toBe(1);
+		expect(caretAt(400)).toBe(1);
+		expect(caretAt(600)).toBe(0);
+		expect(caretAt(1100)).toBe(1);
+		expect(r.stats.partialPaint).toBe(partial + 2);
+		expect(caretAt(1600)).toBe(0);
+		// Typing: shown at once, the blink started again from then
+		(f as unknown as { value: string }).value = "Robe";
+		(r as unknown as { _paintDirty: boolean })._paintDirty = true;
+		expect(caretAt(1650)).toBe(1);
+		expect(caretAt(2100)).toBe(1);
+		expect(caretAt(2200)).toBe(0);
+		// Settled (a screenshot): shown
+		r.settleAnimations(2300);
+		expect(caretAt(2300)).toBe(1);
+		// (period 0: never hidden)
+		r.caretBlink.period = 0;
+		(r as unknown as { _paintDirty: boolean })._paintDirty = true;
+		expect(caretAt(3700)).toBe(1);
+	});
+
+	it("what an IME is composing is underlined in the text's colour, a pixel in at each end", () => {
+		const r = ui("input { width: 200px; padding: 2px; border: 1px solid #000; font: inherit; color: #f00; }");
+		r.document.body.innerHTML = `<input class="f" value="Rob">`;
+		r.update(0);
+		const f = r.document.querySelector(".f")!;
+		r.focus(f);
+		f._composition = { start: 1, end: 3 };
+		(r as unknown as { _paintDirty: boolean })._paintDirty = true;
+		r.update(10);
+		const lines = r.items.filter((i) => i.op === "box" && i.el === f && (i as { h: number }).h === 1) as unknown as { x: number; y: number; w: number; color: { r: number; g: number; b: number } }[];
+		expect(lines.length).toBe(1);
+		// "ob" from 5px to 15px after the content's left (3), less a pixel each end; at the foot of the 10px line
+		expect([lines[0].x, lines[0].w]).toEqual([3 + 5 + 1, 8]);
+		expect(lines[0].color).toMatchObject({ r: 255, g: 0, b: 0 });
+		f._composition = undefined;
+		(r as unknown as { _paintDirty: boolean })._paintDirty = true;
+		r.update(20);
+		expect(r.items.filter((i) => i.op === "box" && i.el === f && (i as { h: number }).h === 1).length).toBe(0);
+	});
+
+	it("caret-color's initial value is auto, computed as the text's colour", () => {
+		const r = ui("input { color: #f00; }");
+		r.document.body.innerHTML = `<input class="f">`;
+		r.update();
+		const f = r.document.querySelector(".f")!;
+		expect(styleValue(f._computed!, "caret-color")).toBe("auto");
+		expect(r.document.defaultView!.getComputedStyle(f).caretColor).toBe("rgb(255, 0, 0)");
 	});
 });
