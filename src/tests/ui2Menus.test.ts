@@ -1,3 +1,4 @@
+import { igeUiHeadlessHost } from "@/engine/ui2/IgeUiHost";
 import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
 import { cssAlpha } from "@/engine/ui2/style/IgeUiComputed";
 import { styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
@@ -114,6 +115,34 @@ describe("ui2: what the menus need (the journal, the controls overlay, the title
 		r.caretBlink.period = 0;
 		(r as unknown as { _paintDirty: boolean })._paintDirty = true;
 		expect(caretAt(3700)).toBe(1);
+	});
+
+	it("no caret while the window hasn't the focus, shown again from the start when it's back", () => {
+		let focused = true;
+		const host = igeUiHeadlessHost();
+		host.display.focused = () => focused;
+		const r = new IgeUiRoot({ host, width: 800, height: 600 });
+		r.addStyleSheet("body { margin: 0; font-size: 10px; line-height: 1; } input { width: 200px; padding: 2px; border: 1px solid #000; font: inherit; }");
+		r.document.body.innerHTML = `<input class="f" value="Rob">`;
+		r.update(0);
+		const f = r.document.querySelector(".f")!;
+		r.focus(f);
+		const caretAt = (t: number) => {
+			r.update(t);
+			return r.items.filter((i) => i.op === "box" && i.el === f && (i as { w: number }).w === 1).length;
+		};
+		expect(caretAt(10)).toBe(1);
+		focused = false;
+		expect(caretAt(100)).toBe(0);
+		// (Still the UI's focused element: only :focus has gone)
+		expect(r.document.activeElement).toBe(f);
+		// Nothing blinks meanwhile
+		expect(caretAt(700)).toBe(0);
+		expect(caretAt(1200)).toBe(0);
+		focused = true;
+		expect(caretAt(1300)).toBe(1);
+		expect(caretAt(1700)).toBe(1);
+		expect(caretAt(1850)).toBe(0);
 	});
 
 	it("what an IME is composing is underlined in the text's colour, a pixel in at each end", () => {

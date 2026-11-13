@@ -36,7 +36,8 @@ export function isTextField (el: IgeUiElement | null | undefined): el is IgeUiEl
 
 /**
  * The caret's blink, as Chrome's: shown for `period` ms, hidden for as long, and shown again from the start whenever
- * the caret moves, the text changes or a field takes the focus. `period` 0 holds it shown.
+ * the caret moves, the text changes or a field takes the focus. `period` 0 holds it shown. While the window hasn't
+ * the system's focus (the host's display.focused(): the field keeps the UI's focus but not :focus) there's no caret.
  */
 export class IgeUiCaretBlink {
 	period = 500;
@@ -46,6 +47,8 @@ export class IgeUiCaretBlink {
 	_since = 0;
 	/** Whether the caret was shown when last painted (undefined: none painted). */
 	_painted: boolean | undefined;
+	/** The field whose caret's hidden while the window hasn't the focus (drawn again when it's back). */
+	_away: IgeUiElement | null = null;
 
 	/** Whether the caret's shown at `now` (painting it): the blink started again if the field, its text or the caret moved. */
 	shown (el: IgeUiElement, key: string, now: number): boolean {
@@ -54,8 +57,16 @@ export class IgeUiCaretBlink {
 			this._key = key;
 			this._since = now;
 		}
+		this._away = null;
 		this._painted = this._on(now);
 		return this._painted;
+	}
+
+	/** No caret while the window hasn't the focus: shown from the start when it's back. */
+	away (el: IgeUiElement): void {
+		this._painted = undefined;
+		this._el = null;
+		this._away = el;
 	}
 
 	/** No caret painted (a selection's highlight instead). */
@@ -70,9 +81,13 @@ export class IgeUiCaretBlink {
 
 	/** The frame's check: the focused field when its caret's due to show or hide (to paint again), else null. */
 	due (focused: IgeUiElement | null, now: number): IgeUiElement | null {
+		// (The window's focus back: the caret shown again)
+		if (focused && focused === this._away) return focused._states.has("focus") ? focused : null;
 		// (The focus gone from the field, if only for a frame: the blink starts again when it's back)
 		if (focused !== this._el) this._el = null;
 		if (!focused || focused !== this._el || this._painted === undefined) return null;
+		// (The window's focus gone: the caret hidden)
+		if (this._painted && !focused._states.has("focus")) return focused;
 		return this._on(now) !== this._painted ? focused : null;
 	}
 
@@ -119,6 +134,11 @@ export function textFieldPaint (layout: IgeUiLayoutEngine, active: () => IgeUiEl
 		if (start !== end) {
 			blink?.none();
 			items.push({ op: "box", ...base, x: x + at(start), y, w: Math.max(1, at(end) - at(start)), h, color: HIGHLIGHT } as IgeUiPaintItem);
+			return;
+		}
+		// (No caret while the window hasn't the system's focus: the field's kept the focus, but not :focus)
+		if (!el._states.has("focus")) {
+			blink?.away(el);
 			return;
 		}
 		// (caret-color: auto, or not given: the text's colour)
