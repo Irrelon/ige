@@ -10,6 +10,7 @@
  */
 import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
+import { IgeUiDropShadowPass, type IgeUiShadowGroup } from "@/engine/ui2/render/IgeUiDropShadow";
 import type { IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 import { type IgeUiSdfAtlas, PAGE, SDF_EDGE, SDF_RADIUS, SDF_SIZE } from "@/engine/ui2/text/IgeUiSdfAtlas";
 
@@ -96,12 +97,13 @@ float shape(vec2 p, vec4 box, vec4 radii, vec4 cut) {
 }
 
 // How much of a triangle's edge (a to b, the inside on its s side) covers p: smoothed over a pixel for an outline
-// edge; for a shared one, all or nothing, a tie on the line going to one side only (so two neighbours never both draw it)
+// edge; for a shared one, all or nothing (neighbours meet with no seam)
 float edgeCover(vec2 p, vec2 a, vec2 b, float s, bool outline, float px) {
 	vec2 e = (b - a) * s;
 	float d = (e.x * (p.y - a.y) - e.y * (p.x - a.x)) / max(length(e), 1e-6);
 	if (outline) return clamp(d / px + 0.5, 0.0, 1.0);
-	return (d > 0.0 || (d == 0.0 && (e.y > 0.0 || (e.y == 0.0 && e.x < 0.0)))) ? 1.0 : 0.0;
+	// (Reaching a hair past the shared line: rounding, and corners where several meet, can leave a pixel outside them all)
+	return d > -0.02 * px ? 1.0 : 0.0;
 }
 
 // A rounded box blurred by a Gaussian (Evan Wallace's fast rounded-rectangle shadows): exact for square corners,
@@ -218,6 +220,10 @@ void main() {
 			float reach = ${SDF_EDGE.toFixed(3)} * ${SDF_RADIUS.toFixed(1)} * v_params.z;
 			a = (1.0 - smoothstep(-blur * 0.25, blur, d)) * 0.6 * (1.0 - smoothstep(reach * 0.55, reach * 0.95, d));
 		}
+	} else if (kind > 7.5) {
+		// A drop shadow: its blurred silhouette's alpha in its colour (IgeUiDropShadow)
+		col = vec4(v_color.rgb * v_color.a, v_color.a) * texture(u_image, v_tex).a;
+		a = 1.0;
 	} else if (kind > 6.5) {
 		// A filled triangle (an SVG fill cut into triangles): corners v_shape.xy, v_shape.zw, v_radii.xy; v_radii.z's
 		// bits say which edges are the shape's outline (smoothed) rather than shared with a neighbour (cut sharp, so
@@ -263,6 +269,8 @@ interface Batch {
 	 * going over it), "add" puts the blurred copy in.
 	 */
 	blend?: "erase" | "add";
+	/** A drop shadow's composite (IgeUiDropShadow): its group's silhouette blurred, made into its image as it's drawn. */
+	shadow?: { group: IgeUiShadowGroup; index: number };
 }
 
 /** The blur passes: one direction of a Gaussian, sampling a texture into a target (backdrop-filter). */
@@ -341,6 +349,8 @@ export class IgeUiGlRenderer {
 	_blurA: { tex: WebGLTexture; w: number; h: number } | null = null;
 	_blurB: { tex: WebGLTexture; w: number; h: number } | null = null;
 	_blurFbo: WebGLFramebuffer | null = null;
+	/** Drop shadows' textures (filter: drop-shadow(): IgeUiDropShadow). */
+	_shadows = new IgeUiDropShadowPass();
 	/** Draw calls made last frame. */
 	drawCalls = 0;
 	instances = 0;
@@ -390,6 +400,7 @@ export class IgeUiGlRenderer {
 		this._blurProgram = bp;
 		for (const u of ["u_src", "u_area", "u_step", "u_sigma", "u_lod"]) this._blurUniforms[u] = gl.getUniformLocation(bp, u);
 		this._grab = this._blurA = this._blurB = null;
+		this._shadows.reset();
 		this._blurFbo = gl.createFramebuffer();
 		this._ramp = gl.createTexture();
 		this._atlasTex = gl.createTexture();
@@ -420,7 +431,7 @@ export class IgeUiGlRenderer {
 	// ---------------------------------------------------------------- gradients
 
 	_rampRow (g: IgeCssGradient, length: number): number {
-		const key = JSON.stringify([g.stops, g.repeating, Math.round(length)]);
+		const key = JSON.stringify([g.stops, g.repeating, g.unpremultiplied, Math.round(length)]);
 		const have = this._rampRows.get(key);
 		if (have !== undefined) return have;
 		if (this._rampNext >= 512) {
@@ -450,11 +461,10 @@ export class IgeUiGlRenderer {
 			const c0 = g.stops[k].color, c1 = g.stops[Math.min(k + 1, g.stops.length - 1)].color;
 			const p0 = pos[k]!, p1 = pos[Math.min(k + 1, pos.length - 1)]!;
 			const f = t <= p0 ? 0 : t >= p1 ? 1 : (t - p0) / Math.max(1e-6, p1 - p0);
-			// Premultiplied, as browsers interpolate
+			// Premultiplied, as browsers interpolate CSS gradients (an SVG gradient's colours mixed as they are, then premultiplied)
 			const a = c0.a + (c1.a - c0.a) * f;
-			const pr = c0.r * c0.a + (c1.r * c1.a - c0.r * c0.a) * f;
-			const pg = c0.g * c0.a + (c1.g * c1.a - c0.g * c0.a) * f;
-			const pb = c0.b * c0.a + (c1.b * c1.a - c0.b * c0.a) * f;
+			const mix = (x0: number, x1: number) => (g.unpremultiplied ? (x0 + (x1 - x0) * f) * a : x0 * c0.a + (x1 * c1.a - x0 * c0.a) * f);
+			const pr = mix(c0.r, c1.r), pg = mix(c0.g, c1.g), pb = mix(c0.b, c1.b);
 			this._rampData[off + x * 4] = Math.round(pr);
 			this._rampData[off + x * 4 + 1] = Math.round(pg);
 			this._rampData[off + x * 4 + 2] = Math.round(pb);
@@ -603,10 +613,45 @@ export class IgeUiGlRenderer {
 		const Z4 = [0, 0, 0, 0];
 		const NOGRAD = [-1, 0, 0, 0];
 		const backdrops: { o: number; bd: { w: number; h: number; sigma: number } }[] = [];
+		const shadowGroups: IgeUiShadowGroup[] = [];
+		const openGroups: (IgeUiShadowGroup | null)[] = [];
 		for (const it of items) {
 			// (The painter's clips are in the item's own pixels: through its transform to the screen's, as a box)
 			const clip = it.clip ? (it.matrix ? clipThrough(it.clip, it.matrix) : it.clip) : NONE;
 			const additive = !!it.additive;
+			if (it.op === "group") {
+				// An element with drop-shadow()s: a composite for each (drawn first, the last listed lowest), then what it's of
+				if (it.open) {
+					let g: IgeUiShadowGroup | null = null;
+					if (it.shadows?.length && this._blurProgram) {
+						g = { shadows: it.shadows, from: 0, to: 0, start: 0, end: 0, clip, composites: [] };
+						for (let k = it.shadows.length - 1; k >= 0; k--) {
+							batch = { start: n, count: 0, image: null, additive: false, shadow: { group: g, index: k } };
+							batches.push(batch);
+							g.composites.push({ o: push(null, false), index: k });
+						}
+						batch = undefined;
+						g.from = batches.length;
+						g.start = n;
+						shadowGroups.push(g);
+					}
+					openGroups.push(g);
+				} else {
+					const g = openGroups.pop();
+					if (g) {
+						batch = undefined;
+						g.to = batches.length;
+						g.end = n;
+						this._shadowRegion(g, width, height, scale, offset);
+						for (const c of g.composites) {
+							const sh = g.shadows[c.index], r = g.region;
+							const rect = r ? [(r.x + sh.x * scale - offset[0]) / scale, (r.y + sh.y * scale - offset[1]) / scale, r.w / scale, r.h / scale] : Z4;
+							write(c.o, rect, rect, Z4, sh.color, [8, 0, 0, 0], [0, 1, 1, 0], Z4, g.clip, undefined, r ? 1 : 0, 0, NOGRAD);
+						}
+					}
+				}
+				continue;
+			}
 			if (it.op === "box" && it.backdrop) {
 				// What's behind, blurred: its device rectangle (through its transform; with room for the blur to reach)
 				const m = it.matrix ?? [1, 0, 0, 1, 0, 0];
@@ -641,14 +686,14 @@ export class IgeUiGlRenderer {
 				continue;
 			}
 			if (it.op === "box") {
-				// (On device pixels, as a browser paints a box: its edges crisp, not smoothed across a pixel; not an SVG shape,
-				// a glow, or anything turned or scaled)
+				// (Its box on device pixels, as a browser snaps a laid out box: its edges crisp, not smoothed across a pixel. A
+				// translation after it isn't snapped, as a browser's transform isn't (a label moved every frame glides); not an
+				// SVG shape, a glow, or anything turned or scaled)
 				let rect = [it.x, it.y, it.w, it.h];
 				const m = it.matrix;
 				if (!it.exact && it.shadow !== "outer" && !it.backdrop && (!m || (m[0] === 1 && m[1] === 0 && m[2] === 0 && m[3] === 1))) {
-					const tx = m ? m[4] : 0, ty = m ? m[5] : 0;
-					const sx = (v: number) => (Math.round((v + tx) * scale + offset[0]) - offset[0]) / scale - tx;
-					const sy = (v: number) => (Math.round((v + ty) * scale + offset[1]) - offset[1]) / scale - ty;
+					const sx = (v: number) => (Math.round(v * scale + offset[0]) - offset[0]) / scale;
+					const sy = (v: number) => (Math.round(v * scale + offset[1]) - offset[1]) / scale;
 					const x0 = sx(it.x), y0 = sy(it.y);
 					rect = [x0, y0, sx(it.x + it.w) - x0, sy(it.y + it.h) - y0];
 				}
@@ -696,6 +741,8 @@ export class IgeUiGlRenderer {
 							const r = g.size === "closest-side" ? Math.min(nx, ny) : g.size === "farthest-side" ? Math.max(dx, dy) : Math.hypot(dx, dy);
 							rx = ry = r;
 						}
+						// (Radii given outright: an SVG radialGradient's)
+						if (g.radii) [rx, ry] = [g.radii[0] * it.w, g.radii[1] * it.h];
 						grad = [this._rampRow(g, Math.max(rx, ry)), 1, cx, cy];
 						params = [0, repeatPeriod(g, Math.max(rx, ry)), rx, ry];
 					}
@@ -807,6 +854,22 @@ export class IgeUiGlRenderer {
 				this._data[o + 23] *= kv;
 			}
 		}
+		if (shadowGroups.length) {
+			// The drop shadows' textures sized for the frame's biggest, and each composite's uv scaled to its part of them
+			const parts: { o: number; hw: number; hh: number }[] = [];
+			for (const g of shadowGroups) {
+				if (!g.region) continue;
+				for (const c of g.composites) {
+					const [hw, hh] = this._shadows.size(this, g.region, (g.shadows[c.index].blur / 2) * scale);
+					parts.push({ o: c.o, hw, hh });
+				}
+			}
+			for (const { o, hw, hh } of parts) {
+				const b = this._shadows.b!;
+				// (The blurred copy's rows are bottom up: its top-left corner is at v = its height)
+				this._data.set([0, hh / b.h, hw / b.w, 0], o + 20);
+			}
+		}
 		gl.bufferData(gl.ARRAY_BUFFER, this._data.subarray(0, n * STRIDE), gl.STREAM_DRAW);
 		this._uploadAtlas();
 		gl.activeTexture(gl.TEXTURE1);
@@ -831,10 +894,36 @@ export class IgeUiGlRenderer {
 		gl.depthMask(false);
 		gl.enable(gl.BLEND);
 		gl.viewport(0, 0, width, height);
-		const target = batches.some((b) => b.backdrop) ? (gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null) : null;
+		const target = batches.some((b) => b.backdrop || b.shadow) ? (gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null) : null;
 		let calls = 0;
 		let blurred: WebGLTexture | null = null;
+		/** One batch drawn (a drop shadow's silhouette draws what it's of with this too). */
+		const drawBatch = (b: Batch) => {
+			if (b.blend === "erase") gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
+			else gl.blendFunc(gl.ONE, b.additive || b.blend === "add" ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
+			gl.activeTexture(gl.TEXTURE2);
+			gl.bindTexture(gl.TEXTURE_2D, b.image);
+			// (WebGL 2 has no base instance: the instanced attributes start at the batch)
+			for (let i = 0; i < 11; i++) gl.vertexAttribPointer(1 + i, 4, gl.FLOAT, false, STRIDE * 4, b.start * STRIDE * 4 + i * 16);
+			gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, b.count);
+			calls++;
+		};
 		for (const b of batches) {
+			if (b.shadow) {
+				// A drop shadow: what it's of rendered alone (once for all its shadows), blurred, then drawn from that
+				const g = b.shadow.group;
+				if (!g.region) continue;
+				const frame = { width, height, offset, target };
+				if (!g.drawn) {
+					this._shadows.renderSilhouette(this, g, (i) => {
+						const s = batches[i];
+						// (Not a backdrop's passes or another shadow: what's drawn of the element itself)
+						if (!s.backdrop && !s.blend && !s.shadow) drawBatch(s);
+					}, frame);
+				}
+				b.image = this._shadows.blur(this, g, (g.shadows[b.shadow.index].blur / 2) * scale, frame);
+				calls += 2;
+			}
 			if (b.backdrop) {
 				blurred = this._blurBackdrop(b.backdrop, height, target);
 				gl.useProgram(this._program);
@@ -844,19 +933,43 @@ export class IgeUiGlRenderer {
 				calls += 2;
 			}
 			if (b.blend === "add") b.image = blurred;
-			if (b.blend === "erase") gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
-			else gl.blendFunc(gl.ONE, b.additive || b.blend === "add" ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
-			gl.activeTexture(gl.TEXTURE2);
-			gl.bindTexture(gl.TEXTURE_2D, b.image);
-			// (WebGL 2 has no base instance: the instanced attributes start at the batch)
-			for (let i = 0; i < 11; i++) gl.vertexAttribPointer(1 + i, 4, gl.FLOAT, false, STRIDE * 4, b.start * STRIDE * 4 + i * 16);
-			gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, b.count);
-			calls++;
+			drawBatch(b);
 		}
 		gl.bindVertexArray(null);
 		gl.depthMask(true);
 		this.drawCalls = calls;
 		return calls;
+	}
+
+	/**
+	 * A drop shadow group's silhouette rectangle (device px, top-down): round what's in it, with room for its widest
+	 * blur, kept to the target (and as far past it as a shadow's offset brings anything in); none when nothing's in it.
+	 */
+	_shadowRegion (g: IgeUiShadowGroup, width: number, height: number, scale: number, offset: [number, number]): void {
+		const d = this._data;
+		let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+		for (let o = g.start * STRIDE; o < g.end * STRIDE; o += STRIDE) {
+			const rx = d[o], ry = d[o + 1], rw = d[o + 2], rh = d[o + 3];
+			if (rw <= 0 || rh <= 0 || d[o + 38] <= 0) continue;
+			for (const [px, py] of [[rx, ry], [rx + rw, ry], [rx, ry + rh], [rx + rw, ry + rh]]) {
+				const sx = (d[o + 32] * px + d[o + 34] * py + d[o + 36]) * scale + offset[0];
+				const sy = (d[o + 33] * px + d[o + 35] * py + d[o + 37]) * scale + offset[1];
+				x0 = Math.min(x0, sx);
+				y0 = Math.min(y0, sy);
+				x1 = Math.max(x1, sx);
+				y1 = Math.max(y1, sy);
+			}
+		}
+		if (!Number.isFinite(x0)) {
+			g.region = undefined;
+			return;
+		}
+		const sigma = Math.max(...g.shadows.map((s) => (s.blur / 2) * scale));
+		const pad = Math.ceil(sigma * 3) + 2;
+		const reach = Math.max(...g.shadows.map((s) => Math.max(Math.abs(s.x), Math.abs(s.y)) * scale)) + pad;
+		const rx0 = Math.max(-reach, Math.floor(x0) - pad), ry0 = Math.max(-reach, Math.floor(y0) - pad);
+		const rx1 = Math.min(width + reach, Math.ceil(x1) + pad), ry1 = Math.min(height + reach, Math.ceil(y1) + pad);
+		g.region = rx1 > rx0 && ry1 > ry0 ? { x: rx0, y: ry0, w: rx1 - rx0, h: ry1 - ry0 } : undefined;
 	}
 
 	/** A texture at least `w` x `h`, made or grown as needed. */

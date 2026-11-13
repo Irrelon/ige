@@ -55,13 +55,12 @@ export function svgGradient (ref: IgeUiElement, current: IgeCssColor): IgeCssGra
 		const half = (Math.abs(ux) + Math.abs(uy)) / 2;
 		const t = (x: number, y: number) => ((x - 0.5) * ux + (y - 0.5) * uy) / Math.max(1e-6, 2 * half) + 0.5;
 		const t1 = t(x1, y1), t2 = t(x2, y2);
-		return { type: "linear", angle, stops: stops.map((s) => ({ ...s, at: t1 + (s.at ?? 0) * (t2 - t1) })) };
+		// (Its stops' colours mixed as they are, as Chrome mixes an SVG gradient's)
+		return { type: "linear", angle, stops: stops.map((s) => ({ ...s, at: t1 + (s.at ?? 0) * (t2 - t1) })), unpremultiplied: true };
 	}
 	const cx = fraction(ref, "cx", 0.5), cy = fraction(ref, "cy", 0.5), r = fraction(ref, "r", 0.5);
-	// (The CSS ellipse reaches the box's farthest side; the SVG circle reaches r of it)
-	const reach = (Math.max(cx, 1 - cx) + Math.max(cy, 1 - cy)) / 2;
-	const k = r / Math.max(1e-6, reach);
-	return { type: "radial", shape: "ellipse", cx, cy, size: "farthest-side", stops: stops.map((s) => ({ ...s, at: (s.at ?? 0) * k })) };
+	// (Over the box, r is a fraction of its width and of its height: an ellipse that wide and that tall, whatever its centre)
+	return { type: "radial", shape: "ellipse", cx, cy, size: "farthest-side", radii: [r, r], stops, unpremultiplied: true };
 }
 
 /** A gradient's middle colour (a stroke's, or a radial fill on triangles). */

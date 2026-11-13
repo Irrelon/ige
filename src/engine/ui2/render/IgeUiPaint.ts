@@ -16,6 +16,7 @@ import { type IgeUiBox, type IgeUiTextRun, stickyShift } from "@/engine/ui2/layo
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import type { IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 import { hasDashedSide, paintDashedBorder } from "@/engine/ui2/render/IgeUiBorderDash";
+import { type IgeUiDropShadow, parseDropShadows } from "@/engine/ui2/render/IgeUiDropShadow";
 import { paintSvg } from "@/engine/ui2/render/IgeUiSvg";
 import { clipsToText, paintTextInBackground } from "@/engine/ui2/render/IgeUiTextClip";
 
@@ -110,7 +111,18 @@ export interface IgeUiPaintFill extends IgeUiPaintBase {
 	opacity: number;
 }
 
-export type IgeUiPaintItem = IgeUiPaintBox | IgeUiPaintText | IgeUiPaintImage | IgeUiPaintLine | IgeUiPaintFill;
+/**
+ * Where an element with `filter: drop-shadow()` starts (open, with its shadows) and ends in the list: what's between is
+ * what its shadows are of (IgeUiDropShadow).
+ */
+export interface IgeUiPaintGroup extends IgeUiPaintBase {
+	op: "group";
+	open: boolean;
+	shadows?: IgeUiDropShadow[];
+	opacity: number;
+}
+
+export type IgeUiPaintItem = IgeUiPaintBox | IgeUiPaintText | IgeUiPaintImage | IgeUiPaintLine | IgeUiPaintFill | IgeUiPaintGroup;
 
 interface Ctx {
 	clip: IgeUiClip;
@@ -197,6 +209,8 @@ export class IgeUiPainter {
 		if (b.position === "fixed" || b.position === "sticky") return true;
 		if (b.transform) return true;
 		if (parseFloat(styleValue(b.style, "opacity")) < 1) return true;
+		// (A filter makes one too: a drop shadow's of all of it, painted in one run)
+		if (styleValue(b.style, "filter") !== "none") return true;
 		return false;
 	}
 
@@ -210,7 +224,12 @@ export class IgeUiPainter {
 
 	_context (b: IgeUiBox, ctx: Ctx): void {
 		const start = this.items.length, entry = ctx;
+		// filter: drop-shadow(): its run marked, for the renderer to shade (IgeUiDropShadow)
+		const filter = b.pseudo ? "none" : styleValue(b.style, "filter");
+		const shadows = filter.includes("drop-shadow(") ? parseDropShadows(filter, lenCtx(b.style), parseColor(styleValue(b.style, "color")) ?? { r: 0, g: 0, b: 0, a: 1 }) : [];
+		if (shadows.length) this.items.push({ op: "group", open: true, shadows, clip: ctx.clip, matrix: ctx.matrix, el: b.el, opacity: 1 });
 		this._contextInner(b, ctx);
+		if (shadows.length) this.items.push({ op: "group", open: false, clip: null, el: b.el, opacity: 1 });
 		this.groups.set(b, { start, end: this.items.length, ctx: entry, stacking: this._isStacking(b) });
 	}
 
@@ -668,6 +687,7 @@ export function describePaint (items: IgeUiPaintItem[]): string[] {
 		if (i.op === "box") return `box ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)}${i.shadow ? ` ${i.shadow}(${n(i.blur ?? 0)})` : ""}${i.border ? ` border ${n(i.border)}` : ""} ${i.color ? c(i.color) : `${i.gradient?.type}-gradient`}${i.radii.some((r) => r) ? ` r${i.radii.map(n).join("/")}` : ""}${i.chamfer ? ` cut${i.chamfer.map(n).join("/")}` : ""}${i.opacity < 1 ? ` a${n(i.opacity)}` : ""}${i.clip ? ` clip[${i.clip.map(n).join(",")}]` : ""}`;
 		if (i.op === "text") return `text "${i.text}" ${n(i.x)},${n(i.y)} ${i.font.size}px/${i.font.weight} ${c(i.color)}${i.shadow ? ` glow(${n(i.shadow.blur)})` : ""}${i.clip ? ` clip[${i.clip.map(n).join(",")}]` : ""}`;
 		if (i.op === "image") return `image ${i.source.localName} ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)}`;
+		if (i.op === "group") return i.open ? `drop-shadow ${(i.shadows ?? []).map((s) => `${n(s.x)},${n(s.y)} blur(${n(s.blur)}) ${c(s.color)}`).join(" ")} {` : "}";
 		if (i.op === "fill") return `fill ${i.tris.length / 6}tris ${c(i.color)}${i.opacity < 1 ? ` a${n(i.opacity)}` : ""}`;
 		return `line ${i.points.length / 2}pts ${c(i.color)}`;
 	});

@@ -80,3 +80,13 @@ describe("ui2: scrollable overflow", () => {
 		expect(s.clientWidth).toBe(200);
 	});
 });
+
+describe("ui2: grid fr columns", () => {
+	it("an fr column whose share is under its content's minimum keeps that, and the rest share what's left (CSS Grid's size of an fr)", () => {
+		const r = ui(".g { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; width: 231px; } .g b { display: block; white-space: nowrap; } .w56 { width: 56px; } .w71 { width: 71px; } .w20 { width: 20px; }");
+		r.document.body.innerHTML = `<div class="g"><div class="a"><b class="w56"></b></div><div class="b"><b class="w71"></b></div><div class="c"><b class="w20"></b></div><div class="d"><b class="w56"></b></div></div>`;
+		r.update();
+		// 71 and the two 56s keep their minimum; the last fr takes the rest: 231 - 9 - 71 - 56 - 56
+		expect([".a", ".b", ".c", ".d"].map((s) => rect(r, s)[2])).toEqual([56, 71, 39, 56]);
+	});
+});

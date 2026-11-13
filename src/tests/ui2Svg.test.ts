@@ -1,5 +1,6 @@
 import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
 import { describePaint, type IgeUiPaintFill, type IgeUiPaintLine } from "@/engine/ui2/render/IgeUiPaint";
+import { parseDropShadows } from "@/engine/ui2/render/IgeUiDropShadow";
 import { fillTriangles, parsePathData, svgTransform, triangulate } from "@/engine/ui2/render/IgeUiSvg";
 import { IgeUiFixedFonts } from "@/engine/ui2/text/IgeUiFonts";
 
@@ -151,5 +152,46 @@ describe("ui2: masked backdrops", () => {
 		r.update();
 		const bd = r.items.find((i) => i.op === "box" && i.backdrop) as { mask?: { type: string; angle?: number } } | undefined;
 		expect(bd?.mask).toMatchObject({ type: "linear", angle: 180 });
+	});
+});
+
+describe("ui2: filter: drop-shadow()", () => {
+	it("reads each drop-shadow() in a filter (the others left out)", () => {
+		const black = { r: 0, g: 0, b: 0, a: 1 };
+		const ctx = { em: 16, rem: 16, vw: 0, vh: 0, cqw: 0, cqh: 0 };
+		expect(parseDropShadows("drop-shadow(0 10px 18px rgba(0, 0, 0, 0.55))", ctx, black)).toEqual([{ x: 0, y: 10, blur: 18, color: { r: 0, g: 0, b: 0, a: 0.55 } }]);
+		const two = parseDropShadows("drop-shadow(0 0 18px rgba(255, 170, 40, 0.7)) hue-rotate(10deg) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.6))", ctx, black);
+		expect(two.map((s) => [s.x, s.y, s.blur])).toEqual([[0, 0, 18], [0, 4, 2]]);
+		// (No colour given: the text's)
+		expect(parseDropShadows("drop-shadow(1px 2px)", ctx, { r: 9, g: 8, b: 7, a: 1 })[0].color).toEqual({ r: 9, g: 8, b: 7, a: 1 });
+		expect(parseDropShadows("blur(4px)", ctx, black)).toEqual([]);
+	});
+
+	it("an element with one is painted in one run, marked for its shadow (a stacking context, as a filter makes one)", () => {
+		const r = ui(".s { width: 50px; height: 20px; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.5)); } .s i { display: block; width: 10px; height: 10px; background: #fff; position: relative; } b { display: block; height: 5px; background: #f00; }");
+		r.document.body.innerHTML = `<div class="s"><i></i></div><b></b>`;
+		r.update();
+		// (Painted with what's positioned, over the blocks in the flow round it, as a browser paints a filtered element)
+		expect(describePaint(r.items)).toEqual(["box 0,20 800x5 rgba(255,0,0,1)", "drop-shadow 0,10 blur(18) rgba(0,0,0,0.5) {", "box 0,0 10x10 rgba(255,255,255,1)", "}"]);
+	});
+});
+
+describe("ui2: SVG text", () => {
+	it("a <text> drawn at its anchor in its fill, scaled with the drawing; its client rect its run's box", () => {
+		const r = ui(".s { width: 340px; height: 420px; display: block; }");
+		r.document.body.innerHTML = `<svg class="s" viewBox="0 0 170 210"><text x="85" y="182" text-anchor="middle" font-family="monospace" font-size="10" letter-spacing="2" fill="#ffb84d">CONTRACT</text></svg>`;
+		r.update();
+		const t = r.items.find((i) => i.op === "text") as { text: string; x: number; y: number; w: number; font: { size: number; family: string }; letterSpacing: number; color: { r: number } };
+		expect(t.text).toBe("CONTRACT");
+		expect(t.font).toMatchObject({ size: 20, family: "monospace" });
+		expect(t.letterSpacing).toBe(4);
+		// (Middle-anchored at 85 user units: the run's middle at 170 UI px; its baseline at 182 x 2)
+		expect(Math.round(t.x + t.w / 2)).toBe(170);
+		expect(t.y).toBe(364);
+		expect(t.color.r).toBe(255);
+		const b = r.document.querySelector("text")!.getBoundingClientRect();
+		expect(Math.round(b.left + b.width / 2)).toBe(170);
+		// (Its font's ascent and descent, whole pixels at its own size, scaled)
+		expect(b.height).toBe(24);
 	});
 });

@@ -17,7 +17,7 @@ import { splitTop } from "@/engine/ui2/css/IgeCssParser";
 import { type IgeCssLengthContext, parseTransform, resolveLength, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement, IgeUiText } from "@/engine/ui2/dom/IgeUiDom";
 import { contentHeight, contentLeft, contentTop, contentWidth, type IgeUiBox, type IgeUiInlineFragment, type IgeUiTextRun, newBox } from "@/engine/ui2/layout/IgeUiBox";
-import { SVG_UNRENDERED, svgLayoutBounds, svgViewport } from "@/engine/ui2/render/IgeUiSvg";
+import { measureSvgText, SVG_UNRENDERED, svgLayoutBounds, svgViewport } from "@/engine/ui2/render/IgeUiSvg";
 import { INHERITED } from "@/engine/ui2/style/IgeUiProperties";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import { fontWeight, type IgeUiFontProvider, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
@@ -960,6 +960,8 @@ export class IgeUiLayoutEngine {
 	_layoutSvg (b: IgeUiBox, w: number, h: number): void {
 		const el = b.el!;
 		const viewport = svgViewport(el, contentLeft(b), contentTop(b), w, h);
+		// (Its text runs measured first: their bounds are their size)
+		measureSvgText(el, (text, font) => this.fonts.measure(text, font), (font) => this.metrics(font));
 		/** A shape's bounds in the svg's box (undefined: nothing to measure). */
 		const bounds = (c: IgeUiBox): [number, number, number, number] | undefined => {
 			const e = c.el;
@@ -2133,27 +2135,32 @@ export class IgeUiLayoutEngine {
 		const fixed = widths.reduce((a, w) => a + w, 0) + colGap * (n - 1);
 		const frTracks = tracks.map((t, k) => ({ t, k })).filter(({ t }) => t.kind === "fr" || t.maxFr !== undefined);
 		const frSum = frTracks.reduce((a, { t }) => a + (t.kind === "fr" ? t.v : t.maxFr!), 0);
-		let free = Math.max(0, cw - fixed);
-		// minmax(min, fr) tracks keep their minimum
-		for (let pass = 0; pass < 3; pass++) {
-			const unit = frSum > 0 ? free / frSum : 0;
-			let changed = false;
-			for (const { t, k } of frTracks) {
-				const share = unit * (t.kind === "fr" ? t.v : t.maxFr!);
-				let w = share;
-				if (t.kind === "fr") {
-					// An fr track's minimum is its content's min (auto)
-					let minC = 0;
-					for (const cell of cells) if (cell.col === k && cell.span === 1) minC = Math.max(minC, styleValue(cell.box.style, "min-width") === "0" || styleValue(cell.box.style, "min-width") === "0px" ? 0 : this._marginBox(cell.box).min);
-					w = Math.max(w, minC);
-				} else w = Math.max(w, t.min ?? 0);
-				if (Math.abs(w - widths[k]) > 0.01) changed = true;
-				widths[k] = w;
+		// The size of an fr, as CSS Grid finds it: the room left shared by the fr tracks' factors; a track whose share is
+		// under its minimum (its content's min-content, or minmax()'s minimum) keeps its minimum and is left out, and the
+		// rest share again
+		const minOf = (t: (typeof tracks)[number], k: number): number => {
+			if (t.kind !== "fr") return t.min ?? 0;
+			let minC = 0;
+			for (const cell of cells) if (cell.col === k && cell.span === 1) minC = Math.max(minC, styleValue(cell.box.style, "min-width") === "0" || styleValue(cell.box.style, "min-width") === "0px" ? 0 : this._marginBox(cell.box).min);
+			return minC;
+		};
+		const factor = (t: (typeof tracks)[number]) => (t.kind === "fr" ? t.v : t.maxFr!);
+		const mins = new Map(frTracks.map(({ t, k }) => [k, minOf(t, k)]));
+		let flexible = frTracks.slice();
+		for (const { k } of frTracks) widths[k] = 0;
+		for (let pass = 0; pass <= frTracks.length; pass++) {
+			const room = Math.max(0, cw - widths.reduce((a, w, k) => a + (flexible.some((f) => f.k === k) ? 0 : w), 0) - colGap * (n - 1));
+			const sum = Math.max(1, flexible.reduce((a, { t }) => a + factor(t), 0));
+			const unit = room / sum;
+			const under = flexible.filter(({ t, k }) => unit * factor(t) < mins.get(k)!);
+			if (!under.length) {
+				for (const { t, k } of flexible) widths[k] = unit * factor(t);
+				break;
 			}
-			const used = widths.reduce((a, w) => a + w, 0) + colGap * (n - 1);
-			if (!changed || used <= cw + 0.5) break;
-			free = Math.max(0, free - (used - cw));
+			for (const { k } of under) widths[k] = mins.get(k)!;
+			flexible = flexible.filter((f) => !under.includes(f));
 		}
+		void frSum;
 		const colX: number[] = [];
 		let xx = 0;
 		for (let k = 0; k < n; k++) {

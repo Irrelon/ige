@@ -21,6 +21,7 @@ import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import type { IgeUiClip, IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 import { paintGradientTriangles, svgGradient, svgGradientMiddle } from "@/engine/ui2/render/IgeUiSvgGradient";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
+import { fontWeight, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 
 /** A subpath's points (x, y, x, y…, in user units) and whether it's closed. */
 export interface IgeUiSvgSubpath {
@@ -320,8 +321,60 @@ export function svgShapeGeometry (el: IgeUiElement): IgeUiSvgSubpath[] | undefin
 	}
 }
 
+// ---------------------------------------------------------------- text
+
+/** An SVG `<text>`'s run as layout measured it (user units): where it starts (after text-anchor), its baseline, its width. */
+export interface IgeUiSvgText {
+	text: string;
+	x: number;
+	y: number;
+	w: number;
+	ascent: number;
+	descent: number;
+	/** Its font, its size in user units (scaled with the drawing when it's painted). */
+	font: IgeUiFontSpec;
+	letterSpacing: number;
+}
+
+/** Each `<text>`'s run, measured at layout (the painter has no fonts). */
+export const SVG_TEXT = new WeakMap<IgeUiElement, IgeUiSvgText>();
+
+/**
+ * Every `<text>` in an SVG measured: its text (white space collapsed, as SVG's is), its font from its presentation
+ * attributes or its style (font-family, font-size and letter-spacing in user units), placed by x, y and text-anchor.
+ */
+export function measureSvgText (svg: IgeUiElement, measure: (text: string, font: IgeUiFontSpec) => number, metrics: (font: IgeUiFontSpec) => { ascent: number; descent: number }): void {
+	for (const t of svg.querySelectorAll("text")) {
+		// (A presentation attribute on it or on a group round it, else its style)
+		const attr = (name: string): string | undefined => {
+			for (let n: IgeUiElement | null = t; n && n !== svg.parentNode; n = n.parentNode) {
+				const v = n.getAttribute(name);
+				if (v !== null) return v;
+			}
+			return undefined;
+		};
+		const cs = t._computed ?? {};
+		const text = (t.textContent ?? "").replace(/\s+/g, " ").trim();
+		const size = parseFloat(attr("font-size") ?? styleValue(cs, "font-size")) || 16;
+		const style = (attr("font-style") ?? styleValue(cs, "font-style")) === "italic" ? "italic" : "normal";
+		const font: IgeUiFontSpec = { family: attr("font-family") ?? styleValue(cs, "font-family"), size, weight: fontWeight(attr("font-weight") ?? styleValue(cs, "font-weight")), style };
+		const lsV = attr("letter-spacing") ?? styleValue(cs, "letter-spacing");
+		const letterSpacing = lsV === "normal" ? 0 : parseFloat(lsV) || 0;
+		const w = text ? measure(text, font) + letterSpacing * [...text].length : 0;
+		const first = (name: string) => Number((t.getAttribute(name) ?? "0").trim().split(/[\s,]+/)[0]) || 0;
+		const anchor = attr("text-anchor") ?? styleValue(cs, "text-anchor");
+		const x = first("x") - (anchor === "middle" ? w / 2 : anchor === "end" ? w : 0);
+		const m = metrics(font);
+		SVG_TEXT.set(t, { text, x, y: first("y"), w, ascent: m.ascent, descent: m.descent, font, letterSpacing });
+	}
+}
+
 /** A shape's bounds (x0, y0, x1, y1, user units; stroke not included), or undefined for one with no geometry. */
 export function svgShapeBounds (el: IgeUiElement): [number, number, number, number] | undefined {
+	if (el.localName === "text") {
+		const t = SVG_TEXT.get(el);
+		return t && t.text ? [t.x, t.y - t.ascent, t.x + t.w, t.y + t.descent] : undefined;
+	}
 	// (Circles and ellipses exactly, not through their polygons)
 	if (el.localName === "circle" || el.localName === "ellipse") {
 		const num = (a: string) => Number(el.getAttribute(a) ?? 0) || 0;
@@ -511,6 +564,10 @@ export function paintSvg (items: IgeUiPaintItem[], svg: IgeUiElement, x: number,
 				walk(c, p, mm, op, clipHere);
 				continue;
 			}
+			if (name === "text") {
+				if (styleValue(cs, "visibility") !== "hidden") svgTextRun(items, c, p, mm, op, clipHere, ctx.matrix, colorOf(cs));
+				continue;
+			}
 			if (!SHAPES.has(name)) continue;
 			if (styleValue(cs, "visibility") === "hidden") continue;
 			shape(items, svg, c, p, cs, mm, op, clipHere, ctx.matrix, colorOf(cs), (pattern, bounds) => {
@@ -581,6 +638,19 @@ function findById (el: IgeUiElement, id: string): IgeUiElement | null {
 	while (top.parentNode) top = top.parentNode;
 	const doc = el.ownerDocument as unknown as { getElementById?: (id: string) => IgeUiElement | null };
 	return doc.getElementById?.(id) ?? (top.querySelector(`#${id.replace(/([^\w-])/g, "\\$1")}`) as IgeUiElement | null);
+}
+
+/** A `<text>`'s run (measured at layout: SVG_TEXT) in its fill, scaled with the drawing (not turned with it). */
+function svgTextRun (items: IgeUiPaintItem[], el: IgeUiElement, p: SvgProps, m: IgeCssMatrix, opacity: number, clip: IgeUiClip, matrix: IgeCssMatrix | undefined, current: IgeCssColor): void {
+	const t = SVG_TEXT.get(el);
+	if (!t || !t.text) return;
+	const fill = paintOf(p.fill, el, current);
+	const color = fill.color ?? (fill.gradient ? svgGradientMiddle(fill.gradient) : undefined);
+	if (!color || color.a <= 0) return;
+	const s = scaleOf(m);
+	const [x, y] = apply(m, t.x, t.y);
+	const fillOpacity = clamp01(resolveNumber(p["fill-opacity"]) ?? 1);
+	items.push({ op: "text", text: t.text, x, y, w: t.w * s, font: { ...t.font, size: t.font.size * s }, letterSpacing: t.letterSpacing * s, color, opacity: opacity * fillOpacity, clip, matrix, el });
 }
 
 function shape (

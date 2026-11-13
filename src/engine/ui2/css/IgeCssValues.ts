@@ -352,6 +352,10 @@ export interface IgeCssGradient {
 	cx?: number;
 	cy?: number;
 	size?: "farthest-corner" | "closest-side" | "farthest-side" | "closest-corner";
+	/** Radial: its radii given outright, as fractions of the box's width and height (an SVG radialGradient's r). */
+	radii?: [number, number];
+	/** Its stops' colours mixed as they are, not premultiplied by their alpha (an SVG gradient's, as Chrome mixes them). */
+	unpremultiplied?: boolean;
 	/** Conic: where it starts (degrees, clockwise from up). */
 	from?: number;
 	stops: IgeCssColorStop[];
