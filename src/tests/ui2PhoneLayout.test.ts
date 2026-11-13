@@ -232,6 +232,17 @@ describe("ui2: layout at a phone's sizes, as Chrome's", () => {
 		expect(tops).toEqual([0, 0, 4]);
 	});
 
+	it("an inline element that starts a word counts its opening edge in the narrowest it can be: a flex item keeps it", () => {
+		// (The market's filter step at 200%: a key hint, <b>,</b> ‹, with padding, borders and margins round the comma, in a
+		// button 21px across: as wide as the <b>'s margin box (23.78), overflowing both sides, centred, as in Chrome; it was
+		// its comma and its closing edge, 14.78, so it shrank to the button)
+		const css = `b { margin: 0 3px; padding: 0 5px; border: 1px solid; font-size: 11px; }`;
+		const r = ui(`${css} .f { display: inline-flex; justify-content: center; width: 21px; }`, `<div class="f"><span><b>,</b> ‹</span></div>`);
+		const s = r.root.querySelector("span")!.getBoundingClientRect();
+		const shrunk = ui(`${css} .d { display: inline-block; }`, `<div style="width: 0"><span class="d"><b>,</b> ‹</span></div>`);
+		expect([s.x, s.width, widths(shrunk, ".d")[0]]).toEqual([-1.390625, 23.78125, 23.8]);
+	});
+
 	it("aspect-ratio on an absolutely placed ::before gives it its height", () => {
 		const r = ui(`.p { position: relative; width: 400px; height: 300px; } .p::before { content: ""; position: absolute; width: 50%; aspect-ratio: 2; }`, `<div class="p"></div>`);
 		const pb = r.root.querySelector(".p")!._box!.children.find((c) => c.pseudo === "before")!;

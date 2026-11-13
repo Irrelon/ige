@@ -803,7 +803,9 @@ export class IgeUiLayoutEngine {
 			}
 			if (it.kind === "open" || it.kind === "close") {
 				line += it.edge ?? 0;
-				if (word > 0) word += it.edge ?? 0;
+				// (An element's opening edge goes with what follows it, a word it starts too: <b>,</b> with padding is as
+				// wide as its box, not its comma and its closing edge; a closing edge after a space, with nothing)
+				if (it.kind === "open" || word > 0) word += it.edge ?? 0;
 				continue;
 			}
 			const text = it.text ?? "";
