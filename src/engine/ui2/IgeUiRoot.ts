@@ -15,6 +15,7 @@
  * Draws through IgeWebGlRenderer.addOverlay() (after the UI layer pass), or
  * on its own with draw().
  */
+import type { IgeCssStylesheet } from "@/engine/ui2/css/IgeCssParser";
 import { placeTextField, takeSelection, textFieldPaint, wireTextField } from "@/engine/ui2/dom/IgeUiTextField";
 import { type IgeUiAdoption, igeUiSameStart, IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
 import { type IgeUiBox, stickyShift } from "@/engine/ui2/layout/IgeUiBox";
@@ -273,10 +274,21 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		});
 	}
 
-	/** Adds a stylesheet's text (later sheets win at equal specificity). */
-	addStyleSheet (css: string): void {
-		this.styles.addStylesheet(css);
+	/** Adds a stylesheet's text (later sheets win at equal specificity). Returns it, to replace later. */
+	addStyleSheet (css: string): IgeCssStylesheet {
+		const sheet = this.styles.addStylesheet(css);
 		this._styleAll = true;
+		return sheet;
+	}
+
+	/** New text for a stylesheet added before, in its place ("" takes it away; an edited <style> under a dev server). Returns the sheet now there. */
+	replaceStyleSheet (old: IgeCssStylesheet, css: string): IgeCssStylesheet {
+		const sheet = this.styles.replaceStylesheet(old, css);
+		this._styleAll = true;
+		this._layoutDirty = true;
+		this._layoutAll = true;
+		this._paintDirty = true;
+		return sheet;
 	}
 
 	/** The fonts changed (loaded): measured again. */
@@ -1168,9 +1180,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	}
 
 	_event (type: string, e: MouseEvent | PointerEvent | WheelEvent, extra: Record<string, unknown> = {}): IgeUiEvent {
+		// (Mouse events (click, mousedown, wheel...) are on whole pixels, as a browser's are; pointer events keep the fractions)
+		const whole = !type.startsWith("pointer");
 		return new IgeUiEvent(type, {
 			bubbles: !["mouseenter", "mouseleave", "pointerenter", "pointerleave"].includes(type), cancelable: true,
-			clientX: e.clientX, clientY: e.clientY, button: e.button, buttons: e.buttons, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey,
+			clientX: whole ? Math.floor(e.clientX) : e.clientX, clientY: whole ? Math.floor(e.clientY) : e.clientY, button: e.button, buttons: e.buttons, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey,
 			pointerId: (e as PointerEvent).pointerId ?? 1, pointerType: (e as PointerEvent).pointerType ?? "mouse", isPrimary: (e as PointerEvent).isPrimary ?? true, detail: e.detail,
 			...(e.timeStamp !== undefined ? { timeStamp: e.timeStamp } : {}), ...extra
 		});

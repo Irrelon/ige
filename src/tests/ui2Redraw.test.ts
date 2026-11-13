@@ -428,3 +428,37 @@ describe("ui2: content sizes of replaced elements and margins through a min-heig
 		expect(r.root.querySelector(".next")!.getBoundingClientRect().top).toBe(body.top + 66 + 8);
 	});
 });
+
+describe("ui2: clip-path polygons", () => {
+	it("a polygon that isn't cut corners is filled in its own shape; cut corners stay a chamfer", () => {
+		const r = ui(`.hex { width: 13px; height: 12px; background: #8fd2ee; clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%); } .cut { width: 40px; height: 20px; background: #f00; clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }`, 400, 300);
+		r.root.innerHTML = `<div class="hex"></div><div class="cut"></div>`;
+		r.update(0);
+		const hex = r.items.filter((i) => i.el === r.root.querySelector(".hex"));
+		expect(hex.map((i) => i.op)).toEqual(["fill"]);
+		expect((hex[0] as { tris: number[] }).tris.length).toBe(4 * 6);
+		const cut = r.items.filter((i) => i.el === r.root.querySelector(".cut"));
+		expect(cut.map((i) => i.op)).toEqual(["box"]);
+		expect((cut[0] as { chamfer?: number[] }).chamfer).toEqual([6, 0, 6, 0]);
+	});
+});
+
+describe("ui2: a stylesheet replaced (an edited <style>)", () => {
+	it("takes its new rules in its place among the others, and its old ones away", () => {
+		const r = ui(`.a { color: red; }`, 400, 300);
+		const sheet = r.addStyleSheet(`.a { color: blue; width: 10px; } @keyframes k { to { opacity: 0; } }`);
+		r.addStyleSheet(`.a { width: 20px; }`);
+		r.root.innerHTML = `<div class="a">x</div>`;
+		r.update(0);
+		const a = r.root.querySelector(".a")!;
+		expect([a._computed!.color, a.getBoundingClientRect().width]).toEqual(["blue", 20]);
+		// (Edited: still before the sheet after it, which keeps its width)
+		const again = r.replaceStyleSheet(sheet, `.a { color: green; width: 30px; }`);
+		r.update(16);
+		expect([a._computed!.color, a.getBoundingClientRect().width]).toEqual(["green", 20]);
+		expect(r.styles.keyframes.has("k")).toBe(false);
+		r.replaceStyleSheet(again, "");
+		r.update(32);
+		expect(a._computed!.color).toBe("red");
+	});
+});

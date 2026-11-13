@@ -17,7 +17,7 @@ import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiSty
 import type { IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 import { hasDashedSide, paintDashedBorder } from "@/engine/ui2/render/IgeUiBorderDash";
 import { type IgeUiDropShadow, parseDropShadows } from "@/engine/ui2/render/IgeUiDropShadow";
-import { paintSvg } from "@/engine/ui2/render/IgeUiSvg";
+import { fillTriangles, paintSvg } from "@/engine/ui2/render/IgeUiSvg";
 import { clipsToText, paintTextInBackground } from "@/engine/ui2/render/IgeUiTextClip";
 
 export type IgeUiClip = [number, number, number, number] | null;
@@ -435,6 +435,25 @@ export class IgeUiPainter {
 			const mask = maskV && maskV !== "none" ? parseGradient(maskV, current) : undefined;
 			if (blur > 0) this.items.push({ op: "box", ...base, x, y, w, h, backdrop: true, blur, color: { r: 0, g: 0, b: 0, a: 1 }, ...(mask?.type === "linear" ? { mask } : {}) });
 		}
+		// clip-path: a polygon that isn't cut corners: the fills drawn in its shape (a gradient as its middle colour; no
+		// border, as the shape cuts it away), the contents cut to the box
+		const poly = this._clipPolygon(b);
+		if (poly) {
+			const fills: IgeCssColor[] = [];
+			const c0 = parseColor(styleValue(s, "background-color"), current);
+			if (c0 && c0.a > 0) fills.push(c0);
+			const img = styleValue(s, "background-image");
+			if (img !== "none") for (const l of splitTop(img, ",").map((v) => v.trim()).reverse()) {
+				const g = parseGradient(l, current);
+				const mid = g?.stops[Math.floor((g.stops.length - 1) / 2)]?.color;
+				if (mid && mid.a > 0) fills.push(mid);
+			}
+			const at: number[] = [];
+			for (let i = 0; i + 1 < poly.length; i += 2) at.push(x + poly[i], y + poly[i + 1]);
+			const { tris, edges } = fillTriangles([{ points: at, closed: true }], [1, 0, 0, 1, 0, 0]);
+			for (const color of fills) if (tris.length) this.items.push({ op: "fill", clip: base.clip, matrix: base.matrix, additive: base.additive, el: base.el, opacity: base.opacity, tris, edges, color });
+			return;
+		}
 		// Fills: the colour, then image layers (the first listed on top)
 		const bg = parseColor(styleValue(s, "background-color"), current);
 		// (A range slider is drawn as its track and thumb (below), not its field's colour, as a browser's is)
@@ -516,6 +535,9 @@ export class IgeUiPainter {
 		const w = b.borderW, h = b.borderH;
 		const at = (t: string, size: number) => resolveLength(t, { ...lenCtx(b.style, size) }) ?? 0;
 		const P = pts.map(([px, py]) => [at(px ?? "0", w), at(py ?? "0", h)]);
+		// (Only a shape whose points are all on the box's edges is cut corners: any other is a polygon, _clipPolygon)
+		const on = (v: number, edge: number) => Math.abs(v - edge) < 0.01;
+		if (!P.every(([x, y]) => on(x, 0) || on(y, 0) || on(x, w) || on(y, h))) return undefined;
 		// The corner each point is near, and how far it's cut
 		const cut: [number, number, number, number] = [0, 0, 0, 0];
 		const corners: [number, number][] = [[0, 0], [w, 0], [w, h], [0, h]];
@@ -531,6 +553,20 @@ export class IgeUiPainter {
 			cut[k] = size;
 		});
 		return cut.some((c) => c > 0) ? cut : undefined;
+	}
+
+	/** clip-path: polygon() that isn't cut corners (a hexagon, a diamond): its points in the box's px, else undefined. */
+	_clipPolygon (b: IgeUiBox): number[] | undefined {
+		const v = styleValue(b.style, "clip-path");
+		if (!v.startsWith("polygon(") || this._chamfer(b)) return undefined;
+		const pts = splitTop(v.slice(8, -1), ",").map((p) => splitTop(p.trim(), " ").map((t) => t.trim()).filter(Boolean));
+		// (A fill rule first, nonzero or evenodd: the same for a simple shape)
+		if (pts[0]?.length === 1 && /^(nonzero|evenodd)$/.test(pts[0][0])) pts.shift();
+		const w = b.borderW, h = b.borderH;
+		const at = (t: string, size: number) => resolveLength(t, { ...lenCtx(b.style, size) }) ?? 0;
+		const out: number[] = [];
+		for (const [px, py] of pts) out.push(at(px ?? "0", w), at(py ?? "0", h));
+		return out.length >= 6 ? out : undefined;
 	}
 
 	_borders (b: IgeUiBox, ctx: Ctx, x: number, y: number, w: number, h: number, current: IgeCssColor, base: Omit<IgeUiPaintBox, "op" | "x" | "y" | "w" | "h">): void {

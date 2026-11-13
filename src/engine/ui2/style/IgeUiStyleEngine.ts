@@ -78,6 +78,42 @@ export class IgeUiStyleEngine {
 	addStylesheet (css: string, ua = false): IgeCssStylesheet {
 		const sheet = parseStylesheet(css);
 		this.sheets.push(sheet);
+		if (ua) this._uaSheets.add(sheet);
+		this._indexSheet(sheet, ua);
+		this.version++;
+		return sheet;
+	}
+
+	/**
+	 * Puts new text in place of a stylesheet added before (an edited `<style>`: a dev server's hot reload), in its place
+	 * among the others; "" takes it away. Returns the sheet that's there now (to replace it again).
+	 */
+	replaceStylesheet (old: IgeCssStylesheet, css: string): IgeCssStylesheet {
+		const i = this.sheets.indexOf(old);
+		if (i < 0) return this.addStylesheet(css);
+		const sheet = parseStylesheet(css);
+		if (this._uaSheets.has(old)) this._uaSheets.add(sheet);
+		this.sheets[i] = sheet;
+		// Everything indexed again, the rules numbered again in the sheets' order (the cascade's order)
+		this.keyframes.clear();
+		this._index.clear();
+		this._any = [];
+		this.usesHas = this.usesSiblings = this.siblingDeep = false;
+		for (const set of [this.hasSubjects, this.siblingSubjects, this.combinatorSubjects, this.combinatorAnchors, this.hasArguments, this.stateDependent]) set.clear();
+		this._subjectClasses.clear();
+		let order = 0;
+		for (const sh of this.sheets) {
+			for (const rule of sh.rules) rule.order = order++;
+			this._indexSheet(sh, this._uaSheets.has(sh));
+		}
+		this.version++;
+		return sheet;
+	}
+
+	/** The engine's defaults' sheets. */
+	_uaSheets = new WeakSet<IgeCssStylesheet>();
+
+	_indexSheet (sheet: IgeCssStylesheet, ua: boolean): void {
 		for (const [k, v] of sheet.keyframes) this.keyframes.set(k, v);
 		for (const rule of sheet.rules) {
 			for (const selector of parseSelectorList(rule.selector)) {
@@ -110,8 +146,6 @@ export class IgeUiStyleEngine {
 				}
 			}
 		}
-		this.version++;
-		return sheet;
 	}
 
 	/** Whether an element could be the subject of one of `keys`' selectors. */
