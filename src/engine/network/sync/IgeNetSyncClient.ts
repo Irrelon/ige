@@ -147,14 +147,16 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 	/**
 	 * Moves to another zone's authority: leaves this one, connects to `url`
 	 * (with the `connect` option, else a WebSocket) and joins with the
-	 * ticket instead of player descriptions. The world starts afresh from
+	 * ticket instead of player descriptions. Without a ticket it joins with
+	 * `players` (as `join` does): reconnecting, after a dropped connection,
+	 * to an authority that doesn't use tickets. The world starts afresh from
 	 * the new authority's snapshots (its clock, interpolation and prediction
 	 * too; inputs not yet applied are dropped), and the machine's players
 	 * keep their slots (the new authority gives their ids in its welcome).
 	 * Show a transition (a jump, a loading screen) from "transfer" until
 	 * the first "snapshot" after "transferred".
 	 */
-	async transfer (target: { url: string; ticket: string }): Promise<IgeNetWelcome> {
+	async transfer (target: { url: string; ticket?: string; players?: unknown[] }): Promise<IgeNetWelcome> {
 		this.transferring = true;
 		this.emit("transfer", { url: target.url });
 		const old = this._connection;
@@ -181,7 +183,7 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 			const ref = ++this._ref;
 			const welcome = await new Promise<IgeNetWelcome>((resolve, reject) => {
 				this._joining = { ref, resolve, reject };
-				this._send({ t: "join", ref, players: [], ticket: target.ticket });
+				this._send(target.ticket === undefined ? { t: "join", ref, players: target.players ?? [] } : { t: "join", ref, players: [], ticket: target.ticket });
 			});
 			this.transferring = false;
 			this.emit("transferred", welcome);

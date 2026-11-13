@@ -86,6 +86,24 @@ describe("IgeNetSyncHost / IgeNetSyncClient", () => {
 		host.destroy();
 	});
 
+	it("rejoins with its players over a new connection after the old one dropped (an authority without tickets)", async () => {
+		const net = igeNetLoopback();
+		const { host, dots } = game(net);
+		const client = new IgeNetSyncClient<Input>(net.connect(), { pingInterval: 0, timeout: 0, connect: async () => net.connect() });
+		await client.join([{ name: "Ann" }]);
+		let dropped = false;
+		client.on("disconnected", () => {
+			dropped = true;
+		});
+		(client as unknown as { _connection: { close: () => void } })._connection.close();
+		await settle();
+		expect(dropped).toBe(true);
+		const welcome = await client.transfer({ url: "loop://same", players: [{ name: "Ann" }] });
+		expect(welcome.players.length).toBe(1);
+		expect(dots[welcome.players[0]]?.name).toBe("Ann");
+		host.destroy?.();
+	});
+
 	it("joins machines with their local players and refuses when told to", async () => {
 		const net = igeNetLoopback();
 		const { host, dots } = game(net, "Mallory");
