@@ -204,6 +204,9 @@ export class IgeUiPainter {
 	/** Drawn after a box's text: the focused field's caret or selection (dom/IgeUiTextField). */
 	fieldPaint?: (b: IgeUiBox, ctx: Ctx, items: IgeUiPaintItem[]) => void;
 
+	/** Opacity applied to an element whole, through a layer, when it paints more than one item (else item by item, as before). */
+	groupOpacity = true;
+
 	/** Asks for a picture (a url() background's), as it's first painted (IgeUiRoot's images). */
 	requestImage?: (src: string) => void;
 
@@ -327,12 +330,28 @@ export class IgeUiPainter {
 		const ops = filter && filter !== "none" ? parseFilterList(filter, lenCtx(b.style), current) : [];
 		const shadows = ops.length && onlyDropShadows(ops) ? parseDropShadows(filter, lenCtx(b.style), current) : [];
 		const filters = ops.length && !onlyDropShadows(ops) ? ops : undefined;
-		// (A filtered element's own opacity is its layer's, applied to it whole, as CSS applies it after the filter)
-		const own = filters ? resolveNumber(styleValue(b.style, "opacity")) ?? 1 : 1;
+		// Opacity is the element's whole: what it paints faded together (a layer, as a browser fades it: a panel's text over
+		// its own background), or as it is when that's one item with nothing under or over it; a filtered element's
+		// applied to its layer after its filters
+		const own = resolveNumber(styleValue(b.style, "opacity")) ?? 1;
+		const fades = this.groupOpacity && !filters && !shadows.length && own < 1 && own > 0.001;
 		if (shadows.length) this.items.push({ op: "group", open: true, shadows, clip: ctx.clip, matrix: ctx.matrix, el: b.el, opacity: 1 });
 		else if (filters) this.items.push({ op: "group", open: true, filters, clip: ctx.clip, matrix: ctx.matrix, el: b.el, opacity: own });
-		this._contextInner(b, own < 1 && own > 0.001 ? { ...ctx, opacity: ctx.opacity / own } : ctx);
+		const runStart = this.items.length, before = fades ? new Set(this.groups.keys()) : undefined;
+		this._contextInner(b, (filters || fades) && own < 1 && own > 0.001 ? { ...ctx, opacity: ctx.opacity / own } : ctx);
 		if (shadows.length || filters) this.items.push({ op: "group", open: false, clip: null, el: b.el, opacity: 1 });
+		if (fades) {
+			const run = this.items.slice(runStart);
+			if (run.length > 1 || run.some((i) => i.op === "group")) {
+				this.items.splice(runStart, 0, { op: "group", open: true, filters: [], clip: ctx.clip, matrix: ctx.matrix, el: b.el, opacity: own });
+				this.items.push({ op: "group", open: false, clip: null, el: b.el, opacity: 1 });
+				// (The runs recorded in it moved on by its opening)
+				for (const [k, o] of this.groups) if (!before!.has(k) && o.start >= runStart) {
+					o.start++;
+					o.end++;
+				}
+			} else for (const i of run) i.opacity *= own;
+		}
 		this.groups.set(b, { start, end: this.items.length, ctx: entry, stacking: this._isStacking(b) });
 	}
 
@@ -900,6 +919,7 @@ export function describePaint (items: IgeUiPaintItem[]): string[] {
 		if (i.op === "box") return `box ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)}${i.shadow ? ` ${i.shadow}(${n(i.blur ?? 0)})` : ""}${i.border ? ` border ${n(i.border)}` : ""} ${i.color ? c(i.color) : `${i.gradient?.type}-gradient`}${i.radii.some((r) => r) ? ` r${i.radii.map(n).join("/")}` : ""}${i.chamfer ? ` cut${i.chamfer.map(n).join("/")}` : ""}${i.opacity < 1 ? ` a${n(i.opacity)}` : ""}${i.clip ? ` clip[${i.clip.map(n).join(",")}]` : ""}`;
 		if (i.op === "text") return `text "${i.text}" ${n(i.x)},${n(i.y)} ${i.font.size}px/${i.font.weight} ${c(i.color)}${i.shadow ? ` glow(${n(i.shadow.blur)})` : ""}${i.clip ? ` clip[${i.clip.map(n).join(",")}]` : ""}`;
 		if (i.op === "image") return `image ${i.src ? "url" : i.source.localName} ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)}`;
+		if (i.op === "group" && i.open && i.filters && !i.filters.length) return `opacity(${n(i.opacity)}) {`;
 		if (i.op === "group" && i.open && i.filters) return `filter ${i.filters.map((f) => (f.type === "blur" ? `blur(${n(f.radius)})` : f.type === "shadow" ? `drop-shadow(${n(f.x)},${n(f.y)} blur(${n(f.blur)}))` : "colour")).join(" ")} {`;
 		if (i.op === "group") return i.open ? `drop-shadow ${(i.shadows ?? []).map((s) => `${n(s.x)},${n(s.y)} blur(${n(s.blur)}) ${c(s.color)}`).join(" ")} {` : "}";
 		if (i.op === "fill") return `fill ${i.tris.length / 6}tris ${c(i.color)}${i.opacity < 1 ? ` a${n(i.opacity)}` : ""}`;

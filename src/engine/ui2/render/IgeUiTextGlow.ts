@@ -106,6 +106,9 @@ export class IgeUiTextGlowCache {
 		const out = have ?? { ...t, fbo: gl.createFramebuffer()! };
 		out.w = t.w;
 		out.h = t.h;
+		// (Read 1:1 unless the blur asks for its smaller levels)
+		gl.bindTexture(gl.TEXTURE_2D, out.tex);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, out.fbo);
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, out.tex, 0);
 		return out;

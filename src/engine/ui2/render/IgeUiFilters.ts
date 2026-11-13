@@ -243,6 +243,13 @@ export interface IgeUiLayerTex extends Tex {
  * A pass's target bound and cleared whole first: a layer texture's smaller levels are read (wide blurs), and they'd mix
  * in what an earlier, bigger layer left past this one's region.
  */
+/** A texture read with its smaller levels (a wide blur's coarse reads: made first) or without (drawn 1:1, needing none). */
+function mipReads (gl: WebGL2RenderingContext, tex: WebGLTexture, on: boolean): void {
+	gl.bindTexture(gl.TEXTURE_2D, tex);
+	if (on) gl.generateMipmap(gl.TEXTURE_2D);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, on ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+}
+
 function target (gl: WebGL2RenderingContext, fbo: WebGLFramebuffer | null, w: number, h: number): void {
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 	gl.clearColor(0, 0, 0, 0);
@@ -282,6 +289,8 @@ export class IgeUiFilterPass {
 				have.h = t.h;
 			}
 			const fb = set[k];
+			// (Read 1:1 unless a blur asks for its smaller levels: none to make)
+			mipReads(gl, fb.tex, false);
 			gl.bindFramebuffer(gl.FRAMEBUFFER, fb.fbo);
 			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, fb.tex, 0);
 		}
@@ -318,8 +327,6 @@ export class IgeUiFilterPass {
 		gl.disable(gl.BLEND);
 		gl.activeTexture(gl.TEXTURE3);
 		gl.bindTexture(gl.TEXTURE_2D, src.tex);
-		// (Its smaller levels made, as a texture made for them and missing any reads black)
-		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.uniform1i(this.colorU.u_src, 3);
 		gl.uniform2f(this.colorU.u_part, w / src.w, h / src.h);
 		const n = Math.min(8, mats.length);
@@ -346,15 +353,15 @@ export class IgeUiFilterPass {
 		gl.activeTexture(gl.TEXTURE3);
 		gl.uniform1i(host._blurUniforms.u_src, 3);
 		const pass = (from: Tex, to: IgeUiLayerTex, dir: [number, number]) => {
-			gl.bindTexture(gl.TEXTURE_2D, from.tex);
-			// (Its smaller levels, for the coarse reads; made every time, as a texture made for them and missing any reads black)
-			gl.generateMipmap(gl.TEXTURE_2D);
+			// (Its smaller levels, for the coarse reads, made now; read 1:1 again after)
+			mipReads(gl, from.tex, k > 1);
 			target(gl, to.fbo, w, h);
 			gl.uniform4f(host._blurUniforms.u_area, 0, 0, w / from.w, h / from.h);
 			gl.uniform2f(host._blurUniforms.u_step, (dir[0] * k) / from.w, (dir[1] * k) / from.h);
 			gl.uniform1f(host._blurUniforms.u_sigma, Math.max(sigma, 0.001) / k);
 			gl.uniform1f(host._blurUniforms.u_lod, Math.log2(k));
 			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+			if (k > 1) mipReads(gl, from.tex, false);
 		};
 		pass(src, tmp, [1, 0]);
 		pass(tmp, dst, [0, 1]);
@@ -370,10 +377,8 @@ export class IgeUiFilterPass {
 		gl.disable(gl.BLEND);
 		gl.activeTexture(gl.TEXTURE3);
 		gl.bindTexture(gl.TEXTURE_2D, src.tex);
-		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.activeTexture(gl.TEXTURE4);
 		gl.bindTexture(gl.TEXTURE_2D, shadow.tex);
-		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.uniform1i(this.underU.u_src, 3);
 		gl.uniform1i(this.underU.u_shadow, 4);
 		gl.uniform2f(this.underU.u_part, w / src.w, h / src.h);
@@ -414,10 +419,6 @@ export class IgeUiFilterPass {
 				cur = dst;
 			}
 		}
-		// (Complete, for the composite to read)
-		host.gl.activeTexture(host.gl.TEXTURE3);
-		host.gl.bindTexture(host.gl.TEXTURE_2D, set[cur].tex);
-		host.gl.generateMipmap(host.gl.TEXTURE_2D);
 		return set[cur];
 	}
 }
@@ -440,6 +441,8 @@ export interface IgeUiFilterLayer {
 	o: number;
 	/** Its element's own opacity, applied to the result whole. */
 	opacity: number;
+	/** Only an opacity, drawn ahead of the screen's own pass: where it is in the fades' atlas (texels). */
+	atlas?: [number, number];
 }
 
 /**

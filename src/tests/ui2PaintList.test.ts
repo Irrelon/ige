@@ -188,3 +188,21 @@ describe("ui2: url() backgrounds", () => {
 		expect(r.document.defaultView!.getComputedStyle(d).width).toBe("10px");
 	});
 });
+
+describe("ui2: group opacity", () => {
+	it("an element faded with more than one thing in it is faded whole (a layer); one lone item is faded as it is", () => {
+		const r = ui(".panel { position: absolute; width: 100px; height: 40px; background: #123; opacity: 0.5; } .leaf { position: absolute; top: 50px; width: 20px; height: 20px; background: red; opacity: 0.4; }");
+		r.document.body.innerHTML = `<div class="panel">Text over its own background</div><div class="leaf"></div>`;
+		r.update();
+		const list = describePaint(r.painter.items);
+		expect(list.filter((l) => l.startsWith("opacity("))).toEqual(["opacity(0.5) {"]);
+		// (Inside the layer: drawn as they are, the layer faded)
+		expect(boxesOf(r, r.document.querySelector(".panel"))[0].opacity).toBe(1);
+		expect(boxesOf(r, r.document.querySelector(".leaf"))[0].opacity).toBeCloseTo(0.4);
+		// (Off: item by item, as before)
+		r.painter.groupOpacity = false;
+		r.painter.paint(r.rootBox!);
+		expect(describePaint(r.painter.items).some((l) => l.startsWith("opacity("))).toBe(false);
+		expect(boxesOf(r, r.document.querySelector(".panel"))[0].opacity).toBeCloseTo(0.5);
+	});
+});
