@@ -41,7 +41,8 @@ export interface IgeUiSvgSubpath {
  */
 export function svgViewport (el: IgeUiElement, x: number, y: number, w: number, h: number): IgeCssMatrix {
 	const vb = (el.getAttribute("viewBox") ?? "").trim().split(/[\s,]+/).map(Number);
-	if (vb.length !== 4 || vb.some((v) => !Number.isFinite(v)) || vb[2] <= 0 || vb[3] <= 0) return [1, 0, 0, 1, x, y];
+	// (No viewBox, or a viewport with no width or height: user units as they are, as a browser has them)
+	if (vb.length !== 4 || vb.some((v) => !Number.isFinite(v)) || vb[2] <= 0 || vb[3] <= 0 || w <= 0 || h <= 0) return [1, 0, 0, 1, x, y];
 	let sx = w / vb[2], sy = h / vb[3];
 	let tx = x - vb[0] * sx, ty = y - vb[1] * sy;
 	const par = (el.getAttribute("preserveAspectRatio") ?? "xMidYMid meet").trim().split(/\s+/);

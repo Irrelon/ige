@@ -197,8 +197,10 @@ export class IgeUiLayoutEngine {
 		nb.staticX = old.staticX;
 		nb.staticY = old.staticY;
 		this._positioned.push({ box: nb, cb: null });
-		this._placePositioned(nb);
+		const again = this._placePositioned(nb, true);
 		this._absolute(nb, parent.ax, parent.ay);
+		// (A scroller round it laid out again for a scrollbar it now needs: where what's in it is, worked out again)
+		for (const sb of again) if (!nb.el?.contains(sb.el!) || sb === nb) this._absolute(sb, sb.parent?.ax ?? 0, sb.parent?.ay ?? 0);
 		// (What's round it reaches as far as it now does)
 		for (let p: IgeUiBox | null = parent; p; p = p.parent) this._ink(p);
 		return nb;
@@ -610,7 +612,12 @@ export class IgeUiLayoutEngine {
 		})();
 		if (specW !== undefined) s = { min: specW, max: specW };
 		else if (b.el && REPLACED.has(b.el.localName) && !b.pseudo) {
-			const w = this._replacedSize(b).w + edges;
+			// (One in proportion: its width from a height given, else its natural size kept in proportion within its min-
+			// and max- sizes, as it's laid out: a logo under a max-height is that much narrower in a flex column too)
+			const r = this._replacedSize(b);
+			const specH = PROPORTIONED.has(b.el.localName) && r.w && r.h ? this._specH(b, undefined) : undefined;
+			const own = !PROPORTIONED.has(b.el.localName) || !r.w || !r.h ? r.w : specH !== undefined ? ((specH - this._vEdges(b)) * r.w) / r.h : this._replacedFit(b, r, undefined, undefined).w;
+			const w = own + edges;
 			// (A percentage width or max-width: it can shrink to nothing, so its min-content is none (CSS Sizing 5.2.2): a
 			// canvas at width: 100% doesn't hold its box open to the canvas's own width)
 			const pct = styleValue(b.style, "width").includes("%") || styleValue(b.style, "max-width").includes("%");
@@ -813,7 +820,9 @@ export class IgeUiLayoutEngine {
 		// too: its narrowest is its widest line, as a browser's is, so a nowrap button holds its width in a flex row)
 		const ws0 = styleValue(style, "white-space");
 		if (ws0 === "nowrap" || ws0 === "pre") min = Math.max(min, max);
-		return { min: Math.ceil(min * 1000) / 1000, max: Math.ceil(max * 1000) / 1000 };
+		// (Up to a 64th of a pixel, as a browser's layout units hold content sizes: a row of buttons is as wide as Chrome
+		// makes it, and the text beside it wraps where Chrome's does)
+		return { min: Math.ceil(min * 64 - 1e-6) / 64, max: Math.ceil(max * 64 - 1e-6) / 64 };
 	}
 
 	// ---------------------------------------------------------------- the box model
@@ -889,6 +898,7 @@ export class IgeUiLayoutEngine {
 	 * width or (block-level) all there is, or (`shrink`) shrink-to-fit. Its x, y are its parent's to set.
 	 */
 	layoutBox (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number } = {}): void {
+		b.lastCb = [cbW, cbH];
 		// Laid out before for the same inputs, and nothing in it changed since: as it was
 		const key = `${cbW}|${cbH}|${opts.width}|${opts.height}|${opts.shrink ? 1 : 0}|${opts.stretchH}|${b.collapsed ?? ""}`;
 		if (IgeUiLayoutEngine.noCache !== true && b.layoutOk && !b.escapingKids) {
@@ -915,6 +925,9 @@ export class IgeUiLayoutEngine {
 			}
 		}
 		b.layoutOk = false;
+		// (Laid out now: not as it was, even if it was kept earlier in this layout (a scroller laid out again for its
+		// scrollbar: _placePositioned), so where its contents are is worked out afresh: _absolute)
+		b.keptStamp = undefined;
 		this._layoutBox(b, cbW, cbH, opts);
 		b.cacheKey = key;
 		b.layoutOk = true;
@@ -1229,27 +1242,29 @@ export class IgeUiLayoutEngine {
 		return v === "thin" ? Math.min(this.scrollbarSize, 11) : this.scrollbarSize;
 	}
 
+	/** How far a box's content reaches (from its own corner): its box, and what overflows it when it doesn't clip. */
+	_reach (c: IgeUiBox): [number, number] {
+		let rw = c.borderW, rh = c.borderH;
+		if (styleValue(c.style, "overflow-x") !== "visible" || styleValue(c.style, "overflow-y") !== "visible") return [rw, rh];
+		// (A flex or grid container's children are its items whatever their display; elsewhere an inline box's
+		// reach is its lines')
+		const items = /flex|grid/.test(c.display);
+		for (const k of c.children) {
+			if (k.position === "fixed" || k.position === "absolute" || k.display === "text" || (k.display === "inline" && !items)) continue;
+			const [kw, kh] = this._reach(k);
+			rw = Math.max(rw, k.x + kw);
+			rh = Math.max(rh, k.y + kh);
+		}
+		for (const r of c.runs ?? []) rw = Math.max(rw, r.x + r.w);
+		for (const l of c.lines ?? []) rh = Math.max(rh, l.y + l.h);
+		return [rw, rh];
+	}
+
 	_scrollExtent (b: IgeUiBox): void {
 		let w = 0, h = 0;
 		const left = b.borderLeft, top = b.borderTop;
 		let overW = 0, overH = 0;
-		// How far a box's content reaches (from its own corner): its box, and what overflows it when it doesn't clip
-		const reach = (c: IgeUiBox): [number, number] => {
-			let rw = c.borderW, rh = c.borderH;
-			if (styleValue(c.style, "overflow-x") !== "visible" || styleValue(c.style, "overflow-y") !== "visible") return [rw, rh];
-			// (A flex or grid container's children are its items whatever their display; elsewhere an inline box's
-			// reach is its lines')
-			const items = /flex|grid/.test(c.display);
-			for (const k of c.children) {
-				if (k.position === "fixed" || k.position === "absolute" || k.display === "text" || (k.display === "inline" && !items)) continue;
-				const [kw, kh] = reach(k);
-				rw = Math.max(rw, k.x + kw);
-				rh = Math.max(rh, k.y + kh);
-			}
-			for (const r of c.runs ?? []) rw = Math.max(rw, r.x + r.w);
-			for (const l of c.lines ?? []) rh = Math.max(rh, l.y + l.h);
-			return [rw, rh];
-		};
+		const reach = (c: IgeUiBox) => this._reach(c);
 		// (A flex or grid container's children are its items, an empty <i> too, whatever their display)
 		const flexOrGrid = /flex|grid/.test(b.display);
 		for (const c of b.children) {
@@ -1265,8 +1280,8 @@ export class IgeUiLayoutEngine {
 		}
 		for (const r of b.runs ?? []) w = Math.max(w, r.x + r.w - left);
 		for (const l of b.lines ?? []) h = Math.max(h, l.y + l.h - top);
-		b.scrollW = Math.max(w + b.paddingRight, overW);
-		b.scrollH = Math.max(h + b.paddingBottom, overH);
+		b.scrollW = Math.max(w + b.paddingRight, overW, b.absReach?.w ?? 0);
+		b.scrollH = Math.max(h + b.paddingBottom, overH, b.absReach?.h ?? 0);
 	}
 
 	_applyRelative (c: IgeUiBox, cbW: number, cbH: number | undefined): void {
@@ -2387,7 +2402,8 @@ export class IgeUiLayoutEngine {
 			else {
 				this._edges(it, w);
 				const spec = this._specW(it, w);
-				this.layoutBox(it, w, innerH, { width: spec ?? Math.max(0, w - it.marginLeft - it.marginRight) });
+				// (Stretched across its area, but never narrower than its own borders and padding: past a 0-wide column)
+				this.layoutBox(it, w, innerH, { width: spec ?? Math.max(this._hEdges(it), w - it.marginLeft - it.marginRight) });
 			}
 			if (cell.rowSpan === 1) rowH[cell.row] = Math.max(rowH[cell.row], it.borderH + it.marginTop + it.marginBottom);
 		}
@@ -2408,7 +2424,8 @@ export class IgeUiLayoutEngine {
 			// (A height of its own given: that's what it needs, scroller or not)
 			const hv = styleValue(it.style, "height");
 			const definite = hv !== "auto" && !hv.includes("%") && !/content/.test(hv);
-			const least = definite ? it.borderH + margins : mh === "auto" ? (scroller ? margins : it.borderH + margins) : (this.len(it.style, "min-height", innerH) ?? 0) + margins;
+			// (A scroller's automatic minimum is none, but its padding and borders are still there: grid's "minimum contribution")
+			const least = definite ? it.borderH + margins : mh === "auto" ? (scroller ? margins + this._vEdges(it) : it.borderH + margins) : (this.len(it.style, "min-height", innerH) ?? 0) + margins;
 			rowMin[cell.row] = Math.max(rowMin[cell.row], Math.min(least, it.borderH + margins));
 		}
 		const isFr = (t: ReturnType<typeof rowTrack>) => t.kind === "fr" || t.maxFr !== undefined;
@@ -2770,15 +2787,23 @@ export class IgeUiLayoutEngine {
 		return { x, y };
 	}
 
-	_placePositioned (root: IgeUiBox): void {
+	/**
+	 * Places the positioned boxes this layout found. Returns the scrollers laid out again in place for the scrollbars their
+	 * absolutely placed boxes needed. `partial`: only some of a scroller's positioned boxes are placed (relayoutPositioned).
+	 */
+	_placePositioned (root: IgeUiBox, partial: boolean = false): Set<IgeUiBox> {
+		// (How far each scroller's absolutely placed boxes reach, and the scrollers laid out again for them)
+		const reach = new Map<IgeUiBox, { w: number; h: number }>();
+		const again = new Set<IgeUiBox>();
 		// In tree order, so a containing block that's positioned itself is placed first
 		for (let i = 0; i < this._positioned.length; i++) {
 			const { box } = this._positioned[i];
 			const cb = this._containingBlock(box);
 			const cbAbs = cb ? this._abs(cb) : { x: 0, y: 0 };
 			const cbX = cb ? cbAbs.x + cb.borderLeft : 0, cbY = cb ? cbAbs.y + cb.borderTop : 0;
-			const cbW = cb ? cb.borderW - cb.borderLeft - cb.borderRight : this.viewport.w;
-			const cbH = cb ? cb.borderH - cb.borderTop - cb.borderBottom : this.viewport.h;
+			// (Its padding box, less a scroller's scrollbars: they're not in it)
+			const cbW = cb ? cb.borderW - cb.borderLeft - cb.borderRight - (cb.scrollbarY ?? 0) : this.viewport.w;
+			const cbH = cb ? cb.borderH - cb.borderTop - cb.borderBottom - (cb.scrollbarX ?? 0) : this.viewport.h;
 			this._edges(box, cbW);
 			const s = box.style;
 			const left = this.len(s, "left", cbW), right = this.len(s, "right", cbW);
@@ -2814,11 +2839,38 @@ export class IgeUiLayoutEngine {
 			box.y = ay - parentAbs.y;
 			// What a scroller (or a box that clips) holds reaches as far as this does
 			if (cb && box.position === "absolute" && (styleValue(cb.style, "overflow-x") !== "visible" || styleValue(cb.style, "overflow-y") !== "visible")) {
-				cb.scrollW = Math.max(cb.scrollW ?? 0, ax + box.borderW + Math.max(0, box.marginRight) - (cbAbs.x + cb.borderLeft));
-				cb.scrollH = Math.max(cb.scrollH ?? 0, ay + box.borderH + Math.max(0, box.marginBottom) - (cbAbs.y + cb.borderTop));
+				// (Its box, and what overflows it when it doesn't clip, as a browser counts it)
+				const [ow, oh] = this._reach(box);
+				const rw = ax + Math.max(box.borderW + Math.max(0, box.marginRight), ow) - (cbAbs.x + cb.borderLeft), rh = ay + Math.max(box.borderH + Math.max(0, box.marginBottom), oh) - (cbAbs.y + cb.borderTop);
+				cb.scrollW = Math.max(cb.scrollW ?? 0, rw);
+				cb.scrollH = Math.max(cb.scrollH ?? 0, rh);
+				const r = reach.get(cb) ?? { w: 0, h: 0 };
+				r.w = Math.max(r.w, rw);
+				r.h = Math.max(r.h, rh);
+				reach.set(cb, r);
+				// A scroller (overflow: auto) its laid-out content fitted, that these overflow: laid out once more, in place
+				// (its size its own), with the scrollbar they need, as a browser decides it with them; what's placed in it
+				// (put on the list again by that layout) placed again further on
+				// (Its whole extent, what it was laid out holding and every positioned box placed in it so far, not just these)
+				const ox = styleValue(cb.style, "overflow-x"), oy = styleValue(cb.style, "overflow-y");
+				const needY = oy === "auto" && !cb.scrollbarY && (cb.scrollH ?? 0) > cb.borderH - cb.borderTop - cb.borderBottom - (cb.scrollbarX ?? 0) + 0.5;
+				const needX = ox === "auto" && !cb.scrollbarX && (cb.scrollW ?? 0) > cb.borderW - cb.borderLeft - cb.borderRight - (cb.scrollbarY ?? 0) + 0.5;
+				if ((needY || needX) && cb.lastCb && !again.has(cb) && cb.el && !cb.pseudo) {
+					again.add(cb);
+					// (Only the way it needs a bar: what's placed in it is narrower once there's a bar down its side)
+					cb.absReach = { w: needX ? Math.max(r.w, cb.scrollW ?? 0) : 0, h: needY ? Math.max(r.h, cb.scrollH ?? 0) : 0 };
+					cb.cacheKey = undefined;
+					this.layoutBox(cb, cb.lastCb[0], cb.lastCb[1], { width: cb.borderW, height: cb.borderH });
+					// (Their reach measured again as they're placed again)
+					reach.set(cb, { w: 0, h: 0 });
+				}
 			}
 			void root;
 		}
+		// (What they reached this time, for the next layout of each: its scrollbar decided with them from the start; only
+		// some placed, at least what reached before)
+		for (const [cb, r] of reach) cb.absReach = partial && cb.absReach ? { w: Math.max(r.w, cb.absReach.w), h: Math.max(r.h, cb.absReach.h) } : r;
+		return again;
 	}
 
 	_absolute (b: IgeUiBox, px: number, py: number): void {

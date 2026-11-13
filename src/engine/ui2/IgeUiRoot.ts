@@ -664,7 +664,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		const m = seen ? undefined : this._matrixOf(b);
 		if (seen) [x, y, w, h] = seen;
 		else if (m) {
-			const pts = [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].map(([px, py]) => [m[0] * px + m[2] * py + m[4], m[1] * px + m[3] * py + m[5]]);
+			// (Its corners where they're laid out, through each transform round it in turn, a scroller's scroll and a sticky
+			// box's shift taken where they fall between them: its own transform turns it about its own origin, not about
+			// the place its scroller has moved it to)
+			const pts = this._throughTransforms(b, [[x - dx, y - dy], [x - dx + w, y - dy], [x - dx, y - dy + h], [x - dx + w, y - dy + h]]);
 			const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
 			x = Math.min(...xs);
 			y = Math.min(...ys);
@@ -696,6 +699,29 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			if (p.position === "fixed") break;
 		}
 		return [dx, dy];
+	}
+
+	/** Points where `b` is laid out, as they're seen: through its and its ancestors' transforms, scrolls and sticky shifts, innermost first. */
+	_throughTransforms (b: IgeUiBox, pts: number[][]): number[][] {
+		const scrollOf = (el: IgeUiElement | null): [number, number] => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
+		let scrolls = b.position !== "fixed";
+		for (let p: IgeUiBox | null = b; p; p = p.parent) {
+			if (p !== b && scrolls && p.el && !p.pseudo && (styleValue(p.style, "overflow-x") !== "visible" || styleValue(p.style, "overflow-y") !== "visible")) {
+				const sl = p.el._scrollLeft, st = p.el._scrollTop;
+				pts = pts.map(([px, py]) => [px - sl, py - st]);
+			}
+			if (p.transform) {
+				const [ox, oy] = this.painter._origin(p);
+				const ax = p.ax + ox, ay = p.ay + oy, t = p.transform;
+				pts = pts.map(([px, py]) => [ax + t[0] * (px - ax) + t[2] * (py - ay) + t[4], ay + t[1] * (px - ax) + t[3] * (py - ay) + t[5]]);
+			}
+			if (p.sticky) {
+				const [sx, sy] = stickyShift(p, scrollOf);
+				pts = pts.map(([px, py]) => [px + sx, py + sy]);
+			}
+			if (p !== b && p.position === "fixed") scrolls = false;
+		}
+		return pts;
 	}
 
 	_matrixOf (b: IgeUiBox): [number, number, number, number, number, number] | undefined {

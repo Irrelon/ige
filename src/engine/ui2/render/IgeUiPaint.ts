@@ -713,7 +713,10 @@ export class IgeUiPainter {
 				const surface = el.localName === "canvas" ? el._canvas : undefined;
 				if (surface?.paint) surface.paint(this.items, ix, iy, iw, ih, ctx.opacity, clip, ctx.matrix);
 				else this.items.push({ op: "image", x: ix, y: iy, w: iw, h: ih, source: el, opacity: ctx.opacity, clip, matrix: ctx.matrix, el, pixelated: styleValue(s, "image-rendering") === "pixelated" });
-			} else if (el.localName === "svg") this._svg(el, cx, cy, cw, ch, ctx, current);
+			// (An <svg> with no width or height draws nothing, as a browser's doesn't)
+			} else if (el.localName === "svg") {
+				if (cw > 0 && ch > 0) this._svg(el, cx, cy, cw, ch, ctx, current);
+			}
 			else if (el.localName === "input" && (el.getAttribute("type") === "range")) this._range(el, cx, cy, cw, ch, ctx);
 		}
 	}

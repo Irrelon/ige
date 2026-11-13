@@ -75,6 +75,63 @@ describe("ui2: layout at a phone's sizes, as Chrome's", () => {
 		expect(b.width).toBeCloseTo((58.5 * 1600) / 294, 1);
 	});
 
+	it("a scroller's scrollbar is decided with its absolutely placed children (they reach past it), and they're placed inside it", () => {
+		const r = ui(`.s { position: relative; width: 120px; height: 200px; overflow-y: auto; overflow-x: hidden; } .s > div { position: absolute; left: 0; right: 0; height: 30px; }`,
+			`<div class="s">${Array.from({ length: 10 }, (_, i) => `<div style="top: ${i * 32}px"></div>`).join("")}</div>`);
+		const s = r.root.querySelector(".s")!;
+		expect([s.clientWidth, s.scrollHeight, widths(r, ".s > div")[0]]).toEqual([105, 318, 105]);
+		// (And the same the next time it's laid out: no bar coming and going)
+		r.root.querySelector(".s > div")!.style.height = "31px";
+		r.update(16);
+		expect([s.clientWidth, widths(r, ".s > div")[0]]).toEqual([105, 105]);
+	});
+
+	it("a positioned box laid out again on its own that now overflows its scroller gives the scroller its bar", () => {
+		const r = ui(`.s { position: relative; width: 120px; height: 200px; overflow-y: auto; overflow-x: hidden; } .s > div { position: absolute; left: 0; right: 0; height: 30px; }`,
+			`<div class="s">${Array.from({ length: 5 }, (_, i) => `<div style="top: ${i * 32}px"></div>`).join("")}</div>`);
+		const s = r.root.querySelector(".s")!;
+		expect(s.clientWidth).toBe(120);
+		const last = r.root.querySelectorAll(".s > div")[4];
+		last.style.height = "120px";
+		r.update(16);
+		expect([s.clientWidth, s.scrollHeight, widths(r, ".s > div")[0], widths(r, ".s > div")[4]]).toEqual([105, 248, 105, 105]);
+	});
+
+	it("an <svg> with no width has its user units as they are (its content's client rects, as Chrome's), and draws nothing", () => {
+		const r = ui(`.d { position: relative; width: 0; height: 292px; } svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }`,
+			`<div class="d"><svg viewBox="-25.1 -42 50.2 74"><rect x="-75.3" y="-116" width="150.6" height="222"></rect></svg></div>`);
+		const b = r.root.querySelector("rect")!.getBoundingClientRect();
+		expect([b.x, b.y, b.width, b.height].map((v) => Math.round(v * 10) / 10)).toEqual([-75.3, -116, 150.6, 222]);
+		expect(r.items.some((it) => it.op === "fill")).toBe(false);
+	});
+
+	it("a transformed element in a scrolled box: its client rect moves with the scroll only (turned about its own origin)", () => {
+		const r = ui(`.s { overflow: auto; height: 100px; } .pad { height: 150px; }`, `<div class="s"><div class="pad"></div><i style="display: block; width: 8px; height: 8px; transform: rotate(45deg)"></i><div class="pad"></div></div>`);
+		const i = r.root.querySelector("i")!;
+		const a = i.getBoundingClientRect();
+		r.root.querySelector(".s")!.scrollTop = 100;
+		r.update(16);
+		const b = i.getBoundingClientRect();
+		expect([b.x - a.x, b.y - a.y, b.width - a.width].map((v) => Math.round(v * 100) / 100)).toEqual([0, -100, 0]);
+	});
+
+	it("grid rows of scrollers share the room from their padding and borders (their least), as Chrome's maximize step does", () => {
+		const r = ui(`.g { display: grid; grid-template-columns: 1fr; gap: 16px; height: 196.5px; padding: 14px 24px; box-sizing: border-box; overflow-y: auto; } .a { overflow-y: auto; padding: 2px; } .a > div { height: 700px; } .b { overflow-y: auto; padding: 12px 14px; border: 1px solid; } .b > div { height: 300px; }`,
+			`<div class="g"><div class="a"><div></div></div><div class="b"><div></div></div></div>`);
+		expect(heights(r, ".a, .b")).toEqual([65.3, 87.3]); // (65.25 and 87.25)
+	});
+
+	it("a grid item stretched across a 0-wide column is still as wide as its borders", () => {
+		const r = ui(`.g { display: grid; grid-template-columns: 300px minmax(0, 1fr) 300px; width: 600px; } .m { border: 1px solid; overflow: hidden; }`, `<div class="g"><div></div><div class="m"></div><div></div></div>`);
+		expect(widths(r, ".m")).toEqual([2]);
+	});
+
+	it("content sizes are whole 64ths of a pixel, as a browser's layout units hold them", () => {
+		const r = ui(`.b { display: inline-block; font: 13px sans-serif; }`, `<span class="b">Hold to fire</span>`);
+		const w = widths(r, ".b")[0];
+		expect(Math.abs(w * 64 - Math.round(w * 64))).toBeLessThan(0.7);
+	});
+
 	it("aspect-ratio on an absolutely placed ::before gives it its height", () => {
 		const r = ui(`.p { position: relative; width: 400px; height: 300px; } .p::before { content: ""; position: absolute; width: 50%; aspect-ratio: 2; }`, `<div class="p"></div>`);
 		const pb = r.root.querySelector(".p")!._box!.children.find((c) => c.pseudo === "before")!;

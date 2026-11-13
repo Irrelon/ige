@@ -82,6 +82,13 @@ export interface IgeUiBox {
 	/** How far its content reaches (scroll containers), and the scrollbars' room. */
 	scrollW?: number;
 	scrollH?: number;
+	/**
+	 * How far its absolutely placed descendants reached in it when they were last placed (a scroller's: its padding box's
+	 * corner to theirs), counted in its scroll extent so its scrollbar is decided with them, as a browser's is.
+	 */
+	absReach?: { w: number; h: number };
+	/** The containing block it was last laid out in (layoutBox's cbW, cbH): to lay it out again in place. */
+	lastCb?: [number, number | undefined];
 	scrollbarX?: number;
 	scrollbarY?: number;
 	/** Text and inline decorations of its inline content (an inline formatting context). */
