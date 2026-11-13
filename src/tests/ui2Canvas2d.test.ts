@@ -1,4 +1,5 @@
 import { IgeUiCanvas2d, igeUiCanvas2dOn, parseCanvasFont } from "@/engine/ui2/render/IgeUiCanvas2d";
+import { cssFont } from "@/engine/ui2/text/IgeUiFonts";
 import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
 import { igeUiHeadlessHost } from "@/engine/ui2/IgeUiHost";
 import type { IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
@@ -67,7 +68,9 @@ describe("ui2: the engine's 2D canvas", () => {
 	it("places text by its alignment and baseline, sized and moved by the transform; turned text keeps its own matrix", () => {
 		const { c, paint } = canvas();
 		c.font = "bold 10px 'Share Tech Mono', monospace";
-		expect(parseCanvasFont(c.font)).toEqual({ family: "Share Tech Mono", size: 10, weight: 700, style: "normal" });
+		expect(parseCanvasFont(c.font)).toEqual({ family: "'Share Tech Mono', monospace", size: 10, weight: 700, style: "normal" });
+		// (A family that needs its quotes keeps them: "600 13px Exo 2" isn't a font a canvas would take)
+		expect(cssFont(parseCanvasFont("600 13px 'Exo 2', sans-serif"))).toBe("600 13px 'Exo 2', sans-serif");
 		c.textAlign = "center";
 		c.textBaseline = "middle";
 		c.fillStyle = "#fff";

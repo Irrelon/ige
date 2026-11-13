@@ -121,14 +121,18 @@ const scaleOf = (m: M) => Math.sqrt(Math.abs(m[0] * m[3] - m[1] * m[2]));
 const axisAligned = (m: M) => Math.abs(m[1]) < 1e-9 && Math.abs(m[2]) < 1e-9 && m[0] > 0 && m[3] > 0;
 const similar = (m: M) => Math.abs(m[0] - m[3]) < 1e-6 && Math.abs(m[1] + m[2]) < 1e-6;
 
-/** A canvas `font` ("600 12px 'Share Tech Mono', monospace") as the UI's font spec. */
+/**
+ * A canvas `font` ("600 12px 'Share Tech Mono', monospace") as the UI's font spec: its family the list as written
+ * (quotes and fallbacks kept, as the UI's text has its font-family), so it's a font a canvas takes back when it's
+ * measured and drawn ("600 13px Exo 2" isn't one: a canvas keeps the font it had, and the text came out in that).
+ */
 export function parseCanvasFont (font: string): IgeUiFontSpec {
 	const m = /^\s*((?:(?:italic|oblique|normal|small-caps|bold|bolder|lighter|[1-9]00)\s+)*)([\d.]+)px(?:\s*\/\s*[^\s]+)?\s+(.+)$/i.exec(font);
 	if (!m) return { family: "sans-serif", size: 10, weight: 400, style: "normal" };
 	const words = m[1].trim().split(/\s+/).filter(Boolean);
 	const weight = words.find((w) => /^(bold|bolder|lighter|[1-9]00)$/.test(w));
 	return {
-		family: m[3].split(",")[0].trim().replace(/^["']|["']$/g, ""),
+		family: m[3].trim(),
 		size: Number(m[2]),
 		weight: weight === "lighter" ? 300 : fontWeight(weight),
 		style: words.includes("italic") || words.includes("oblique") ? "italic" : "normal"
