@@ -1,5 +1,5 @@
 /**
- * Draws the engine UI's display list with WebGL 2: one instanced quad per
+ * Draws the engine UI's display list on the GPU (IgeGpuDevice: WebGL 2 on the web): one instanced quad per
  * item through one shader. Boxes are signed-distance shapes (per-corner
  * radii, cut corners, borders), filled with a colour or a gradient (ramps on
  * one texture), with glows and inset shadows; text is signed-distance glyphs
@@ -10,9 +10,11 @@
  */
 import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix, multiply } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
+import type { IgeGpuBuffer, IgeGpuDevice, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuRenderTarget, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
 import { IgeUiDropShadowPass, type IgeUiShadowGroup } from "@/engine/ui2/render/IgeUiDropShadow";
-import { IgeUiFilterPass, type IgeUiFilterLayer, layerRegion } from "@/engine/ui2/render/IgeUiFilters";
+import { BLUR_UNIFORMS, IgeUiFilterPass, type IgeUiFilterLayer, type IgeUiTex, layerRegion, QUAD_LAYOUT } from "@/engine/ui2/render/IgeUiFilters";
 import { glowKey, glowRegion, type IgeUiTextGlow, IgeUiTextGlowCache } from "@/engine/ui2/render/IgeUiTextGlow";
+import { blurDraw } from "@/engine/ui2/render/IgeUiFilters";
 import type { IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 import { IgeUiStencilClip, type IgeUiStencilStep, stencilTriangles } from "@/engine/ui2/render/IgeUiStencilClip";
 import { NO_ROUND, packRound, roundThrough } from "@/engine/ui2/render/IgeUiRoundClip";
@@ -414,7 +416,7 @@ interface Backdrop {
 interface Batch {
 	start: number;
 	count: number;
-	image: WebGLTexture | null;
+	image: IgeGpuTexture | null;
 	additive: boolean;
 	/** A clip of any shape opening or closing (IgeUiStencilClip): no instances, its shape marked in the stencil as it's reached. */
 	stencil?: IgeUiStencilStep;
@@ -448,7 +450,7 @@ interface Batch {
  * too. `add` takes a batch (false, what's queued drawn first, when it isn't plain: the caller draws it as before);
  * `flush` draws what's queued.
  */
-function batchRuns (drawBatch: (b: Batch) => void, made: (b: Batch) => WebGLTexture | undefined, owner?: IgeUiFilterLayer): { add: (b: Batch) => boolean; flush: () => void } {
+function batchRuns (drawBatch: (b: Batch) => void, made: (b: Batch) => IgeGpuTexture | undefined, owner?: IgeUiFilterLayer): { add: (b: Batch) => boolean; flush: () => void } {
 	let run: Batch | undefined;
 	const flush = () => {
 		if (run) drawBatch(run);
@@ -476,7 +478,7 @@ function batchRuns (drawBatch: (b: Batch) => void, made: (b: Batch) => WebGLText
 
 /** Where batches are drawn: the target, or a filter's layer. */
 interface Frame {
-	target: WebGLFramebuffer | null;
+	target: IgeGpuRenderTarget;
 	width: number;
 	height: number;
 	offset: [number, number];
@@ -539,35 +541,40 @@ function repeatPeriod (g: IgeCssGradient, length: number): number {
 }
 
 export class IgeUiGlRenderer {
-	gl: WebGL2RenderingContext;
+	device: IgeGpuDevice;
 	atlas: IgeUiSdfAtlas;
-	_program: WebGLProgram | null = null;
-	_vao: WebGLVertexArrayObject | null = null;
-	_quad: WebGLBuffer | null = null;
-	_inst: WebGLBuffer | null = null;
+	/** The UI's pipelines: by blend (normal, additive, erase), each without and with the stencil test (clips of any shape). */
+	_pipelines: Record<"normal" | "additive" | "erase", [IgeGpuRenderPipeline, IgeGpuRenderPipeline]> | null = null;
+	_quad!: IgeGpuBuffer;
+	_inst!: IgeGpuBuffer;
 	_data = new Float32Array(STRIDE * 1024);
-	_atlasTex: WebGLTexture | null = null;
+	/** The UI's uniform block: u_resolution, u_scale, u_offset, u_view. */
+	_u = new Float32Array(7);
+	_atlasTex: IgeGpuTexture | null = null;
 	_atlasLayers = 0;
 	_atlasVersions: number[] = [];
-	_ramp: WebGLTexture | null = null;
+	_ramp: IgeGpuTexture | null = null;
 	_rampData = new Uint8Array(256 * 512 * 4);
 	_rampRows = new Map<string, number>();
 	_rampNext = 0;
 	_rampDirty = true;
-	_images = new Map<IgeUiElement, { tex: WebGLTexture; version: number; w: number; h: number }>();
+	_images = new Map<IgeUiElement, { tex: IgeGpuTexture; version: number; w: number; h: number }>();
 	_imageEls = new Map<string, HTMLImageElement>();
 	/** url() backgrounds' textures, by the ways they repeat and their url. */
-	_urlImages = new Map<string, { tex: WebGLTexture }>();
-	_uniforms: Record<string, WebGLUniformLocation | null> = {};
-	/** The backdrop blur's program, its copy of the target, two half-size targets and their framebuffer. */
-	_blurProgram: WebGLProgram | null = null;
-	_blurUniforms: Record<string, WebGLUniformLocation | null> = {};
-	_grab: { tex: WebGLTexture; w: number; h: number } | null = null;
-	_blurA: { tex: WebGLTexture; w: number; h: number } | null = null;
-	_blurB: { tex: WebGLTexture; w: number; h: number } | null = null;
+	_urlImages = new Map<string, { tex: IgeGpuTexture }>();
+	/** The Gaussian blur (backdrops, filters, shadows, glows): one direction a pass. */
+	_blurPipeline!: IgeGpuRenderPipeline;
+	/** The backdrop blur's copy of the target and two half-size targets. */
+	_grab: IgeUiTex | null = null;
+	_blurA: IgeUiTex | null = null;
+	_blurB: IgeUiTex | null = null;
 	/** backdrop "shared": the shared blurs' textures, one for each kind of blur asked for, kept from frame to frame. */
-	_sharedBlurs: { tex: WebGLTexture; w: number; h: number }[] = [];
-	_blurFbo: WebGLFramebuffer | null = null;
+	_sharedBlurs: IgeUiTex[] = [];
+	/** The pass being recorded and the frame it draws (what's bound again after another target's been drawn into). */
+	_pass: IgeGpuRenderPass | null = null;
+	_frame: Frame | null = null;
+	/** The screen's target this frame (the one with the stencil): draws there test the stencil while a clip's open. */
+	_screen: IgeGpuRenderTarget | null = null;
 	/** Clips of any shape, by the stencil (IgeUiStencilClip). */
 	_stencil = new IgeUiStencilClip();
 	/** Drop shadows' textures (filter: drop-shadow(): IgeUiDropShadow). */
@@ -575,16 +582,13 @@ export class IgeUiGlRenderer {
 	/** Filters' layers (filter: grayscale(), blur(), hue-rotate()...: IgeUiFilters). */
 	_filters = new IgeUiFilterPass();
 	/** Fades' atlas: every layer that's only an opacity, drawn before the screen's own pass, each in its own place. */
-	_fade: { tex: WebGLTexture; fbo: WebGLFramebuffer; w: number; h: number } | null = null;
+	_fade: IgeUiTex | null = null;
 	/** Text glows' blurred silhouettes, kept between frames (text-shadow with a blur: IgeUiTextGlow). */
 	_glows = new IgeUiTextGlowCache();
 	/** Draw calls made last frame. */
 	drawCalls = 0;
-	/**
-	 * The framebuffer the UI's drawn into, when its host knows it (IgeUiRoot.drawOnCanvas: the canvas's own); undefined:
-	 * asked of GL once a frame, and only when a layer, a shadow, a glow or a backdrop needs it.
-	 */
-	target: WebGLFramebuffer | null | undefined = undefined;
+	/** The target the UI's drawn into (IgeUiRoot.draw: the canvas's own, or the framebuffer its host was drawing into). */
+	target: IgeGpuRenderTarget | null = null;
 	instances = 0;
 	/**
 	 * Tunings, off by default. `textWeight`: text's edge moved out (device px; bolder above 0), `textGamma`: its
@@ -598,80 +602,72 @@ export class IgeUiGlRenderer {
 	textMinSize = 0;
 	backdrop: "panel" | "shared" | "off" = "panel";
 
-	constructor (gl: WebGL2RenderingContext, atlas: IgeUiSdfAtlas) {
-		this.gl = gl;
+	constructor (device: IgeGpuDevice, atlas: IgeUiSdfAtlas) {
+		this.device = device;
 		this.atlas = atlas;
 		this._init();
 	}
 
 	_init (): void {
-		const gl = this.gl;
-		const compile = (type: number, src: string) => {
-			const s = gl.createShader(type)!;
-			gl.shaderSource(s, src);
-			gl.compileShader(s);
-			if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(`IgeUiGlRenderer shader: ${gl.getShaderInfoLog(s)}`);
-			return s;
+		const d = this.device;
+		const module = d.createShaderModule({ vertex: VS, fragment: FS, label: "ui2" });
+		// (Each item an instance: 16 vec4s from its place in the frame's data, the quad's corner from the other buffer)
+		const instance = { arrayStride: STRIDE * 4, stepMode: "instance" as const, attributes: Array.from({ length: ATTRIBS }, (_, i) => ({ shaderLocation: 1 + i, format: "float32x4" as const, offset: i * 16 })) };
+		const make = (src: "one" | "zero", dst: "one" | "one-minus-src-alpha", stencil: boolean) => d.createRenderPipeline({
+			module,
+			vertex: { buffers: [QUAD_LAYOUT, instance] },
+			primitive: { topology: "triangle-strip" },
+			blend: { color: { srcFactor: src, dstFactor: dst }, alpha: { srcFactor: src, dstFactor: dst } },
+			// (Inside the clips of any shape open: the stencil's count of them, IgeUiStencilClip)
+			stencil: stencil ? { compare: "equal", passOp: "keep", readMask: 0xff, writeMask: 0xff } : undefined,
+			uniforms: [{ name: "u_resolution", type: "vec2" }, { name: "u_scale", type: "f32" }, { name: "u_offset", type: "vec2" }, { name: "u_view", type: "vec2" }],
+			textures: [{ name: "u_atlas", dimension: "2d-array" }, { name: "u_ramp" }, { name: "u_image" }],
+			label: `ui2 ${src}/${dst}${stencil ? " stencil" : ""}`
+		});
+		this._pipelines = {
+			normal: [make("one", "one-minus-src-alpha", false), make("one", "one-minus-src-alpha", true)],
+			additive: [make("one", "one", false), make("one", "one", true)],
+			erase: [make("zero", "one-minus-src-alpha", false), make("zero", "one-minus-src-alpha", true)]
 		};
-		const p = gl.createProgram()!;
-		gl.attachShader(p, compile(gl.VERTEX_SHADER, VS));
-		gl.attachShader(p, compile(gl.FRAGMENT_SHADER, FS));
-		gl.linkProgram(p);
-		if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(`IgeUiGlRenderer program: ${gl.getProgramInfoLog(p)}`);
-		this._program = p;
-		for (const u of ["u_resolution", "u_scale", "u_offset", "u_view", "u_atlas", "u_ramp", "u_image"]) this._uniforms[u] = gl.getUniformLocation(p, u);
-		this._vao = gl.createVertexArray();
-		gl.bindVertexArray(this._vao);
-		this._quad = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, this._quad);
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), gl.STATIC_DRAW);
-		gl.enableVertexAttribArray(0);
-		gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-		this._inst = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, this._inst);
-		for (let i = 0; i < ATTRIBS; i++) {
-			gl.enableVertexAttribArray(1 + i);
-			gl.vertexAttribPointer(1 + i, 4, gl.FLOAT, false, STRIDE * 4, i * 16);
-			gl.vertexAttribDivisor(1 + i, 1);
-		}
-		gl.bindVertexArray(null);
-		const bp = gl.createProgram()!;
-		gl.attachShader(bp, compile(gl.VERTEX_SHADER, BLUR_VS));
-		gl.attachShader(bp, compile(gl.FRAGMENT_SHADER, BLUR_FS));
-		gl.linkProgram(bp);
-		if (!gl.getProgramParameter(bp, gl.LINK_STATUS)) throw new Error(`IgeUiGlRenderer blur program: ${gl.getProgramInfoLog(bp)}`);
-		this._blurProgram = bp;
-		for (const u of ["u_src", "u_area", "u_step", "u_sigma", "u_lod"]) this._blurUniforms[u] = gl.getUniformLocation(bp, u);
+		this._quad = d.createBuffer({ size: 32, usage: "vertex", label: "ui2 quad" });
+		d.writeBuffer(this._quad, 0, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]));
+		this._inst = d.createBuffer({ size: 0, usage: "vertex", stream: true, label: "ui2 instances" });
+		this._blurPipeline = d.createRenderPipeline({
+			module: d.createShaderModule({ vertex: BLUR_VS, fragment: BLUR_FS, label: "ui2 blur" }),
+			vertex: { buffers: [QUAD_LAYOUT] },
+			primitive: { topology: "triangle-strip" },
+			uniforms: BLUR_UNIFORMS,
+			textures: [{ name: "u_src" }],
+			label: "ui2 blur"
+		});
 		this._grab = this._blurA = this._blurB = null;
 		this._sharedBlurs = [];
 		this._shadows.reset();
 		this._filters.reset();
 		this._glows.reset();
 		this._fade = null;
-		this._blurFbo = gl.createFramebuffer();
-		this._ramp = gl.createTexture();
-		this._atlasTex = gl.createTexture();
+		this._ramp = d.createTexture({ width: 256, height: 512, format: "rgba8unorm", label: "ui2 gradient ramps" });
+		this._atlasTex = null;
 		this._atlasLayers = 0;
 		this._atlasVersions = [];
 		this._rampDirty = true;
 	}
 
-	/** Made again after a lost context (every texture and buffer). */
-	restore (gl: WebGL2RenderingContext): void {
-		this.gl = gl;
+	/** Made again after a lost context (every texture and buffer), on the context's new device. */
+	restore (device: IgeGpuDevice): void {
+		this.device = device;
 		this._images.clear();
+		this._urlImages.clear();
 		this._init();
 	}
 
 	destroy (): void {
-		const gl = this.gl;
-		if (this._program) gl.deleteProgram(this._program);
-		if (this._quad) gl.deleteBuffer(this._quad);
-		if (this._inst) gl.deleteBuffer(this._inst);
-		if (this._vao) gl.deleteVertexArray(this._vao);
-		if (this._ramp) gl.deleteTexture(this._ramp);
-		if (this._atlasTex) gl.deleteTexture(this._atlasTex);
-		for (const i of this._images.values()) gl.deleteTexture(i.tex);
+		const d = this.device;
+		if (this._quad) d.destroyBuffer(this._quad);
+		if (this._inst) d.destroyBuffer(this._inst);
+		if (this._ramp) d.destroyTexture(this._ramp);
+		if (this._atlasTex) d.destroyTexture(this._atlasTex);
+		for (const i of this._images.values()) d.destroyTexture(i.tex);
 		this._images.clear();
 		this._stencil.destroy();
 	}
@@ -725,8 +721,8 @@ export class IgeUiGlRenderer {
 
 	// ---------------------------------------------------------------- images and canvases
 
-	_imageTexture (el: IgeUiElement): WebGLTexture | null {
-		const gl = this.gl;
+	_imageTexture (el: IgeUiElement): IgeGpuTexture | null {
+		const d = this.device;
 		let source: TexImageSource | null = null;
 		let version = 0;
 		let pixels: { width: number; height: number; data: Uint8Array; version: number } | undefined;
@@ -749,21 +745,15 @@ export class IgeUiGlRenderer {
 		if (!source) return null;
 		let entry = this._images.get(el);
 		if (!entry) {
-			entry = { tex: gl.createTexture()!, version: 0, w: 0, h: 0 };
+			entry = { tex: d.createTexture({ width: 0, height: 0, format: "rgba8unorm", label: "ui2 picture" }), version: 0, w: 0, h: 0 };
 			this._images.set(el, entry);
-			gl.bindTexture(gl.TEXTURE_2D, entry.tex);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		}
 		// Canvases go up each frame they're shown (drawn on any time); images once
 		if (version === -1 || entry.version !== version) {
-			gl.bindTexture(gl.TEXTURE_2D, entry.tex);
-			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-			if (pixels) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, pixels.width, pixels.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels.data);
-			else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
-			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+			if (pixels) {
+				if (entry.tex.width !== pixels.width || entry.tex.height !== pixels.height) d.resizeTexture(entry.tex, pixels.width, pixels.height);
+				d.writeTexture(entry.tex, pixels.data, { width: pixels.width, height: pixels.height }, { premultiply: true });
+			} else d.copyImageToTexture(source, entry.tex, { premultiply: true });
 			entry.version = version;
 		}
 		return entry.tex;
@@ -774,8 +764,8 @@ export class IgeUiGlRenderer {
 	 * A url() background's texture (IgeUiBackgroundImage): its picture from the UI's images once it's arrived (asked
 	 * for until then), its edges wrapping the ways it repeats, its smaller levels for drawing it smaller.
 	 */
-	_urlTexture (el: IgeUiElement, src: string, repeat: [boolean, boolean], shown: Set<string>): WebGLTexture | null {
-		const gl = this.gl;
+	_urlTexture (el: IgeUiElement, src: string, repeat: [boolean, boolean], shown: Set<string>): IgeGpuTexture | null {
+		const d = this.device;
 		const key = `${repeat[0] ? 1 : 0}${repeat[1] ? 1 : 0}${src}`;
 		const have = this._urlImages.get(key);
 		if (have) {
@@ -788,16 +778,12 @@ export class IgeUiGlRenderer {
 			images?.request(src);
 			return null;
 		}
-		const tex = gl.createTexture()!;
-		gl.bindTexture(gl.TEXTURE_2D, tex);
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-		gl.generateMipmap(gl.TEXTURE_2D);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, repeat[0] ? gl.REPEAT : gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, repeat[1] ? gl.REPEAT : gl.CLAMP_TO_EDGE);
+		const tex = d.createTexture({
+			width: 0, height: 0, format: "rgba8unorm", mipmaps: true, label: `ui2 ${src}`,
+			sampler: { minFilter: "linear", magFilter: "linear", mipmapFilter: "linear", addressModeU: repeat[0] ? "repeat" : "clamp-to-edge", addressModeV: repeat[1] ? "repeat" : "clamp-to-edge" }
+		});
+		d.copyImageToTexture(img, tex, { premultiply: true });
+		d.generateMipmaps(tex);
 		this._urlImages.set(key, { tex });
 		shown.add(key);
 		return tex;
@@ -806,7 +792,7 @@ export class IgeUiGlRenderer {
 	sweep (shown: Set<IgeUiElement>): void {
 		for (const [el, e] of this._images) {
 			if (shown.has(el)) continue;
-			this.gl.deleteTexture(e.tex);
+			this.device.destroyTexture(e.tex);
 			this._images.delete(el);
 		}
 	}
@@ -821,28 +807,21 @@ export class IgeUiGlRenderer {
 	}
 
 	_uploadAtlas (): void {
-		const gl = this.gl;
+		const d = this.device;
 		const pages = this.atlas.pages;
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._atlasTex);
 		if (this._atlasLayers < pages.length) {
 			// (Room for a few more pages each time it grows)
 			const layers = Math.max(4, pages.length + 2);
-			gl.texImage3D(gl.TEXTURE_2D_ARRAY, 0, gl.R8, PAGE, PAGE, layers, 0, gl.RED, gl.UNSIGNED_BYTE, null);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			if (!this._atlasTex) this._atlasTex = d.createTexture({ width: PAGE, height: PAGE, layers, format: "r8unorm", label: "ui2 glyph pages" });
+			else d.resizeTexture(this._atlasTex, PAGE, PAGE, layers);
 			this._atlasLayers = layers;
 			this._atlasVersions = [];
 		}
-		gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 		for (let i = 0; i < pages.length; i++) {
 			if (this._atlasVersions[i] === this.atlas.pageVersion[i]) continue;
-			gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, PAGE, PAGE, 1, gl.RED, gl.UNSIGNED_BYTE, pages[i]);
+			d.writeTexture(this._atlasTex!, pages[i], { layer: i, width: PAGE, height: PAGE });
 			this._atlasVersions[i] = this.atlas.pageVersion[i];
 		}
-		gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
 	}
 
 	/**
@@ -850,13 +829,13 @@ export class IgeUiGlRenderer {
 	 * `width` x `height` the canvas in device px.
 	 */
 	draw (items: IgeUiPaintItem[], width: number, height: number, scale: number, offset: [number, number]): number {
-		const gl = this.gl;
+		const device = this.device;
 		// Fill instance data
 		const batches: Batch[] = [];
 		let n = 0;
 		let batch: Batch | undefined;
 		const shown = new Set<IgeUiElement>(), shownUrls = new Set<string>();
-		const push = (image: WebGLTexture | null, additive: boolean) => {
+		const push = (image: IgeGpuTexture | null, additive: boolean) => {
 			if (!batch || batch.image !== image || batch.additive !== additive) {
 				batch = { start: n, count: 0, image, additive };
 				batches.push(batch);
@@ -926,7 +905,7 @@ export class IgeUiGlRenderer {
 				}
 				// A filter's layer (IgeUiFilters): what's in it drawn into it alone, its filters run, the result composited here
 				// (No filters at all: only its opacity, applied to it whole)
-				if (it.open) openKinds.push(it.filters && this._blurProgram ? "layer" : "shadow");
+				if (it.open) openKinds.push(it.filters && this._blurPipeline ? "layer" : "shadow");
 				if ((it.open ? openKinds[openKinds.length - 1] : openKinds.pop()) === "layer") {
 					batch = undefined;
 					if (it.open) {
@@ -951,7 +930,7 @@ export class IgeUiGlRenderer {
 				// An element with drop-shadow()s: a composite for each (drawn first, the last listed lowest), then what it's of
 				if (it.open) {
 					let g: IgeUiShadowGroup | null = null;
-					if (it.shadows?.length && this._blurProgram) {
+					if (it.shadows?.length && this._blurPipeline) {
 						g = { shadows: it.shadows, from: 0, to: 0, start: 0, end: 0, clip, composites: [] };
 						for (let k = it.shadows.length - 1; k >= 0; k--) {
 							batch = { start: n, count: 0, image: null, additive: false, shadow: { group: g, index: k } };
@@ -988,7 +967,7 @@ export class IgeUiGlRenderer {
 				const pad = Math.ceil(sigma * 3);
 				const x0 = Math.max(0, Math.floor(Math.min(...xs) * scale + offset[0]) - pad), y0 = Math.max(0, Math.floor(Math.min(...ys) * scale + offset[1]) - pad);
 				const x1 = Math.min(width, Math.ceil(Math.max(...xs) * scale + offset[0]) + pad), y1 = Math.min(height, Math.ceil(Math.max(...ys) * scale + offset[1]) + pad);
-				if (x1 <= x0 || y1 <= y0 || !this._blurProgram) continue;
+				if (x1 <= x0 || y1 <= y0 || !this._blurPipeline) continue;
 				const bd = { x: x0, y: y0, w: x1 - x0, h: y1 - y0, sigma, ops: it.colorOps };
 				// (A mask-image's linear gradient fades it: its ramp's alpha over the box)
 				let mask = NOGRAD;
@@ -1087,7 +1066,7 @@ export class IgeUiGlRenderer {
 				if (it.color) write(push(null, additive), rect, rect, it.radii, it.color, [0, 0, 0, 0], Z4, cut, clip, it.matrix, it.opacity, 0, NOGRAD, it.radiiY);
 				continue;
 			}
-			if (it.op === "text" && it.shadow && (!(it.shadow.blur > 0) || this._blurProgram)) {
+			if (it.op === "text" && it.shadow && (!(it.shadow.blur > 0) || this._blurPipeline)) {
 				// A text-shadow: with no blur, the glyphs again in its colour, moved; with one, the text's silhouette blurred
 				// as a browser blurs it, tinted and moved, under it (IgeUiTextGlow)
 				const sh = it.shadow, f = it.font, k = f.size / SDF_SIZE, chars = [...it.text];
@@ -1210,18 +1189,16 @@ export class IgeUiGlRenderer {
 			}
 		}
 		this.sweep(shown);
-		this._glows.endFrame(gl);
+		this._glows.endFrame(device);
 		for (const [key, e] of this._urlImages) {
 			if (shownUrls.has(key)) continue;
-			this.gl.deleteTexture(e.tex);
+			device.destroyTexture(e.tex);
 			this._urlImages.delete(key);
 		}
 		this.instances = n;
 		if (!n) return 0;
-		// Draw
-		gl.useProgram(this._program);
-		gl.bindVertexArray(this._vao);
-		gl.bindBuffer(gl.ARRAY_BUFFER, this._inst);
+		// Draw: what the device knows of the GPU's state forgotten (another renderer may have drawn since)
+		device.invalidate();
 		// backdrop "shared": panels asking for the same filter (one blur radius, the same colour functions) share one blur
 		// of what's drawn before the UI (the game), over all their rectangles, made before the UI's drawn; each panel's uv
 		// moved to its part of it. A panel alone in what it asks for (or in a filter's layer) keeps its own
@@ -1279,12 +1256,14 @@ export class IgeUiGlRenderer {
 				this._data[o + 19] = kv;
 			}
 		}
-		const target = this.target !== undefined ? this.target : batches.some((b) => b.backdrop || b.shadow || b.layer || b.glow) ? (gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null) : null;
+		// (The target the UI's drawn into: its host's, or the screen)
+		const target = this.target ?? device.surface();
+		this._screen = target;
 		// One-shadow groups with nothing in them needing a target of their own: placed in the frame's shadow atlas, all
 		// drawn and blurred ahead of the screen's own pass (IgeUiDropShadow)
 		const atlasShadows = shadowGroups.filter((g) => g.region && g.shadows.length === 1 && batches.slice(g.from, g.to).every((b) => !b.layer && !b.shadow && !b.backdrop && !b.blend && !b.stencil));
 		if (atlasShadows.length) {
-			const [AW, AH] = this._shadows.packAtlas(this, atlasShadows, target, scale);
+			const [AW, AH] = this._shadows.packAtlas(this, atlasShadows, scale);
 			for (const g of atlasShadows) {
 				if (!g.atlas) continue;
 				const r = g.region!, [ax, ay] = g.atlas;
@@ -1308,7 +1287,7 @@ export class IgeUiGlRenderer {
 		}
 		if (layers.length) {
 			// Filters' layers: each depth's textures sized for its biggest, and each composite's uv to its part of them
-			for (const L of layers) if (L.region) this._filters.size(this, L.depth, L.region.w, L.region.h, target);
+			for (const L of layers) if (L.region) this._filters.size(this, L.depth, L.region.w, L.region.h);
 			for (const L of layers) {
 				if (!L.region) continue;
 				const t = this._filters.layers[L.depth][0];
@@ -1336,15 +1315,7 @@ export class IgeUiGlRenderer {
 					row = Math.max(row, r.h);
 				}
 				const H = y + row;
-				const t = this._tex(this._fade, W, H);
-				if (!this._fade) {
-					this._fade = { ...t, fbo: gl.createFramebuffer()! };
-					gl.bindFramebuffer(gl.FRAMEBUFFER, this._fade.fbo);
-					gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t.tex, 0);
-					gl.bindFramebuffer(gl.FRAMEBUFFER, target);
-				}
-				this._fade.w = t.w;
-				this._fade.h = t.h;
+				this._fade = this._tex(this._fade, W, H);
 				for (const L of fades) {
 					if (!L.atlas) continue;
 					const r = L.region!, [ax, ay] = L.atlas, A = this._fade;
@@ -1353,56 +1324,42 @@ export class IgeUiGlRenderer {
 				}
 			}
 		}
-		gl.bufferData(gl.ARRAY_BUFFER, this._data.subarray(0, n * STRIDE), gl.STREAM_DRAW);
+		// A frame's instances in one go; the glyph pages and the gradient ramps as they've changed
+		device.writeBuffer(this._inst!, 0, this._data.subarray(0, n * STRIDE));
 		this._uploadAtlas();
-		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, this._ramp);
 		if (this._rampDirty) {
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, this._rampData);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			device.writeTexture(this._ramp!, this._rampData, { width: 256, height: 512 });
 			this._rampDirty = false;
 		}
-		gl.uniform2f(this._uniforms.u_resolution, width, height);
-		gl.uniform1f(this._uniforms.u_scale, scale);
-		gl.uniform2f(this._uniforms.u_offset, offset[0], offset[1]);
-		gl.uniform1i(this._uniforms.u_atlas, 0);
-		gl.uniform1i(this._uniforms.u_ramp, 1);
-		gl.uniform1i(this._uniforms.u_image, 2);
-		gl.disable(gl.DEPTH_TEST);
-		gl.disable(gl.CULL_FACE);
-		gl.disable(gl.SCISSOR_TEST);
-		gl.depthMask(false);
-		gl.enable(gl.BLEND);
-		gl.viewport(0, 0, width, height);
+		this._u[2] = scale;
 		let calls = 0;
-		let blurred: WebGLTexture | null = null;
+		let blurred: IgeGpuTexture | null = null;
 		this._stencil.begin();
-		/** One batch drawn (a drop shadow's silhouette draws what it's of with this too). */
+		const P = this._pipelines!;
+		/** One batch drawn (a drop shadow's silhouette draws what it's of with this too), in the pass being recorded. */
 		const drawBatch = (b: Batch) => {
 			// (A clip's step has no instances: nothing to draw)
 			if (!b.count) return;
-			if (b.blend === "erase") gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
-			else gl.blendFunc(gl.ONE, b.additive || b.blend === "add" ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
-			gl.activeTexture(gl.TEXTURE2);
-			gl.bindTexture(gl.TEXTURE_2D, b.image);
-			// (WebGL 2 has no base instance: the instanced attributes start at the batch)
-			for (let i = 0; i < ATTRIBS; i++) gl.vertexAttribPointer(1 + i, 4, gl.FLOAT, false, STRIDE * 4, b.start * STRIDE * 4 + i * 16);
-			gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, b.count);
+			const pass = this._pass!;
+			// (On the screen's target inside a clip of any shape: the stencil tested)
+			const clipped = this._stencil.depth > 0 && this._frame?.target === this._screen ? 1 : 0;
+			pass.setPipeline(P[b.blend === "erase" ? "erase" : b.additive || b.blend === "add" ? "additive" : "normal"][clipped]);
+			if (clipped) pass.setStencilReference(this._stencil.depth);
+			pass.setTexture(2, b.image);
+			// (Its instances from the batch's first: WebGL 2 points the instanced attributes there)
+			pass.draw(4, b.count, 0, b.start);
 			calls++;
 		};
 		// (The shared blurs, of the game alone: before any of the UI's drawn. Each kept in a texture of its own, the same
 		// size as the blur texture it was made in, which takes its place for the blurs made after it)
-		const shared = new Map<Backdrop, WebGLTexture>();
+		const shared = new Map<Backdrop, IgeGpuTexture>();
 		groups.forEach((g, i) => {
 			const tex = this._blurBackdrop(g.bd, height, target);
 			const inA = tex === this._blurA?.tex;
 			const made = (inA ? this._blurA : this._blurB)!;
 			let spare = this._sharedBlurs[i];
 			if (!spare || spare.w !== made.w || spare.h !== made.h) {
-				if (spare) gl.deleteTexture(spare.tex);
+				if (spare) device.destroyTexture(spare.tex);
 				spare = this._tex(null, made.w, made.h);
 			}
 			this._sharedBlurs[i] = made;
@@ -1411,23 +1368,19 @@ export class IgeUiGlRenderer {
 			for (const m of g.members) shared.set(m.bd, made.tex);
 			calls += 2;
 		});
-		if (groups.length) {
-			gl.useProgram(this._program);
-			gl.bindVertexArray(this._vao);
-			gl.viewport(0, 0, width, height);
-			gl.enable(gl.BLEND);
-		}
+		// (The screen's own pass begun: the pre-passes below draw elsewhere and bind it again after)
+		this._bind({ target, width, height, offset });
 		// The shadow atlas's silhouettes, each in its place, then their blurs (before the fades: a fade can hold a shadow)
 		const placed = atlasShadows.filter((g) => g.atlas);
 		if (placed.length && this._shadows.atlasSil) {
 			const A = this._shadows.atlasSil;
-			gl.bindFramebuffer(gl.FRAMEBUFFER, A.fbo);
-			gl.clearColor(0, 0, 0, 0);
-			gl.clear(gl.COLOR_BUFFER_BIT);
+			let first = true;
 			for (const g of placed) {
 				const r = g.region!, [ax, ay] = g.atlas!;
-				const f: Frame = { target: A.fbo, width: r.w, height: r.h, offset: [offset[0] - r.x, offset[1] - r.y], view: [ax, ay] };
-				this._bind(f);
+				const f: Frame = { target: A.tex, width: r.w, height: r.h, offset: [offset[0] - r.x, offset[1] - r.y], view: [ax, ay] };
+				// (The silhouettes' atlas cleared whole as it's first drawn into)
+				this._bind(f, first);
+				first = false;
 				for (let i = g.from; i < g.to; i++) {
 					const b = batches[i];
 					if (b.hidden) continue;
@@ -1448,13 +1401,10 @@ export class IgeUiGlRenderer {
 		if (fades.length && this._fade) {
 			for (const L of fades) {
 				const r = L.region!, [ax, ay] = L.atlas!;
-				const f: Frame = { target: this._fade.fbo, width: r.w, height: r.h, offset: [offset[0] - r.x, offset[1] - r.y], view: [ax, ay] };
+				const f: Frame = { target: this._fade.tex, width: r.w, height: r.h, offset: [offset[0] - r.x, offset[1] - r.y], view: [ax, ay] };
 				this._bind(f);
-				gl.enable(gl.SCISSOR_TEST);
-				gl.scissor(ax, ay, r.w, r.h);
-				gl.clearColor(0, 0, 0, 0);
-				gl.clear(gl.COLOR_BUFFER_BIT);
-				gl.disable(gl.SCISSOR_TEST);
+				// (Its own place cleared)
+				this._pass!.clear([0, 0, 0, 0], [ax, ay, r.w, r.h]);
 				const runs = batchRuns(drawBatch, (b) => this._made(b), L);
 				for (let i = L.from; i < L.to; i++) {
 					const b = batches[i];
@@ -1478,10 +1428,10 @@ export class IgeUiGlRenderer {
 				// A clip of any shape opening or closing: its shape marked in the stencil (or taken back), then on as before;
 				// not the target's when it's in a layer
 				if (b.owner) continue;
-				this._stencil.apply(gl, b.stencil, width, height, scale, offset);
-				gl.useProgram(this._program);
-				gl.bindVertexArray(this._vao);
-				gl.bindBuffer(gl.ARRAY_BUFFER, this._inst);
+				this._stencil.apply(device, this._pass!, b.stencil, width, height, scale, offset);
+				// (The UI's own vertex buffers set again: the clip's pipeline used its own)
+				this._pass!.setVertexBuffer(0, this._quad!);
+				this._pass!.setVertexBuffer(1, this._inst!);
 				continue;
 			}
 			// (Drawn into its filter's layer instead; a layer made as its composite's drawn; a glow's silhouette only into it)
@@ -1518,19 +1468,19 @@ export class IgeUiGlRenderer {
 			if (b.backdrop && shared.has(b.backdrop)) blurred = shared.get(b.backdrop)!;
 			else if (b.backdrop) {
 				blurred = this._blurBackdrop(b.backdrop, height, target);
-				gl.useProgram(this._program);
-				gl.bindVertexArray(this._vao);
-				gl.viewport(0, 0, width, height);
-				gl.enable(gl.BLEND);
+				this._bind({ target, width, height, offset });
 				calls += 2;
 			}
 			if (b.blend === "add") b.image = blurred;
 			drawBatch(b);
 		}
 		runs.flush();
-		this._stencil.end(gl);
-		gl.bindVertexArray(null);
-		gl.depthMask(true);
+		this._stencil.end();
+		this._pass?.end();
+		this._pass = null;
+		this._frame = null;
+		// (The context handed back as other GL code expects it)
+		device.release();
 		this.drawCalls = calls;
 		return calls;
 	}
@@ -1539,7 +1489,7 @@ export class IgeUiGlRenderer {
 	 * A shadow's or a fade's composite's texture when it was made ahead in its atlas (nothing to do as it's reached);
 	 * undefined for one made as it's drawn.
 	 */
-	_made (b: Batch): WebGLTexture | undefined {
+	_made (b: Batch): IgeGpuTexture | undefined {
 		const g = b.shadow?.group;
 		if (g) return g.atlas && g.drawn && g.region && this._shadows.atlasOut ? this._shadows.atlasOut.tex : undefined;
 		const L = b.layer;
@@ -1551,24 +1501,40 @@ export class IgeUiGlRenderer {
 	 * A text glow's blurred silhouette (IgeUiTextGlow): from the cache, or its glyphs drawn alone and blurred now, and
 	 * what `frame` was drawing put back. `offset`: the UI's corner on the target (device px), as the regions are.
 	 */
-	_glowTexture (G: IgeUiTextGlow, batches: Batch[], drawBatch: (b: Batch) => void, frame: Frame, offset: [number, number]): WebGLTexture | null {
-		const gl = this.gl;
-		const begin = (target: WebGLFramebuffer | null, w: number, h: number, corner: [number, number]) => this._bind({ target, width: w, height: h, offset: [offset[0] - corner[0], offset[1] - corner[1]] });
+	_glowTexture (G: IgeUiTextGlow, batches: Batch[], drawBatch: (b: Batch) => void, frame: Frame, offset: [number, number]): IgeGpuTexture | null {
+		const begin = (target: IgeGpuTexture, w: number, h: number, corner: [number, number]) => this._bind({ target, width: w, height: h, offset: [offset[0] - corner[0], offset[1] - corner[1]] }, true);
 		return this._glows.texture(this, this._filters, G, begin, () => drawBatch(batches[G.silhouette]), () => this._bind(frame));
 	}
 
-	/** The program set up to draw into `f`: its target, viewport, and the uniforms that place what's drawn on it. */
-	_bind (f: Frame): void {
-		const gl = this.gl, v = f.view ?? [0, 0];
-		gl.bindFramebuffer(gl.FRAMEBUFFER, f.target);
-		gl.viewport(v[0], v[1], f.width, f.height);
-		gl.useProgram(this._program);
-		gl.bindVertexArray(this._vao);
-		gl.enable(gl.BLEND);
-		gl.uniform2f(this._uniforms.u_resolution, f.width, f.height);
-		gl.uniform2f(this._uniforms.u_offset, f.offset[0], f.offset[1]);
-		gl.uniform2f(this._uniforms.u_view, v[0], v[1]);
-		gl.activeTexture(gl.TEXTURE2);
+	/**
+	 * A pass begun into `f`'s target (cleared first if asked), set up to draw the UI there: its viewport, the uniforms
+	 * that place what's drawn on it, the glyph pages and ramps, the quad and the frame's instances.
+	 */
+	_bind (f: Frame, clear?: boolean): void {
+		const v = f.view ?? [0, 0];
+		const pass = this._beginPass(f.target, clear);
+		this._frame = f;
+		pass.setViewport(v[0], v[1], f.width, f.height);
+		const u = this._u;
+		u[0] = f.width;
+		u[1] = f.height;
+		u[3] = f.offset[0];
+		u[4] = f.offset[1];
+		u[5] = v[0];
+		u[6] = v[1];
+		pass.setUniforms(u);
+		pass.setVertexBuffer(0, this._quad!);
+		pass.setVertexBuffer(1, this._inst!);
+		if (this._atlasTex) pass.setTexture(0, this._atlasTex);
+		pass.setTexture(1, this._ramp!);
+	}
+
+	/** A pass begun into `target` (the one being recorded ended first; cleared whole if asked). */
+	_beginPass (target: IgeGpuRenderTarget, clear?: boolean): IgeGpuRenderPass {
+		this._pass?.end();
+		this._frame = null;
+		this._pass = this.device.beginRenderPass({ color: { target, loadOp: clear ? "clear" : "load", clearValue: [0, 0, 0, 0] } });
+		return this._pass;
 	}
 
 	/**
@@ -1576,22 +1542,16 @@ export class IgeUiGlRenderer {
 	 * on the target; backdrops left out), its filter list run on that, and what `frame` was drawing put back. Returns
 	 * the texture holding the result. `offset`: the UI's corner on the target (device px), as the regions are.
 	 */
-	_layer (L: IgeUiFilterLayer, batches: Batch[], drawBatch: (b: Batch) => void, frame: Frame, scale: number, offset: [number, number]): WebGLTexture | null {
-		const gl = this.gl, r = L.region!;
-		const into: Frame = { target: this._filters.layers[L.depth][0].fbo, width: r.w, height: r.h, offset: [offset[0] - r.x, offset[1] - r.y] };
-		const begin = (f: Frame) => this._bind(f);
-		begin(into);
+	_layer (L: IgeUiFilterLayer, batches: Batch[], drawBatch: (b: Batch) => void, frame: Frame, scale: number, offset: [number, number]): IgeGpuTexture | null {
+		const r = L.region!;
+		const into: Frame = { target: this._filters.layers[L.depth][0].tex, width: r.w, height: r.h, offset: [offset[0] - r.x, offset[1] - r.y] };
+		const begin = (f: Frame, clear?: boolean) => this._bind(f, clear);
 		// Cleared: only its region when nothing reads past it (a fade, colour filters); all of it for a blur, whose coarse
 		// reads would take in what an earlier layer left past it
 		const whole = L.ops.some((o) => o.type !== "matrix");
-		if (!whole) {
-			gl.enable(gl.SCISSOR_TEST);
-			gl.scissor(0, 0, r.w, r.h);
-		}
-		gl.clearColor(0, 0, 0, 0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.disable(gl.SCISSOR_TEST);
-		let blurred: WebGLTexture | null = null;
+		begin(into, whole);
+		if (!whole) this._pass!.clear([0, 0, 0, 0], [0, 0, r.w, r.h]);
+		let blurred: IgeGpuTexture | null = null;
 		// (Plain batches in runs: batchRuns)
 		const runs = batchRuns(drawBatch, (b) => this._made(b), L);
 		for (let i = L.from; i < L.to; i++) {
@@ -1674,19 +1634,18 @@ export class IgeUiGlRenderer {
 	}
 
 	/** A texture at least `w` x `h`, made or grown as needed. */
-	_tex (have: { tex: WebGLTexture; w: number; h: number } | null, w: number, h: number, mips: boolean = false): { tex: WebGLTexture; w: number; h: number } {
-		const gl = this.gl;
+	_tex (have: IgeUiTex | null, w: number, h: number, mips: boolean = false): IgeUiTex {
+		const d = this.device;
 		if (have && have.w >= w && have.h >= h) return have;
-		const t = have ?? { tex: gl.createTexture()!, w: 0, h: 0 };
-		t.w = Math.max(w, have?.w ?? 0);
-		t.h = Math.max(h, have?.h ?? 0);
-		gl.bindTexture(gl.TEXTURE_2D, t.tex);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, t.w, t.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mips ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		return t;
+		const tw = Math.max(w, have?.w ?? 0), th = Math.max(h, have?.h ?? 0);
+		// (Read with its smaller levels when they're asked for: made before it's read)
+		const sampler = { minFilter: "linear" as const, magFilter: "linear" as const, mipmapFilter: mips ? "linear" as const : "none" as const, addressModeU: "clamp-to-edge" as const, addressModeV: "clamp-to-edge" as const };
+		if (!have) return { tex: d.createTexture({ width: tw, height: th, format: "rgba8unorm", mipmaps: true, sampler, label: "ui2 target" }), w: tw, h: th };
+		d.resizeTexture(have.tex, tw, th);
+		d.setSampler(have.tex, sampler);
+		have.w = tw;
+		have.h = th;
+		return have;
 	}
 
 	/**
@@ -1694,8 +1653,8 @@ export class IgeUiGlRenderer {
 	 * it), blurs it at half size (a Gaussian, across then down) and returns the texture to draw it from (its corner
 	 * at 0,0; the batch's uv were worked out for that). Leaves the target bound again.
 	 */
-	_blurBackdrop (r: { x: number; y: number; w: number; h: number; sigma: number; ops?: number[][] }, height: number, target: WebGLFramebuffer | null): WebGLTexture | null {
-		const gl = this.gl;
+	_blurBackdrop (r: { x: number; y: number; w: number; h: number; sigma: number; ops?: number[][] }, height: number, target: IgeGpuRenderTarget): IgeGpuTexture | null {
+		const d = this.device;
 		const k = this._backdropStep(r.sigma);
 		const [hw, hh] = this._backdropSize(r);
 		// (The textures were grown for the frame's biggest backdrop before its uv were set)
@@ -1703,38 +1662,20 @@ export class IgeUiGlRenderer {
 		this._blurA = this._tex(this._blurA, hw, hh);
 		this._blurB = this._tex(this._blurB, hw, hh);
 		// The copy (the target's rows bottom up), and its smaller levels: the blur reads the one k times smaller
-		gl.bindFramebuffer(gl.FRAMEBUFFER, target);
-		gl.activeTexture(gl.TEXTURE3);
-		gl.bindTexture(gl.TEXTURE_2D, this._grab.tex);
-		gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, r.x, height - (r.y + r.h), r.w, r.h);
-		if (k > 1) gl.generateMipmap(gl.TEXTURE_2D);
-		gl.useProgram(this._blurProgram);
-		gl.bindVertexArray(this._vao);
-		gl.disable(gl.BLEND);
-		gl.uniform1i(this._blurUniforms.u_src, 3);
+		d.copyTargetToTexture(target, [r.x, height - (r.y + r.h), r.w, r.h], this._grab.tex);
+		if (k > 1) d.generateMipmaps(this._grab.tex);
 		/** One pass: `src`'s first `area` texels blurred along `dir` (steps of `step` texels, `sigma` of those) into `dst`'s first hw x hh. */
-		const pass = (src: { tex: WebGLTexture; w: number; h: number }, dst: { tex: WebGLTexture; w: number; h: number }, area: [number, number], dir: [number, number], step: number, sigma: number, lod: number) => {
-			gl.bindFramebuffer(gl.FRAMEBUFFER, this._blurFbo);
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.tex, 0);
-			gl.viewport(0, 0, hw, hh);
-			gl.bindTexture(gl.TEXTURE_2D, src.tex);
-			gl.uniform4f(this._blurUniforms.u_area, 0, 0, area[0] / src.w, area[1] / src.h);
-			gl.uniform2f(this._blurUniforms.u_step, (dir[0] * step) / src.w, (dir[1] * step) / src.h);
-			gl.uniform1f(this._blurUniforms.u_sigma, sigma);
-			gl.uniform1f(this._blurUniforms.u_lod, lod);
-			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+		const pass = (src: IgeUiTex, dst: IgeUiTex, area: [number, number], dir: [number, number], step: number, sigma: number, lod: number) => {
+			const p = this._beginPass(dst.tex);
+			p.setViewport(0, 0, hw, hh);
+			blurDraw(this, p, src, [0, 0, area[0] / src.w, area[1] / src.h], [(dir[0] * step) / src.w, (dir[1] * step) / src.h], sigma, lod);
 		};
 		// Across (from the k-times-smaller level, into a k-times-smaller target), then down
 		pass(this._grab, this._blurA, [r.w, r.h], [1, 0], k, r.sigma / k, Math.log2(k));
 		pass(this._blurA, this._blurB, [hw, hh], [0, 1], 1, r.sigma / k, 0);
 		// backdrop-filter's colour functions (grayscale(), contrast()...: IgeUiFilters), after its blur
-		if (r.ops?.length) {
-			gl.bindFramebuffer(gl.FRAMEBUFFER, this._blurFbo);
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this._blurA.tex, 0);
-			this._filters.colorPass(this, this._blurB, { fbo: this._blurFbo, ...this._blurA }, hw, hh, r.ops.slice(0, 8));
-		}
-		gl.bindFramebuffer(gl.FRAMEBUFFER, target);
-		gl.activeTexture(gl.TEXTURE2);
+		if (r.ops?.length) this._filters.colorPass(this, this._blurB, this._blurA, hw, hh, r.ops.slice(0, 8));
+		// (The caller begins its own pass again)
 		return r.ops?.length ? this._blurA.tex : this._blurB.tex;
 	}
 

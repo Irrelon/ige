@@ -61,7 +61,7 @@ A backend on D3D12, Metal or Vulkan flips y in its cross-compiled shaders and it
   - Vertex layouts are vertex array objects, one per distinct layout, shared by the pipelines that use it.
 - **Instances.** A draw's `firstInstance` moves the instance attributes' offset, because WebGL2 has no base instance. An attribute is pointed again only when its buffer or offset changes.
 - **Uniforms.** Set member by member, only those whose values changed. The values are the program's own, so they survive `invalidate()`.
-- **Textures.** Texture slots are texture units 0, 1, 2… Uploads and copies use the last unit, so they never disturb a draw's bindings. Unbinding a slot (`setTexture(slot, null)`) keeps a texture being drawn into from also being sampled (a feedback loop).
+- **Textures.** Texture slots are texture units 0, 1, 2… Uploads and copies use the last unit, so they never disturb a draw's bindings. That unit is made active for every upload, copy and mipmap build, even when the texture is already bound there. Unbinding a slot (`setTexture(slot, null)`) keeps a texture being drawn into from also being sampled (a feedback loop).
 - **Render targets.** Each texture drawn into gets its own framebuffer, made the first time it's a target, with a depth/stencil texture attached when a pass brings one.
 
 ## IGE's renderers on it
@@ -113,5 +113,5 @@ The two "to add" rows (multisample targets and resolve; reading a target back) a
 ## Status
 
 - Done: the interface, the WebGL2 device and its tests (`src/tests/gpuWebGl2Device.test.ts`).
-- In progress: ui2's renderer moving onto it.
+- Done: ui2's renderer draws through it. `IgeUiRoot.draw()` takes a WebGL2 context (the device is made for it) or a device, and draws into the bound framebuffer, a framebuffer you pass, or a device target. Its pictures are unchanged: Starflight's parity fixtures stay the same, and the engine's own frames are pixel-identical before and after.
 - Next: the 3D renderer, then the native SDL3 device in the desktop host.

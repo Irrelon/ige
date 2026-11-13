@@ -27,6 +27,8 @@ import { IgeUiImages } from "@/engine/ui2/dom/IgeUiImages";
 import { svgAnimating, svgClock } from "@/engine/ui2/render/IgeUiSvgSmil";
 import { IgeUiLayoutEngine } from "@/engine/ui2/layout/IgeUiLayout";
 import { IgeUiGlRenderer } from "@/engine/ui2/render/IgeUiGlRenderer";
+import type { IgeGpuDevice, IgeGpuRenderTarget } from "@/engine/gpu/IgeGpuDevice";
+import { IgeWebGl2GpuDevice, webGl2GpuDevice, webGl2Surface } from "@/engine/gpu/IgeWebGl2GpuDevice";
 import { gameThumb, type IgeUiPaintItem, IgeUiPainter } from "@/engine/ui2/render/IgeUiPaint";
 import { projectedBox } from "@/engine/ui2/render/IgeUiPerspective";
 import { type IgeUiPress, pressChain, pressClicks, pressMoved, touchScroller } from "@/engine/ui2/input/IgeUiPointers";
@@ -1390,26 +1392,35 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 	// ---------------------------------------------------------------- drawing
 
-	/** Draws onto a WebGL 2 context (the canvas `width` x `height` device px, `dpr` device px per CSS px). */
-	draw (gl: WebGL2RenderingContext, width: number, height: number, dpr: number, target?: WebGLFramebuffer | null): number {
+	/**
+	 * Draws onto a WebGL 2 context, or a GPU device (a native host's): the canvas `width` x `height` device px, `dpr`
+	 * device px per CSS px. `target`: what it's drawn into (a framebuffer, or a device's target; null, the canvas's
+	 * own; none given, the framebuffer its host was drawing into).
+	 */
+	draw (gl: WebGL2RenderingContext | IgeGpuDevice, width: number, height: number, dpr: number, target?: WebGLFramebuffer | IgeGpuRenderTarget | null): number {
 		if (dpr !== this.dpr) {
 			this.dpr = dpr;
 			this._layoutDirty = true;
 			this._layoutAll = true;
 		}
 		this.update();
+		const device = "backend" in gl ? gl : webGl2GpuDevice(gl);
 		if (!this.gl) {
 			this.atlas ??= new IgeUiSdfAtlas(this.host.surface);
-			this.gl = new IgeUiGlRenderer(gl, this.atlas);
-		} else if (this.gl.gl !== gl) this.gl.restore(gl);
+			this.gl = new IgeUiGlRenderer(device, this.atlas);
+		} else if (this.gl.device !== device) this.gl.restore(device);
 		// (The look's tunings, off by default)
 		this.gl.textWeight = this.look.textWeight;
 		this.gl.textGamma = this.look.textGamma;
 		this.gl.textMinSize = this.look.textMinSize;
 		this.gl.backdrop = this.look.backdrop;
 		const t0 = this.host.time.now();
-		// (The framebuffer it's drawn into, when the caller knows it: never asked of GL then)
-		this.gl.target = target;
+		// (The target it's drawn into: given, or (WebGL 2) the framebuffer bound now, as a surface)
+		if (target && "kind" in (target as object)) this.gl.target = target as IgeGpuRenderTarget;
+		else if (device instanceof IgeWebGl2GpuDevice) {
+			const fbo = target === undefined ? (device.gl.getParameter(device.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null) : (target as WebGLFramebuffer | null);
+			this.gl.target = webGl2Surface(device, fbo, width, height);
+		} else this.gl.target = device.surface();
 		const calls = this.gl.draw(this.drag.withGhost(this.items), width, height, this.scale * dpr, [(this.safe.x + this.pageOffset.x) * dpr, (this.safe.y + this.pageOffset.y) * dpr]);
 		this.stats.draw = this.host.time.now() - t0;
 		this.stats.drawCalls = calls;
@@ -1543,7 +1554,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 	/** The renderer was made again (a lost context restored). */
 	contextRestored (gl: WebGL2RenderingContext): void {
-		this.gl?.restore(gl);
+		this.gl?.restore(webGl2GpuDevice(gl));
 	}
 
 	// ---------------------------------------------------------------- input

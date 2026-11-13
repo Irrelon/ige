@@ -22,6 +22,7 @@
  * depth has its own layer textures).
  */
 import { type IgeCssColor, type IgeCssLengthContext, parseShadows, resolveAngle, resolveLength } from "@/engine/ui2/css/IgeCssValues";
+import type { IgeGpuBuffer, IgeGpuDevice, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuRenderTarget, IgeGpuTexture, IgeGpuUniform, IgeGpuVertexBufferLayout } from "@/engine/gpu/IgeGpuDevice";
 
 /** One step of a filter list: a colour matrix (4x5, row by row: r g b a and an offset for each of r, g, b and a), a blur, a drop shadow. */
 export type IgeUiFilterOp =
@@ -177,16 +178,39 @@ export function filterReach (ops: IgeUiFilterOp[]): number {
 	return reach;
 }
 
-type Tex = { tex: WebGLTexture; w: number; h: number };
+/** A texture the renderer keeps (grown as it must: its w x h, at least what's asked of it). */
+export type IgeUiTex = { tex: IgeGpuTexture; w: number; h: number };
+type Tex = IgeUiTex;
 
-/** What the filter pass needs of the renderer: its blur program and texture maker. */
+/** What the filter pass (and the drop shadows, the text glows) need of the renderer: its device, quad and blur. */
 export interface IgeUiFilterHost {
-	gl: WebGL2RenderingContext;
-	_vao: WebGLVertexArrayObject | null;
-	_blurProgram: WebGLProgram | null;
-	_blurUniforms: Record<string, WebGLUniformLocation | null>;
+	device: IgeGpuDevice;
+	/** The full-target quad (a pass's corners 0 to 1). */
+	_quad: IgeGpuBuffer;
+	/** The Gaussian blur (one direction): blurDraw. */
+	_blurPipeline: IgeGpuRenderPipeline;
 	_tex (have: Tex | null, w: number, h: number, mips?: boolean): Tex;
+	/** A pass begun into `target`, cleared first if asked (the renderer's own pass ended: it begins its own again after). */
+	_beginPass (target: IgeGpuRenderTarget, clear?: boolean): IgeGpuRenderPass;
 }
+
+/**
+ * One direction of a Gaussian blur drawn over a pass's viewport: `src` read in `area` (uv: x, y, w, h), steps of
+ * `step` (uv) each, `sigma` of those steps, from its level `lod` (a wide blur reads a smaller level).
+ */
+export function blurDraw (host: IgeUiFilterHost, pass: IgeGpuRenderPass, src: Tex, area: [number, number, number, number], step: [number, number], sigma: number, lod: number): void {
+	pass.setPipeline(host._blurPipeline);
+	pass.setVertexBuffer(0, host._quad);
+	pass.setTexture(0, src.tex);
+	pass.setUniforms([area[0], area[1], area[2], area[3], step[0], step[1], sigma, lod]);
+	pass.draw(4);
+}
+
+/** The blur's uniform block (BLUR_FS: IgeUiGlRenderer), in order. */
+export const BLUR_UNIFORMS: IgeGpuUniform[] = [{ name: "u_area", type: "vec4" }, { name: "u_step", type: "vec2" }, { name: "u_sigma", type: "f32" }, { name: "u_lod", type: "f32" }];
+
+/** The quad a pass is drawn with: corners 0 to 1 at location 0. */
+export const QUAD_LAYOUT: IgeGpuVertexBufferLayout = { arrayStride: 8, attributes: [{ shaderLocation: 0, format: "float32x2", offset: 0 }] };
 
 const PASS_VS = `#version 300 es
 layout(location=0) in vec2 a_corner;
@@ -234,159 +258,123 @@ void main() {
 	outColor = c + s * (1.0 - c.a);
 }`;
 
-/** A layer: its texture and the framebuffer drawing into it. */
-export interface IgeUiLayerTex extends Tex {
-	fbo: WebGLFramebuffer;
-}
+/** A layer: a texture it's drawn into (the device keeps its target). */
+export type IgeUiLayerTex = Tex;
 
-/**
- * A pass's target bound and cleared whole first: a layer texture's smaller levels are read (wide blurs), and they'd mix
- * in what an earlier, bigger layer left past this one's region.
- */
 /** A texture read with its smaller levels (a wide blur's coarse reads: made first) or without (drawn 1:1, needing none). */
-function mipReads (gl: WebGL2RenderingContext, tex: WebGLTexture, on: boolean): void {
-	gl.bindTexture(gl.TEXTURE_2D, tex);
-	if (on) gl.generateMipmap(gl.TEXTURE_2D);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, on ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+function mipReads (device: IgeGpuDevice, tex: IgeGpuTexture, on: boolean): void {
+	if (on) device.generateMipmaps(tex);
+	device.setSampler(tex, { mipmapFilter: on ? "linear" : "none" });
 }
 
-function target (gl: WebGL2RenderingContext, fbo: WebGLFramebuffer | null, w: number, h: number): void {
-	gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-	gl.clearColor(0, 0, 0, 0);
-	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.viewport(0, 0, w, h);
+/** A pass into `dst`, cleared whole first, its viewport its first w x h. */
+function target (host: IgeUiFilterHost, dst: Tex, w: number, h: number): IgeGpuRenderPass {
+	const pass = host._beginPass(dst.tex, true);
+	pass.setViewport(0, 0, w, h);
+	return pass;
 }
 
 /**
  * The filter pass: each nesting depth's four layer textures (what's drawn, and room for a filter list's steps), and
- * the programs that run the colour functions and put drop shadows under.
+ * the pipelines that run the colour functions and put drop shadows under.
  */
 export class IgeUiFilterPass {
 	layers: IgeUiLayerTex[][] = [];
-	color: WebGLProgram | null = null;
-	colorU: Record<string, WebGLUniformLocation | null> = {};
-	under: WebGLProgram | null = null;
-	underU: Record<string, WebGLUniformLocation | null> = {};
+	_device: IgeGpuDevice | null = null;
+	_color: IgeGpuRenderPipeline | null = null;
+	_under: IgeGpuRenderPipeline | null = null;
+	/** The colour pass's uniform block (u_part, u_count, u_m[8], u_o[8]). */
+	_colorU = new Float32Array(2 + 1 + 16 * 8 + 4 * 8);
 
 	/** Forgotten (a lost context): made again as they're next needed. */
 	reset (): void {
 		this.layers = [];
-		this.color = this.under = null;
+		this._color = this._under = null;
+		this._device = null;
 	}
 
-	/** Depth `d`'s textures, all grown to at least w x h (`restore`: the target bound again after a new one's set up); their size. */
-	size (host: IgeUiFilterHost, d: number, w: number, h: number, restore: WebGLFramebuffer | null): [number, number] {
-		const gl = host.gl;
+	/** Its pipelines, made on the host's device as first needed. */
+	_pipelines (host: IgeUiFilterHost): void {
+		if (this._device === host.device && this._color) return;
+		const device = (this._device = host.device);
+		const pass = (fragment: string, label: string, uniforms: IgeGpuUniform[], textures: string[]) => device.createRenderPipeline({
+			module: device.createShaderModule({ vertex: PASS_VS, fragment, label }),
+			vertex: { buffers: [QUAD_LAYOUT] },
+			primitive: { topology: "triangle-strip" },
+			uniforms,
+			textures: textures.map((name) => ({ name })),
+			label
+		});
+		this._color = pass(COLOR_FS, "ui2 filter colours", [{ name: "u_part", type: "vec2" }, { name: "u_count", type: "i32" }, { name: "u_m", type: "mat4", count: 8 }, { name: "u_o", type: "vec4", count: 8 }], ["u_src"]);
+		this._under = pass(UNDER_FS, "ui2 filter shadow under", [{ name: "u_part", type: "vec2" }, { name: "u_off", type: "vec2" }, { name: "u_color", type: "vec4" }], ["u_src", "u_shadow"]);
+	}
+
+	/** Depth `d`'s textures, all grown to at least w x h; their size. */
+	size (host: IgeUiFilterHost, d: number, w: number, h: number): [number, number] {
 		const set = (this.layers[d] ??= []);
 		for (let k = 0; k < 4; k++) {
 			const have = set[k];
-			// (Grown in place if it must: its framebuffer keeps it; nothing asked of GL, nothing bound but for a new one)
+			// (Grown in place if it must: nothing drawn, its target kept)
 			if (have && have.w >= w && have.h >= h) continue;
 			const t = host._tex(have ?? null, w, h, true);
+			// (Read 1:1 unless a blur asks for its smaller levels: none to make)
+			mipReads(host.device, t.tex, false);
 			if (have) {
 				have.w = t.w;
 				have.h = t.h;
-				mipReads(gl, have.tex, false);
-				continue;
-			}
-			const fb = (set[k] = { ...t, fbo: gl.createFramebuffer()! });
-			// (Read 1:1 unless a blur asks for its smaller levels: none to make)
-			mipReads(gl, fb.tex, false);
-			gl.bindFramebuffer(gl.FRAMEBUFFER, fb.fbo);
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, fb.tex, 0);
-			gl.bindFramebuffer(gl.FRAMEBUFFER, restore);
+			} else set[k] = t;
 		}
 		return [set[0].w, set[0].h];
 	}
 
-	_program (host: IgeUiFilterHost, fs: string, names: string[]): [WebGLProgram, Record<string, WebGLUniformLocation | null>] {
-		const gl = host.gl;
-		const compile = (type: number, src: string) => {
-			const s = gl.createShader(type)!;
-			gl.shaderSource(s, src);
-			gl.compileShader(s);
-			if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(`IgeUiFilters shader: ${gl.getShaderInfoLog(s)}`);
-			return s;
-		};
-		const p = gl.createProgram()!;
-		gl.attachShader(p, compile(gl.VERTEX_SHADER, PASS_VS));
-		gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
-		gl.linkProgram(p);
-		if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(`IgeUiFilters program: ${gl.getProgramInfoLog(p)}`);
-		const u: Record<string, WebGLUniformLocation | null> = {};
-		for (const n of names) u[n] = gl.getUniformLocation(p, n);
-		return [p, u];
-	}
-
-	/** Up to eight colour matrices (4x5 each, row by row) on `src`'s first w x h into `dst`'s, in one pass. The caller restores its own state. */
-	colorPass (host: IgeUiFilterHost, src: Tex, dst: IgeUiLayerTex | { fbo: WebGLFramebuffer | null; tex: WebGLTexture; w: number; h: number }, w: number, h: number, mats: number[][]): void {
-		const gl = host.gl;
-		if (!this.color) [this.color, this.colorU] = this._program(host, COLOR_FS, ["u_src", "u_part", "u_count", "u_m", "u_o"]);
-		target(gl, dst.fbo, w, h);
-		gl.useProgram(this.color);
-		gl.bindVertexArray(host._vao);
-		gl.disable(gl.BLEND);
-		gl.activeTexture(gl.TEXTURE3);
-		gl.bindTexture(gl.TEXTURE_2D, src.tex);
-		gl.uniform1i(this.colorU.u_src, 3);
-		gl.uniform2f(this.colorU.u_part, w / src.w, h / src.h);
+	/** Up to eight colour matrices (4x5 each, row by row) on `src`'s first w x h into `dst`'s, in one pass. The caller begins its own pass again. */
+	colorPass (host: IgeUiFilterHost, src: Tex, dst: Tex, w: number, h: number, mats: number[][]): void {
+		this._pipelines(host);
+		const pass = target(host, dst, w, h);
+		const u = this._colorU;
+		u.fill(0);
+		u[0] = w / src.w;
+		u[1] = h / src.h;
 		const n = Math.min(8, mats.length);
-		const m = new Float32Array(16 * 8), o = new Float32Array(4 * 8);
+		u[2] = n;
+		const m = 3, o = 3 + 16 * 8;
 		for (let i = 0; i < n; i++) {
 			const k = mats[i];
 			// (Column by column for GLSL: column c holds each output's weight of input c)
-			for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) m[i * 16 + c * 4 + r] = k[r * 5 + c];
-			for (let r = 0; r < 4; r++) o[i * 4 + r] = k[r * 5 + 4];
+			for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) u[m + i * 16 + c * 4 + r] = k[r * 5 + c];
+			for (let r = 0; r < 4; r++) u[o + i * 4 + r] = k[r * 5 + 4];
 		}
-		gl.uniform1i(this.colorU.u_count, n);
-		gl.uniformMatrix4fv(this.colorU.u_m, false, m);
-		gl.uniform4fv(this.colorU.u_o, o);
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+		pass.setPipeline(this._color!);
+		pass.setVertexBuffer(0, host._quad);
+		pass.setTexture(0, src.tex);
+		pass.setUniforms(u);
+		pass.draw(4);
 	}
 
 	/** A Gaussian of deviation `sigma` (device px) of `src`'s first w x h into `dst`'s, through `tmp`, at full size (coarser reads for wide blurs). */
-	blurPass (host: IgeUiFilterHost, src: Tex, tmp: IgeUiLayerTex, dst: IgeUiLayerTex, w: number, h: number, sigma: number): void {
-		const gl = host.gl;
+	blurPass (host: IgeUiFilterHost, src: Tex, tmp: Tex, dst: Tex, w: number, h: number, sigma: number): void {
 		const k = sigma >= 16 ? 8 : sigma >= 8 ? 4 : sigma >= 3 ? 2 : 1;
-		gl.useProgram(host._blurProgram);
-		gl.bindVertexArray(host._vao);
-		gl.disable(gl.BLEND);
-		gl.activeTexture(gl.TEXTURE3);
-		gl.uniform1i(host._blurUniforms.u_src, 3);
-		const pass = (from: Tex, to: IgeUiLayerTex, dir: [number, number]) => {
+		const pass = (from: Tex, to: Tex, dir: [number, number]) => {
 			// (Its smaller levels, for the coarse reads, made now; read 1:1 again after)
-			mipReads(gl, from.tex, k > 1);
-			target(gl, to.fbo, w, h);
-			gl.uniform4f(host._blurUniforms.u_area, 0, 0, w / from.w, h / from.h);
-			gl.uniform2f(host._blurUniforms.u_step, (dir[0] * k) / from.w, (dir[1] * k) / from.h);
-			gl.uniform1f(host._blurUniforms.u_sigma, Math.max(sigma, 0.001) / k);
-			gl.uniform1f(host._blurUniforms.u_lod, Math.log2(k));
-			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-			if (k > 1) mipReads(gl, from.tex, false);
+			mipReads(host.device, from.tex, k > 1);
+			const p = target(host, to, w, h);
+			blurDraw(host, p, from, [0, 0, w / from.w, h / from.h], [(dir[0] * k) / from.w, (dir[1] * k) / from.h], Math.max(sigma, 0.001) / k, Math.log2(k));
+			if (k > 1) mipReads(host.device, from.tex, false);
 		};
 		pass(src, tmp, [1, 0]);
 		pass(tmp, dst, [0, 1]);
 	}
 
 	/** `shadow` (its alpha, moved by off: 0 to 1 of the region, tinted) under `src`, into `dst`. */
-	underPass (host: IgeUiFilterHost, src: Tex, shadow: Tex, dst: IgeUiLayerTex, w: number, h: number, off: [number, number], color: IgeCssColor): void {
-		const gl = host.gl;
-		if (!this.under) [this.under, this.underU] = this._program(host, UNDER_FS, ["u_src", "u_shadow", "u_part", "u_off", "u_color"]);
-		target(gl, dst.fbo, w, h);
-		gl.useProgram(this.under);
-		gl.bindVertexArray(host._vao);
-		gl.disable(gl.BLEND);
-		gl.activeTexture(gl.TEXTURE3);
-		gl.bindTexture(gl.TEXTURE_2D, src.tex);
-		gl.activeTexture(gl.TEXTURE4);
-		gl.bindTexture(gl.TEXTURE_2D, shadow.tex);
-		gl.uniform1i(this.underU.u_src, 3);
-		gl.uniform1i(this.underU.u_shadow, 4);
-		gl.uniform2f(this.underU.u_part, w / src.w, h / src.h);
-		gl.uniform2f(this.underU.u_off, off[0], off[1]);
-		gl.uniform4f(this.underU.u_color, color.r / 255, color.g / 255, color.b / 255, color.a);
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-		gl.activeTexture(gl.TEXTURE3);
+	underPass (host: IgeUiFilterHost, src: Tex, shadow: Tex, dst: Tex, w: number, h: number, off: [number, number], color: IgeCssColor): void {
+		this._pipelines(host);
+		const pass = target(host, dst, w, h);
+		pass.setPipeline(this._under!);
+		pass.setVertexBuffer(0, host._quad);
+		pass.setTexture(0, src.tex);
+		pass.setTexture(1, shadow.tex);
+		pass.setUniforms([w / src.w, h / src.h, off[0], off[1], color.r / 255, color.g / 255, color.b / 255, color.a]);
+		pass.draw(4);
 	}
 
 	/**

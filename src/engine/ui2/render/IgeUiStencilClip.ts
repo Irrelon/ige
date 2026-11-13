@@ -6,15 +6,16 @@
  * are rectangles; this is for the rest: a 2D canvas's clip() to a circle (the
  * radar, the minimap), a polygon.
  *
- * Its own small program draws the triangles into the stencil only (no
+ * Its own small pipelines draw the triangles into the stencil only (no
  * colour), so a shape's edge is its triangles' edge: sharp, not smoothed.
- * Where the target has no stencil buffer (an offscreen layer), everything
- * passes: nothing's clipped there.
+ * Only the screen's target has a stencil: in an offscreen layer nothing's
+ * clipped (the renderer draws there without the stencil test).
  */
 import type { IgeCssMatrix } from "@/engine/ui2/css/IgeCssValues";
+import type { IgeGpuBuffer, IgeGpuDevice, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuShaderModule } from "@/engine/gpu/IgeGpuDevice";
 
 const VERT = `#version 300 es
-in vec2 a_pos;
+layout(location=0) in vec2 a_pos;
 void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }`;
 
 const FRAG = `#version 300 es
@@ -42,35 +43,32 @@ export function stencilTriangles (tris: number[], matrix?: IgeCssMatrix): number
 }
 
 export class IgeUiStencilClip {
-	_program: WebGLProgram | null = null;
-	_vao: WebGLVertexArrayObject | null = null;
-	_buffer: WebGLBuffer | null = null;
-	_gl: WebGL2RenderingContext | null = null;
+	_device: IgeGpuDevice | null = null;
+	_module: IgeGpuShaderModule | null = null;
+	/** Marking a clip's shape (the stencil one more inside it) and taking it back (one less). */
+	_open: IgeGpuRenderPipeline | null = null;
+	_close: IgeGpuRenderPipeline | null = null;
+	_buffer: IgeGpuBuffer | null = null;
 	/** How many clips are open (the stencil value inside them all). */
 	depth = 0;
 
-	_init (gl: WebGL2RenderingContext): void {
-		if (this._gl === gl && this._program) return;
-		this._gl = gl;
-		const shader = (type: number, src: string) => {
-			const s = gl.createShader(type)!;
-			gl.shaderSource(s, src);
-			gl.compileShader(s);
-			return s;
-		};
-		const p = gl.createProgram()!;
-		gl.attachShader(p, shader(gl.VERTEX_SHADER, VERT));
-		gl.attachShader(p, shader(gl.FRAGMENT_SHADER, FRAG));
-		gl.bindAttribLocation(p, 0, "a_pos");
-		gl.linkProgram(p);
-		this._program = p;
-		this._vao = gl.createVertexArray();
-		this._buffer = gl.createBuffer();
-		gl.bindVertexArray(this._vao);
-		gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-		gl.enableVertexAttribArray(0);
-		gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-		gl.bindVertexArray(null);
+	_init (device: IgeGpuDevice): void {
+		if (this._device === device && this._module) return;
+		this._device = device;
+		this._module = device.createShaderModule({ vertex: VERT, fragment: FRAG, label: "ui2 stencil clip" });
+		// (Its triangles into the stencil only, no colour: where it's inside every clip open now (a clip in a clip keeping
+		// to both), once each where its triangles overlap: a marked pixel no longer passes)
+		const pipeline = (passOp: "increment-clamp" | "decrement-clamp") => device.createRenderPipeline({
+			module: this._module!,
+			vertex: { buffers: [{ arrayStride: 8, attributes: [{ shaderLocation: 0, format: "float32x2", offset: 0 }] }] },
+			primitive: { topology: "triangle-list" },
+			writeColor: false,
+			stencil: { compare: "equal", passOp, readMask: 0xff, writeMask: 0xff },
+			label: `ui2 stencil ${passOp}`
+		});
+		this._open = pipeline("increment-clamp");
+		this._close = pipeline("decrement-clamp");
+		this._buffer = device.createBuffer({ size: 0, usage: "vertex", stream: true, label: "ui2 stencil triangles" });
 	}
 
 	/** A frame's start: no clip open. */
@@ -80,54 +78,40 @@ export class IgeUiStencilClip {
 
 	/**
 	 * A clip opens (its shape marked: the stencil one more inside it, where it was inside all the open ones) or closes
-	 * (taken back); what's drawn next keeps to the clips open then. `scale` and `offset` take the UI's px to the
-	 * target's device px, as the renderer's own shader does. Leaves its own program bound: the caller binds its own again.
+	 * (taken back), in `pass` (the screen's target, which has the stencil). What's drawn next keeps to the clips open
+	 * then: the renderer's own pipelines test the stencil against `depth` while it's above 0. `scale` and `offset` take
+	 * the UI's px to the target's device px, as the renderer's own shader does.
 	 */
-	apply (gl: WebGL2RenderingContext, step: IgeUiStencilStep, width: number, height: number, scale: number, offset: [number, number]): void {
-		this._init(gl);
-		gl.stencilMask(0xff);
-		if (step.open && this.depth === 0) {
-			// (The first clip open: the stencil cleared, whatever was drawn before the UI left there)
-			gl.clearStencil(0);
-			gl.clear(gl.STENCIL_BUFFER_BIT);
-		}
+	apply (device: IgeGpuDevice, pass: IgeGpuRenderPass, step: IgeUiStencilStep, width: number, height: number, scale: number, offset: [number, number]): void {
+		this._init(device);
+		// (The first clip open: the stencil cleared, whatever was drawn before the UI left there)
+		if (step.open && this.depth === 0) pass.clearStencil(0);
 		const t = step.tris;
 		const data = new Float32Array(t.length);
 		for (let i = 0; i + 1 < t.length; i += 2) {
 			data[i] = ((t[i] * scale + offset[0]) / width) * 2 - 1;
 			data[i + 1] = 1 - ((t[i + 1] * scale + offset[1]) / height) * 2;
 		}
-		gl.useProgram(this._program);
-		gl.bindVertexArray(this._vao);
-		gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-		gl.bufferData(gl.ARRAY_BUFFER, data, gl.STREAM_DRAW);
-		gl.enable(gl.STENCIL_TEST);
-		gl.colorMask(false, false, false, false);
-		// (Marked only where it's inside every clip open now, a clip in a clip keeping to both; once each, where its
-		// triangles overlap: a marked pixel no longer passes)
-		gl.stencilFunc(gl.EQUAL, this.depth, 0xff);
-		gl.stencilOp(gl.KEEP, gl.KEEP, step.open ? gl.INCR : gl.DECR);
-		gl.drawArrays(gl.TRIANGLES, 0, t.length / 2);
-		gl.colorMask(true, true, true, true);
+		device.writeBuffer(this._buffer!, 0, data);
+		pass.setPipeline(step.open ? this._open! : this._close!);
+		pass.setVertexBuffer(0, this._buffer!);
+		pass.setStencilReference(this.depth);
+		pass.draw(t.length / 2);
 		this.depth = Math.max(0, this.depth + (step.open ? 1 : -1));
-		// What's drawn next: inside the clips open now (or anywhere, with none)
-		gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-		if (this.depth) gl.stencilFunc(gl.EQUAL, this.depth, 0xff);
-		else gl.disable(gl.STENCIL_TEST);
 	}
 
-	/** A frame's end: the stencil test off. */
-	end (gl: WebGL2RenderingContext): void {
-		if (this.depth) gl.disable(gl.STENCIL_TEST);
+	/** A frame's end: none open (the device turns the stencil test off as it's handed back). */
+	end (): void {
 		this.depth = 0;
 	}
 
 	destroy (): void {
-		const gl = this._gl;
-		if (!gl) return;
-		if (this._program) gl.deleteProgram(this._program);
-		if (this._buffer) gl.deleteBuffer(this._buffer);
-		if (this._vao) gl.deleteVertexArray(this._vao);
-		this._program = null;
+		const d = this._device;
+		if (!d) return;
+		if (this._module) d.destroyShaderModule(this._module);
+		if (this._buffer) d.destroyBuffer(this._buffer);
+		this._module = this._open = this._close = null;
+		this._buffer = null;
+		this._device = null;
 	}
 }

@@ -18,6 +18,7 @@
  * alpha) whose texture is made here as it's first drawn.
  */
 import type { IgeUiPaintText } from "@/engine/ui2/render/IgeUiPaint";
+import type { IgeGpuDevice, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
 import type { IgeUiFilterHost, IgeUiFilterPass, IgeUiLayerTex } from "@/engine/ui2/render/IgeUiFilters";
 
 /** A glow in one frame. */
@@ -86,11 +87,10 @@ export class IgeUiTextGlowCache {
 	}
 
 	/** One frame done: glows not drawn for a while let go (and the oldest, past the most kept). */
-	endFrame (gl: WebGL2RenderingContext): void {
+	endFrame (device: IgeGpuDevice): void {
 		this.frame++;
 		const drop = (k: string, e: Entry) => {
-			gl.deleteTexture(e.tex.tex);
-			gl.deleteFramebuffer(e.tex.fbo);
+			device.destroyTexture(e.tex.tex);
 			this.entries.delete(k);
 		};
 		for (const [k, e] of this.entries) if (this.frame - e.used > this.keepFrames) drop(k, e);
@@ -101,17 +101,10 @@ export class IgeUiTextGlowCache {
 	}
 
 	_layerTex (host: IgeUiFilterHost, have: IgeUiLayerTex | null, w: number, h: number): IgeUiLayerTex {
-		const gl = host.gl;
 		const t = host._tex(have, w, h, true);
-		const out = have ?? { ...t, fbo: gl.createFramebuffer()! };
-		out.w = t.w;
-		out.h = t.h;
 		// (Read 1:1 unless the blur asks for its smaller levels)
-		gl.bindTexture(gl.TEXTURE_2D, out.tex);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.bindFramebuffer(gl.FRAMEBUFFER, out.fbo);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, out.tex, 0);
-		return out;
+		host.device.setSampler(t.tex, { mipmapFilter: "none" });
+		return t;
 	}
 
 	/**
@@ -119,7 +112,7 @@ export class IgeUiTextGlowCache {
 	 * up for the silhouette texture, whose corner is the region's), blurred into a texture of its own the region's size.
 	 * `restore` puts back what was being drawn. Returns its texture.
 	 */
-	texture (host: IgeUiFilterHost, filters: IgeUiFilterPass, g: IgeUiTextGlow, begin: (target: WebGLFramebuffer, w: number, h: number, corner: [number, number]) => void, drawSilhouette: () => void, restore: () => void): WebGLTexture | null {
+	texture (host: IgeUiFilterHost, filters: IgeUiFilterPass, g: IgeUiTextGlow, begin: (target: IgeGpuTexture, w: number, h: number, corner: [number, number]) => void, drawSilhouette: () => void, restore: () => void): IgeGpuTexture | null {
 		const have = this.entries.get(g.key);
 		if (have) {
 			have.used = this.frame;
@@ -127,24 +120,13 @@ export class IgeUiTextGlowCache {
 		}
 		const r = g.region;
 		if (!r) return null;
-		const gl = host.gl;
 		this.sil = this._layerTex(host, this.sil, r.w, r.h);
 		this.tmp = this._layerTex(host, this.tmp, r.w, r.h);
 		// (Exactly its region's size: drawn over it whole, uv 0 to 1)
-		const t = gl.createTexture()!;
-		gl.bindTexture(gl.TEXTURE_2D, t);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, r.w, r.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		const entry: IgeUiLayerTex = { tex: t, w: r.w, h: r.h, fbo: gl.createFramebuffer()! };
-		gl.bindFramebuffer(gl.FRAMEBUFFER, entry.fbo);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
-		// The silhouette, then its blur
-		begin(this.sil.fbo, r.w, r.h, [r.x, r.y]);
-		gl.clearColor(0, 0, 0, 0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
+		const t = host.device.createTexture({ width: r.w, height: r.h, format: "rgba8unorm", label: "ui2 text glow" });
+		const entry: IgeUiLayerTex = { tex: t, w: r.w, h: r.h };
+		// The silhouette (begun cleared), then its blur
+		begin(this.sil.tex, r.w, r.h, [r.x, r.y]);
 		drawSilhouette();
 		filters.blurPass(host, this.sil, this.tmp, entry, r.w, r.h, g.sigma);
 		restore();

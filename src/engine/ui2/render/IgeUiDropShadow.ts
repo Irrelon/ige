@@ -11,6 +11,8 @@
  * instance before the run and asks this to make its texture as it's drawn.
  */
 import { type IgeCssColor, type IgeCssLengthContext, parseShadows } from "@/engine/ui2/css/IgeCssValues";
+import type { IgeGpuDevice, IgeGpuRenderPipeline, IgeGpuRenderTarget } from "@/engine/gpu/IgeGpuDevice";
+import { blurDraw, type IgeUiFilterHost, type IgeUiTex, QUAD_LAYOUT } from "@/engine/ui2/render/IgeUiFilters";
 
 export interface IgeUiDropShadow {
 	x: number;
@@ -66,18 +68,21 @@ export function shadowStep (sigma: number): number {
 	return sigma >= 16 ? 8 : sigma >= 8 ? 4 : sigma >= 3 ? 2 : 1;
 }
 
-type Tex = { tex: WebGLTexture; w: number; h: number };
+type Tex = IgeUiTex;
 
-/** What the drop shadows need of the renderer: its programs, buffers and texture maker. */
-export interface IgeUiShadowHost {
-	gl: WebGL2RenderingContext;
-	_program: WebGLProgram | null;
-	_vao: WebGLVertexArrayObject | null;
-	_uniforms: Record<string, WebGLUniformLocation | null>;
-	_blurProgram: WebGLProgram | null;
-	_blurUniforms: Record<string, WebGLUniformLocation | null>;
-	_blurFbo: WebGLFramebuffer | null;
-	_tex (have: Tex | null, w: number, h: number, mips?: boolean): Tex;
+/** A frame the renderer draws into (its target, size, the UI's corner on it, where its viewport starts). */
+export interface IgeUiShadowFrame {
+	target: IgeGpuRenderTarget;
+	width: number;
+	height: number;
+	offset: [number, number];
+	view?: [number, number];
+}
+
+/** What the drop shadows need of the renderer: its device, quad and blur, its texture maker and its own frames. */
+export interface IgeUiShadowHost extends IgeUiFilterHost {
+	/** Its own pass begun into `f` (cleared first if asked), the UI's program set up to draw there. */
+	_bind (f: IgeUiShadowFrame, clear?: boolean): void;
 }
 
 /** The union pass: a texture's alpha (moved, faded) as black of that alpha (what the next shadow in a chain is cast from). */
@@ -104,7 +109,7 @@ void main() {
 	outColor = vec4(0.0, 0.0, 0.0, a * u_alpha);
 }`;
 
-type AtlasTex = Tex & { fbo: WebGLFramebuffer };
+type AtlasTex = Tex;
 
 /**
  * The textures and framebuffer the drop shadows are made in (one set, used one group at a time): the silhouette, each
@@ -116,9 +121,8 @@ export class IgeUiDropShadowPass {
 	tmp: Tex | null = null;
 	outs: (Tex | null)[] = [];
 	unions: [Tex | null, Tex | null] = [null, null];
-	fbo: WebGLFramebuffer | null = null;
-	union: WebGLProgram | null = null;
-	unionUniforms: Record<string, WebGLUniformLocation | null> = {};
+	_device: IgeGpuDevice | null = null;
+	union: IgeGpuRenderPipeline | null = null;
 
 	/**
 	 * The frame's shadow atlas (one-shadow groups, the commonest: a symbol's soft shadow, a glow round a card): every
@@ -139,20 +143,19 @@ export class IgeUiDropShadowPass {
 		this.silhouette = this.tmp = null;
 		this.outs = [];
 		this.unions = [null, null];
-		this.fbo = null;
 		this.union = null;
+		this._device = null;
 		this.atlasSil = this.atlasTmp = this.atlasOut = null;
 		this.bands = [];
 	}
 
 	/**
 	 * Places the given groups in the atlas (past what one texture should hold, left out: drawn the long way) and sizes
-	 * its textures, `restore` bound after. Returns the atlas's size. Groups whose blurs are alike share a band of rows,
+	 * its textures. Returns the atlas's size. Groups whose blurs are alike share a band of rows,
 	 * blurred whole in one draw a pass: each region far enough from the next (its blur's room round what's in it, and
 	 * a gap of two texels and two of the blur's coarse reads) that none takes in its neighbour's silhouette.
 	 */
-	packAtlas (host: IgeUiShadowHost, groups: IgeUiShadowGroup[], restore: WebGLFramebuffer | null, scale: number): [number, number] {
-		const gl = host.gl;
+	packAtlas (host: IgeUiShadowHost, groups: IgeUiShadowGroup[], scale: number): [number, number] {
 		const sigmaOf = (g: IgeUiShadowGroup) => (g.shadows[0].blur / 2) * scale;
 		const gapOf = (sigma: number) => 2 + 2 * shadowStep(sigma);
 		const sorted = [...groups].sort((a, b) => sigmaOf(a) - sigmaOf(b));
@@ -186,19 +189,7 @@ export class IgeUiDropShadowPass {
 		if (band) band.y1 = y + row;
 		this.bands = this.bands.filter((b) => b.y1 > b.y0 && b.w > 0);
 		const H = Math.max(1, y + row);
-		const make = (have: AtlasTex | null, mips: boolean): AtlasTex => {
-			const t = host._tex(have, W, H, mips);
-			if (have) {
-				have.w = t.w;
-				have.h = t.h;
-				return have;
-			}
-			const out = { ...t, fbo: gl.createFramebuffer()! };
-			gl.bindFramebuffer(gl.FRAMEBUFFER, out.fbo);
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, out.tex, 0);
-			gl.bindFramebuffer(gl.FRAMEBUFFER, restore);
-			return out;
-		};
+		const make = (have: AtlasTex | null, mips: boolean): AtlasTex => host._tex(have, W, H, mips);
 		// (The silhouettes and the middle step read coarsely by wide blurs; the shadows only 1:1)
 		this.atlasSil = make(this.atlasSil, true);
 		this.atlasTmp = make(this.atlasTmp, true);
@@ -212,34 +203,21 @@ export class IgeUiDropShadowPass {
 	 * binds its own target and program after.
 	 */
 	blurAtlas (host: IgeUiShadowHost): void {
-		const gl = host.gl, sil = this.atlasSil!, tmp = this.atlasTmp!, out = this.atlasOut!;
-		gl.useProgram(host._blurProgram);
-		gl.bindVertexArray(host._vao);
-		gl.disable(gl.BLEND);
-		gl.activeTexture(gl.TEXTURE3);
-		gl.uniform1i(host._blurUniforms.u_src, 3);
+		const sil = this.atlasSil!, tmp = this.atlasTmp!, out = this.atlasOut!;
 		const pass = (from: AtlasTex, to: AtlasTex, dir: [number, number]) => {
-			gl.bindTexture(gl.TEXTURE_2D, from.tex);
 			// (Its smaller levels, for wide blurs' coarse reads; made every time, as a texture made for them and missing any reads black)
-			gl.generateMipmap(gl.TEXTURE_2D);
-			gl.bindFramebuffer(gl.FRAMEBUFFER, to.fbo);
+			host.device.generateMipmaps(from.tex);
 			// (Cleared whole: the next pass's coarse reads would take in what's left between the places)
-			gl.clearColor(0, 0, 0, 0);
-			gl.clear(gl.COLOR_BUFFER_BIT);
+			const p = host._beginPass(to.tex, true);
 			for (const band of this.bands) {
 				const { sigma, y0, y1, w } = band;
 				const k = shadowStep(sigma);
-				gl.viewport(0, y0, w, y1 - y0);
-				gl.uniform4f(host._blurUniforms.u_area, 0, y0 / from.h, w / from.w, (y1 - y0) / from.h);
-				gl.uniform2f(host._blurUniforms.u_step, (dir[0] * k) / from.w, (dir[1] * k) / from.h);
-				gl.uniform1f(host._blurUniforms.u_sigma, Math.max(sigma, 0.001) / k);
-				gl.uniform1f(host._blurUniforms.u_lod, Math.log2(k));
-				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+				p.setViewport(0, y0, w, y1 - y0);
+				blurDraw(host, p, from, [0, y0 / from.h, w / from.w, (y1 - y0) / from.h], [(dir[0] * k) / from.w, (dir[1] * k) / from.h], Math.max(sigma, 0.001) / k, Math.log2(k));
 			}
 		};
 		pass(sil, tmp, [1, 0]);
 		pass(tmp, out, [0, 1]);
-		gl.enable(gl.BLEND);
 	}
 
 	/** The textures grown for a group's region and its shadows' blurs; each shadow's blurred size (before the frame's instances go up: their uv depend on it). */
@@ -258,40 +236,25 @@ export class IgeUiDropShadowPass {
 
 	/**
 	 * Renders a group's silhouette: its batches drawn alone into the silhouette texture, its region's corner at 0,0.
-	 * `drawBatch` draws one of the frame's batches with the program as it's set up. Leaves `target` bound, the
-	 * program's uniforms and viewport as the frame has them (`base`: the UI's corner on the screen's target, when the
-	 * frame is a filter's layer and its own offset differs).
+	 * `drawBatch` draws one of the frame's batches with the program as it's set up. Leaves `frame` drawn into again
+	 * (`base`: the UI's corner on the screen's target, when the frame is a filter's layer and its own offset differs).
 	 */
-	renderSilhouette (host: IgeUiShadowHost, g: IgeUiShadowGroup, drawBatch: (i: number) => void, frame: { width: number; height: number; offset: [number, number]; target: WebGLFramebuffer | null; base?: [number, number] }): void {
-		const gl = host.gl, r = g.region!;
-		this.fbo ??= gl.createFramebuffer();
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.silhouette!.tex, 0);
-		gl.viewport(0, 0, r.w, r.h);
-		gl.clearColor(0, 0, 0, 0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.useProgram(host._program);
-		gl.bindVertexArray(host._vao);
-		gl.uniform2f(host._uniforms.u_resolution, r.w, r.h);
+	renderSilhouette (host: IgeUiShadowHost, g: IgeUiShadowGroup, drawBatch: (i: number) => void, frame: IgeUiShadowFrame & { base?: [number, number] }): void {
+		const r = g.region!;
 		// (The region's on the UI's target: from the UI's corner there, `base`, when what's drawing is a filter's layer)
 		const base = frame.base ?? frame.offset;
-		gl.uniform2f(host._uniforms.u_offset, base[0] - r.x, base[1] - r.y);
-		gl.enable(gl.BLEND);
+		host._bind({ target: this.silhouette!.tex, width: r.w, height: r.h, offset: [base[0] - r.x, base[1] - r.y] }, true);
 		for (let i = g.from; i < g.to; i++) drawBatch(i);
-		gl.uniform2f(host._uniforms.u_resolution, frame.width, frame.height);
-		gl.uniform2f(host._uniforms.u_offset, frame.offset[0], frame.offset[1]);
-		gl.bindFramebuffer(gl.FRAMEBUFFER, frame.target);
-		gl.viewport(0, 0, frame.width, frame.height);
+		host._bind(frame);
 		g.drawn = true;
 	}
 
 	/**
 	 * A group's shadows made, in the order the filter lists them: each blurred from what's there so far (the
-	 * silhouette, then the silhouette over the shadows before it), into `outs`. Leaves the frame's program, target
-	 * and viewport as they were.
+	 * silhouette, then the silhouette over the shadows before it), into `outs`. Leaves `frame` drawn into again.
 	 */
-	chain (host: IgeUiShadowHost, g: IgeUiShadowGroup, scale: number, frame: { target: WebGLFramebuffer | null; width: number; height: number }): void {
-		const gl = host.gl, r = g.region!;
+	chain (host: IgeUiShadowHost, g: IgeUiShadowGroup, scale: number, frame: IgeUiShadowFrame): void {
+		const r = g.region!;
 		let base = this.silhouette!;
 		g.shadows.forEach((sh, k) => {
 			this._blur(host, base, r, (sh.blur / 2) * scale, this.outs[k]!);
@@ -306,39 +269,20 @@ export class IgeUiDropShadowPass {
 			]);
 			base = dst;
 		});
-		gl.bindFramebuffer(gl.FRAMEBUFFER, frame.target);
-		gl.viewport(0, 0, frame.width, frame.height);
-		gl.useProgram(host._program);
-		gl.bindVertexArray(host._vao);
-		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		gl.activeTexture(gl.TEXTURE2);
+		host._bind(frame);
 	}
 
 	/** One shadow's blur (σ device px) of `src`'s region into `out` (k times smaller for a wide blur). */
 	_blur (host: IgeUiShadowHost, src: Tex, r: { w: number; h: number }, sigma: number, out: Tex): void {
-		const gl = host.gl;
 		const k = shadowStep(sigma);
 		const hw = Math.max(1, Math.ceil(r.w / k)), hh = Math.max(1, Math.ceil(r.h / k));
 		const tmp = this.tmp!;
-		gl.activeTexture(gl.TEXTURE3);
-		gl.bindTexture(gl.TEXTURE_2D, src.tex);
 		// (Its smaller levels made every time, even unread: a texture made for them and missing any reads as opaque black)
-		gl.generateMipmap(gl.TEXTURE_2D);
-		gl.useProgram(host._blurProgram);
-		gl.bindVertexArray(host._vao);
-		gl.disable(gl.BLEND);
-		gl.uniform1i(host._blurUniforms.u_src, 3);
+		host.device.generateMipmaps(src.tex);
 		const pass = (from: Tex, to: Tex, area: [number, number], dir: [number, number], step: number, s: number, lod: number) => {
-			gl.bindFramebuffer(gl.FRAMEBUFFER, host._blurFbo);
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, to.tex, 0);
-			gl.viewport(0, 0, hw, hh);
-			gl.bindTexture(gl.TEXTURE_2D, from.tex);
-			gl.uniform4f(host._blurUniforms.u_area, 0, 0, area[0] / from.w, area[1] / from.h);
-			gl.uniform2f(host._blurUniforms.u_step, (dir[0] * step) / from.w, (dir[1] * step) / from.h);
-			gl.uniform1f(host._blurUniforms.u_sigma, s);
-			gl.uniform1f(host._blurUniforms.u_lod, lod);
-			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+			const p = host._beginPass(to.tex);
+			p.setViewport(0, 0, hw, hh);
+			blurDraw(host, p, from, [0, 0, area[0] / from.w, area[1] / from.h], [(dir[0] * step) / from.w, (dir[1] * step) / from.h], s, lod);
 		};
 		// (No blur: a copy, the passes' kernel a single tap)
 		const s = Math.max(sigma, 0.001) / k;
@@ -348,41 +292,27 @@ export class IgeUiDropShadowPass {
 
 	/** Copies (each moved and faded, alpha only) drawn over each other into `dst`'s region, the first lowest. */
 	_unionInto (host: IgeUiShadowHost, dst: Tex, r: { w: number; h: number }, layers: { src: Tex; part: [number, number]; off: [number, number]; alpha: number }[]): void {
-		const gl = host.gl;
-		if (!this.union) {
-			const compile = (type: number, src: string) => {
-				const sh = gl.createShader(type)!;
-				gl.shaderSource(sh, src);
-				gl.compileShader(sh);
-				if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(`IgeUiDropShadow shader: ${gl.getShaderInfoLog(sh)}`);
-				return sh;
-			};
-			const p = gl.createProgram()!;
-			gl.attachShader(p, compile(gl.VERTEX_SHADER, UNION_VS));
-			gl.attachShader(p, compile(gl.FRAGMENT_SHADER, UNION_FS));
-			gl.linkProgram(p);
-			if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(`IgeUiDropShadow program: ${gl.getProgramInfoLog(p)}`);
-			this.union = p;
-			for (const u of ["u_src", "u_part", "u_off", "u_alpha"]) this.unionUniforms[u] = gl.getUniformLocation(p, u);
+		const device = host.device;
+		if (!this.union || this._device !== device) {
+			this._device = device;
+			this.union = device.createRenderPipeline({
+				module: device.createShaderModule({ vertex: UNION_VS, fragment: UNION_FS, label: "ui2 drop shadow union" }),
+				vertex: { buffers: [QUAD_LAYOUT] },
+				primitive: { topology: "triangle-strip" },
+				blend: { color: { srcFactor: "one", dstFactor: "one-minus-src-alpha" }, alpha: { srcFactor: "one", dstFactor: "one-minus-src-alpha" } },
+				uniforms: [{ name: "u_part", type: "vec2" }, { name: "u_off", type: "vec2" }, { name: "u_alpha", type: "f32" }],
+				textures: [{ name: "u_src" }],
+				label: "ui2 drop shadow union"
+			});
 		}
-		this.fbo ??= gl.createFramebuffer();
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.tex, 0);
-		gl.viewport(0, 0, r.w, r.h);
-		gl.clearColor(0, 0, 0, 0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.useProgram(this.union);
-		gl.bindVertexArray(host._vao);
-		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		gl.activeTexture(gl.TEXTURE3);
-		gl.uniform1i(this.unionUniforms.u_src, 3);
+		const p = host._beginPass(dst.tex, true);
+		p.setViewport(0, 0, r.w, r.h);
+		p.setPipeline(this.union);
+		p.setVertexBuffer(0, host._quad);
 		for (const l of layers) {
-			gl.bindTexture(gl.TEXTURE_2D, l.src.tex);
-			gl.uniform2f(this.unionUniforms.u_part, l.part[0], l.part[1]);
-			gl.uniform2f(this.unionUniforms.u_off, l.off[0], l.off[1]);
-			gl.uniform1f(this.unionUniforms.u_alpha, l.alpha);
-			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+			p.setTexture(0, l.src.tex);
+			p.setUniforms([l.part[0], l.part[1], l.off[0], l.off[1], l.alpha]);
+			p.draw(4);
 		}
 	}
 }

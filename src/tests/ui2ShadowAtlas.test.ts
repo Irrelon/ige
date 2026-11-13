@@ -2,10 +2,9 @@ import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
 import { IgeUiDropShadowPass, type IgeUiShadowGroup, type IgeUiShadowHost, shadowStep } from "@/engine/ui2/render/IgeUiDropShadow";
 import { IgeUiFixedFonts } from "@/engine/ui2/text/IgeUiFonts";
 
-/** Just enough of a host for packing: textures sized as asked, framebuffers that are nothing. */
+/** Just enough of a host for packing: textures sized as asked. */
 function host (): IgeUiShadowHost {
-	const gl = { FRAMEBUFFER: 0, COLOR_ATTACHMENT0: 0, TEXTURE_2D: 0, createFramebuffer: () => ({}), bindFramebuffer () {}, framebufferTexture2D () {} };
-	return { gl, _tex: (have: unknown, w: number, h: number) => ({ tex: {}, w, h }) } as unknown as IgeUiShadowHost;
+	return { _tex: (have: unknown, w: number, h: number) => ({ tex: {}, w, h }) } as unknown as IgeUiShadowHost;
 }
 
 const group = (blur: number, w: number, h: number): IgeUiShadowGroup => ({
@@ -17,7 +16,7 @@ describe("ui2: the drop shadows' atlas", () => {
 		const pass = new IgeUiDropShadowPass();
 		// (A reel's symbols' soft shadows, a line's glow, another symbol: in any order)
 		const groups = [group(2, 60, 60), group(12, 300, 40), group(2, 60, 60), group(2, 60, 60)];
-		pass.packAtlas(host(), groups, null, 2);
+		pass.packAtlas(host(), groups, 2);
 		expect(pass.bands.map((b) => b.sigma)).toEqual([2, 12]);
 		const [a, b] = pass.bands;
 		// The bands' rows apart

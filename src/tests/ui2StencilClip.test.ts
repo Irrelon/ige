@@ -1,6 +1,7 @@
 import { IgeUiCanvas2d } from "@/engine/ui2/render/IgeUiCanvas2d";
 import type { IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 import { IgeUiStencilClip, stencilTriangles } from "@/engine/ui2/render/IgeUiStencilClip";
+import type { IgeGpuDevice, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuRenderPipelineDesc } from "@/engine/gpu/IgeGpuDevice";
 
 const fonts = { measure: () => 0, metrics: () => ({ ascent: 8, descent: 2 }) };
 type Group = Extract<IgeUiPaintItem, { op: "group" }>;
@@ -16,19 +17,27 @@ function canvas (w = 100, h = 100) {
 	return { c, paint };
 }
 
-/** A GL that records what's called (its constants their own names). */
-function fakeGl () {
+/** A GPU device and a pass that record what the clip asks of them (its pipelines by their stencil op). */
+function fakeGpu () {
 	const calls: string[] = [];
-	const gl = new Proxy({} as Record<string, unknown>, {
-		get: (_t, k: string) => {
-			if (/^[A-Z_0-9]+$/.test(k)) return k;
-			return (...args: unknown[]) => {
-				if (/^(stencil\w*|enable|disable|clear|clearStencil|colorMask|drawArrays)$/.test(k)) calls.push(`${k}(${args.map((a) => (typeof a === "number" || typeof a === "string" || typeof a === "boolean" ? a : "…")).join(",")})`);
-				return {};
-			};
-		}
-	});
-	return { gl: gl as unknown as WebGL2RenderingContext, calls };
+	const pipelines: IgeGpuRenderPipelineDesc[] = [];
+	const device = {
+		createShaderModule: () => ({ kind: "shader" }),
+		createRenderPipeline: (d: IgeGpuRenderPipelineDesc) => {
+			pipelines.push(d);
+			return { kind: "pipeline", label: d.stencil!.passOp };
+		},
+		createBuffer: () => ({ kind: "buffer" }),
+		writeBuffer: () => undefined
+	} as unknown as IgeGpuDevice;
+	const pass = {
+		setPipeline: (p: IgeGpuRenderPipeline) => calls.push(`pipeline(${p.label})`),
+		setVertexBuffer: () => undefined,
+		setStencilReference: (r: number) => calls.push(`ref(${r})`),
+		clearStencil: (v: number) => calls.push(`clearStencil(${v})`),
+		draw: (n: number) => calls.push(`draw(${n})`)
+	} as unknown as IgeGpuRenderPass;
+	return { device, pass, calls, pipelines };
 }
 
 /** A diamond round (x, y), `r` to each point: a shape that's no rectangle or ellipse, so a clip to it is a mask. */
@@ -145,29 +154,24 @@ describe("ui2: clips of any shape", () => {
 	});
 
 	it("marks a clip's shape in the stencil as it opens, draws inside it after, and takes it back as it closes; a clip in a clip keeps to both", () => {
-		const { gl, calls } = fakeGl();
+		const { device, pass, calls, pipelines } = fakeGpu();
 		const s = new IgeUiStencilClip();
 		const tri = [0, 0, 10, 0, 0, 10];
 		s.begin();
-		s.apply(gl, { open: true, tris: tri }, 100, 100, 1, [0, 0]);
-		expect(calls).toEqual([
-			"stencilMask(255)", "clearStencil(0)", "clear(STENCIL_BUFFER_BIT)", "enable(STENCIL_TEST)", "colorMask(false,false,false,false)",
-			"stencilFunc(EQUAL,0,255)", "stencilOp(KEEP,KEEP,INCR)", "drawArrays(TRIANGLES,0,3)", "colorMask(true,true,true,true)",
-			"stencilOp(KEEP,KEEP,KEEP)", "stencilFunc(EQUAL,1,255)"
-		]);
+		s.apply(device, pass, { open: true, tris: tri }, 100, 100, 1, [0, 0]);
+		// (The stencil cleared as the first opens; marked where it equals the clips open before, no colour written)
+		expect(calls).toEqual(["clearStencil(0)", "pipeline(increment-clamp)", "ref(0)", "draw(3)"]);
+		expect(pipelines.map((p) => [p.writeColor, p.stencil?.compare, p.stencil?.passOp])).toEqual([[false, "equal", "increment-clamp"], [false, "equal", "decrement-clamp"]]);
+		expect(s.depth).toBe(1);
 		calls.length = 0;
-		s.apply(gl, { open: true, tris: tri }, 100, 100, 1, [0, 0]);
+		s.apply(device, pass, { open: true, tris: tri }, 100, 100, 1, [0, 0]);
 		// (Not cleared again; marked where it's inside the first)
-		expect(calls).not.toContain("clear(STENCIL_BUFFER_BIT)");
-		expect(calls).toContain("stencilFunc(EQUAL,1,255)");
-		expect(calls[calls.length - 1]).toBe("stencilFunc(EQUAL,2,255)");
+		expect(calls).toEqual(["pipeline(increment-clamp)", "ref(1)", "draw(3)"]);
+		expect(s.depth).toBe(2);
 		calls.length = 0;
-		s.apply(gl, { open: false, tris: tri }, 100, 100, 1, [0, 0]);
-		expect(calls).toContain("stencilOp(KEEP,KEEP,DECR)");
-		expect(calls[calls.length - 1]).toBe("stencilFunc(EQUAL,1,255)");
-		calls.length = 0;
-		s.apply(gl, { open: false, tris: tri }, 100, 100, 1, [0, 0]);
-		expect(calls[calls.length - 1]).toBe("disable(STENCIL_TEST)");
+		s.apply(device, pass, { open: false, tris: tri }, 100, 100, 1, [0, 0]);
+		expect(calls).toEqual(["pipeline(decrement-clamp)", "ref(2)", "draw(3)"]);
+		s.apply(device, pass, { open: false, tris: tri }, 100, 100, 1, [0, 0]);
 		expect(s.depth).toBe(0);
 	});
 
