@@ -18,7 +18,7 @@
  * Layout uses the same geometry for the shapes' client rects (their bounds,
  * stroke not included, as a browser gives them).
  */
-import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix, IDENTITY, multiply, parseColor, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
+import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix, IDENTITY, multiply, parseColor, parseTransform, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import type { IgeUiClip, IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 import { type IgeUiFillRule, isSimplePolygon, windingFill } from "@/engine/ui2/render/IgeUiPathFill";
@@ -625,6 +625,9 @@ function svgProps (el: IgeUiElement, parent: SvgProps): SvgProps {
 
 const SHAPES = new Set(["path", "line", "polyline", "polygon", "rect", "circle", "ellipse"]);
 
+/** An SVG drawing's own elements (never drawn with CSS boxes: no background, border or shadow, whatever the CSS says). */
+export const SVG_CONTENT = new Set(["circle", "rect", "ellipse", "line", "polyline", "polygon", "path", "g", "text", "tspan", "textPath", "defs", "use", "linearGradient", "radialGradient", "stop", "pattern", "clipPath", "mask", "symbol", "marker", "animate", "animateTransform", "foreignObject"]);
+
 /** Elements that are only referred to (a pattern's tile, a gradient), not drawn where they are. */
 export const SVG_UNRENDERED = new Set(["defs", "pattern", "clipPath", "mask", "linearGradient", "radialGradient", "symbol", "marker", "title", "desc", "style", "script"]);
 
@@ -656,7 +659,9 @@ export function paintSvg (items: IgeUiPaintItem[], svg: IgeUiElement, x: number,
 			const name = c.localName;
 			if (SVG_UNRENDERED.has(name)) continue;
 			const p = svgProps(c, props);
-			const t = svgTransform(c.getAttribute("transform"));
+			// (Its CSS transform over its transform attribute, about its user space's origin, as SVG has it)
+			const ct = styleValue(cs, "transform");
+			const t = ct && ct !== "none" ? parseTransform(ct, 0, 0, { em: parseFloat(styleValue(cs, "font-size")) || 16, rem: 16, vw: 0, vh: 0, cqw: 0, cqh: 0 }) : svgTransform(c.getAttribute("transform"));
 			const mm = t ? multiply(m, t) : m;
 			const op = opacity * (resolveNumber(styleValue(cs, "opacity")) ?? 1) * (cs.opacity === undefined && c.hasAttribute("opacity") ? Number(c.getAttribute("opacity")) || 0 : 1);
 			if (op <= 0) continue;
@@ -785,7 +790,10 @@ function shape (
 	const at = { clip, matrix, el: unanimated(el), exact: true };
 	// Circles and plain rectangles as boxes (exact, smooth); everything else as triangles and lines
 	// (A stroke in a gradient goes the long way: drawn in pieces, below)
-	if (!stroke.gradient && ((name === "circle" && uniform) || (name === "rect" && axisAligned && !el.hasAttribute("rx") && !el.hasAttribute("ry")))) {
+	// (Dashed strokes: stroke-dasharray, in user units, from stroke-dashoffset)
+	const dashes = dashArray(cs["stroke-dasharray"] ?? el.getAttribute("stroke-dasharray"), scaleOf(m));
+	const dashOffset = (parseFloat(cs["stroke-dashoffset"] ?? el.getAttribute("stroke-dashoffset") ?? "0") || 0) * scaleOf(m);
+	if (!stroke.gradient && !dashes && ((name === "circle" && uniform) || (name === "rect" && axisAligned && !el.hasAttribute("rx") && !el.hasAttribute("ry")))) {
 		let bx: number, by: number, bw: number, bh: number, r: number;
 		if (name === "circle") {
 			const [cx, cy] = apply(m, num("cx"), num("cy"));
@@ -810,16 +818,17 @@ function shape (
 		}
 		return;
 	}
-	const geometry = svgShapeGeometry(el);
+	const cached = cachedShape(el);
+	const geometry = cached.geometry;
 	if (!geometry?.length) return;
 	// (A line never fills; a polyline and an open path fill as if closed)
 	if (name !== "line") {
 		const rule = p["fill-rule"] === "evenodd" ? "evenodd" : "nonzero";
 		if (fill.color && fill.color.a > 0) {
-			const { tris, edges } = fillTriangles(geometry, m, rule);
+			const { tris, edges } = cachedFill(cached, m, rule);
 			if (tris.length) items.push({ op: "fill", tris, edges, color: fill.color, opacity: opacity * fillOpacity, ...at });
 		} else if (fill.gradient) {
-			const { tris, edges } = fillTriangles(geometry, m, rule);
+			const { tris, edges } = cachedFill(cached, m, rule);
 			if (tris.length) paintGradientTriangles(items, { op: "fill", tris, edges, opacity: opacity * fillOpacity, ...at }, fill.gradient);
 		} else if (fill.pattern) {
 			const b = svgShapeBounds(el);
@@ -840,10 +849,104 @@ function shape (
 				gradientStroke(items, pts, !!s.closed, stroke.gradient, shapeBox(el, m), { width: sw, cap, join, opacity: opacity * strokeOpacity, ...at });
 				continue;
 			}
+			if (dashes) {
+				for (const piece of dashPieces(pts, !!s.closed, dashes, dashOffset)) items.push({ op: "line", points: piece, width: sw, color: stroke.color, opacity: opacity * strokeOpacity, cap, join, miterLimit, ...at });
+				continue;
+			}
 			items.push({ op: "line", points: pts, width: sw, color: stroke.color, opacity: opacity * strokeOpacity, closed: s.closed || undefined, cap, join, miterLimit, ...at });
 		}
 	}
 	void svg;
+}
+
+/** The attributes each shape's geometry is made from. */
+const GEOMETRY_ATTRS: Record<string, string[]> = {
+	path: ["d"], line: ["x1", "y1", "x2", "y2"], polyline: ["points"], polygon: ["points"], rect: ["x", "y", "width", "height", "rx", "ry"],
+	circle: ["cx", "cy", "r"], ellipse: ["cx", "cy", "rx", "ry"]
+};
+
+interface CachedShape {
+	key?: string;
+	geometry: IgeUiSvgSubpath[] | undefined;
+	fillKey?: string;
+	fill?: { tris: number[]; edges: number[] };
+}
+
+/**
+ * Each shape's geometry, and its fill's triangles, kept while the attributes it's made from, the matrix it's drawn
+ * through and its fill rule stay the same: a reel of symbols painted again every frame isn't parsed and triangulated
+ * again each time. (The triangles are shared by the items made from them: nothing changes them.)
+ */
+const shapeCache = new WeakMap<IgeUiElement, CachedShape>();
+
+function cachedShape (el: IgeUiElement): CachedShape {
+	const names = GEOMETRY_ATTRS[el.localName];
+	if (!names) return { geometry: svgShapeGeometry(el) };
+	let key = "";
+	for (const n of names) key += `${el.getAttribute(n) ?? "\u0000"}|`;
+	let c = shapeCache.get(el);
+	if (!c || c.key !== key) {
+		c = { key, geometry: svgShapeGeometry(el) };
+		shapeCache.set(el, c);
+	}
+	return c;
+}
+
+function cachedFill (c: CachedShape, m: IgeCssMatrix, rule: IgeUiFillRule): { tris: number[]; edges: number[] } {
+	const key = `${rule}|${m[0]},${m[1]},${m[2]},${m[3]},${m[4]},${m[5]}`;
+	if (c.fill && c.fillKey === key) return c.fill;
+	c.fill = fillTriangles(c.geometry!, m, rule);
+	c.fillKey = key;
+	return c.fill;
+}
+
+/** stroke-dasharray's lengths (through the drawing's scale), repeated to an even count; undefined for none (or all zero). */
+function dashArray (v: string | null | undefined, scale: number): number[] | undefined {
+	if (!v || v === "none") return undefined;
+	const n = v.split(/[\s,]+/).filter(Boolean).map((t) => Math.max(0, parseFloat(t) || 0) * scale);
+	if (!n.length || n.every((x) => x <= 0)) return undefined;
+	return n.length % 2 ? [...n, ...n] : n;
+}
+
+/** A polyline (UI px, closed or not) cut into its dashes: the pieces drawn, each a polyline of its own. */
+function dashPieces (pts: number[], closed: boolean, dashes: number[], offset: number): number[][] {
+	const P = closed ? [...pts, pts[0], pts[1]] : pts;
+	const period = dashes.reduce((a, b) => a + b, 0);
+	// Where along the pattern the line starts
+	let at = ((offset % period) + period) % period, k = 0;
+	while (at >= dashes[k]) {
+		at -= dashes[k];
+		k = (k + 1) % dashes.length;
+	}
+	let left = dashes[k] - at;
+	const out: number[][] = [];
+	let piece: number[] | undefined = k % 2 === 0 ? [P[0], P[1]] : undefined;
+	for (let i = 0; i + 3 < P.length; i += 2) {
+		let x0 = P[i], y0 = P[i + 1];
+		const x1 = P[i + 2], y1 = P[i + 3];
+		let len = Math.hypot(x1 - x0, y1 - y0);
+		while (len > 1e-9) {
+			if (left >= len) {
+				left -= len;
+				if (piece) piece.push(x1, y1);
+				len = 0;
+			} else {
+				const f = left / len, xm = x0 + (x1 - x0) * f, ym = y0 + (y1 - y0) * f;
+				if (piece) {
+					piece.push(xm, ym);
+					out.push(piece);
+					piece = undefined;
+				} else piece = [xm, ym];
+				len -= left;
+				x0 = xm;
+				y0 = ym;
+				k = (k + 1) % dashes.length;
+				left = dashes[k];
+			}
+		}
+	}
+	if (piece && piece.length >= 4) out.push(piece);
+	return out;
 }
 
 /** A shape's bounding box through `m` (UI px: x, y, w, h), as a gradient on it is laid over. */

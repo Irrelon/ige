@@ -127,7 +127,6 @@ export function paintTextDecorations (items: IgeUiPaintItem[], text: IgeUiPaintT
 		const waveAt = d.line === "underline" ? top + 1.9 * t : d.line === "overline" ? top + drawn - 1.9 * t : mid;
 		const band: [number, number] = d.style === "double" ? [top, top + second + drawn] : d.style === "wavy" ? [waveAt - amp - t / 2, waveAt + amp + t / 2] : d.style === "solid" ? [top, top + drawn] : [mid - styled / 2, mid + styled / 2];
 		const parts = d.line !== "line-through" && ink ? clearOf(x0, x1, ink(band[0], band[1]), t) : [[x0, x1] as [number, number]];
-		const within = (a: number, b: number) => parts.flatMap(([p, q]) => (Math.min(b, q) > Math.max(a, p) ? [[Math.max(a, p), Math.min(b, q)] as [number, number]] : []));
 		if (d.style === "solid" || d.style === "double") {
 			for (const [a, b] of parts) {
 				box(a, top, b - a, drawn, d.color);
@@ -136,8 +135,13 @@ export function paintTextDecorations (items: IgeUiPaintItem[], text: IgeUiPaintT
 		} else if (d.style === "dotted" || d.style === "dashed") {
 			// Dots a dot apart from its start; dashes fitted to the run
 			const dash = d.style === "dotted" ? styled : styled * (styled * g >= 3 ? 2 : 3);
-			const starts = d.style === "dotted" ? Array.from({ length: Math.max(0, Math.ceil((x1 - x0) / (2 * styled))) }, (_, i) => i * 2 * styled) : fitDashes(x1 - x0, dash, styled * (styled * g >= 3 ? 1 : 2));
-			for (const s of starts) for (const [a, b] of within(x0 + s, Math.min(x1, x0 + s + dash))) box(a, mid - styled / 2, b - a, styled, d.color, d.style === "dotted" && b - a >= dash - 1e-6);
+			const starts = d.style === "dotted" ? [0, 2 * styled] : fitDashes(x1 - x0, dash, styled * (styled * g >= 3 ? 1 : 2));
+			const period = starts.length > 1 ? starts[1] - starts[0] : x1 - x0 + dash;
+			// (Each part one item, the pattern in the shader, carried on from the run's start)
+			for (const [a, b] of parts) {
+				if (b - a <= 0) continue;
+				items.push({ op: "box", x: a, y: mid - styled / 2, w: b - a, h: styled, radii: [0, 0, 0, 0], color: d.color, ...at, dash: { len: dash, period, round: d.style === "dotted", phase: x0 - a } });
+			}
 		} else {
 			// A wave from its start, its crest a thickness under where the line would be
 			const y = waveAt;

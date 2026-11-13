@@ -1,5 +1,5 @@
 import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
-import { describePaint, type IgeUiPaintFill, type IgeUiPaintLine } from "@/engine/ui2/render/IgeUiPaint";
+import { describePaint, type IgeUiPaintBox, type IgeUiPaintFill, type IgeUiPaintLine } from "@/engine/ui2/render/IgeUiPaint";
 import { parseDropShadows } from "@/engine/ui2/render/IgeUiDropShadow";
 import { fillTriangles, parsePathData, svgTransform, triangulate } from "@/engine/ui2/render/IgeUiSvg";
 import { IgeUiFixedFonts } from "@/engine/ui2/text/IgeUiFonts";
@@ -171,11 +171,13 @@ describe("ui2: dashed and dotted borders", () => {
 		r.document.body.innerHTML = `<div class="b"></div>`;
 		r.update();
 		const boxes = r.items.filter((i) => i.op === "box");
-		const top = boxes.filter((i) => i.op === "box" && i.y === 0 && i.h === 1);
-		// 192px wide (3 + 188 + 1): dashes of 3 with gaps of about 2
-		expect(top[0]).toMatchObject({ x: 0, w: 3 });
-		expect(top[top.length - 1].op === "box" && Math.round((top[top.length - 1] as { x: number; w: number }).x + (top[top.length - 1] as { w: number }).w)).toBe(192);
-		expect(top.length).toBe(Math.round((192 + 2) / 5));
+		const top = boxes.filter((i) => i.op === "box" && i.y === 0 && i.h === 1) as IgeUiPaintBox[];
+		// 192px wide (3 + 188 + 1): one strip, its dashes of 3 with gaps of about 2 (drawn in the shader) fitted to it so
+		// it starts and ends on a dash
+		expect(top.length).toBe(1);
+		expect(top[0]).toMatchObject({ x: 0, w: 192 });
+		expect(top[0].dash!.len).toBe(3);
+		expect(top[0].dash!.period * (Math.round((192 + 2) / 5) - 1) + 3).toBeCloseTo(192, 6);
 		// The left side solid, between the top and bottom
 		expect(describePaint(boxes.filter((i) => i.op === "box" && i.color?.g === 0))).toEqual(["box 0,1 3x46 rgba(255,0,0,1)"]);
 	});

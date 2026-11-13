@@ -5,11 +5,15 @@
  * as it's wide, round from 2px), the horizontal sides the box's full width
  * and the vertical sides between them. Solid sides are strips, as before.
  *
- * A box with rounded corners whose sides are all dashed (or dotted) alike
- * (a ring of dashes round a chip) has its dashes spaced evenly round the
- * whole rounded outline, each a short straight dash turned along it.
+ * A box with rounded corners (or elliptical ones) whose sides are all dashed
+ * (or dotted) alike (a ring of dashes round a chip, a spinning rim) has its
+ * dashes spaced evenly round the whole rounded outline, following its curve.
+ *
+ * Each side, or the whole ring, is one paint item with its pattern (dash,
+ * period) drawn in the shader: a card collection's hundred dashed cards are
+ * four hundred items, not seven thousand.
  */
-import { type IgeCssColor, type IgeCssMatrix, IDENTITY, multiply } from "@/engine/ui2/css/IgeCssValues";
+import type { IgeCssColor } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiPaintBox, IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 
 export interface IgeUiBorderSide {
@@ -56,10 +60,17 @@ export function paintDashedBorder (items: IgeUiPaintItem[], x: number, y: number
 			return;
 		}
 		const round = s.style === "dotted" && s.w >= 2;
-		for (const [at, len] of dashRuns(length, s.w, s.style)) {
-			if (horizontal) push(sx + at, sy, len, s.w, s.c, round);
-			else push(sx, sy + at, s.w, len, s.c, round);
+		const runs = dashRuns(length, s.w, s.style);
+		// (One dash: the side as it is; more: one item, its pattern (the dash, the period they're fitted to) in the shader)
+		if (runs.length < 2) {
+			for (const [at, len] of runs) {
+				if (horizontal) push(sx + at, sy, len, s.w, s.c, round);
+				else push(sx, sy + at, s.w, len, s.c, round);
+			}
+			return;
 		}
+		const dash = { len: runs[0][1], period: runs[1][0], vertical: !horizontal, round };
+		if (s.c.a > 0) items.push({ op: "box", ...base, x: sx, y: sy, w: horizontal ? length : s.w, h: horizontal ? s.w : length, color: s.c, radii: [0, 0, 0, 0], radiiY: undefined, chamfer: undefined, dash });
 	};
 	side(t, true, x, y, w);
 	side(b, true, x, y + h - b.w, w);
@@ -78,58 +89,28 @@ function dashGap (width: number, style: string): [number, number] {
  * (on the middle of the border's line); false (nothing drawn) when it isn't one.
  */
 function paintRoundDashes (items: IgeUiPaintItem[], x: number, y: number, w: number, h: number, sides: IgeUiBorderSide[], base: Omit<IgeUiPaintBox, "op" | "x" | "y" | "w" | "h">): boolean {
-	const radii = base.radii ?? [0, 0, 0, 0];
+	const radii = base.radii ?? [0, 0, 0, 0], radiiY = base.radiiY ?? radii;
 	if (!radii.some((r) => r > 0)) return false;
 	const s = sides[0];
 	const alike = sides.every((o) => o.w === s.w && o.style === s.style && o.c.r === s.c.r && o.c.g === s.c.g && o.c.b === s.c.b && o.c.a === s.c.a);
 	if (!alike || s.w <= 0 || s.c.a <= 0 || (s.style !== "dashed" && s.style !== "dotted")) return false;
 	const bw = s.w;
-	// The outline the dashes run along: the middle of the border's line, its corners' radii fitted to it
-	const mx = x + bw / 2, my = y + bw / 2, mw = Math.max(0, w - bw), mh = Math.max(0, h - bw);
-	let rr = radii.map((r) => Math.max(0, r - bw / 2));
-	const fit = Math.min(1, mw / Math.max(1e-6, rr[0] + rr[1]), mw / Math.max(1e-6, rr[3] + rr[2]), mh / Math.max(1e-6, rr[0] + rr[3]), mh / Math.max(1e-6, rr[1] + rr[2]));
-	rr = rr.map((r) => r * fit);
-	const [tl, tr, br, bl] = rr;
-	// Its pieces in turn, clockwise from the top's left end: straight runs and quarter turns
-	type Piece = { len: number; at: (d: number) => [number, number, number] };
-	const line = (x0: number, y0: number, x1: number, y1: number): Piece => {
-		const len = Math.hypot(x1 - x0, y1 - y0), a = Math.atan2(y1 - y0, x1 - x0);
-		return { len, at: (d) => [x0 + ((x1 - x0) * d) / Math.max(1e-6, len), y0 + ((y1 - y0) * d) / Math.max(1e-6, len), a] };
-	};
-	const arc = (cx: number, cy: number, r: number, from: number): Piece => ({
-		len: (Math.PI / 2) * r,
-		at: (d) => {
-			const a = from + d / Math.max(1e-6, r);
-			return [cx + Math.cos(a) * r, cy + Math.sin(a) * r, a + Math.PI / 2];
-		}
-	});
-	const pieces: Piece[] = [
-		line(mx + tl, my, mx + mw - tr, my), arc(mx + mw - tr, my + tr, tr, -Math.PI / 2),
-		line(mx + mw, my + tr, mx + mw, my + mh - br), arc(mx + mw - br, my + mh - br, br, 0),
-		line(mx + mw - br, my + mh, mx + bl, my + mh), arc(mx + bl, my + mh - bl, bl, Math.PI / 2),
-		line(mx, my + mh - bl, mx, my + tl), arc(mx + tl, my + tl, tl, Math.PI)
-	].filter((p) => p.len > 1e-6);
-	const total = pieces.reduce((n, p) => n + p.len, 0);
+	// The outline the dashes run along: the middle of the border's line, its corners' radii fitted to it (as the shader
+	// measures it: IgeUiGlRenderer's ringAlong)
+	const mw = Math.max(0, w - bw), mh = Math.max(0, h - bw);
+	let ax = radii.map((r) => Math.max(0, r - bw / 2)), ay = radiiY.map((r) => Math.max(0, r - bw / 2));
+	const fit = Math.min(1, mw / Math.max(1e-6, ax[0] + ax[1]), mw / Math.max(1e-6, ax[3] + ax[2]), mh / Math.max(1e-6, ay[0] + ay[3]), mh / Math.max(1e-6, ay[1] + ay[2]));
+	ax = ax.map((r) => r * fit);
+	ay = ay.map((r) => r * fit);
+	// (A quarter of an ellipse: Ramanujan's)
+	const quarter = (a: number, b: number) => (Math.PI / 4) * (3 * (a + b) - Math.sqrt(Math.max(0, (3 * a + b) * (a + 3 * b))));
+	const total = (mw - ax[0] - ax[1]) + (mh - ay[1] - ay[2]) + (mw - ax[2] - ax[3]) + (mh - ay[3] - ay[0]) + [0, 1, 2, 3].reduce((n, k) => n + quarter(ax[k], ay[k]), 0);
 	if (total <= 0) return true;
-	const pointAt = (d: number): [number, number, number] => {
-		let left = ((d % total) + total) % total;
-		for (const p of pieces) {
-			if (left <= p.len) return p.at(left);
-			left -= p.len;
-		}
-		return pieces[pieces.length - 1].at(pieces[pieces.length - 1].len);
-	};
 	// As many dashes as fit with about the gap between them, evened out round the closed outline
 	const [dash, gap] = dashGap(bw, s.style);
 	const n = Math.max(1, Math.round(total / (dash + gap)));
-	const step = total / n, len = Math.min(dash, step);
+	const step = total / n;
 	const round = s.style === "dotted" && bw >= 2;
-	const outer: IgeCssMatrix = base.matrix ?? IDENTITY;
-	for (let i = 0; i < n; i++) {
-		const [px, py, a] = pointAt(i * step + len / 2);
-		const c = Math.cos(a), sn = Math.sin(a);
-		const rad = round ? Math.min(len, bw) / 2 : 0;
-		items.push({ op: "box", ...base, matrix: multiply(outer, [c, sn, -sn, c, px, py]), x: -len / 2, y: -bw / 2, w: len, h: bw, color: s.c, radii: [rad, rad, rad, rad], chamfer: undefined, exact: true });
-	}
+	items.push({ op: "box", ...base, x, y, w, h, color: s.c, border: bw, chamfer: undefined, dash: { len: Math.min(dash, step), period: step, round } });
 	return true;
 }

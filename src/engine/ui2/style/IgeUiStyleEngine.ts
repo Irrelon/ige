@@ -96,6 +96,12 @@ export class IgeUiStyleEngine {
 	viewport = { w: 1280, h: 720 };
 	/** Containers' sizes from the last layout (by element), for @container. */
 	containerSize = new WeakMap<IgeUiElement, { w: number; h: number }>();
+	/**
+	 * Elements whose style takes a property that isn't inherited from their parent's (`inherit`): restyled whenever
+	 * their parent's style changes, even where nothing inherited did (IgeUiRoot._restyle).
+	 */
+	inheritsParent = new WeakSet<IgeUiElement>();
+	_tookParent = false;
 	/** Bumped as the rules change (every element's style is then looked at again). */
 	version = 0;
 
@@ -248,7 +254,10 @@ export class IgeUiStyleEngine {
 	compute (el: IgeUiElement, parent: IgeUiComputedStyle | undefined): IgeUiComputedStyle {
 		const m = this._matching(el);
 		const inline = [...el._inline._props].map(([name, d]) => ({ name, value: d.value, important: d.important }));
+		this._tookParent = false;
 		const cs = this._cascade(m.own, inline, parent, presentationHints(el));
+		if (this._tookParent) this.inheritsParent.add(el);
+		else this.inheritsParent.delete(el);
 		el._pseudo = undefined;
 		if (m.before.length || m.after.length) {
 			el._pseudo = {};
@@ -369,6 +378,7 @@ export class IgeUiStyleEngine {
 	_assign (cs: IgeUiComputedStyle, name: string, value: string, parent: IgeUiComputedStyle | undefined): void {
 		const v = value.toLowerCase();
 		if (v === "inherit") {
+			if (!INHERITED.has(name)) this._tookParent = true;
 			if (parent?.[name] !== undefined) cs[name] = parent[name];
 			else delete cs[name];
 			return;

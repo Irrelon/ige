@@ -3152,7 +3152,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				const rect = outlineRect(spheres.subarray(0, n), job.matrices.viewProjection.matrix, job.view, radius + 2);
 				if (!rect) continue;
 				this._stateManager.reset();
-				if (!pass.beginMask(width, height, rect)) break;
+				if (!pass.beginMask(width, height, rect, this._clearColor)) break;
 				// The items, flat and opaque, in the view they were drawn in: no depth test, no blending
 				this._stateManager.setViewport(job.view.x0, job.view.y0, job.view.x1 - job.view.x0, job.view.y1 - job.view.y0);
 				this._stateManager.setDepthTest(false);

@@ -249,9 +249,11 @@ describe("ui2: text decoration styles and skip-ink", () => {
 		};
 		// (Two lines, each broken round the ink)
 		expect(lines("double").length).toBe(4);
+		// (Dots: one strip each side of the ink, round dots a dot apart drawn along it)
 		const dots = lines("dotted") as IgeUiPaintBox[];
-		expect(dots.length).toBeGreaterThan(5);
-		expect(dots[1].x - dots[0].x).toBeCloseTo(2 * dots[0].w);
+		expect(dots.length).toBe(2);
+		for (const d of dots) expect(d.dash).toMatchObject({ len: d.h, period: 2 * d.h, round: true });
+		expect(dots[1].dash!.phase).toBeCloseTo(dots[0].x - dots[1].x);
 		expect(lines("wavy").length).toBe(2);
 		expect(lines("wavy").every((i) => i.op === "line")).toBe(true);
 		const skip = lines("skip") as IgeUiPaintBox[];

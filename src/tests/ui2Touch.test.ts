@@ -1,4 +1,6 @@
 import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
+import { rangeValueAt } from "@/engine/ui2/input/IgeUiTap";
+import type { IgeUiPaintBox } from "@/engine/ui2/render/IgeUiPaint";
 import { IgeUiFixedFonts } from "@/engine/ui2/text/IgeUiFonts";
 
 /** A headless UI of w x h, its body unpadded, with the given stylesheet. */
@@ -196,8 +198,10 @@ describe("ui2: outlines and range sliders", () => {
 		r.root.innerHTML = `<div class="a"></div><div class="b"></div>`;
 		r.update(0);
 		const a = r.root.querySelector(".a")!, b = r.root.querySelector(".b")!;
-		const dashes = r.items.filter((i) => i.el === a && i.op === "box");
-		expect(dashes.length).toBeGreaterThan(8);
+		// (Each side one strip, its dashes drawn along it in the shader)
+		const dashes = r.items.filter((i) => i.el === a && i.op === "box") as IgeUiPaintBox[];
+		expect(dashes.length).toBe(4);
+		expect(dashes.every((d) => d.dash?.len === 3)).toBe(true);
 		const ring = r.items.filter((i) => i.el === b && i.op === "box" && (i as { border?: number }).border === 2);
 		expect(ring.length).toBe(1);
 	});
@@ -214,6 +218,20 @@ describe("ui2: outlines and range sliders", () => {
 		expect(grey.length).toBe(2);
 		expect((grey[1] as { color: { r: number } }).color.r).toBe(197);
 		expect(r.document.defaultView!.getComputedStyle(off).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+	});
+
+	it("a range slider's thumb is drawn half a thumb in from each end at its least and most, where a press puts the value", () => {
+		const r = ui(`input { position: absolute; left: 0; width: 200px; margin: 0; } .lo { top: 0; } .hi { top: 40px; } .mid { top: 80px; }`);
+		r.root.innerHTML = `<input type="range" class="lo" value="0"><input type="range" class="hi" value="100"><input type="range" class="mid" value="25">`;
+		r.update(0);
+		const thumb = (s: string) => r.items.filter((i) => i.el === r.root.querySelector(s))[2] as { x: number; w: number };
+		const middle = (s: string) => thumb(s).x + thumb(s).w / 2;
+		expect(middle(".lo")).toBe(8);
+		expect(middle(".hi")).toBe(192);
+		expect(middle(".mid")).toBe(8 + 184 * 0.25);
+		// (The fill up to the thumb's middle)
+		expect((r.items.filter((i) => i.el === r.root.querySelector(".mid"))[1] as { w: number }).w).toBe(8 + 184 * 0.25);
+		expect(rangeValueAt(r.root.querySelector(".mid")!, 8 + 184 * 0.25)).toBe("25");
 	});
 });
 

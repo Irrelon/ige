@@ -274,27 +274,28 @@ export class IgeUiFilterPass {
 		this.color = this.under = null;
 	}
 
-	/** Depth `d`'s textures, all grown to at least w x h; their size (each composite's uv is worked out from it). */
-	size (host: IgeUiFilterHost, d: number, w: number, h: number): [number, number] {
+	/** Depth `d`'s textures, all grown to at least w x h (`restore`: the target bound again after a new one's set up); their size. */
+	size (host: IgeUiFilterHost, d: number, w: number, h: number, restore: WebGLFramebuffer | null): [number, number] {
 		const gl = host.gl;
-		// (The target bound as it was, after the layers' framebuffers are set up)
-		const was = gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
 		const set = (this.layers[d] ??= []);
 		for (let k = 0; k < 4; k++) {
 			const have = set[k];
+			// (Grown in place if it must: its framebuffer keeps it; nothing asked of GL, nothing bound but for a new one)
+			if (have && have.w >= w && have.h >= h) continue;
 			const t = host._tex(have ?? null, w, h, true);
-			if (!have) set[k] = { ...t, fbo: gl.createFramebuffer()! };
-			else {
+			if (have) {
 				have.w = t.w;
 				have.h = t.h;
+				mipReads(gl, have.tex, false);
+				continue;
 			}
-			const fb = set[k];
+			const fb = (set[k] = { ...t, fbo: gl.createFramebuffer()! });
 			// (Read 1:1 unless a blur asks for its smaller levels: none to make)
 			mipReads(gl, fb.tex, false);
 			gl.bindFramebuffer(gl.FRAMEBUFFER, fb.fbo);
 			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, fb.tex, 0);
+			gl.bindFramebuffer(gl.FRAMEBUFFER, restore);
 		}
-		gl.bindFramebuffer(gl.FRAMEBUFFER, was);
 		return [set[0].w, set[0].h];
 	}
 

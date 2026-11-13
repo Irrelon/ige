@@ -53,6 +53,8 @@ export interface IgeUiShadowGroup {
 	clip: number[];
 	/** Its silhouette's rectangle on the target (device px, top-down), with room for the widest blur; none: nothing in it. */
 	region?: { x: number; y: number; w: number; h: number };
+	/** One shadow, nothing in it needing a target of its own: where its silhouette and shadow are in the frame's shadow atlas (texels). */
+	atlas?: [number, number];
 	/** Its silhouette's been rendered this frame. */
 	drawn?: boolean;
 	/** Each shadow's composite instance (its offset in the frame's instance data) and which shadow it is. */
@@ -102,6 +104,8 @@ void main() {
 	outColor = vec4(0.0, 0.0, 0.0, a * u_alpha);
 }`;
 
+type AtlasTex = Tex & { fbo: WebGLFramebuffer };
+
 /**
  * The textures and framebuffer the drop shadows are made in (one set, used one group at a time): the silhouette, each
  * shadow's blurred copy, and for a chain (drop-shadow() drop-shadow()) what each next one's cast from: the element
@@ -116,6 +120,15 @@ export class IgeUiDropShadowPass {
 	union: WebGLProgram | null = null;
 	unionUniforms: Record<string, WebGLUniformLocation | null> = {};
 
+	/**
+	 * The frame's shadow atlas (one-shadow groups, the commonest: a symbol's soft shadow, a glow round a card): every
+	 * silhouette drawn into it, then blurred where it is, so all of them take three changes of target a frame instead
+	 * of three each (a tiled GPU stores and loads the whole target at each).
+	 */
+	atlasSil: AtlasTex | null = null;
+	atlasTmp: AtlasTex | null = null;
+	atlasOut: AtlasTex | null = null;
+
 	/** Forgotten (a lost context): made again as they're next needed. */
 	reset (): void {
 		this.silhouette = this.tmp = null;
@@ -123,6 +136,85 @@ export class IgeUiDropShadowPass {
 		this.unions = [null, null];
 		this.fbo = null;
 		this.union = null;
+		this.atlasSil = this.atlasTmp = this.atlasOut = null;
+	}
+
+	/**
+	 * Places the given groups in the atlas (each its region, two texels apart; past what one texture should hold, left
+	 * out: drawn the long way) and sizes its textures, `restore` bound after. Returns the atlas's size.
+	 */
+	packAtlas (host: IgeUiShadowHost, groups: IgeUiShadowGroup[], restore: WebGLFramebuffer | null): [number, number] {
+		const gl = host.gl;
+		const W = Math.max(1024, ...groups.map((g) => g.region!.w + 2));
+		let x = 0, y = 0, row = 0;
+		for (const g of groups) {
+			const r = g.region!;
+			if (x + r.w + 2 > W) {
+				x = 0;
+				y += row;
+				row = 0;
+			}
+			if (y + r.h + 2 > 4096) break;
+			g.atlas = [x, y];
+			x += r.w + 2;
+			row = Math.max(row, r.h + 2);
+		}
+		const H = Math.max(1, y + row);
+		const make = (have: AtlasTex | null, mips: boolean): AtlasTex => {
+			const t = host._tex(have, W, H, mips);
+			if (have) {
+				have.w = t.w;
+				have.h = t.h;
+				return have;
+			}
+			const out = { ...t, fbo: gl.createFramebuffer()! };
+			gl.bindFramebuffer(gl.FRAMEBUFFER, out.fbo);
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, out.tex, 0);
+			gl.bindFramebuffer(gl.FRAMEBUFFER, restore);
+			return out;
+		};
+		// (The silhouettes and the middle step read coarsely by wide blurs; the shadows only 1:1)
+		this.atlasSil = make(this.atlasSil, true);
+		this.atlasTmp = make(this.atlasTmp, true);
+		this.atlasOut = make(this.atlasOut, false);
+		return [this.atlasOut.w, this.atlasOut.h];
+	}
+
+	/**
+	 * Blurs each placed group's silhouette in the atlas into its shadow (σ half its blur radius, device px): across into
+	 * the middle texture, then down into the shadows'. The caller binds its own target and program after.
+	 */
+	blurAtlas (host: IgeUiShadowHost, groups: IgeUiShadowGroup[], scale: number): void {
+		const gl = host.gl, sil = this.atlasSil!, tmp = this.atlasTmp!, out = this.atlasOut!;
+		gl.useProgram(host._blurProgram);
+		gl.bindVertexArray(host._vao);
+		gl.disable(gl.BLEND);
+		gl.activeTexture(gl.TEXTURE3);
+		gl.uniform1i(host._blurUniforms.u_src, 3);
+		const pass = (from: AtlasTex, to: AtlasTex, dir: [number, number]) => {
+			gl.bindTexture(gl.TEXTURE_2D, from.tex);
+			// (Its smaller levels, for wide blurs' coarse reads; made every time, as a texture made for them and missing any reads black)
+			gl.generateMipmap(gl.TEXTURE_2D);
+			gl.bindFramebuffer(gl.FRAMEBUFFER, to.fbo);
+			// (Cleared whole: the next pass's coarse reads would take in what's left between the places)
+			gl.clearColor(0, 0, 0, 0);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+			for (const g of groups) {
+				if (!g.atlas) continue;
+				const r = g.region!, [ax, ay] = g.atlas;
+				const sigma = (g.shadows[0].blur / 2) * scale;
+				const k = shadowStep(sigma);
+				gl.viewport(ax, ay, r.w, r.h);
+				gl.uniform4f(host._blurUniforms.u_area, ax / from.w, ay / from.h, r.w / from.w, r.h / from.h);
+				gl.uniform2f(host._blurUniforms.u_step, (dir[0] * k) / from.w, (dir[1] * k) / from.h);
+				gl.uniform1f(host._blurUniforms.u_sigma, Math.max(sigma, 0.001) / k);
+				gl.uniform1f(host._blurUniforms.u_lod, Math.log2(k));
+				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+			}
+		};
+		pass(sil, tmp, [1, 0]);
+		pass(tmp, out, [0, 1]);
+		gl.enable(gl.BLEND);
 	}
 
 	/** The textures grown for a group's region and its shadows' blurs; each shadow's blurred size (before the frame's instances go up: their uv depend on it). */

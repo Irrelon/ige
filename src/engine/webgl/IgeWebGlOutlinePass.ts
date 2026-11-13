@@ -167,17 +167,18 @@ export class IgeWebGlOutlinePass {
 	 * drawing buffer's size) with the scissor on `rect`, cleared there.
 	 * The caller then draws the outlined items flat (alpha 1) in the same
 	 * viewport it draws the frame in. False if no target could be made.
+	 * `clear` is the clear colour to leave set after (the renderer's: never
+	 * read back from GL, a query that waits for the GPU).
 	 */
-	beginMask (width: number, height: number, rect: IgeOutlineRect): boolean {
+	beginMask (width: number, height: number, rect: IgeOutlineRect, clear: { r: number; g: number; b: number; a: number } = { r: 0, g: 0, b: 0, a: 0 }): boolean {
 		const gl = this._gl;
 		if (!this._target(width, height)) return false;
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
 		gl.enable(gl.SCISSOR_TEST);
 		gl.scissor(rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0);
-		const clear = gl.getParameter(gl.COLOR_CLEAR_VALUE) as Float32Array;
 		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.clearColor(clear[0], clear[1], clear[2], clear[3]);
+		gl.clearColor(clear.r, clear.g, clear.b, clear.a);
 		return true;
 	}
 

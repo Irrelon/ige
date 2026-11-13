@@ -159,6 +159,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_styleRoots = new Set<IgeUiElement>();
 	/** Elements whose own style is looked at again (only): restyled with all under them if it turns out different. */
 	_styleSelf = new Set<IgeUiElement>();
+	/**
+	 * Style roots whose inline style alone changed (a script moving a reel strip each frame): what's under one is
+	 * restyled only if what it passes down (inherited and custom properties) changed, as a browser restyles it.
+	 */
+	_styleInline = new Set<IgeUiElement>();
 	_styleAll = true;
 	_layoutDirty = true;
 	/** Everything must be laid out again (the first time, a resize, new stylesheets, fonts); else only round `_relayout`. */
@@ -299,7 +304,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				const m = svgTransform(el.getAttribute("transform"));
 				if (m) return `matrix(${m.map(cssNumber).join(", ")})`;
 			}
-			return serializeComputed(name, cs, ctx, b, this.dpr, (u) => this.host.images.resolve(u));
+			// (Border widths snap to the device's pixels at the UI's scale, as they're drawn: a 1px border at 80% is one
+			// device pixel, 1.25px, as Chrome's zoomed UI gives it)
+			return serializeComputed(name, cs, ctx, b, this.dpr * this.scale, (u) => this.host.images.resolve(u));
 		};
 		return new Proxy({} as Record<string, string> & { getPropertyValue (name: string): string }, {
 			get (_t, key) {
@@ -420,8 +427,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				this._layoutDirty = true;
 				break;
 			case "style":
-				this._markStyle(el);
-				this._layoutDirty = true;
+				// (Laid out and painted again as the restyle finds it must be: a move or a colour only repaints its run)
+				this._markStyle(el, false, true);
 				break;
 			case "state":
 				this._markStyle(el);
@@ -458,13 +465,18 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._layoutMarked.clear();
 	}
 
-	_markStyle (el: IgeUiElement, selfOnly: boolean = false): void {
+	_markStyle (el: IgeUiElement, selfOnly: boolean = false, inline: boolean = false): void {
 		if (selfOnly) this._styleSelf.add(el);
 		else {
+			// (Its inline style alone: see _styleInline; marked for any other reason, it's restyled with all under it)
+			if (!inline) this._styleInline.delete(el);
+			else if (!el._styleDirty) this._styleInline.add(el);
 			el._styleDirty = true;
 			this._styleRoots.add(el);
 		}
-		this._paintDirty = true;
+		// (A state or an attribute can be painted as it is (a checkbox's tick, a field's value): painted again. An inline
+		// style is only what the restyle makes of it)
+		if (!inline) this._paintDirty = true;
 	}
 
 	/**
@@ -808,18 +820,26 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		// (The focused field's caret showing or hiding as it blinks: its run of items painted again)
 		const blinked = this.caretBlink.due(this.document.activeElement, now);
 		if (blinked) this._repaintEls.add(blinked);
-		if (!this._paintDirty && this._repaintEls.size) {
-			// Only animations moved on: their runs of items painted again (all of it, if that can't be done)
+		if (!this._paintDirty && (this._repaintEls.size || this._repaintBoxes.length)) {
+			// Only animations moved on (or positioned boxes laid out again in place): their runs of items painted again
+			// (all of it, if that can't be done)
 			const t0 = this.host.time.now();
 			if (this._repaintPart()) {
 				this._hitsDirty = true;
+				this._repaintEls.clear();
 				this.stats.paint = this.host.time.now() - t0;
 				this.stats.items = this.items.length;
 				this.stats.partialPaint++;
+				// (What's under a pointer that hasn't moved, after a layout, as the whole paint does: once all's clean, as
+				// the hit test brings the frame up to date first)
+				const stale = this._hoverStale;
+				this._hoverStale = false;
+				if (this._pointerAt && stale) this._setHover(this.hitTest(this._pointerAt.clientX, this._pointerAt.clientY), this._pointerAt);
 			} else this._paintDirty = true;
 			this._repaintEls.clear();
 		}
 		this._repaintEls.clear();
+		this._repaintBoxes.length = 0;
 		if (this._paintDirty) {
 			const t0 = this.host.time.now();
 			this.painter._scroll = (el) => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
@@ -856,6 +876,13 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 	/** Animated elements whose look changed (only): see _repaintPart. */
 	_repaintEls = new Set<IgeUiElement>();
+	/**
+	 * Positioned boxes laid out again in place of the boxes they replaced (a marker bobbing by its margin), nothing
+	 * round them changed: their runs painted again (_repaintPart), not everything.
+	 */
+	_repaintBoxes: [IgeUiBox, IgeUiBox][] = [];
+	/** The positioned boxes _layoutPart laid out again (the old ones, in the order of the new it returned). */
+	_relaidFrom: IgeUiBox[] = [];
 	/** The hit list is out of date (rebuilt when a hit test asks). */
 	_hitsDirty = true;
 
@@ -865,6 +892,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	 */
 	_repaintPart (): boolean {
 		const p = this.painter;
+		// (Positioned boxes laid out again: each painted in the run of the box it replaced)
+		for (const [old, nb] of this._repaintBoxes) if (!p.repaintGroup(nb, old)) return false;
+		this._repaintBoxes.length = 0;
 		const runs = new Set<IgeUiBox>();
 		for (const el of this._repaintEls) {
 			const b = el._box;
@@ -917,14 +947,13 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				if (!b || b.el !== el || b.pseudo) continue;
 				const tf = styleValue(b.style, "transform");
 				b.transform = tf === "none" ? undefined : this.layoutEngine.layoutBoxTransform(b);
-				// (Paint-only changes: only the runs of items they're painted in are painted again)
-				if (!layout) this._repaintEls.add(el);
+				// (Paint-only changes: only the runs of items they're painted in are painted again; the layout paints all
+				// again if what it does needs it)
+				this._repaintEls.add(el);
 			}
 		}
-		if (layout || !this.rootBox) {
-			if (layout) this._layoutDirty = true;
-			this._paintDirty = true;
-		}
+		if (layout) this._layoutDirty = true;
+		if (!this.rootBox) this._paintDirty = true;
 	}
 
 	_restyle (): void {
@@ -945,6 +974,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				if (!sameStyle(was, next) || !samePseudo(pseudo, e._pseudo)) {
 					e._styleDirty = true;
 					this._styleRoots.add(e);
+					this._styleInline.delete(e);
+					this._paintDirty = true;
 				} else e._pseudo = pseudo;
 			}
 		}
@@ -953,10 +984,17 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		const t0 = this.host.time.now();
 		let count = 0, adopted = 0;
 		const now = this._now;
+		// Whether the boxes must be laid out and all painted again; else what's laid out again is (relaid), and the runs of
+		// the elements whose look alone changed (a colour, a transform that moved) are painted again (_repaintPart)
+		let full = this._styleAll, relaid = false;
+		const looks: IgeUiElement[] = [];
 		const visit = (el: IgeUiElement, parent: IgeUiComputedStyle | undefined, force: boolean) => {
+			// (What's under it worked out again: all of it, or those that take a property it doesn't pass down)
+			let under = force, changed = false;
 			if (force || el._styleDirty || !el._computed) {
 				const prev = el._computed;
-				let keepBox = false;
+				const shallow = !force && !!prev && this._styleInline.has(el);
+				let keepBox = false, moved = false;
 				const a = el._adopt;
 				el._adopt = undefined;
 				let next: IgeUiComputedStyle;
@@ -968,32 +1006,51 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 					// (Its box too, if all in it is just as it was, text and all)
 					if (a.subtreeSame) el._reuseFrom = a.from;
 					adopted++;
+					full = true;
 				} else {
 					const pseudo = el._pseudo;
 					next = this.styles.compute(el, parent);
 					// (The same as before, or as the element it replaced: the same object kept, so what's under it can be
 					// seen not to need working out)
 					const was = this.animator._base.get(el) ?? prev ?? (a?.from._computed ? this.animator._base.get(a.from) ?? a.from._computed : undefined);
-					if (was && sameStyle(was, next)) next = was;
-					else if (was && was === prev && paintOnly(was, next) && samePseudo(pseudo, el._pseudo) && el._box?.el === el && !el._box.pseudo) {
-						// Only how it looks (a colour, inherited from an animation say): its box kept, given the new style
+					if (was && sameStyle(was, next)) {
+						next = was;
+						if (!samePseudo(pseudo, el._pseudo)) full = true;
+					} else if (was && was === prev && looksOnly(was, next) && samePseudo(pseudo, el._pseudo) && el._box?.el === el && !el._box.pseudo) {
+						// Only how it looks (a colour, inherited from an animation say), or where its transform puts it: its
+						// box kept, given the new style
 						keepBox = true;
+						moved = !paintOnly(was, next);
+						// (A plane in a preserve-3d context: its move can change the order its parent draws them in)
+						if (moved && styleValue(parent ?? {}, "transform-style") === "preserve-3d") full = true;
 					} else {
 						this._markLayout(el);
 						this._relayout.add(el);
+						relaid = true;
 					}
 				}
 				el._styledParent = parent;
 				el._styledVersion = this.styles.version;
 				el._styledClass = el._attrs.get("class");
 				el._computed = this.animator.restyled(el, prev, next, now);
-				if (keepBox && el._box) el._box.style = el._computed;
+				if (!prev) full = true;
+				if (keepBox && el._box) {
+					const b = el._box;
+					b.style = el._computed;
+					// (Its transform worked out again, as an animated one is: _animate)
+					if (moved) {
+						const tf = styleValue(b.style, "transform");
+						b.transform = tf === "none" ? undefined : this.layoutEngine.layoutBoxTransform(b);
+					}
+					looks.push(el);
+				}
 				el._styleDirty = false;
 				count++;
-				force = true;
+				changed = el._computed !== prev;
+				under = !shallow || !sameInherited(prev, el._computed);
 			}
 			const cs = this.animator._base.get(el) ?? el._computed;
-			for (const c of el.childNodes) if (c.nodeType === 1) visit(c as IgeUiElement, el._computed ?? cs, force);
+			for (const c of el.childNodes) if (c.nodeType === 1) visit(c as IgeUiElement, el._computed ?? cs, under || (changed && this.styles.inheritsParent.has(c as IgeUiElement)));
 		};
 		if (this._styleAll) {
 			this._layoutAll = true;
@@ -1007,12 +1064,20 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				return false;
 			};
 			const roots = [...set].filter((r) => r.isConnected && !within(r));
-			for (const r of roots) visit(r, r.parentNode?._computed, true);
+			// (Each dirty, so worked out again: all under it with it, unless its inline style alone changed)
+			for (const r of roots) visit(r, r.parentNode?._computed, false);
 		}
 		this._styleAll = false;
 		this._styleRoots.clear();
-		this._layoutDirty = true;
-		this._paintDirty = true;
+		this._styleInline.clear();
+		// (Laid out again only: the layout paints what it must, all or the runs of the boxes it lays out again)
+		if (full) {
+			this._layoutDirty = true;
+			this._paintDirty = true;
+		} else {
+			if (relaid) this._layoutDirty = true;
+			for (const el of looks) this._repaintEls.add(el);
+		}
 		this.stats.style = this.host.time.now() - t0;
 		this.stats.elements = count;
 		this.stats.adopted = adopted;
@@ -1052,7 +1117,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this.stats.kept = this.layoutEngine.kept;
 		// Containers' sizes for @container (the next restyle)
 		this._layoutDirty = false;
-		this._paintDirty = true;
+		// (Positioned boxes laid out again where nothing round them changes: only their runs painted again)
+		const relaid = partial && this._relaidFrom.length === partial.length ? partial.map((nb, i): [IgeUiBox, IgeUiBox] => [this._relaidFrom[i], nb]) : undefined;
+		if (relaid && relaid.every(([old, nb]) => this._inPlace(old, nb))) this._repaintBoxes.push(...relaid);
+		else this._paintDirty = true;
+		this._relaidFrom = [];
 		// Scroll offsets kept in range
 		const clamp = (b: IgeUiBox) => {
 			const el = b.el;
@@ -1093,6 +1162,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		// (Those inside another that's laid out again come with it)
 		const list = [...roots].filter((r) => ![...roots].some((o) => o !== r && o.el!.contains(r.el!)));
+		this._relaidFrom = list;
 		const done: IgeUiBox[] = [];
 		for (const b of list) {
 			const nb = this.layoutEngine.relayoutPositioned(b);
@@ -1100,6 +1170,21 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			done.push(nb);
 		}
 		return done;
+	}
+
+	/**
+	 * Whether a positioned box laid out again (`nb`, in place of `old`) can be painted in its old run alone: it had one,
+	 * its place in the stacking order is as it was, and no scroller round it shows a scrollbar its extent could change.
+	 */
+	_inPlace (old: IgeUiBox, nb: IgeUiBox): boolean {
+		const p = this.painter;
+		if (!p.groups.has(old) || old.zIndex !== nb.zIndex || old.position !== nb.position || old.parent !== nb.parent) return false;
+		if (p._isStacking(old) !== p._isStacking(nb)) return false;
+		for (let q = nb.parent; q; q = q.parent) {
+			const ox = styleValue(q.style, "overflow-x"), oy = styleValue(q.style, "overflow-y");
+			if (ox === "auto" || ox === "scroll" || oy === "auto" || oy === "scroll") return false;
+		}
+		return true;
 	}
 
 	/** Tells the resize observers whose elements' sizes the layout changed (after it, in a microtask). */
@@ -1246,7 +1331,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	// ---------------------------------------------------------------- drawing
 
 	/** Draws onto a WebGL 2 context (the canvas `width` x `height` device px, `dpr` device px per CSS px). */
-	draw (gl: WebGL2RenderingContext, width: number, height: number, dpr: number): number {
+	draw (gl: WebGL2RenderingContext, width: number, height: number, dpr: number, target?: WebGLFramebuffer | null): number {
 		if (dpr !== this.dpr) {
 			this.dpr = dpr;
 			this._layoutDirty = true;
@@ -1263,6 +1348,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this.gl.textMinSize = this.look.textMinSize;
 		this.gl.backdrop = this.look.backdrop;
 		const t0 = this.host.time.now();
+		// (The framebuffer it's drawn into, when the caller knows it: never asked of GL then)
+		this.gl.target = target;
 		const calls = this.gl.draw(this.drag.withGhost(this.items), width, height, this.scale * dpr, [(this.safe.x + this.pageOffset.x) * dpr, (this.safe.y + this.pageOffset.y) * dpr]);
 		this.stats.draw = this.host.time.now() - t0;
 		this.stats.drawCalls = calls;
@@ -1293,7 +1380,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			gl.viewport(0, 0, w, h);
 			gl.clearColor(0, 0, 0, 0);
 			gl.clear(gl.COLOR_BUFFER_BIT);
-			this.draw(gl, w, h, dpr);
+			// (Its own canvas: the default framebuffer)
+			this.draw(gl, w, h, dpr, null);
 		};
 		const tick = () => {
 			draw();
@@ -1897,6 +1985,28 @@ function paintOnly (a: IgeUiComputedStyle, b: IgeUiComputedStyle): boolean {
 function samePseudo (a: IgeUiElement["_pseudo"], b: IgeUiElement["_pseudo"]): boolean {
 	if (a === b) return true;
 	return sameStyle(a?.before, b?.before) && sameStyle(a?.after, b?.after) && sameStyle(a?.placeholder, b?.placeholder);
+}
+
+/** A transform's own properties: a change to them moves what's drawn, not the boxes (unless one comes or goes). */
+const MOVES = new Set(["transform", "transform-origin"]);
+
+/**
+ * Whether two styles differ only in how a box looks (paintOnly) or where its transform puts it: a transform that's
+ * moved, not one come or gone (that makes it a stacking context and a containing block).
+ */
+function looksOnly (a: IgeUiComputedStyle, b: IgeUiComputedStyle): boolean {
+	for (const k in a) if (a[k] !== b[k] && !PAINT_ONLY.has(k) && !MOVES.has(k) && !k.startsWith("--")) return false;
+	for (const k in b) if (!(k in a) && !PAINT_ONLY.has(k) && !MOVES.has(k) && !k.startsWith("--")) return false;
+	return ((a.transform ?? "none") === "none") === ((b.transform ?? "none") === "none");
+}
+
+/** Whether two styles pass the same down: every inherited property and custom property alike. */
+function sameInherited (a: IgeUiComputedStyle | undefined, b: IgeUiComputedStyle | undefined): boolean {
+	if (a === b) return true;
+	if (!a || !b) return false;
+	for (const k in a) if (a[k] !== b[k] && (k.startsWith("--") || INHERITED.has(k))) return false;
+	for (const k in b) if (!(k in a) && (k.startsWith("--") || INHERITED.has(k))) return false;
+	return true;
 }
 
 /** Whether two computed styles say the same (every property and custom property). */

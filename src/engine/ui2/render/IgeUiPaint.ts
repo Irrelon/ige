@@ -20,7 +20,8 @@ import { backgroundUrl, paintBackgroundImage } from "@/engine/ui2/render/IgeUiBa
 import { type IgeUiDropShadow, parseDropShadows } from "@/engine/ui2/render/IgeUiDropShadow";
 import { type IgeUiFilterOp, onlyDropShadows, parseFilterList } from "@/engine/ui2/render/IgeUiFilters";
 import { enter3d, invert3, needs3d, perspectiveOf, planeDepth, project } from "@/engine/ui2/render/IgeUiPerspective";
-import { fillTriangles, paintSvg } from "@/engine/ui2/render/IgeUiSvg";
+import { fillTriangles, paintSvg, SVG_CONTENT } from "@/engine/ui2/render/IgeUiSvg";
+import { RANGE_THUMB } from "@/engine/ui2/input/IgeUiTap";
 import { paintTextDecorations, textDecorations } from "@/engine/ui2/render/IgeUiTextDecoration";
 import { clipsToText, paintTextInBackground } from "@/engine/ui2/render/IgeUiTextClip";
 import { type IgeUiClipRect, intersectClips, roundThrough, withRound } from "@/engine/ui2/render/IgeUiRoundClip";
@@ -54,6 +55,12 @@ export interface IgeUiPaintBox extends IgeUiPaintBase {
 	/** A fill: a colour, or a gradient layer. */
 	color?: IgeCssColor;
 	gradient?: IgeCssGradient;
+	/**
+	 * Dashed or dotted (IgeUiBorderDash, IgeUiTextDecoration), the pattern drawn in the shader: a dash's length and the
+	 * period (dash and gap), down rather than across, round dots, where along the pattern it starts; with `border`, a
+	 * ring round the box cut into dashes evenly round its middle line.
+	 */
+	dash?: { len: number; period: number; vertical?: boolean; round?: boolean; phase?: number };
 	/** A border ring of this width all round (a uniform border). */
 	border?: number;
 	/** A glow (outer box-shadow) or an inset shadow, with its blur. */
@@ -266,9 +273,12 @@ export class IgeUiPainter {
 	 */
 	groups = new Map<IgeUiBox, { start: number; end: number; ctx: Ctx; stacking: boolean }>();
 
-	/** Paints one box's run again in place (its look changed, nothing moved); false when it has no run to replace. */
-	repaintGroup (b: IgeUiBox): boolean {
-		const g = this.groups.get(b);
+	/**
+	 * Paints one box's run again in place (its look changed, or it's a positioned box laid out again: `was`, the box
+	 * it replaced, whose run it takes); false when it has no run to replace.
+	 */
+	repaintGroup (b: IgeUiBox, was: IgeUiBox = b): boolean {
+		const g = this.groups.get(was);
 		if (!g) return false;
 		// (Which runs are in it and round it, by the boxes, not the item counts: a run can be empty)
 		const under = (k: IgeUiBox, a: IgeUiBox) => {
@@ -276,7 +286,9 @@ export class IgeUiPainter {
 			return false;
 		};
 		// (Runs inside it are recorded again as it's painted)
-		for (const k of [...this.groups.keys()]) if (k !== b && under(k, b)) this.groups.delete(k);
+		for (const k of [...this.groups.keys()]) if (k !== b && (under(k, b) || under(k, was))) this.groups.delete(k);
+		this.groups.delete(was);
+		if (was !== b) this.groups.delete(b);
 		const all = this.items;
 		this.items = [];
 		const before = new Set(this.groups.keys());
@@ -578,6 +590,9 @@ export class IgeUiPainter {
 		const el = b.el;
 		// (An anonymous box, round inline content or a flex item's text, has its parent's style but nothing to draw)
 		if (!el) return;
+		// (An SVG drawing's own elements are drawn as its shapes (IgeUiSvg), never with CSS boxes: a circle of class
+		// "track" doesn't take a progress bar's .track background)
+		if (SVG_CONTENT.has(el.localName)) return;
 		// (The page's own backgrounds are the game's, behind the UI)
 		if (el && !b.pseudo && (el.localName === "html" || el.localName === "body")) return;
 		const x = b.ax + ctx.dx, y = b.ay + ctx.dy, w = b.borderW, h = b.borderH;
@@ -951,9 +966,12 @@ export class IgeUiPainter {
 		const mid = y + h / 2;
 		// (Through the transforms it's in, as the rest of it is)
 		const at = { opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el };
+		// The thumb's middle runs from half a thumb in from one end to half a thumb in from the other, as a browser's
+		// does (and as a press maps to the value: IgeUiTap's rangeValueAt); the fill up to it
+		const half = RANGE_THUMB / 2, cx = x + half + Math.max(0, w - RANGE_THUMB) * Math.min(1, Math.max(0, t));
 		this.items.push({ op: "box", ...at, x, y: mid - 2, w, h: 4, radii: [2, 2, 2, 2], color: track });
-		if (!el.isDisabled) this.items.push({ op: "box", ...at, x, y: mid - 2, w: w * t, h: 4, radii: [2, 2, 2, 2], color: accent });
-		this.items.push({ op: "box", ...at, x: x + w * t - 8, y: mid - 8, w: 16, h: 16, radii: [8, 8, 8, 8], color: accent });
+		if (!el.isDisabled) this.items.push({ op: "box", ...at, x, y: mid - 2, w: cx - x, h: 4, radii: [2, 2, 2, 2], color: accent });
+		this.items.push({ op: "box", ...at, x: cx - half, y: mid - half, w: RANGE_THUMB, h: RANGE_THUMB, radii: [half, half, half, half], color: accent });
 	}
 }
 

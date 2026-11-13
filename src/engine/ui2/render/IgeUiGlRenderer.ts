@@ -189,6 +189,48 @@ float maskAlpha(vec2 p) {
 	return texture(u_ramp, vec2(clamp(t, 0.0, 1.0) * (255.0 / 256.0) + 0.5 / 256.0, (v_grad.x + 0.5) / 512.0)).a;
 }
 
+// The length of a quarter of an ellipse (Ramanujan's)
+float quarter(float a, float b) {
+	return 0.78539816 * (3.0 * (a + b) - sqrt(max(0.0, (3.0 * a + b) * (a + 3.0 * b))));
+}
+
+// How far along a rounded box's border p is: the middle of a line bw wide round box (x, y, w, h), clockwise from the
+// left end of its top, its corners (tl, tr, br, bl; vertical radii ry) as IgeUiBorderDash measures them
+float ringAlong(vec2 p, vec4 box, vec4 rx, vec4 ry, float bw) {
+	vec2 o = box.xy + bw * 0.5;
+	float w = max(0.0, box.z - bw), h = max(0.0, box.w - bw);
+	vec4 ax = max(rx - bw * 0.5, vec4(0.0)), ay = max(ry - bw * 0.5, vec4(0.0));
+	float f = min(1.0, min(min(w / max(1e-6, ax.x + ax.y), w / max(1e-6, ax.w + ax.z)), min(h / max(1e-6, ay.x + ay.w), h / max(1e-6, ay.y + ay.z))));
+	ax *= f;
+	ay *= f;
+	float top = w - ax.x - ax.y, right = h - ay.y - ay.z, bottom = w - ax.z - ax.w;
+	float qtr = quarter(ax.y, ay.y), qbr = quarter(ax.z, ay.z), qbl = quarter(ax.w, ay.w), qtl = quarter(ax.x, ay.x);
+	vec2 q = p - o;
+	// The corners' quarters (their angle round their middles, as a share of the quarter), else the nearest side
+	if (q.x < ax.x && q.y < ay.x && ax.x > 0.0) {
+		float u = (atan((q.y - ay.x) / ay.x, (q.x - ax.x) / ax.x) + 6.2831853 - 3.14159265) / 1.57079633;
+		return top + qtr + right + qbr + bottom + qbl + h - ay.w - ay.x + clamp(u, 0.0, 1.0) * qtl;
+	}
+	if (q.x > w - ax.y && q.y < ay.y && ax.y > 0.0) {
+		float u = (atan((q.y - ay.y) / ay.y, (q.x - (w - ax.y)) / ax.y) + 1.57079633) / 1.57079633;
+		return top + clamp(u, 0.0, 1.0) * qtr;
+	}
+	if (q.x > w - ax.z && q.y > h - ay.z && ax.z > 0.0) {
+		float u = atan((q.y - (h - ay.z)) / ay.z, (q.x - (w - ax.z)) / ax.z) / 1.57079633;
+		return top + qtr + right + clamp(u, 0.0, 1.0) * qbr;
+	}
+	if (q.x < ax.w && q.y > h - ay.w && ax.w > 0.0) {
+		float u = (atan((q.y - (h - ay.w)) / ay.w, (q.x - ax.w) / ax.w) - 1.57079633) / 1.57079633;
+		return top + qtr + right + qbr + bottom + clamp(u, 0.0, 1.0) * qbl;
+	}
+	float dt = abs(q.y), dr = abs(q.x - w), db = abs(q.y - h), dl = abs(q.x);
+	float m = min(min(dt, dr), min(db, dl));
+	if (m == dt) return q.x - ax.x;
+	if (m == dr) return top + qtr + (q.y - ay.y);
+	if (m == db) return top + qtr + right + qbr + (w - ax.z - q.x);
+	return top + qtr + right + qbr + bottom + qbl + (h - ay.w - q.y);
+}
+
 vec4 fill(vec2 p) {
 	if (v_grad.x < 0.0) return vec4(v_color.rgb * v_color.a, v_color.a);
 	float t;
@@ -270,6 +312,34 @@ void main() {
 			float reach = ${SDF_EDGE.toFixed(3)} * ${SDF_RADIUS.toFixed(1)} * v_params.z;
 			a = (1.0 - smoothstep(-blur * 0.25, blur, d)) * 0.6 * (1.0 - smoothstep(reach * 0.55, reach * 0.95, d));
 		}
+	} else if (kind > 10.5) {
+		// A dashed or dotted border all round a rounded box (IgeUiBorderDash): its ring, cut into dashes evenly round its
+		// middle line (v_uv: a dash's length, the period, dots)
+		float bw = v_params.y;
+		vec4 none = vec4(0.0);
+		float outer = shape(v_local, v_shape, v_radii, v_radiiY, none);
+		vec4 inner = vec4(v_shape.xy + bw, v_shape.zw - 2.0 * bw);
+		float ring = max(outer, -shape(v_local, inner, max(v_radii - bw, vec4(0.0)), max(v_radiiY - bw, vec4(0.0)), none));
+		float s = ringAlong(v_local, v_shape, v_radii, v_radiiY, bw);
+		float t = mod(s - v_uv.x * 0.5 + v_uv.y * 0.5, v_uv.y) - v_uv.y * 0.5;
+		if (v_uv.z > 0.5) {
+			// (A dot: round, as wide as the line)
+			float across = outer + bw * 0.5;
+			a = clamp(0.5 - (length(vec2(t, across)) - bw * 0.5) / px, 0.0, 1.0);
+		} else a = min(clamp(0.5 - ring / px, 0.0, 1.0), clamp((v_uv.x * 0.5 - abs(t)) / px + 0.5, 0.0, 1.0));
+	} else if (kind > 9.5) {
+		// A dashed or dotted line (a border's side, a decoration: IgeUiBorderDash), the pattern along it (v_uv: a dash's
+		// length, the period, flags: 1 down rather than across, 2 dots; where along the pattern it starts)
+		float d = shape(v_local, v_shape, vec4(0.0), vec4(0.0), vec4(0.0));
+		int flags = int(v_uv.z + 0.5);
+		bool down = (flags & 1) != 0;
+		float along = (down ? v_local.y - v_shape.y : v_local.x - v_shape.x) - v_uv.w;
+		float t = mod(along - v_uv.x * 0.5 + v_uv.y * 0.5, v_uv.y) - v_uv.y * 0.5;
+		if ((flags & 2) != 0) {
+			float th = down ? v_shape.z : v_shape.w;
+			float across = down ? v_local.x - (v_shape.x + v_shape.z * 0.5) : v_local.y - (v_shape.y + v_shape.w * 0.5);
+			a = min(clamp(0.5 - d / px, 0.0, 1.0), clamp(0.5 - (length(vec2(t, across)) - th * 0.5) / px, 0.0, 1.0));
+		} else a = min(clamp(0.5 - d / px, 0.0, 1.0), clamp((v_uv.x * 0.5 - abs(t)) / px + 0.5, 0.0, 1.0));
 	} else if (kind > 8.5) {
 		// A filter's layer, its filters run (IgeUiFilters): as it is
 		col = texture(u_image, v_tex);
@@ -475,6 +545,11 @@ export class IgeUiGlRenderer {
 	_glows = new IgeUiTextGlowCache();
 	/** Draw calls made last frame. */
 	drawCalls = 0;
+	/**
+	 * The framebuffer the UI's drawn into, when its host knows it (IgeUiRoot.drawOnCanvas: the canvas's own); undefined:
+	 * asked of GL once a frame, and only when a layer, a shadow, a glow or a backdrop needs it.
+	 */
+	target: WebGLFramebuffer | null | undefined = undefined;
 	instances = 0;
 	/**
 	 * Tunings, off by default. `textWeight`: text's edge moved out (device px; bolder above 0), `textGamma`: its
@@ -930,6 +1005,13 @@ export class IgeUiGlRenderer {
 					write(push(null, additive), rect, rect, it.radii, it.color!, [3, 0, it.blur ?? 0, it.spread ?? 0], [off.insetX ?? 0, off.insetY ?? 0, 0, 0], cut, clip, it.matrix, it.opacity, 0, NOGRAD, it.radiiY);
 					continue;
 				}
+				if (it.dash) {
+					// Dashed or dotted, the pattern in the shader (IgeUiBorderDash): a ring round a rounded box, or a line
+					const k = it.dash;
+					if (it.border) write(push(null, additive), rect, rect, it.radii, it.color!, [11, it.border, 0, 0], [k.len, k.period, k.round ? 1 : 0, 0], Z4, clip, it.matrix, it.opacity, 0, NOGRAD, it.radiiY);
+					else write(push(null, additive), rect, rect, Z4, it.color!, [10, 0, 0, 0], [k.len, k.period, (k.vertical ? 1 : 0) | (k.round ? 2 : 0), k.phase ?? 0], Z4, clip, it.matrix, it.opacity, 0, NOGRAD);
+					continue;
+				}
 				if (it.border) {
 					write(push(null, additive), rect, rect, it.radii, it.color!, [1, it.border, 0, 0], Z4, cut, clip, it.matrix, it.opacity, 0, NOGRAD, it.radiiY);
 					continue;
@@ -1162,11 +1244,24 @@ export class IgeUiGlRenderer {
 				this._data[o + 19] = kv;
 			}
 		}
+		const target = this.target !== undefined ? this.target : batches.some((b) => b.backdrop || b.shadow || b.layer || b.glow) ? (gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null) : null;
+		// One-shadow groups with nothing in them needing a target of their own: placed in the frame's shadow atlas, all
+		// drawn and blurred ahead of the screen's own pass (IgeUiDropShadow)
+		const atlasShadows = shadowGroups.filter((g) => g.region && g.shadows.length === 1 && batches.slice(g.from, g.to).every((b) => !b.layer && !b.shadow && !b.backdrop && !b.blend && !b.stencil));
+		if (atlasShadows.length) {
+			const [AW, AH] = this._shadows.packAtlas(this, atlasShadows, target);
+			for (const g of atlasShadows) {
+				if (!g.atlas) continue;
+				const r = g.region!, [ax, ay] = g.atlas;
+				// (Rows bottom up: its top-left corner at the top of its place)
+				for (const c of g.composites) this._data.set([ax / AW, (ay + r.h) / AH, (ax + r.w) / AW, ay / AH], c.o + 20);
+			}
+		}
 		if (shadowGroups.length) {
 			// The drop shadows' textures sized for the frame's biggest, and each composite's uv scaled to its part of them
 			const parts: { o: number; k: number; hw: number; hh: number }[] = [];
 			for (const g of shadowGroups) {
-				if (!g.region) continue;
+				if (!g.region || g.atlas) continue;
 				const sizes = this._shadows.size(this, g, scale);
 				for (const c of g.composites) parts.push({ o: c.o, k: c.index, hw: sizes[c.index][0], hh: sizes[c.index][1] });
 			}
@@ -1178,7 +1273,7 @@ export class IgeUiGlRenderer {
 		}
 		if (layers.length) {
 			// Filters' layers: each depth's textures sized for its biggest, and each composite's uv to its part of them
-			for (const L of layers) if (L.region) this._filters.size(this, L.depth, L.region.w, L.region.h);
+			for (const L of layers) if (L.region) this._filters.size(this, L.depth, L.region.w, L.region.h, target);
 			for (const L of layers) {
 				if (!L.region) continue;
 				const t = this._filters.layers[L.depth][0];
@@ -1209,10 +1304,9 @@ export class IgeUiGlRenderer {
 				const t = this._tex(this._fade, W, H);
 				if (!this._fade) {
 					this._fade = { ...t, fbo: gl.createFramebuffer()! };
-					const was = gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
 					gl.bindFramebuffer(gl.FRAMEBUFFER, this._fade.fbo);
 					gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t.tex, 0);
-					gl.bindFramebuffer(gl.FRAMEBUFFER, was);
+					gl.bindFramebuffer(gl.FRAMEBUFFER, target);
 				}
 				this._fade.w = t.w;
 				this._fade.h = t.h;
@@ -1248,7 +1342,6 @@ export class IgeUiGlRenderer {
 		gl.depthMask(false);
 		gl.enable(gl.BLEND);
 		gl.viewport(0, 0, width, height);
-		const target = batches.some((b) => b.backdrop || b.shadow || b.layer || b.glow) ? (gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null) : null;
 		let calls = 0;
 		let blurred: WebGLTexture | null = null;
 		this._stencil.begin();
@@ -1288,6 +1381,32 @@ export class IgeUiGlRenderer {
 			gl.bindVertexArray(this._vao);
 			gl.viewport(0, 0, width, height);
 			gl.enable(gl.BLEND);
+		}
+		// The shadow atlas's silhouettes, each in its place, then their blurs (before the fades: a fade can hold a shadow)
+		const placed = atlasShadows.filter((g) => g.atlas);
+		if (placed.length && this._shadows.atlasSil) {
+			const A = this._shadows.atlasSil;
+			gl.bindFramebuffer(gl.FRAMEBUFFER, A.fbo);
+			gl.clearColor(0, 0, 0, 0);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+			for (const g of placed) {
+				const r = g.region!, [ax, ay] = g.atlas!;
+				const f: Frame = { target: A.fbo, width: r.w, height: r.h, offset: [offset[0] - r.x, offset[1] - r.y], view: [ax, ay] };
+				this._bind(f);
+				for (let i = g.from; i < g.to; i++) {
+					const b = batches[i];
+					if (b.hidden) continue;
+					if (b.glow) {
+						b.image = this._glowTexture(b.glow, batches, drawBatch, f, offset);
+						if (!b.image) continue;
+					}
+					drawBatch(b);
+				}
+				g.drawn = true;
+			}
+			this._shadows.blurAtlas(this, placed, scale);
+			calls += 2;
+			this._bind({ target, width, height, offset });
 		}
 		// The fades, into their places in the atlas, before the screen's own pass
 		const fades = layers.filter((L) => L.atlas);
@@ -1351,7 +1470,7 @@ export class IgeUiGlRenderer {
 					this._shadows.chain(this, g, scale, frame);
 					calls += 3 * g.shadows.length;
 				}
-				b.image = this._shadows.outs[b.shadow.index]!.tex;
+				b.image = g.atlas ? this._shadows.atlasOut!.tex : this._shadows.outs[b.shadow.index]!.tex;
 			}
 			// (backdrop "off": a panel's blur passes left out; "shared": the one blur, made before the UI was drawn)
 			if (this.backdrop === "off" && (b.backdrop || b.blend === "add")) continue;
@@ -1451,7 +1570,7 @@ export class IgeUiGlRenderer {
 					}, sf);
 					this._shadows.chain(this, g, scale, sf);
 				}
-				b.image = this._shadows.outs[b.shadow.index]!.tex;
+				b.image = g.atlas ? this._shadows.atlasOut!.tex : this._shadows.outs[b.shadow.index]!.tex;
 			}
 			drawBatch(b);
 		}
