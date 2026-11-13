@@ -282,3 +282,16 @@ describe("ui2: borders of different colours", () => {
 		expect(r.items.filter((i) => i.el === r.root.querySelector(".sq")).map((i) => i.op)).toEqual(["box"]);
 	});
 });
+
+describe("ui2: computed styles as a browser reports them", () => {
+	it("a flex item's or an absolutely placed box's display is blockified; an SVG transform attribute is the transform", () => {
+		const r = ui(`.f { display: flex; } .i { display: inline-flex; } .a { position: absolute; display: inline-block; }`, 400, 300);
+		r.root.innerHTML = `<div class="f"><span class="i">x</span><span>y</span></div><span class="i k">z</span><span class="a">w</span><svg viewBox="0 0 10 10"><g transform="translate(2 3) scale(2)"><circle r="1"></circle></g></svg>`;
+		r.update(0);
+		const view = r.document.defaultView!;
+		const d = (s: string) => view.getComputedStyle(r.root.querySelector(s)!).display;
+		expect([d(".f .i"), d(".f span:not(.i)"), d(".k"), d(".a")]).toEqual(["flex", "block", "inline-flex", "block"]);
+		expect(view.getComputedStyle(r.root.querySelector("g")!).transform).toBe("matrix(2, 0, 0, 2, 2, 3)");
+		expect(view.getComputedStyle(r.root.querySelector("circle")!).transform).toBe("none");
+	});
+});

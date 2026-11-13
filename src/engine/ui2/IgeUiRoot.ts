@@ -27,6 +27,7 @@ import { cssNumber, serializeComputed } from "@/engine/ui2/style/IgeUiComputed";
 import { type IgeUiComputedStyle, IgeUiStyleEngine, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import { IgeUiCanvasFonts, IgeUiFixedFonts, type IgeUiFontProvider } from "@/engine/ui2/text/IgeUiFonts";
 import { IgeUiSdfAtlas } from "@/engine/ui2/text/IgeUiSdfAtlas";
+import { svgTransform } from "@/engine/ui2/render/IgeUiSvg";
 
 export interface IgeUiMutationRecord {
 	type: "childList" | "attributes" | "characterData";
@@ -237,7 +238,19 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				return `${cssNumber(Math.max(0, v))}px`;
 			}
 			if (!cs || !ctx) return "";
-			if (name === "display" && !el.isConnected) return "";
+			if (name === "display") {
+				if (!el.isConnected) return "";
+				// (Blockified, as a browser reports it: a flex or grid item, or something absolutely positioned)
+				const d = styleValue(cs, "display");
+				const pd = styleValue(el.parentNode?._computed, "display");
+				const pos = styleValue(cs, "position");
+				if (/^inline/.test(d) && (/(^|-)(flex|grid)$/.test(pd) || pos === "absolute" || pos === "fixed")) return BLOCKIFIED[d] ?? "block";
+			}
+			// (An SVG element's transform attribute is its transform when CSS gives it none)
+			if (name === "transform" && styleValue(cs, "transform") === "none" && el.closest("svg")) {
+				const m = svgTransform(el.getAttribute("transform"));
+				if (m) return `matrix(${m.map(cssNumber).join(", ")})`;
+			}
 			return serializeComputed(name, cs, ctx, b, this.dpr);
 		};
 		return new Proxy({} as Record<string, string> & { getPropertyValue (name: string): string }, {
@@ -1404,6 +1417,9 @@ function sameStyle (a: IgeUiComputedStyle | undefined, b: IgeUiComputedStyle | u
 	for (const _k in b) n--;
 	return n === 0;
 }
+
+/** Inline-level displays and what they become for a flex or grid item, or a box out of the flow. */
+const BLOCKIFIED: Record<string, string> = { inline: "block", "inline-block": "block", "inline-flex": "flex", "inline-grid": "grid", "inline-table": "table" };
 
 function invert (m: [number, number, number, number, number, number]): [number, number, number, number, number, number] | undefined {
 	const det = m[0] * m[3] - m[1] * m[2];
