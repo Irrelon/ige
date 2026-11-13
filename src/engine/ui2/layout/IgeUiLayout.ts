@@ -566,6 +566,15 @@ export class IgeUiLayoutEngine {
 		return this.fonts.measure(text, this.font(style)) + this.letterSpacing(style) * [...text].length;
 	}
 
+	/**
+	 * Whether text reaching `x` along a line overflows the line's `cw`, as a browser decides it in its layout units (64ths
+	 * of a pixel): the text's width rounded up to them (as its content size is: intrinsic), the room to the nearest. Text
+	 * a hair wider than its box wraps (218.02px of it in 218), text exactly as wide as the box it sized doesn't.
+	 */
+	_pastLine (x: number, cw: number): boolean {
+		return Math.ceil(x * 64 - 1e-4) > Math.round(cw * 64);
+	}
+
 	/** The used line-height in px. */
 	lineHeight (style: IgeUiComputedStyle): number {
 		const have = this._lineHeights.get(style);
@@ -1776,7 +1785,7 @@ export class IgeUiLayoutEngine {
 			if (!canWrap && wrapOK && line.length) {
 				const prev = line[line.length - 1];
 				const breakable = prev.item.kind === "atom" || (prev.item.kind === "text" && / $/.test(prev.text ?? "") && !/^(nowrap|pre)$/.test(styleValue(prev.item.style, "white-space")));
-				if (breakable && x + this.textWidth(text.replace(/ +$/, ""), it.style) > cw + 0.05) finishLine(false);
+				if (breakable && this._pastLine(x + this.textWidth(text.replace(/ +$/, ""), it.style), cw)) finishLine(false);
 			}
 			const pieces = itemWs === "pre" || itemWs === "pre-wrap" || itemWs === "pre-line" ? text.split(/(\n)/) : [text];
 			for (const piece of pieces) {
@@ -1812,7 +1821,7 @@ export class IgeUiLayoutEngine {
 					// after it measured with the rest of it in the items after)
 					const rest = segAt === segs.length - 1 && piece === pieces[pieces.length - 1] && !/ $/.test(seg) ? wordRest(ii) : 0;
 					const trial = (buf ? this.textWidth(buf + seg.replace(/ +$/, ""), it.style) : segW) + rest;
-					if (!atStart && canWrap && !(glued && segAt === 0) && bufX + trial > cw + 0.05) {
+					if (!atStart && canWrap && !(glued && segAt === 0) && this._pastLine(bufX + trial, cw)) {
 						push();
 						finishLine(false);
 						bufX = x;

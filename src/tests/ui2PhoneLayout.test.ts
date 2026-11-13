@@ -207,6 +207,12 @@ describe("ui2: layout at a phone's sizes, as Chrome's", () => {
 		expect(Math.abs(w * 64 - Math.round(w * 64))).toBeLessThan(0.7);
 	});
 
+	it("text a hair wider than its box wraps, as Chrome's does in 64ths of a pixel; text in the box it sized doesn't", () => {
+		// ("aaaa aaaa" 45.018px wide: 218.02px of "Blueprint: Plated Hull Armour" in 600 16px Exo 2 wraps in 218px in Chrome)
+		const lines = (css: string) => heights(ui(`.b { font: 10px sans-serif; line-height: 10px; letter-spacing: 0.002px; } ${css}`, `<div class="b">aaaa aaaa</div>`), ".b")[0] / 10;
+		expect([lines(".b { width: 45px; }"), lines(".b { width: 45.03125px; }"), lines(".b { display: inline-block; }"), lines(".b { width: 46px; }")]).toEqual([2, 1, 1, 1]);
+	});
+
 	it("aspect-ratio on an absolutely placed ::before gives it its height", () => {
 		const r = ui(`.p { position: relative; width: 400px; height: 300px; } .p::before { content: ""; position: absolute; width: 50%; aspect-ratio: 2; }`, `<div class="p"></div>`);
 		const pb = r.root.querySelector(".p")!._box!.children.find((c) => c.pseudo === "before")!;
