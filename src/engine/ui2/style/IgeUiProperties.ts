@@ -151,14 +151,7 @@ export function expandShorthand (name: string, value: string): [string, string][
 			}
 			return [["background-color", color], ["background-image", images.every((x) => x === "none") ? "none" : images.join(", ")]];
 		}
-		case "font": {
-			// [style] [variant] [weight] size[/line-height] family
-			const m = /^(?:(italic|oblique|normal)\s+)?(?:(small-caps)\s+)?(?:(bold|bolder|lighter|normal|\d{3})\s+)?([\d.]+(?:px|em|rem|%)|var\([^)]*\)|calc\([^)]*\))(?:\s*\/\s*([^\s]+))?\s+(.+)$/i.exec(v);
-			if (!m) return undefined;
-			const out: [string, string][] = [["font-style", m[1] ?? "normal"], ["font-weight", m[3] ?? "400"], ["font-size", m[4]], ["font-family", m[6]]];
-			out.push(["line-height", m[5] ?? "normal"]);
-			return out;
-		}
+		case "font": return expandFont(v);
 		case "text-decoration": return [["text-decoration-line", v.split(/\s+/)[0] ?? "none"]];
 		case "grid-area": return undefined;
 		case "grid-column": case "grid-row": return [[name, v]];
@@ -179,4 +172,46 @@ export function shorthandKeys (name: string): string[] | undefined {
 		if (longs) return longs.map(([k]) => k);
 	}
 	return undefined;
+}
+
+/**
+ * The font shorthand: [style] [variant] [weight] size[/line-height] family. Words are read at the top level, so a size
+ * written with nested functions (calc(clamp(30px, 3vw, 50px) * 0.36)) stays one word.
+ */
+function expandFont (v: string): [string, string][] | undefined {
+	const words: string[] = [];
+	let depth = 0, cur = "";
+	for (const ch of v.trim()) {
+		if (ch === "(") depth++;
+		else if (ch === ")") depth--;
+		if (/\s/.test(ch) && depth === 0) {
+			if (cur) words.push(cur);
+			cur = "";
+		} else cur += ch;
+	}
+	if (cur) words.push(cur);
+	let style = "normal", weight = "400", i = 0;
+	for (; i < words.length; i++) {
+		const w = words[i].toLowerCase();
+		if (w === "italic" || w === "oblique") style = w;
+		else if (w === "bold" || w === "bolder" || w === "lighter" || /^\d{3}$/.test(w)) weight = w;
+		else if (w !== "normal" && w !== "small-caps") break;
+	}
+	// The size (with its line height after a slash, written together or apart), then the family
+	let size = words[i] ?? "", lh = "normal", j = i + 1;
+	if (!size) return undefined;
+	const slash = size.indexOf("/");
+	if (slash > 0 && !size.includes("(")) {
+		lh = size.slice(slash + 1) || words[j++] || "normal";
+		size = size.slice(0, slash);
+	} else if (words[j] === "/") {
+		lh = words[j + 1] ?? "normal";
+		j += 2;
+	} else if (words[j]?.startsWith("/")) {
+		lh = words[j].slice(1) || words[j + 1] || "normal";
+		j += words[j].length > 1 ? 1 : 2;
+	}
+	const family = words.slice(j).join(" ");
+	if (!family || !/^([\d.]+[a-z%]*|var\(|calc\(|min\(|max\(|clamp\()/i.test(size)) return undefined;
+	return [["font-style", style], ["font-weight", weight], ["font-size", size], ["font-family", family], ["line-height", lh]];
 }

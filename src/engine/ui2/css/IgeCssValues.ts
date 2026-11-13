@@ -4,6 +4,7 @@
  * hsl(), names, color-mix()), gradients, shadows and transforms.
  */
 import { splitTop } from "@/engine/ui2/css/IgeCssParser";
+import { flatTransformFunction } from "@/engine/ui2/css/IgeCssTransform3d";
 
 /** What a length resolves against. */
 export interface IgeCssLengthContext {
@@ -441,7 +442,41 @@ export function parseGradient (value: string, current?: IgeCssColor): IgeCssGrad
 			g.stops.push({ color, ...posOf(toks[1]) }, { color, ...posOf(toks[2]) });
 		} else g.stops.push({ color, ...(toks[1] ? posOf(toks[1]) : {}) });
 	}
+	if (g.repeating && g.type === "conic") unrollConic(g);
 	return g.stops.length ? g : undefined;
+}
+
+/**
+ * A repeating conic gradient (a chip's stripes) written out round the whole turn: its stops copied once per period,
+ * so it draws as a plain conic gradient. Left as it is when its period is a whole turn (nothing repeats), nothing, or
+ * so short it would take more than 512 stops.
+ */
+function unrollConic (g: IgeCssGradient): void {
+	const pos = g.stops.map((s) => s.at);
+	if (pos[0] === undefined) pos[0] = 0;
+	if (pos[pos.length - 1] === undefined) pos[pos.length - 1] = 1;
+	for (let i = 1; i < pos.length; i++) if (pos[i] !== undefined && pos[i]! < pos[i - 1]!) pos[i] = pos[i - 1];
+	for (let i = 0; i < pos.length; i++) {
+		if (pos[i] !== undefined) continue;
+		let j = i;
+		while (pos[j] === undefined) j++;
+		const a = pos[i - 1]!, b = pos[j]!;
+		for (let k = i; k < j; k++) pos[k] = a + ((b - a) * (k - i + 1)) / (j - i + 1);
+	}
+	const first = pos[0]!, period = pos[pos.length - 1]! - first;
+	if (period >= 1 - 1e-6) {
+		g.repeating = false;
+		return;
+	}
+	if (period <= 1e-6 || (g.stops.length * (1 / period + 2)) > 512) return;
+	const stops: IgeCssColorStop[] = [];
+	// (From the copy that reaches the turn's start to the one that passes its end)
+	for (let k = Math.floor(-first / period) - 1; first + k * period < 1; k++) {
+		if (first + (k + 1) * period <= 0) continue;
+		g.stops.forEach((s, i) => stops.push({ color: s.color, at: pos[i]! + k * period }));
+	}
+	g.stops = stops;
+	g.repeating = false;
 }
 
 // ---------------------------------------------------------------- shadows
@@ -529,7 +564,8 @@ export function parseTransform (value: string, width: number, height: number, ct
 				if (k.length === 6) n = k as IgeCssMatrix;
 				break;
 			}
-			default: break;
+			// 3D and skew functions, seen straight on (IgeCssTransform3d)
+			default: n = flatTransformFunction(name, args) ?? n; break;
 		}
 		m = multiply(m, n);
 	}
