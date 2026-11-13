@@ -45,6 +45,7 @@ select { padding: 1px 2px; border: 1px solid #767676; background-color: #fff; }
 textarea { white-space: pre-wrap; }
 img, canvas, svg, video { display: inline-block; }
 svg { overflow: hidden; }
+text, tspan, textPath { white-space: nowrap; }
 a { cursor: pointer; }
 ::placeholder { color: #757575; }
 button:disabled { color: rgba(16, 16, 16, 0.3); background-color: rgba(239, 239, 239, 0.3); border-color: rgba(118, 118, 118, 0.3); }
