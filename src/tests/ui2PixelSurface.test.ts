@@ -1,5 +1,5 @@
 import { IgeUiPixelSurface } from "@/engine/ui2/render/IgeUiPixelSurface";
-import { IgeUiCanvas2d } from "@/engine/ui2/render/IgeUiCanvas2d";
+import { IgeUiCanvas2d, igeUiCanvas2dSurface } from "@/engine/ui2/render/IgeUiCanvas2d";
 import type { IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 
 const fonts = { measure: () => 0, metrics: () => ({ ascent: 8, descent: 2 }) };
@@ -50,5 +50,27 @@ describe("ui2: pixels in memory", () => {
 		c.paint(after, 0, 0, 16, 16, 1, null);
 		expect(after).toEqual([]);
 		expect([...c.getImageData(1, 1, 1, 1).data]).toEqual([0, 0, 0, 0]);
+	});
+
+	it("draws part of a picture by its texture coordinates, and another engine canvas by its pixels (a buffer made a pixel at a time)", () => {
+		const el = { localName: "canvas" } as never;
+		const buffer = igeUiCanvas2dSurface(8, 4, fonts, undefined, el);
+		// (Its context's canvas is the element, as a browser's is)
+		expect(buffer.context.canvas).toBe(el);
+		const img = buffer.context.createImageData(8, 4);
+		img.data.fill(255);
+		buffer.context.putImageData(img, 0, 0);
+		const size: [number, number] = [16, 16];
+		const c = new IgeUiCanvas2d(null, fonts, () => size);
+		c.drawImage({ _canvas: buffer, width: 8, height: 4 }, 0, 0, 4, 4, 2, 2, 8, 8);
+		const items: IgeUiPaintItem[] = [];
+		c.paint(items, 0, 0, 16, 16, 1, null);
+		const image = items[0] as Extract<IgeUiPaintItem, { op: "image" }>;
+		expect(image.uv).toEqual([0, 0, 0.5, 1]);
+		expect([image.x, image.y, image.w, image.h]).toEqual([2, 2, 8, 8]);
+		// (The buffer's pixel layer, uploaded from its pixels)
+		const layer = (image.source as unknown as { _canvas: IgeUiPixelSurface })._canvas;
+		expect(layer).toBeInstanceOf(IgeUiPixelSurface);
+		expect([...layer.pixels().data.slice(0, 4)]).toEqual([255, 255, 255, 255]);
 	});
 });

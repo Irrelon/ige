@@ -26,8 +26,9 @@
  * - clip: to the path (a rectangle as the painter's own clip; any other
  *   shape, a circle, as a mask the renderer keeps in its stencil, with a
  *   sharp edge), clips in clips keeping to both;
- * - drawImage of an engine canvas or image, or a page canvas or image (the
- *   whole picture, or the whole of it named as the source rectangle).
+ * - drawImage of an engine canvas or image, or a page canvas or image, the
+ *   whole picture or part of it (another canvas the engine draws: what's
+ *   put on it with putImageData);
  *
  * - putImageData, getImageData and createImageData: the pixels kept in a
  *   pixel layer (IgeUiPixelSurface) drawn where it was first put since the
@@ -728,14 +729,17 @@ export class IgeUiCanvas2d {
 	// ------------------------------------------------------------ images
 
 	drawImage (source: unknown, ...a: number[]): void {
-		const src = imageSource(source);
+		const src = imageSource(engineCanvasPixels(source, (what) => this._unsupported(what)) ?? source);
 		if (!src) return this._unsupported("drawImage of that source");
 		const [nw, nh] = [src.width, src.height];
 		let dx: number, dy: number, dw: number, dh: number;
+		let uv: [number, number, number, number] | undefined;
 		if (a.length === 2) [dx, dy, dw, dh] = [a[0], a[1], nw, nh];
 		else if (a.length === 4) [dx, dy, dw, dh] = a;
 		else if (a.length === 8) {
-			if (a[0] !== 0 || a[1] !== 0 || Math.abs(a[2] - nw) > 0.5 || Math.abs(a[3] - nh) > 0.5) this._unsupported("drawImage of part of a picture (the whole of it is drawn)");
+			// (Part of the picture: its texture coordinates)
+			const [sx, sy, sw, sh] = a;
+			if ((sx !== 0 || sy !== 0 || Math.abs(sw - nw) > 0.5 || Math.abs(sh - nh) > 0.5) && nw > 0 && nh > 0) uv = [sx / nw, sy / nh, (sx + sw) / nw, (sy + sh) / nh];
 			[dx, dy, dw, dh] = a.slice(4);
 		} else return;
 		const s = this._state;
@@ -744,7 +748,7 @@ export class IgeUiCanvas2d {
 		const k = own ? [1, 1] : [s.m[0], s.m[3]];
 		this._shadowed(() => this._push({
 			op: "image", x: ax, y: ay, w: dw * k[0], h: dh * k[1], source: src.el, opacity: s.alpha, clip: own ? null : s.clip, pixelated: !s.smoothing,
-			matrix: own ? [...s.m] : undefined, additive: s.composite === "lighter" || undefined
+			matrix: own ? [...s.m] : undefined, additive: s.composite === "lighter" || undefined, uv
 		}, own));
 	}
 
@@ -892,6 +896,20 @@ function bounds (it: IgeUiPaintItem): [number, number, number, number] | undefin
 	return [x0, y0, x1, y1];
 }
 
+/**
+ * A canvas element the engine draws (its surface an IgeUiCanvas2d's) as a picture: its pixel layer (what's put with
+ * putImageData: a buffer made a pixel at a time, as the mirror's figure is); the shapes drawn on it aren't (`warn`).
+ * Undefined for any other source.
+ */
+function engineCanvasPixels (source: unknown, warn: (what: string) => void): IgeUiPixelSurface | undefined {
+	const surface = (source as { _canvas?: { context?: unknown } } | null)?._canvas;
+	const ctx = surface?.context;
+	if (!(ctx instanceof IgeUiCanvas2d)) return undefined;
+	ctx._sized();
+	if (ctx._drawn.some((d) => !(d.item.op === "image" && ctx._pixels && d.item.source === imageSource(ctx._pixels)?.el))) warn("drawImage of an engine-drawn canvas's shapes (its putImageData pixels are drawn)");
+	return ctx._layer();
+}
+
 /** Page pictures as the painter's image sources (a canvas's surface, an image by src): one stand-in each. */
 const standIns = new WeakMap<object, IgeUiElement>();
 
@@ -915,7 +933,7 @@ function imageSource (source: unknown): { el: IgeUiElement; width: number; heigh
 // ---------------------------------------------------------------- as a surface
 
 /** An engine-drawn surface (the host seam's IgeUiSurface, with its paint): its 2D context records, its paint draws it. */
-export function igeUiCanvas2dSurface (w: number, h: number, fonts: IgeUiCanvas2dFonts, changed?: () => void): IgeUiSurface & { context: IgeUiCanvas2d } {
+export function igeUiCanvas2dSurface (w: number, h: number, fonts: IgeUiCanvas2dFonts, changed?: () => void, el?: IgeUiElement): IgeUiSurface & { context: IgeUiCanvas2d } {
 	let width = w, height = h;
 	const surface = {
 		// (Set, it clears what's drawn and the state at once, as a canvas's width and height do)
@@ -927,8 +945,9 @@ export function igeUiCanvas2dSurface (w: number, h: number, fonts: IgeUiCanvas2d
 		getContext: (kind: string) => (kind === "2d" ? surface.context : null),
 		paint: (items: IgeUiPaintItem[], x: number, y: number, pw: number, ph: number, opacity: number, clip: IgeUiClip, matrix?: IgeCssMatrix) => surface.context.paint(items, x, y, pw, ph, opacity, clip, matrix)
 	};
-	// (Its size, the surface's: set by its canvas element as its width and height change, which clears it)
-	surface.context = new IgeUiCanvas2d(surface, fonts, () => [width, height], changed);
+	// (Its size, the surface's: set by its canvas element as its width and height change, which clears it; its canvas
+	// the element, as a browser context's is, when it's told it)
+	surface.context = new IgeUiCanvas2d(el ?? surface, fonts, () => [width, height], changed);
 	return surface;
 }
 
@@ -944,7 +963,7 @@ export function igeUiCanvas2dOn (host: IgeUiHost, which: (el: IgeUiElement) => b
 			if (!el || !which(el)) return own.create(w, h, el);
 			const doc = el.ownerDocument as unknown as { host?: { host?: IgeUiHost; layoutEngine?: { fonts?: IgeUiCanvas2dFonts } }; _changed?: (el: IgeUiElement, what: string) => void };
 			const fonts = doc.host?.layoutEngine?.fonts ?? host.text.fonts;
-			return igeUiCanvas2dSurface(w, h, fonts, () => doc._changed?.(el, "paint"));
+			return igeUiCanvas2dSurface(w, h, fonts, () => doc._changed?.(el, "paint"), el);
 		}
 	};
 }
