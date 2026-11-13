@@ -136,6 +136,19 @@ describe("ui2: what the menus need (the journal, the controls overlay, the title
 		expect(r.items.filter((i) => i.op === "box" && i.el === f && (i as { h: number }).h === 1).length).toBe(0);
 	});
 
+	it("setting outerHTML replaces the element with what the markup makes (the news's article redrawn in place)", () => {
+		const r = ui();
+		r.document.body.innerHTML = `<div class="list"></div><div class="article">old</div><p>after</p>`;
+		r.update();
+		const old = r.document.querySelector(".article")!;
+		old.outerHTML = `<div class="article new">one</div><div class="two">two</div>`;
+		expect(r.document.body.innerHTML).toBe(`<div class="list"></div><div class="article new">one</div><div class="two">two</div><p>after</p>`);
+		expect(old.parentNode).toBe(null);
+		// (No parent: nothing)
+		old.outerHTML = `<b>x</b>`;
+		expect(r.document.querySelectorAll("b").length).toBe(0);
+	});
+
 	it("caret-color's initial value is auto, computed as the text's colour", () => {
 		const r = ui("input { color: #f00; }");
 		r.document.body.innerHTML = `<input class="f">`;

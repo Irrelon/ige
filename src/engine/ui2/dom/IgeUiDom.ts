@@ -881,6 +881,13 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		return serialize(this);
 	}
 
+	/** Replaces the element in its parent with what the markup makes (with no parent, nothing: as a browser's). */
+	set outerHTML (html: string) {
+		if (!this.parentNode) return;
+		this.insertAdjacentHTML("beforebegin", String(html ?? ""));
+		this.remove();
+	}
+
 	insertAdjacentHTML (where: "beforebegin" | "afterbegin" | "beforeend" | "afterend", html: string): void {
 		const nodes = parseHtml(html).map((n) => build(this.ownerDocument, n));
 		if (where === "afterbegin") {
