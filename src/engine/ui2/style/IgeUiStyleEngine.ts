@@ -32,6 +32,35 @@ function addKeys (to: Set<string>, compound: string): void {
 	else for (const k of found) to.add(k);
 }
 
+/**
+ * SVG presentation attributes (fill="#f00", font-size="12"): the properties an SVG element's attributes set as
+ * declarations of the page's under every rule (CSS's "presentational hints"). Geometry (x, cx, r...) and transform
+ * are the SVG drawing's own (IgeUiSvg).
+ */
+const PRESENTATION = new Set([
+	"fill", "fill-opacity", "fill-rule", "stroke", "stroke-width", "stroke-opacity", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit",
+	"stroke-dasharray", "stroke-dashoffset", "opacity", "color", "font-family", "font-size", "font-weight", "font-style", "font-variant",
+	"letter-spacing", "word-spacing", "text-anchor", "dominant-baseline", "alignment-baseline", "baseline-shift", "visibility", "stop-color",
+	"stop-opacity", "vector-effect", "paint-order", "pointer-events", "cursor", "clip-rule", "shape-rendering", "text-rendering", "flood-color", "flood-opacity"
+]);
+const PRESENTATION_LENGTHS = new Set(["font-size", "stroke-width", "letter-spacing", "word-spacing", "stroke-dashoffset", "baseline-shift"]);
+
+/** An SVG element's presentation attributes as declarations (none for an element that isn't in an <svg>). */
+function presentationHints (el: IgeUiElement): [string, string][] | undefined {
+	let out: [string, string][] | undefined;
+	for (const [k, v] of el._attrs) {
+		if (!PRESENTATION.has(k)) continue;
+		if (!out) {
+			// (Only in an SVG: an HTML element's color attribute, say, is nothing)
+			if (el.localName !== "svg" && !el.closest("svg")) return undefined;
+			out = [];
+		}
+		// (A bare number for a length is user units: px)
+		out.push([k, PRESENTATION_LENGTHS.has(k) && /^[+-]?(\d+\.?\d*|\.\d+)$/.test(v.trim()) ? `${v.trim()}px` : v.trim()]);
+	}
+	return out;
+}
+
 /** A property's computed value, or its initial one. */
 export function styleValue (cs: IgeUiComputedStyle | undefined, name: string): string {
 	return cs?.[name] ?? INITIAL[name] ?? "";
@@ -215,7 +244,7 @@ export class IgeUiStyleEngine {
 	compute (el: IgeUiElement, parent: IgeUiComputedStyle | undefined): IgeUiComputedStyle {
 		const m = this._matching(el);
 		const inline = [...el._inline._props].map(([name, d]) => ({ name, value: d.value, important: d.important }));
-		const cs = this._cascade(m.own, inline, parent);
+		const cs = this._cascade(m.own, inline, parent, presentationHints(el));
 		el._pseudo = undefined;
 		if (m.before.length || m.after.length) {
 			el._pseudo = {};
@@ -235,7 +264,7 @@ export class IgeUiStyleEngine {
 		return cs;
 	}
 
-	_cascade (rules: IndexedRule[], inline: { name: string; value: string; important: boolean }[], parent: IgeUiComputedStyle | undefined): IgeUiComputedStyle {
+	_cascade (rules: IndexedRule[], inline: { name: string; value: string; important: boolean }[], parent: IgeUiComputedStyle | undefined, hints?: [string, string][]): IgeUiComputedStyle {
 		// (In declaration order: a key set again moves to the end, so what's declared later is applied later)
 		const specified = new Map<string, string>();
 		const put = (k: string, v: string) => {
@@ -263,7 +292,10 @@ export class IgeUiStyleEngine {
 			if (longs) for (const [k, v] of longs) put(k, v);
 			else put(name, value);
 		};
-		for (const r of rules) for (const d of r.rule.declarations) if (!d.important) set(d.name, d.value);
+		// (The defaults', then an SVG element's presentation attributes (author level, under every rule), then the page's)
+		for (const r of rules) if (r.ua) for (const d of r.rule.declarations) if (!d.important) set(d.name, d.value);
+		if (hints) for (const [k, v] of hints) set(k, v);
+		for (const r of rules) if (!r.ua) for (const d of r.rule.declarations) if (!d.important) set(d.name, d.value);
 		for (const d of inline) if (!d.important) set(d.name, d.value);
 		for (const r of rules) for (const d of r.rule.declarations) if (d.important) set(d.name, d.value);
 		for (const d of inline) if (d.important) set(d.name, d.value);

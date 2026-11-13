@@ -740,33 +740,52 @@ export class IgeUiLayoutEngine {
 		for (const k of kids) this._inlineItems(k, style, items);
 		this._collapseSpaces(items);
 		let min = 0, line = 0, max = 0;
+		// (A word runs on across inline elements with no space between them: <b>W</b><b>A</b> is one word)
+		let word = 0;
 		for (const it of items) {
 			if (it.kind === "break") {
 				max = Math.max(max, line);
 				line = 0;
+				min = Math.max(min, word);
+				word = 0;
 				continue;
 			}
 			if (it.kind === "atom") {
 				const s = this._marginBox(it.box!);
-				min = Math.max(min, s.min);
+				min = Math.max(min, s.min, word);
+				word = 0;
 				line += s.max;
 				continue;
 			}
 			if (it.kind === "open" || it.kind === "close") {
 				line += it.edge ?? 0;
+				if (word > 0) word += it.edge ?? 0;
 				continue;
 			}
 			const text = it.text ?? "";
 			const ws = styleValue(it.style, "white-space");
 			const noWrap = ws === "nowrap" || ws === "pre";
 			line += this.textWidth(text, it.style);
-			if (noWrap) min = Math.max(min, this.textWidth(text.trim(), it.style));
-			else for (const word of text.split(/\s+/)) if (word) min = Math.max(min, this.textWidth(word, it.style));
+			if (noWrap) {
+				min = Math.max(min, word, this.textWidth(text.trim(), it.style));
+				word = 0;
+			} else {
+				const parts = text.split(/\s+/);
+				parts.forEach((p, k) => {
+					const w = p ? this.textWidth(p, it.style) : 0;
+					if (k === 0) word += w;
+					else {
+						min = Math.max(min, word);
+						word = w;
+					}
+				});
+			}
 			if (ws === "pre" || ws === "pre-wrap" || ws === "pre-line") {
 				for (const part of text.split("\n")) max = Math.max(max, this.textWidth(part, it.style));
 			}
 		}
 		max = Math.max(max, line);
+		min = Math.max(min, word);
 		// (Content that doesn't wrap (nowrap, pre) breaks nowhere, round inline blocks and inline elements' edges
 		// too: its narrowest is its widest line, as a browser's is, so a nowrap button holds its width in a flex row)
 		const ws0 = styleValue(style, "white-space");
@@ -1520,7 +1539,28 @@ export class IgeUiLayoutEngine {
 			return { valign: "baseline", shift: n ?? 0 };
 		};
 		const wrapOK = ws !== "nowrap" && ws !== "pre";
-		for (const it of items) {
+		/**
+		 * How much more of the word an item's text ends with is in the items after it, with no space between
+		 * (<b>W</b><b>A</b><b>S</b>: one word, as a browser has it); an inline block or a space ends it.
+		 */
+		const wordRest = (from: number): number => {
+			let w = 0;
+			for (let j = from + 1; j < items.length; j++) {
+				const n = items[j];
+				if (n.kind === "open" || n.kind === "close") {
+					w += n.edge ?? 0;
+					continue;
+				}
+				if (n.kind !== "text") break;
+				const t = n.text ?? "";
+				const word = /^[^ ]*/.exec(t)![0];
+				w += this.textWidth(word, n.style);
+				if (word.length < t.length) break;
+			}
+			return w;
+		};
+		for (let ii = 0; ii < items.length; ii++) {
+			const it = items[ii];
 			if (it.kind === "break") {
 				finishLine(false);
 				continue;
@@ -1608,6 +1648,10 @@ export class IgeUiLayoutEngine {
 				const segs = canWrap ? piece.match(/[^ ]+ *| +/g) ?? [] : [piece];
 				let buf = "";
 				let bufX = x;
+				// (Its first word goes on from the text before it, with no space between: no break before it)
+				const prevPiece = line[line.length - 1];
+				const glued = piece === pieces[0] && prevPiece?.item.kind === "text" && !/ $/.test(prevPiece.text ?? "") && !/^ /.test(piece);
+				let segAt = -1;
 				const push = () => {
 					if (!buf) return;
 					// (A space at a line's start is dropped)
@@ -1619,12 +1663,15 @@ export class IgeUiLayoutEngine {
 					buf = "";
 				};
 				for (const seg of segs) {
+					segAt++;
 					const segW = this.textWidth(seg.replace(/ +$/, ""), it.style);
 					const atStart = !line.length && !buf;
 					// (The run so far and the word measured together, as the content's widest measure was: kerning
-					// across the space kept, so text exactly as wide as its box doesn't wrap)
-					const trial = buf ? this.textWidth(buf + seg.replace(/ +$/, ""), it.style) : segW;
-					if (!atStart && canWrap && bufX + trial > cw + 0.05) {
+					// across the space kept, so text exactly as wide as its box doesn't wrap; a last word with no space
+					// after it measured with the rest of it in the items after)
+					const rest = segAt === segs.length - 1 && piece === pieces[pieces.length - 1] && !/ $/.test(seg) ? wordRest(ii) : 0;
+					const trial = (buf ? this.textWidth(buf + seg.replace(/ +$/, ""), it.style) : segW) + rest;
+					if (!atStart && canWrap && !(glued && segAt === 0) && bufX + trial > cw + 0.05) {
 						push();
 						finishLine(false);
 						bufX = x;

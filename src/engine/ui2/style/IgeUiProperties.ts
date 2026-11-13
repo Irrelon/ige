@@ -8,7 +8,10 @@ import { parseColor } from "@/engine/ui2/css/IgeCssValues";
 export const INHERITED = new Set([
 	"color", "font-family", "font-size", "font-style", "font-weight", "font-variant-numeric", "font-feature-settings", "letter-spacing", "word-spacing", "line-height", "text-align",
 	"text-transform", "text-indent", "white-space", "word-break", "overflow-wrap", "word-wrap", "visibility", "cursor", "text-shadow", "pointer-events", "direction", "list-style-type",
-	"-webkit-text-stroke", "tab-size", "user-select", "text-rendering", "-webkit-font-smoothing", "hyphens", "caret-color", "font-kerning", "text-wrap", "scrollbar-color"
+	"-webkit-text-stroke", "tab-size", "user-select", "text-rendering", "-webkit-font-smoothing", "hyphens", "caret-color", "font-kerning", "text-wrap", "scrollbar-color",
+	// (SVG's)
+	"fill", "fill-opacity", "fill-rule", "stroke", "stroke-width", "stroke-opacity", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-dasharray",
+	"stroke-dashoffset", "text-anchor", "dominant-baseline", "paint-order", "clip-rule", "shape-rendering"
 ]);
 
 export const INITIAL: Record<string, string> = {

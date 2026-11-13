@@ -479,3 +479,32 @@ describe("ui2: container query units", () => {
 		expect(box(".w.out")).toEqual([400, 60]);
 	});
 });
+
+describe("ui2: SVG presentation attributes", () => {
+	it("are declarations under every rule of the page's, in an SVG only", () => {
+		const r = ui(`.b { fill: blue; }`, 400, 300);
+		r.root.innerHTML = `<svg viewBox="0 0 10 10" width="10" height="10"><g fill="red"><text font-size="12" letter-spacing="2" font-family="monospace">hi</text><rect class="b" fill="green" width="1" height="1"></rect></g></svg><p color="red" font-size="30">x</p>`;
+		r.update(0);
+		const view = r.document.defaultView!;
+		const t = view.getComputedStyle(r.root.querySelector("text")!);
+		expect([t.fontSize, t.letterSpacing, t.fontFamily]).toEqual(["12px", "2px", "monospace"]);
+		expect(r.root.querySelector("text")!._computed!.fill).toBe("red");
+		expect(r.root.querySelector("rect")!._computed!.fill).toBe("blue");
+		expect(view.getComputedStyle(r.root.querySelector("p")!).fontSize).toBe("10px");
+	});
+});
+
+describe("ui2: a word across inline elements", () => {
+	it("doesn't break between elements with no space between them: it goes to the next line whole", () => {
+		const r = ui(`.p { width: 40px; } b { font-weight: 400; }`, 400, 300);
+		// (5px glyphs: "keys " is 25px, the word after it 20px more: "keys WAS" would fit, "keys WASD" doesn't)
+		r.root.innerHTML = `<div class="p">keys <b>W</b><b>A</b><b>S</b><b>D</b></div><div style="width: 10px"><div class="q" style="display: inline-block"><b>W</b><b>A</b><b>S</b><b>D</b> x</div></div>`;
+		r.update(0);
+		const tops = [...r.root.querySelectorAll(".p b")].map((b) => b.getBoundingClientRect().top);
+		const first = r.root.querySelector(".p")!.getBoundingClientRect().top;
+		expect(tops.every((t) => t > first)).toBe(true);
+		expect(new Set(tops).size).toBe(1);
+		// (Its narrowest: the whole word)
+		expect(r.root.querySelector(".q")!.getBoundingClientRect().width).toBe(20);
+	});
+});
