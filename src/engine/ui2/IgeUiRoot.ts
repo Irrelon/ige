@@ -166,10 +166,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_tooltip?: { el: IgeUiElement; at: number; x: number; y: number; shown?: IgeUiElement };
 	_now = 0;
 	/**
-	 * The last thing the user did wasn't a press of the pointer (a key, or nothing yet): focus moved by a script then
-	 * shows its ring, as a browser's does.
+	 * The last thing the user did: a key (true), a press of the pointer (false), or nothing yet (undefined). Focus moved
+	 * by a script shows its ring after a key, or before anything's been done while the page has the system's focus, as
+	 * Chrome's does (an unfocused window shows no focus at all).
 	 */
-	_keyboardModality = true;
+	_keyboardModality: boolean | undefined = undefined;
 	/** HTML drag and drop from the pointer (draggable="true"). */
 	readonly drag: IgeUiDragDrop = new IgeUiDragDrop(this);
 	_textInput?: HTMLInputElement;
@@ -495,7 +496,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			el._states.add("focus");
 			// (Ring or not: as asked; else a browser's way: after a key, or for a field you type in)
 			const typing = (el.localName === "input" && !["button", "submit", "reset", "checkbox", "radio", "range", "color", "file", "image"].includes(el.getAttribute("type") ?? "text")) || el.localName === "textarea";
-			if (opts?.focusVisible ?? (this._keyboardModality || typing)) el._states.add("focus-visible");
+			const keyboard = this._keyboardModality ?? (typeof document !== "undefined" && typeof document.hasFocus === "function" && document.hasFocus());
+			if (opts?.focusVisible ?? (keyboard || typing)) el._states.add("focus-visible");
 			this.changed(el, "state");
 			el.dispatchEvent(new IgeUiEvent("focus"));
 			el.dispatchEvent(new IgeUiEvent("focusin", { bubbles: true }));
@@ -690,6 +692,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** Every animation settled (transitions done, one-shots at their end, endless ones held at their start), then drawn so. */
 	settleAnimations (now: number = this._now || perf()): void {
 		this.flush();
+		if (this._pointerAt && this._hoverStale) {
+			// (What's under a pointer that hasn't moved, after a redraw: hovered now, and its :hover styles settled too)
+			this.update(now);
+			this.flush();
+		}
 		this.animator.settle(now);
 		this._animate(now);
 		this._paintDirty = true;

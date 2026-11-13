@@ -376,3 +376,19 @@ describe("ui2: hover after a redraw", () => {
 		expect(r.root.querySelector("button.a")!._computed!.color).not.toBe("red");
 	});
 });
+
+describe("ui2: settling after a redraw under the pointer", () => {
+	it("hovers what's there now and finishes its :hover transition (a fixture's still frame)", () => {
+		const r = ui(`.s { display: block; width: 80px; height: 20px; background: #000; transition: background 0.12s; } .s:hover { background: #f00; }`, 400, 300);
+		r.root.innerHTML = `<div class="list"><button class="s a">A</button></div>`;
+		r.update(0);
+		const pt = { clientX: 10, clientY: 10, button: 0, buttons: 0, pointerType: "mouse", pointerId: 1, timeStamp: 0, stopImmediatePropagation () {}, preventDefault () {} };
+		r._pointer("pointermove", pt as never);
+		r.settleAnimations(0);
+		r.update(0);
+		r.root.querySelector(".list")!.innerHTML = `<button class="s b">B</button>`;
+		r.settleAnimations(0);
+		r.update(0);
+		expect(r.document.defaultView!.getComputedStyle(r.root.querySelector(".b")!).backgroundColor).toBe("rgb(255, 0, 0)");
+	});
+});
