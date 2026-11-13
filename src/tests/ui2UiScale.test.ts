@@ -89,4 +89,13 @@ describe("ui2 at other scales", () => {
 		s.scrollTop = 183.6666666666666;
 		expect([Math.round(end * 1000) / 1000, s.scrollTop]).toEqual([351.333, 184]);
 	});
+
+	it("a round button's corners don't take the pointer: what's under them does, as in Chrome", () => {
+		// (The touch controls' action ring at 200%: a finger on the aim zone just off its circle was the ring's)
+		const r = ui(`.z { position: fixed; inset: 0; } .b { position: absolute; left: 100px; top: 100px; width: 60px; height: 60px; border-radius: 50%; }`,
+			`<div class="z"></div><button class="b"></button>`, 1280, 720, 2);
+		const at = (x: number, y: number) => r.hitTest(x * 2, y * 2)?.className;
+		// (Its middle, the edge of its circle across, and a corner of its box, outside the circle)
+		expect([at(130, 130), at(101, 130), at(104, 104), at(158, 102)]).toEqual(["b", "b", "z", "z"]);
+	});
 });

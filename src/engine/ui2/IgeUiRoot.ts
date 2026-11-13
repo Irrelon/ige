@@ -123,6 +123,18 @@ interface HitEntry {
 	clip: [number, number, number, number] | null;
 	/** Under a transform: from the UI's pixels to the box's own (its rectangle and clip are in those). */
 	inv?: [number, number, number, number, number, number];
+	/** Its rounded corners (tl, tr, br, bl), across and down: a point past one misses it, as a browser's does. */
+	round?: [[number, number, number, number], [number, number, number, number]];
+}
+
+/** Whether a point (from a box's corner) is inside the box rounded by its corners' radii (tl, tr, br, bl), across and down. */
+function inRounded (px: number, py: number, w: number, h: number, [rx, ry]: NonNullable<HitEntry["round"]>): boolean {
+	const out = (cx: number, cy: number, a: number, b: number) => ((px - cx) / a) ** 2 + ((py - cy) / b) ** 2 > 1;
+	if (px < rx[0] && py < ry[0] && out(rx[0], ry[0], rx[0], ry[0])) return false;
+	if (px > w - rx[1] && py < ry[1] && out(w - rx[1], ry[1], rx[1], ry[1])) return false;
+	if (px > w - rx[2] && py > h - ry[2] && out(w - rx[2], h - ry[2], rx[2], ry[2])) return false;
+	if (px < rx[3] && py > h - ry[3] && out(rx[3], h - ry[3], rx[3], ry[3])) return false;
+	return true;
 }
 
 export interface IgeUiRootOptions {
@@ -1322,13 +1334,19 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			}
 			return { clip, dx, dy, m };
 		};
+		const rounded = (b: IgeUiBox) => ["border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"].some((p) => !/^0(px|%)?$/.test(styleValue(b.style, p).trim()));
 		/** A box's own entry. */
 		const entry = (b: IgeUiBox, at: At) => {
 			const el = b.el;
 			if (!el || b.pseudo || styleValue(b.style, "visibility") === "hidden") return;
 			const inv = at.m ? invert(at.m) : undefined;
 			if (b.inlineRects) for (const r of b.inlineRects) list.push({ el, x: r.x + at.dx, y: r.y + at.dy, w: r.w, h: r.h, clip: at.clip, inv });
-			else list.push({ el, x: b.ax + at.dx, y: b.ay + at.dy, w: b.borderW, h: b.borderH, clip: at.clip, inv });
+			else {
+				// (A round button's corners aren't it: what's under them takes the pointer, as in a browser)
+				const c = rounded(b) ? painter._corners(b) : undefined;
+				const round = c && c[0].some((v) => v > 0) ? c : undefined;
+				list.push({ el, x: b.ax + at.dx, y: b.ay + at.dy, w: b.borderW, h: b.borderH, clip: at.clip, inv, ...(round ? { round } : {}) });
+			}
 		};
 		/** Where what's in a box is: its clip and scrolling. */
 		const inside = (b: IgeUiBox, at: At): At => {
@@ -1384,6 +1402,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			const [x, y] = h.inv ? apply(h.inv, ux, uy) : [ux, uy];
 			if (x < h.x || y < h.y || x >= h.x + h.w || y >= h.y + h.h) continue;
 			if (h.clip && (x < h.clip[0] || y < h.clip[1] || x >= h.clip[2] || y >= h.clip[3])) continue;
+			if (h.round && !inRounded(x - h.x, y - h.y, h.w, h.h, h.round)) continue;
 			if (styleValue(h.el._computed, "pointer-events") === "none") continue;
 			if (h.el === this.document.body || h.el === this.document.documentElement) continue;
 			return h.el;
