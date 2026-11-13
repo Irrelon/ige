@@ -1188,8 +1188,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		const clamp = (b: IgeUiBox) => {
 			const el = b.el;
 			if (el && !b.pseudo && (el._scrollTop || el._scrollLeft)) {
-				el._scrollTop = Math.max(0, Math.min(el._scrollTop, Math.max(0, el.scrollHeight - el.clientHeight)));
-				el._scrollLeft = Math.max(0, Math.min(el._scrollLeft, Math.max(0, el.scrollWidth - el.clientWidth)));
+				// (Its layout's pixels, as the offsets are kept: IgeUiElement._maxScroll)
+				el._scrollTop = Math.max(0, Math.min(el._scrollTop, el._maxScroll(true)));
+				el._scrollLeft = Math.max(0, Math.min(el._scrollLeft, el._maxScroll(false)));
 			}
 			for (const c of b.children) clamp(c);
 		};

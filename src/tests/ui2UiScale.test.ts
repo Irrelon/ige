@@ -76,4 +76,17 @@ describe("ui2 at other scales", () => {
 		// (Asked again is nothing: the images keep what they've asked for)
 		expect([...new Set(asked)]).toEqual(["a.png", "b.png", "c.png"]);
 	});
+
+	it("a scroller scrolls to its end on the device's pixels, its content's extent less its room, halves rounded up", () => {
+		// (At 1.5: 528.33px of content (792.5 device pixels, 793) in 177.33px (266): to 527 device pixels, 351.33, where the
+		// rounded scrollHeight less clientHeight said 351. Float error left 792.4999…, a half a browser rounds up)
+		const r = ui(`.s { box-sizing: border-box; height: calc(532px / 3); overflow-y: auto; padding-top: 1px; } .s i { display: block; height: calc(226px / 3); }`,
+			`<div class="s">${"<i></i>".repeat(7)}</div>`, 1280, 720, 1.5);
+		const s = r.root.querySelector(".s")!;
+		s.scrollTop = 1e6;
+		const end = s.scrollTop;
+		// (A reveal's target a hair under a half: 183.6666666666666 is 275.5 device pixels, 276)
+		s.scrollTop = 183.6666666666666;
+		expect([Math.round(end * 1000) / 1000, s.scrollTop]).toEqual([351.333, 184]);
+	});
 });

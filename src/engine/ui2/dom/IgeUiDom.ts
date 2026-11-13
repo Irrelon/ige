@@ -458,6 +458,15 @@ function makeStyle (decl: IgeUiInlineStyle): IgeUiInlineStyle & Record<string, s
 
 // ---------------------------------------------------------------- elements
 
+/**
+ * A length on the device's pixels (grid: device pixels per layout pixel), a half rounded up as a browser rounds it: its
+ * layout's numbers are exact 64ths, the engine's carry float error, and at a UI scale of 1.5 every third of a pixel is
+ * half a device pixel (528.3333333333331 × 1.5 is 792.4999999999997, which a browser has as 792.5, so 793).
+ */
+export function onDevicePixels (v: number, grid: number): number {
+	return Math.round(v * grid + 1e-6) / grid;
+}
+
 export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	readonly nodeType = 1;
 	readonly localName: string;
@@ -1138,11 +1147,26 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		return this._scrollTop / this._cssZoom;
 	}
 
+	/**
+	 * How far it scrolls, in its layout's pixels: its content's extent less the room that shows it, each on the device's
+	 * pixels, as a browser has it (its contents size less its visible size). Not the rounded scrollHeight less the rounded
+	 * clientHeight: at a UI scale of 1.5 a list 528.67px long in 177.33px of room scrolls to 351.33, not 351, so what's
+	 * revealed in it from the end lines up as on the page. Read after a layout (no flush).
+	 */
+	_maxScroll (vertical: boolean): number {
+		const b = this._box;
+		if (!b) return 0;
+		const g = this.ownerDocument._pixelGrid || 1;
+		const extent = vertical ? b.scrollH ?? 0 : b.scrollW ?? 0;
+		const room = vertical ? b.borderH - b.borderTop - b.borderBottom - (b.scrollbarX ?? 0) : b.borderW - b.borderLeft - b.borderRight - (b.scrollbarY ?? 0);
+		return Math.max(0, onDevicePixels(extent, g) - onDevicePixels(room, g));
+	}
+
 	set scrollTop (v: number) {
-		const max = Math.max(0, this.scrollHeight - this.clientHeight);
+		this.ownerDocument._flush();
 		// (On the device's pixels, as a browser keeps it; kept in its layout's pixels: zoomed)
 		const z = this._cssZoom, g = this.ownerDocument._pixelGrid || 1;
-		const next = Math.max(0, Math.min(max * z, Math.round(Math.max(0, Math.min(max, Number(v) || 0)) * z * g) / g));
+		const next = Math.max(0, Math.min(this._maxScroll(true), onDevicePixels(Math.max(0, Number(v) || 0) * z, g)));
 		if (next === this._scrollTop) return;
 		this._scrollTop = next;
 		this.ownerDocument._changed(this, "scroll");
@@ -1154,10 +1178,10 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	}
 
 	set scrollLeft (v: number) {
-		const max = Math.max(0, this.scrollWidth - this.clientWidth);
+		this.ownerDocument._flush();
 		// (On the device's pixels, as a browser keeps it; kept in its layout's pixels: zoomed)
 		const z = this._cssZoom, g = this.ownerDocument._pixelGrid || 1;
-		const next = Math.max(0, Math.min(max * z, Math.round(Math.max(0, Math.min(max, Number(v) || 0)) * z * g) / g));
+		const next = Math.max(0, Math.min(this._maxScroll(false), onDevicePixels(Math.max(0, Number(v) || 0) * z, g)));
 		if (next === this._scrollLeft) return;
 		this._scrollLeft = next;
 		this.ownerDocument._changed(this, "scroll");
