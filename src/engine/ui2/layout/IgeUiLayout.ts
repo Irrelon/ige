@@ -45,6 +45,8 @@ interface InlineItem {
 	edge?: number;
 	/** The positioned inline element it's in (drawn in that element's layer). */
 	layer?: IgeUiBox;
+	/** Text straight in the block (or in the anonymous block round it): on the baseline, whatever its element's vertical-align. */
+	direct?: boolean;
 }
 
 interface PlacedItem {
@@ -1333,7 +1335,11 @@ export class IgeUiLayoutEngine {
 	/** Lays out inline content into line boxes; returns the lines' height. Runs and fragments go on `b`. */
 	_layoutInline (b: IgeUiBox, kids: IgeUiBox[], cw: number, cbH?: number): number {
 		const items: InlineItem[] = [];
-		for (const k of kids) this._inlineItems(k, b.style, items);
+		for (const k of kids) {
+			const at = items.length;
+			this._inlineItems(k, b.style, items);
+			if (k.display === "text" && items.length > at) items[at].direct = true;
+		}
 		this._collapseSpaces(items);
 		const style = b.style;
 		const ws = styleValue(style, "white-space");
@@ -1519,7 +1525,7 @@ export class IgeUiLayoutEngine {
 			}
 			const lead = this._leading(lh, m);
 			// (Text straight in the block is on the baseline: the block's own vertical-align, a table cell's, isn't its)
-			const v = it.style === style ? { valign: "baseline", shift: 0 } : vfor(it.style);
+			const v = it.style === style || it.direct ? { valign: "baseline", shift: 0 } : vfor(it.style);
 			let above = m.ascent + lead.above, below = m.descent + lead.below;
 			if (v.valign === "middle") {
 				const pm = this.metrics(this.font(style));

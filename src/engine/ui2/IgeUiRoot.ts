@@ -483,6 +483,23 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._syncTextInput();
 	}
 
+	/**
+	 * The focused element hidden (display: none, here or round it) or gone: nothing's focused, as a browser's focus
+	 * fixup has it (quietly, as it is when the element's removed).
+	 */
+	_focusFixup (): void {
+		const a = this.document.activeElement;
+		if (!a) return;
+		let shown = a.isConnected;
+		for (let n: IgeUiElement | null = a; n && shown; n = n.parentNode) if (styleValue(n._computed, "display") === "none") shown = false;
+		if (shown) return;
+		a._states.delete("focus");
+		a._states.delete("focus-visible");
+		if (a.isConnected) this.changed(a, "state");
+		this.document.activeElement = null;
+		this._syncTextInput();
+	}
+
 	clientRect (el: IgeUiElement): ReturnType<IgeUiElement["getBoundingClientRect"]> {
 		this.flush();
 		const b = el._box;
@@ -821,6 +838,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		};
 		for (const b of partial ?? (this.rootBox ? [this.rootBox] : [])) clamp(b);
 		this.stats.layout = perf() - t0;
+		this._focusFixup();
 		if (this._resizeObservers.size) this._resized();
 	}
 

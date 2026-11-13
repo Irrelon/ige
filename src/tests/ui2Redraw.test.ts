@@ -235,3 +235,35 @@ describe("ui2: a grid's content width", () => {
 		expect(r.root.querySelector(".s")!.getBoundingClientRect().width).toBe(200);
 	});
 });
+
+describe("ui2: focus fixup", () => {
+	it("a focused element hidden (display: none round it) or removed: nothing's focused", () => {
+		const r = ui(`.panel { position: absolute; left: 10px; top: 10px; display: none; } .panel.on { display: block; }`, 400, 300);
+		r.root.innerHTML = `<div class="panel on"><table><tr><td><button>a</button></td></tr></table></div><button class="other">b</button>`;
+		r.update(0);
+		const b = r.root.querySelector(".panel button")!;
+		r.focus(b);
+		r.update(16);
+		expect(r.document.activeElement).toBe(b);
+		r.root.querySelector(".panel")!.classList.remove("on");
+		r.update(32);
+		expect(r.document.activeElement).toBe(null);
+		expect(b._states.has("focus")).toBe(false);
+		const o = r.root.querySelector(".other")!;
+		r.focus(o);
+		o.remove();
+		r.update(48);
+		expect(r.document.activeElement).toBe(null);
+	});
+});
+
+describe("ui2: text in a flex item's anonymous block", () => {
+	it("is on the baseline, whatever its element's vertical-align (that's the element's own, in its line)", () => {
+		const r = ui(`.row { display: flex; align-items: baseline; } .t { font-size: 20px; } .pg { display: inline-flex; align-items: center; box-sizing: border-box; height: 18px; padding: 0 4px; border: 1px solid; font-size: 10px; line-height: 1; } .m { vertical-align: middle; }`, 400, 300);
+		r.root.innerHTML = `<div class="row"><span class="t">A</span><span class="pg">LB</span></div><div class="row"><span class="t">A</span><span class="pg m">LB</span></div>`;
+		r.update(0);
+		const [a, b] = [...r.root.querySelectorAll(".row")];
+		expect(b.getBoundingClientRect().height).toBe(a.getBoundingClientRect().height);
+		expect(b.querySelector(".pg")!.getBoundingClientRect().top - b.getBoundingClientRect().top).toBe(a.querySelector(".pg")!.getBoundingClientRect().top - a.getBoundingClientRect().top);
+	});
+});
