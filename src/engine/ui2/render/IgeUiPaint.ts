@@ -203,6 +203,15 @@ function intersect (a: IgeUiClip, b: IgeUiClip): IgeUiClip {
 }
 
 /** Turns a box tree into a display list. */
+/**
+ * An anonymous box (round inline content beside blocks, in an SVG drawing's box): laid out with its parent's style for
+ * its text, but none of its parent's own effects are its: no opacity, filter, clip or stacking context of its own (they
+ * were its parent's, already applied round it). A box that took them again faded twice, cast a second drop shadow.
+ */
+function anonymous (b: IgeUiBox): boolean {
+	return !b.el && !b.pseudo;
+}
+
 export class IgeUiPainter {
 	items: IgeUiPaintItem[] = [];
 	/** The UI's own size (fixed boxes and the root clip). */
@@ -319,6 +328,7 @@ export class IgeUiPainter {
 	}
 
 	_isStacking (b: IgeUiBox): boolean {
+		if (anonymous(b)) return false;
 		if (b.position !== "static" && b.zIndex !== undefined) return true;
 		if (b.position === "fixed" || b.position === "sticky") return true;
 		if (b.transform) return true;
@@ -340,7 +350,7 @@ export class IgeUiPainter {
 		const start = this.items.length, entry = ctx;
 		// A filter: its run marked, for the renderer to shade (drop-shadows alone: IgeUiDropShadow) or to run its filters on
 		// (IgeUiFilters)
-		const filter = b.pseudo ? "none" : styleValue(b.style, "filter");
+		const filter = b.pseudo || anonymous(b) ? "none" : styleValue(b.style, "filter");
 		const current = parseColor(styleValue(b.style, "color")) ?? { r: 0, g: 0, b: 0, a: 1 };
 		const ops = filter && filter !== "none" ? parseFilterList(filter, lenCtx(b.style), current) : [];
 		const shadows = ops.length && onlyDropShadows(ops) ? parseDropShadows(filter, lenCtx(b.style), current) : [];
@@ -348,7 +358,7 @@ export class IgeUiPainter {
 		// Opacity is the element's whole: what it paints faded together (a layer, as a browser fades it: a panel's text over
 		// its own background), or as it is when that's one item with nothing under or over it; a filtered element's
 		// applied to its layer after its filters
-		const own = resolveNumber(styleValue(b.style, "opacity")) ?? 1;
+		const own = anonymous(b) ? 1 : (resolveNumber(styleValue(b.style, "opacity")) ?? 1);
 		const fades = this.groupOpacity && !filters && !shadows.length && own < 1 && own > 0.001;
 		if (shadows.length) this.items.push({ op: "group", open: true, shadows, clip: ctx.clip, matrix: ctx.matrix, el: b.el, opacity: 1 });
 		else if (filters) this.items.push({ op: "group", open: true, filters, clip: ctx.clip, matrix: ctx.matrix, el: b.el, opacity: own });
@@ -442,7 +452,7 @@ export class IgeUiPainter {
 
 	/** A box's own state as it's entered: visibility, opacity, transform. Undefined if it's not drawn at all. */
 	_enter (b: IgeUiBox, ctx: Ctx): { ctx: Ctx } | undefined {
-		const op = resolveNumber(styleValue(b.style, "opacity")) ?? 1;
+		const op = anonymous(b) ? 1 : (resolveNumber(styleValue(b.style, "opacity")) ?? 1);
 		if (op <= 0.001) return undefined;
 		// Turned in 3D, in a preserve-3d parent, or keeping 3D for its children: its plane in perspective (IgeUiPerspective)
 		const lc = lenCtx(b.style);
@@ -550,7 +560,7 @@ export class IgeUiPainter {
 
 	/** The context its children are drawn in: its overflow clip, its scroll offset. */
 	_innerCtx (b: IgeUiBox, ctx: Ctx): Ctx {
-		const ox = styleValue(b.style, "overflow-x"), oy = styleValue(b.style, "overflow-y");
+		const ox = anonymous(b) ? "visible" : styleValue(b.style, "overflow-x"), oy = anonymous(b) ? "visible" : styleValue(b.style, "overflow-y");
 		let clip = ctx.clip;
 		let dx = ctx.dx, dy = ctx.dy;
 		if (ox !== "visible" || oy !== "visible") {
@@ -575,7 +585,7 @@ export class IgeUiPainter {
 			}
 		}
 		// clip-path cuts its contents too, as it does in a browser: to its border box here (the cut corners themselves aside)
-		if (styleValue(b.style, "clip-path") !== "none") {
+		if (!anonymous(b) && styleValue(b.style, "clip-path") !== "none") {
 			const x = b.ax + ctx.dx, y = b.ay + ctx.dy;
 			clip = intersect(clip, [x, y, x + b.borderW, y + b.borderH]);
 		}

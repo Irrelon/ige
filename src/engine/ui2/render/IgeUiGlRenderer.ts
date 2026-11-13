@@ -439,6 +439,41 @@ interface Batch {
 	el?: IgeUiElement | null;
 }
 
+/**
+ * Plain batches next to each other in the instance buffer, drawn as one: those whose images agree (one texture, or
+ * none: what samples none draws the same with one bound), blended alike, drawn where they're being drawn (`owner`: the
+ * main pass's none, a layer's that layer) with nothing to do as they're reached (a clip, a backdrop, a glow; a layer or
+ * a shadow unless it was made ahead in its atlas: `made` gives its texture then). A reel of symbols' shadow
+ * composites, each between its symbol's fills, is one draw, not two a symbol; a row of faded buttons' composites one
+ * too. `add` takes a batch (false, what's queued drawn first, when it isn't plain: the caller draws it as before);
+ * `flush` draws what's queued.
+ */
+function batchRuns (drawBatch: (b: Batch) => void, made: (b: Batch) => WebGLTexture | undefined, owner?: IgeUiFilterLayer): { add: (b: Batch) => boolean; flush: () => void } {
+	let run: Batch | undefined;
+	const flush = () => {
+		if (run) drawBatch(run);
+		run = undefined;
+	};
+	const add = (b: Batch): boolean => {
+		const simple = b.owner === owner && !b.stencil && !b.hidden && !b.glow && !b.backdrop && !b.blend;
+		const image = !simple ? undefined : b.shadow || b.layer ? made(b) : b.image;
+		if (image === undefined) {
+			flush();
+			return false;
+		}
+		if (!b.count) return true;
+		if (run && run.additive === b.additive && run.start + run.count === b.start && (!run.image || !image || run.image === image)) {
+			run.count += b.count;
+			run.image ??= image;
+		} else {
+			flush();
+			run = { start: b.start, count: b.count, image, additive: b.additive };
+		}
+		return true;
+	};
+	return { add, flush };
+}
+
 /** Where batches are drawn: the target, or a filter's layer. */
 interface Frame {
 	target: WebGLFramebuffer | null;
@@ -1249,7 +1284,7 @@ export class IgeUiGlRenderer {
 		// drawn and blurred ahead of the screen's own pass (IgeUiDropShadow)
 		const atlasShadows = shadowGroups.filter((g) => g.region && g.shadows.length === 1 && batches.slice(g.from, g.to).every((b) => !b.layer && !b.shadow && !b.backdrop && !b.blend && !b.stencil));
 		if (atlasShadows.length) {
-			const [AW, AH] = this._shadows.packAtlas(this, atlasShadows, target);
+			const [AW, AH] = this._shadows.packAtlas(this, atlasShadows, target, scale);
 			for (const g of atlasShadows) {
 				if (!g.atlas) continue;
 				const r = g.region!, [ax, ay] = g.atlas;
@@ -1404,8 +1439,8 @@ export class IgeUiGlRenderer {
 				}
 				g.drawn = true;
 			}
-			this._shadows.blurAtlas(this, placed, scale);
-			calls += 2;
+			this._shadows.blurAtlas(this);
+			calls += 2 * this._shadows.bands.length;
 			this._bind({ target, width, height, offset });
 		}
 		// The fades, into their places in the atlas, before the screen's own pass
@@ -1420,19 +1455,25 @@ export class IgeUiGlRenderer {
 				gl.clearColor(0, 0, 0, 0);
 				gl.clear(gl.COLOR_BUFFER_BIT);
 				gl.disable(gl.SCISSOR_TEST);
+				const runs = batchRuns(drawBatch, (b) => this._made(b), L);
 				for (let i = L.from; i < L.to; i++) {
 					const b = batches[i];
 					if (b.owner !== L || b.hidden) continue;
+					if (runs.add(b)) continue;
 					if (b.glow) {
 						b.image = this._glowTexture(b.glow, batches, drawBatch, f, offset);
 						if (!b.image) continue;
 					}
 					drawBatch(b);
 				}
+				runs.flush();
 			}
 			this._bind({ target, width, height, offset });
 		}
+		// (Plain batches in runs: batchRuns)
+		const runs = batchRuns(drawBatch, (b) => this._made(b));
 		for (const b of batches) {
+			if (runs.add(b)) continue;
 			if (b.stencil) {
 				// A clip of any shape opening or closing: its shape marked in the stencil (or taken back), then on as before;
 				// not the target's when it's in a layer
@@ -1486,11 +1527,24 @@ export class IgeUiGlRenderer {
 			if (b.blend === "add") b.image = blurred;
 			drawBatch(b);
 		}
+		runs.flush();
 		this._stencil.end(gl);
 		gl.bindVertexArray(null);
 		gl.depthMask(true);
 		this.drawCalls = calls;
 		return calls;
+	}
+
+	/**
+	 * A shadow's or a fade's composite's texture when it was made ahead in its atlas (nothing to do as it's reached);
+	 * undefined for one made as it's drawn.
+	 */
+	_made (b: Batch): WebGLTexture | undefined {
+		const g = b.shadow?.group;
+		if (g) return g.atlas && g.drawn && g.region && this._shadows.atlasOut ? this._shadows.atlasOut.tex : undefined;
+		const L = b.layer;
+		if (L) return L.atlas && L.region && this._fade ? this._fade.tex : undefined;
+		return undefined;
 	}
 
 	/**
@@ -1538,9 +1592,12 @@ export class IgeUiGlRenderer {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.disable(gl.SCISSOR_TEST);
 		let blurred: WebGLTexture | null = null;
+		// (Plain batches in runs: batchRuns)
+		const runs = batchRuns(drawBatch, (b) => this._made(b), L);
 		for (let i = L.from; i < L.to; i++) {
 			const b = batches[i];
 			if (b.owner !== L || b.hidden) continue;
+			if (runs.add(b)) continue;
 			if (b.backdrop) {
 				// A backdrop: its element's own (the layer's element: faded or filtered with what it shows) from what's behind
 				// the layer; a descendant's from what's in the layer before it (the layer's element is its backdrop root)
@@ -1574,6 +1631,7 @@ export class IgeUiGlRenderer {
 			}
 			drawBatch(b);
 		}
+		runs.flush();
 		const out = this._filters.apply(this, L.depth, r.w, r.h, L.ops, scale);
 		begin(frame);
 		return out.tex;

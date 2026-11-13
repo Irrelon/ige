@@ -128,6 +128,11 @@ export class IgeUiDropShadowPass {
 	atlasSil: AtlasTex | null = null;
 	atlasTmp: AtlasTex | null = null;
 	atlasOut: AtlasTex | null = null;
+	/**
+	 * The atlas's bands (rows bottom up, its used width): each holds the groups whose blurs are alike (σ, device px), so
+	 * each band is blurred in one draw a pass, not one a group.
+	 */
+	bands: { sigma: number; y0: number; y1: number; w: number }[] = [];
 
 	/** Forgotten (a lost context): made again as they're next needed. */
 	reset (): void {
@@ -137,28 +142,49 @@ export class IgeUiDropShadowPass {
 		this.fbo = null;
 		this.union = null;
 		this.atlasSil = this.atlasTmp = this.atlasOut = null;
+		this.bands = [];
 	}
 
 	/**
-	 * Places the given groups in the atlas (each its region, two texels apart; past what one texture should hold, left
-	 * out: drawn the long way) and sizes its textures, `restore` bound after. Returns the atlas's size.
+	 * Places the given groups in the atlas (past what one texture should hold, left out: drawn the long way) and sizes
+	 * its textures, `restore` bound after. Returns the atlas's size. Groups whose blurs are alike share a band of rows,
+	 * blurred whole in one draw a pass: each region far enough from the next (its blur's room round what's in it, and
+	 * a gap of two texels and two of the blur's coarse reads) that none takes in its neighbour's silhouette.
 	 */
-	packAtlas (host: IgeUiShadowHost, groups: IgeUiShadowGroup[], restore: WebGLFramebuffer | null): [number, number] {
+	packAtlas (host: IgeUiShadowHost, groups: IgeUiShadowGroup[], restore: WebGLFramebuffer | null, scale: number): [number, number] {
 		const gl = host.gl;
-		const W = Math.max(1024, ...groups.map((g) => g.region!.w + 2));
+		const sigmaOf = (g: IgeUiShadowGroup) => (g.shadows[0].blur / 2) * scale;
+		const gapOf = (sigma: number) => 2 + 2 * shadowStep(sigma);
+		const sorted = [...groups].sort((a, b) => sigmaOf(a) - sigmaOf(b));
+		const W = Math.max(1024, ...groups.map((g) => g.region!.w + gapOf(sigmaOf(g))));
+		this.bands = [];
 		let x = 0, y = 0, row = 0;
-		for (const g of groups) {
-			const r = g.region!;
-			if (x + r.w + 2 > W) {
+		let band: { sigma: number; y0: number; y1: number; w: number } | undefined;
+		for (const g of sorted) {
+			const r = g.region!, sigma = sigmaOf(g), gap = gapOf(sigma);
+			// (A new band for another blur, from a new row; a new row when this one's full)
+			if (!band || band.sigma !== sigma) {
+				if (band) {
+					y += row;
+					band.y1 = y;
+				}
+				x = 0;
+				row = 0;
+				band = { sigma, y0: y, y1: y, w: 0 };
+				this.bands.push(band);
+			} else if (x + r.w + gap > W) {
 				x = 0;
 				y += row;
 				row = 0;
 			}
-			if (y + r.h + 2 > 4096) break;
+			if (y + r.h + gap > 4096) break;
 			g.atlas = [x, y];
-			x += r.w + 2;
-			row = Math.max(row, r.h + 2);
+			x += r.w + gap;
+			row = Math.max(row, r.h + gap);
+			band.w = Math.max(band.w, x);
 		}
+		if (band) band.y1 = y + row;
+		this.bands = this.bands.filter((b) => b.y1 > b.y0 && b.w > 0);
 		const H = Math.max(1, y + row);
 		const make = (have: AtlasTex | null, mips: boolean): AtlasTex => {
 			const t = host._tex(have, W, H, mips);
@@ -181,10 +207,11 @@ export class IgeUiDropShadowPass {
 	}
 
 	/**
-	 * Blurs each placed group's silhouette in the atlas into its shadow (σ half its blur radius, device px): across into
-	 * the middle texture, then down into the shadows'. The caller binds its own target and program after.
+	 * Blurs the placed groups' silhouettes in the atlas into their shadows (σ half the blur radius, device px): across
+	 * into the middle texture, then down into the shadows', a band of alike blurs at a time (packAtlas). The caller
+	 * binds its own target and program after.
 	 */
-	blurAtlas (host: IgeUiShadowHost, groups: IgeUiShadowGroup[], scale: number): void {
+	blurAtlas (host: IgeUiShadowHost): void {
 		const gl = host.gl, sil = this.atlasSil!, tmp = this.atlasTmp!, out = this.atlasOut!;
 		gl.useProgram(host._blurProgram);
 		gl.bindVertexArray(host._vao);
@@ -199,13 +226,11 @@ export class IgeUiDropShadowPass {
 			// (Cleared whole: the next pass's coarse reads would take in what's left between the places)
 			gl.clearColor(0, 0, 0, 0);
 			gl.clear(gl.COLOR_BUFFER_BIT);
-			for (const g of groups) {
-				if (!g.atlas) continue;
-				const r = g.region!, [ax, ay] = g.atlas;
-				const sigma = (g.shadows[0].blur / 2) * scale;
+			for (const band of this.bands) {
+				const { sigma, y0, y1, w } = band;
 				const k = shadowStep(sigma);
-				gl.viewport(ax, ay, r.w, r.h);
-				gl.uniform4f(host._blurUniforms.u_area, ax / from.w, ay / from.h, r.w / from.w, r.h / from.h);
+				gl.viewport(0, y0, w, y1 - y0);
+				gl.uniform4f(host._blurUniforms.u_area, 0, y0 / from.h, w / from.w, (y1 - y0) / from.h);
 				gl.uniform2f(host._blurUniforms.u_step, (dir[0] * k) / from.w, (dir[1] * k) / from.h);
 				gl.uniform1f(host._blurUniforms.u_sigma, Math.max(sigma, 0.001) / k);
 				gl.uniform1f(host._blurUniforms.u_lod, Math.log2(k));
