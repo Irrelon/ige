@@ -1578,9 +1578,13 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		if (!a) return;
 		const ev = new IgeUiEvent(type, { bubbles: true, cancelable: true, key: e.key, code: e.code, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey, repeat: e.repeat });
 		a.dispatchEvent(ev);
+		// (What the focused element took (its handler cancelled it) is cancelled)
 		if (ev.defaultPrevented) e.preventDefault();
-		// A field that's typing keeps its keys from the game
-		if (a.localName === "input" || a.localName === "textarea") e.stopImmediatePropagation();
+		// A text field's keys aren't kept from the page: they reach the window's listeners as a browser's do, aimed at
+		// the field (the host's text input stands in for it: IgeUiWebHost), and a game's own handlers leave keys aimed
+		// at a field alone. Another form control's (a slider, a checkbox) are: nothing on the page stands in for it, so
+		// the page's listeners couldn't tell they were aimed at a field
+		if ((a.localName === "input" || a.localName === "textarea") && !typesThroughHost(a)) e.stopImmediatePropagation();
 	}
 
 	_momentumStep (): void {
@@ -1618,8 +1622,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** A focused field types through a hidden page input (IME, on-screen keyboards, paste); its value mirrors back. */
 	_syncTextInput (): void {
 		const a = this.document.activeElement;
-		const typing = a && (a.localName === "input" || a.localName === "textarea") && !["range", "checkbox", "radio", "button"].includes(a.getAttribute("type") ?? "text");
-		if (!typing) {
+		if (!a || !typesThroughHost(a)) {
 			this.host.textEntry.focus(null, this._typing);
 			return;
 		}
@@ -1686,6 +1689,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 	/** Stops following the host's fonts (destroy). */
 	_fontsOff?: () => void;
+}
+
+/** Whether a focused element types through the host's text input (IgeUiHost.textEntry: the web's hidden input). */
+function typesThroughHost (a: IgeUiElement): boolean {
+	return (a.localName === "input" || a.localName === "textarea") && !["range", "checkbox", "radio", "button"].includes(a.getAttribute("type") ?? "text");
 }
 
 function mul (m: [number, number, number, number, number, number], n: [number, number, number, number, number, number]): [number, number, number, number, number, number] {

@@ -131,10 +131,11 @@ function webTextEntry (): IgeUiHost["textEntry"] {
 		document.body.appendChild(el);
 		el.addEventListener("input", () => events?.input(el.value));
 		el.addEventListener("change", () => events?.change());
+		// (Its keys to the field, unless the window's input (igeUiAttachWebInput) gave it them already; on to the page's
+		// listeners, as a browser's field's are)
 		el.addEventListener("keydown", (e) => {
-			if (!events) return;
+			if (!events || keysTaken.has(e)) return;
 			if (events.key({ key: e.key, code: e.code, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey })) e.preventDefault();
-			e.stopPropagation();
 		});
 		// (The page took focus from the field (a click outside the UI): the field loses it. Focus the UI moved on
 		// itself (a button pressed, which blurs this input as it goes) stays where it went)
@@ -213,6 +214,9 @@ function record (type: IgeUiInputEvent["type"], e: Event): IgeUiInputEvent {
 	};
 }
 
+/** Key events the window's input gave the UI (so the text input doesn't give the focused field them again). */
+const keysTaken = new WeakSet<Event>();
+
 /**
  * The web's input: the window's (or another target's) pointer, mouse, wheel and key events, in capture, given to
  * the UI; what it took stopped there (and its default cancelled where it said). Returns a function that stops.
@@ -222,6 +226,7 @@ export function igeUiAttachWebInput (root: { input (e: IgeUiInputEvent): { stop:
 	const types: IgeUiInputEvent["type"][] = ["pointermove", "pointerdown", "pointerup", "pointercancel", "pointerout", "click", "mousedown", "mouseup", "contextmenu", "wheel", "keydown", "keyup"];
 	const offs = types.map((type) => {
 		const fn = (e: Event) => {
+			if (type === "keydown" || type === "keyup") keysTaken.add(e);
 			const r = root.input(record(type, e));
 			if (r.prevent) e.preventDefault();
 			if (r.stop) e.stopImmediatePropagation();
