@@ -379,6 +379,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	changed (el: IgeUiElement | null, change: IgeUiChange, attr?: string, tree?: IgeUiTreeChange): void {
 		if (!el) return;
 		this._queueMutation(el, change, attr, tree);
+		// (An image asked for as its src is set or it's put in, as a browser's is: not only once it's laid out)
+		if (change === "attr" && attr === "src" && el.localName === "img") this._requestImages([el]);
+		else if (change === "tree" && tree?.added.length) this._requestImages(tree.added);
 		if (change === "tree" && tree?.morph) {
 			// innerHTML reconciled: what it made is styled, where it changed is laid out again
 			const m = tree.morph;
@@ -513,6 +516,19 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		this._hasPending = true;
 		this._hasChanged.push(el);
+	}
+
+	/** The images in (or being) these nodes, asked for now. */
+	_requestImages (nodes: IgeUiNode[]): void {
+		for (const n of nodes) {
+			if (n.nodeType !== 1) continue;
+			const e = n as IgeUiElement;
+			const imgs = e.localName === "img" ? [e] : e.firstElementChild ? e.querySelectorAll("img") : [];
+			for (const img of imgs) {
+				const src = img.getAttribute("src");
+				if (src) this.images.request(src);
+			}
+		}
 	}
 
 	/** Where the changes a :has() could see were, since the last restyle (_markHas). */
@@ -870,6 +886,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		if (this._paintDirty) {
 			const t0 = this.host.time.now();
 			this.painter._scroll = (el) => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
+			this.painter.uiScale = this.scale;
 			this.items = this.rootBox ? this.painter.paint(this.rootBox) : [];
 			// (What's under the pointer is worked out when it's asked: hitTest; the old list let go of meanwhile, so it
 			// doesn't hold elements a redraw dropped)
@@ -1146,6 +1163,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		const v = this.viewport;
 		this.layoutEngine.viewport = v;
 		this.layoutEngine.pixelGrid = this.scale * this.dpr;
+		this.layoutEngine.uiScale = this.scale;
 		this.document._pixelGrid = this.scale * this.dpr;
 		// (Boxes that still stand are kept, unless everything must be laid out afresh)
 		this.layoutEngine.reuse = !this._layoutAll && !!this.rootBox;

@@ -120,6 +120,11 @@ export class IgeUiLayoutEngine {
 	 * scrollbar is 15, overlay scrollbars (phones, a Mac's trackpad) take none: set 0 for those.
 	 */
 	scrollbarSize = 15;
+	/**
+	 * The UI's scale (IgeUiRoot.scale): scrollbars are scrollbarSize screen pixels wide at any scale, as a browser's are
+	 * at any zoom (15, a thin one 11), so that many over the scale in the UI's own pixels.
+	 */
+	uiScale = 1;
 	/** Every scrollbar this wide, whatever its CSS says (IgeUiRoot.gameScrollbars); undefined: as CSS and the browser have it. */
 	scrollbarOverride?: number;
 	/**
@@ -1250,7 +1255,7 @@ export class IgeUiLayoutEngine {
 		// (The game's own scrollbars, IgeUiRoot.gameScrollbars: one width wherever there's a scrollbar)
 		if (this.scrollbarOverride !== undefined) return v === "none" ? 0 : this.scrollbarOverride;
 		if (v === "none" || !this.scrollbarSize) return 0;
-		return v === "thin" ? Math.min(this.scrollbarSize, 11) : this.scrollbarSize;
+		return (v === "thin" ? Math.min(this.scrollbarSize, 11) : this.scrollbarSize) / (this.uiScale > 0 ? this.uiScale : 1);
 	}
 
 	/** How far a box's content reaches (from its own corner): its box, and what overflows it when it doesn't clip. */

@@ -510,6 +510,8 @@ export class IgeUiPainter {
 	 * A scroll container's scrollbars, in the room layout kept for them: the track and a thumb as long as the
 	 * view is of the content (scrollbar-color, else a desktop browser's light classic look).
 	 */
+	/** The UI's scale (IgeUiRoot.scale): a browser's scrollbar's thumb is drawn in screen pixels. */
+	uiScale = 1;
 	/** The game's own scrollbars' colours (IgeUiRoot.gameScrollbars); undefined: the CSS's, else the browser's. */
 	scrollbarLook?: { thumb: IgeCssColor; track?: IgeCssColor };
 
@@ -543,12 +545,14 @@ export class IgeUiPainter {
 			const tx = vertical ? x0 + w - size : x0, ty = vertical ? y0 : y0 + h - size;
 			if (track && track.a > 0) this.items.push({ op: "box", x: tx, y: ty, w: vertical ? size : len, h: vertical ? len : size, radii: [0, 0, 0, 0], color: track, ...base });
 			if (content <= view + 0.5) return;
-			// (Chrome's thin bar: a 6 px thumb in its 11 px track, a pixel nearer the right)
+			// (Chrome's thin bar: a 6 px thumb in its 11 px track, a pixel nearer the right; a browser's bar in screen
+			// pixels at any scale, so these over the UI's scale in its own: the game's own bars in the UI's pixels)
 			const thin = !own && styleValue(b.style, "scrollbar-width") === "thin";
-			const pad = own ? 1 : 2, thick = own ? Math.max(2, size - 2) : Math.max(2, size - (thin ? 5 : 8));
-			const nudge = thin ? 0.5 : 0;
+			const k = own ? 1 : 1 / (this.uiScale > 0 ? this.uiScale : 1);
+			const pad = own ? 1 : 2 * k, thick = own ? Math.max(2, size - 2) : Math.max(2 * k, size - (thin ? 5 : 8) * k);
+			const nudge = thin ? 0.5 * k : 0;
 			const room = len - pad * 2;
-			const tl = Math.max(18, (room * view) / content);
+			const tl = Math.max(18 * k, (room * view) / content);
 			const at = pad + ((room - tl) * pos) / Math.max(1, content - view);
 			const r = thick / 2;
 			if (vertical) this.items.push({ op: "box", x: tx + (size - thick) / 2 + nudge, y: ty + at, w: thick, h: tl, radii: [r, r, r, r], color: thumb, ...base });

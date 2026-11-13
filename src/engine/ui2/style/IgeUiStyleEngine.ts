@@ -8,7 +8,7 @@
  * the initial value); font-size is resolved to px here, everything else at
  * layout (it needs the containing block).
  */
-import { type IgeCssContainerCondition, type IgeCssKeyframes, type IgeCssStylesheet, type IgeCssStyleRule, parseStylesheet } from "@/engine/ui2/css/IgeCssParser";
+import { containerQueryHolds, type IgeCssContainerCondition, type IgeCssKeyframes, type IgeCssStylesheet, type IgeCssStyleRule, parseStylesheet } from "@/engine/ui2/css/IgeCssParser";
 import { compareSpecificity, matchesSelector, parseSelectorList, selectorKey, type IgeCssSelector } from "@/engine/ui2/css/IgeCssSelector";
 import { resolveLength, substituteVars } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
@@ -313,7 +313,7 @@ export class IgeUiStyleEngine {
 					break;
 				}
 			}
-			if (!c.any.some((t) => (t.op === "max" ? (t.feature === "width" ? size.w : size.h) <= t.px : (t.feature === "width" ? size.w : size.h) >= t.px))) return false;
+			if (!containerQueryHolds(c.query, size.w, size.h)) return false;
 		}
 		return true;
 	}

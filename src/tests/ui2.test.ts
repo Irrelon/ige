@@ -55,7 +55,7 @@ describe("ui2: stylesheets and selectors", () => {
 		const s = parseStylesheet(`/* hi */ .a { color: red !important; } @container ui (max-width: 760px) or (max-height: 560px) { .b { color: blue } } @keyframes pulse { 0% { opacity: 0 } to { opacity: 1 } }`);
 		expect(s.rules.map((r) => r.selector)).toEqual([".a", ".b"]);
 		expect(s.rules[0].declarations[0]).toEqual({ name: "color", value: "red", important: true });
-		expect(s.rules[1].container![0].any).toEqual([{ op: "max", feature: "width", px: 760 }, { op: "max", feature: "height", px: 560 }]);
+		expect(s.rules[1].container![0].query).toEqual({ t: "or", of: [{ t: "f", feature: "width", op: "<=", v: 760 }, { t: "f", feature: "height", op: "<=", v: 560 }] });
 		expect(s.keyframes.get("pulse")!.frames.map((f) => f.offset)).toEqual([0, 1]);
 	});
 
