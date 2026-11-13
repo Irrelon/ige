@@ -64,8 +64,9 @@ export function textFieldPaint (layout: IgeUiLayoutEngine, active: () => IgeUiEl
 			items.push({ op: "box", ...base, x: x + at(start), y, w: Math.max(1, at(end) - at(start)), h, color: HIGHLIGHT } as IgeUiPaintItem);
 			return;
 		}
+		// (caret-color: auto, or not given: the text's colour)
 		const caretV = styleValue(s, "caret-color");
-		const caret = parseColor(caretV === "auto" ? styleValue(s, "color") : caretV) ?? { r: 0, g: 0, b: 0, a: 1 };
+		const caret = parseColor(!caretV || caretV === "auto" ? styleValue(s, "color") : caretV) ?? { r: 0, g: 0, b: 0, a: 1 };
 		if (caret.a <= 0) return;
 		items.push({ op: "box", ...base, x: x + at(end), y, w: 1, h, color: caret } as IgeUiPaintItem);
 	};
