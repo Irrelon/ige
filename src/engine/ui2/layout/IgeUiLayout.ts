@@ -32,6 +32,10 @@ function anonStyle (parent: IgeUiComputedStyle): IgeUiComputedStyle {
 }
 
 const REPLACED = new Set(["img", "canvas", "input", "svg", "video", "select", "textarea"]);
+/** Where a line may break inside a word: after a hyphen that follows something and comes before a letter (not "2-3"). */
+const HYPHEN_BREAK = /(?<=[^\s-]-)(?=\p{L})/u;
+/** Replaced elements with a natural proportion (kept as their min- and max- sizes bound them). */
+const PROPORTIONED = new Set(["img", "canvas", "svg", "video"]);
 
 /**
  * The translate, rotate and scale properties as transform functions, in the order they apply before `transform`
@@ -788,12 +792,15 @@ export class IgeUiLayoutEngine {
 			} else {
 				const parts = text.split(/\s+/);
 				parts.forEach((p, k) => {
-					const w = p ? this.textWidth(p, it.style) : 0;
-					if (k === 0) word += w;
-					else {
-						min = Math.max(min, word);
-						word = w;
-					}
+					// (A hyphen between letters can break after it: "Directorate-" / "pattern")
+					p.split(HYPHEN_BREAK).forEach((q, j) => {
+						const w = q ? this.textWidth(q, it.style) : 0;
+						if (k === 0 && j === 0) word += w;
+						else {
+							min = Math.max(min, word);
+							word = w;
+						}
+					});
 				});
 			}
 			if (ws === "pre" || ws === "pre-wrap" || ws === "pre-line") {
@@ -818,6 +825,28 @@ export class IgeUiLayoutEngine {
 	_isInlineContext (b: IgeUiBox): boolean {
 		const kids = b.children.filter((c) => !this._outOfFlow(c));
 		return kids.length > 0 && kids.every((c) => INLINE_LEVEL.has(c.display));
+	}
+
+	/**
+	 * A replaced element with no width or height set (content box): its natural size, kept in proportion within its
+	 * min- and max- widths and heights, as CSS 2.1 has it (10.4's table): a logo under a max-height narrows with it.
+	 */
+	_replacedFit (b: IgeUiBox, r: { w: number; h: number }, cbW: number | undefined, cbH: number | undefined): { w: number; h: number } {
+		const hE = this._hEdges(b), vE = this._vEdges(b);
+		const cwOf = (v: number | undefined) => (v === undefined ? undefined : Math.max(0, v - hE));
+		const chOf = (v: number | undefined) => (v === undefined ? undefined : Math.max(0, v - vE));
+		const minW = cwOf(this._specW(b, cbW, "min-width")) ?? 0, minH = chOf(this._specH(b, cbH, "min-height")) ?? 0;
+		const maxW = Math.max(minW, cwOf(this._specW(b, cbW, "max-width")) ?? Infinity), maxH = Math.max(minH, chOf(this._specH(b, cbH, "max-height")) ?? Infinity);
+		const w = r.w, h = r.h;
+		if (w > maxW && h > maxH) return maxW / w <= maxH / h ? { w: maxW, h: Math.max(minH, (maxW * h) / w) } : { w: Math.max(minW, (maxH * w) / h), h: maxH };
+		if (w < minW && h < minH) return minW / w <= minH / h ? { w: Math.min(maxW, (minH * w) / h), h: minH } : { w: minW, h: Math.min(maxH, (minW * h) / w) };
+		if (w < minW && h > maxH) return { w: minW, h: maxH };
+		if (w > maxW && h < minH) return { w: maxW, h: minH };
+		if (w > maxW) return { w: maxW, h: Math.max((maxW * h) / w, minH) };
+		if (w < minW) return { w: minW, h: Math.min((minW * h) / w, maxH) };
+		if (h > maxH) return { w: Math.max((maxH * w) / h, minW), h: maxH };
+		if (h < minH) return { w: Math.min((minH * w) / h, maxW), h: minH };
+		return { w, h };
 	}
 
 	_replacedSize (b: IgeUiBox): { w: number; h: number } {
@@ -933,7 +962,8 @@ export class IgeUiLayoutEngine {
 			else if (b.el && REPLACED.has(b.el.localName) && !b.pseudo) {
 				const r = this._replacedSize(b);
 				const specH = this._specH(b, cbH);
-				w = (specH !== undefined && r.h ? ((specH - this._vEdges(b)) * r.w) / r.h : r.w) + this._hEdges(b);
+				if (specH === undefined && PROPORTIONED.has(b.el.localName) && r.w && r.h) w = this._replacedFit(b, r, cbW, cbH).w + this._hEdges(b);
+				else w = (specH !== undefined && r.h ? ((specH - this._vEdges(b)) * r.w) / r.h : r.w) + this._hEdges(b);
 			} else if (opts.shrink && this._ratio(b) && this._specH(b, cbH) !== undefined) {
 				// (aspect-ratio and a height: its width from them)
 				const ratio = this._ratio(b)!, h = this._specH(b, cbH)!;
@@ -987,7 +1017,10 @@ export class IgeUiLayoutEngine {
 			if (b.el && REPLACED.has(b.el.localName) && !b.pseudo && b.el.localName !== "input" && b.el.localName !== "textarea" && b.el.localName !== "select") {
 				const r = this._replacedSize(b);
 				b.children.forEach((c) => this._layoutHidden(c));
-				const h = styleValue(s, "width") === "auto" && styleValue(s, "height") === "auto" ? r.h : r.w ? (cw * r.h) / r.w : r.h;
+				const auto = styleValue(s, "width") === "auto" && styleValue(s, "height") === "auto";
+				// (Both auto: its natural size kept in proportion within its min- and max- sizes, when that's the width it has)
+				const fit = auto && PROPORTIONED.has(b.el.localName) && r.w && r.h ? this._replacedFit(b, r, cbW, cbH) : undefined;
+				const h = fit && Math.abs(fit.w - cw) < 0.5 ? fit.h : auto ? r.h : r.w ? (cw * r.h) / r.w : r.h;
 				if (b.el.localName === "svg") this._layoutSvg(b, cw, fixedH !== undefined ? fixedH - this._vEdges(b) : h);
 				return h;
 			}
@@ -1162,7 +1195,8 @@ export class IgeUiLayoutEngine {
 
 	/** aspect-ratio: width over height, or undefined (auto; a replaced element keeps its own). */
 	_ratio (b: IgeUiBox): number | undefined {
-		if (!b.el || b.pseudo || REPLACED.has(b.el.localName)) return undefined;
+		// (A ::before or ::after has its own: its element's is its style's, not a replaced element's)
+		if (!b.el || (!b.pseudo && REPLACED.has(b.el.localName))) return undefined;
 		const v = styleValue(b.style, "aspect-ratio");
 		if (!v || v === "auto") return undefined;
 		const m = /(\d*\.?\d+)\s*(?:\/\s*(\d*\.?\d+))?/.exec(v.replace(/auto/, ""));
@@ -1216,10 +1250,12 @@ export class IgeUiLayoutEngine {
 			for (const l of c.lines ?? []) rh = Math.max(rh, l.y + l.h);
 			return [rw, rh];
 		};
+		// (A flex or grid container's children are its items, an empty <i> too, whatever their display)
+		const flexOrGrid = /flex|grid/.test(b.display);
 		for (const c of b.children) {
 			// (Text boxes hold no place of their own: their lines and runs are the block's; positioned boxes are added
 			// once they're placed: _placePositioned)
-			if (c.position === "fixed" || c.position === "absolute" || c.display === "text" || c.display === "inline") continue;
+			if (c.position === "fixed" || c.position === "absolute" || c.display === "text" || (c.display === "inline" && !flexOrGrid)) continue;
 			w = Math.max(w, c.x + c.borderW + Math.max(0, c.marginRight) - left);
 			h = Math.max(h, c.y + c.borderH + Math.max(0, c.marginBottom) - top);
 			// (What overflows a child counts as it is, with no end padding after it, as a browser counts it)
@@ -1716,7 +1752,8 @@ export class IgeUiLayoutEngine {
 					continue;
 				}
 				// Segments: each word with its following space
-				const segs = canWrap ? piece.match(/[^ ]+ *| +/g) ?? [] : [piece];
+				// (and a word with a hyphen between letters in it can break after the hyphen, as a browser's can)
+				const segs = canWrap ? (piece.match(/[^ ]+ *| +/g) ?? []).flatMap((g) => g.split(HYPHEN_BREAK)) : [piece];
 				let buf = "";
 				let bufX = x;
 				// (Its first word goes on from the text before it, with no space between: no break before it)
@@ -2282,11 +2319,35 @@ export class IgeUiLayoutEngine {
 		const minOf = (t: (typeof tracks)[number], k: number): number => {
 			if (t.kind !== "fr") return t.min ?? 0;
 			let minC = 0;
-			for (const cell of cells) if (cell.col === k && cell.span === 1) minC = Math.max(minC, styleValue(cell.box.style, "min-width") === "0" || styleValue(cell.box.style, "min-width") === "0px" ? 0 : this._marginBox(cell.box).min);
+			for (const cell of cells) {
+				if (cell.col !== k || cell.span !== 1) continue;
+				const it = cell.box, mw = styleValue(it.style, "min-width");
+				// (min-width: auto is no minimum for a scroll container (its content scrolls instead): its edges only)
+				const scroller = mw === "auto" && styleValue(it.style, "overflow-x") !== "visible";
+				if (scroller) this._edges(it, cw);
+				minC = Math.max(minC, mw === "0" || mw === "0px" ? 0 : scroller ? it.marginLeft + it.marginRight + it.borderLeft + it.borderRight + it.paddingLeft + it.paddingRight : this._marginBox(it).min);
+			}
 			return minC;
 		};
 		const factor = (t: (typeof tracks)[number]) => (t.kind === "fr" ? t.v : t.maxFr!);
 		const mins = new Map(frTracks.map(({ t, k }) => [k, minOf(t, k)]));
+		// minmax() with a fixed maximum: from its minimum, the room there is shared out equally until each reaches its
+		// maximum (CSS Grid's "maximize tracks", the fr tracks at their least then): short of room, under its maximum
+		const capped = tracks.map((t, k) => ({ t, k })).filter(({ t }) => t.kind === "minmax" && t.maxFr === undefined);
+		if (capped.length) {
+			for (const { t, k } of capped) widths[k] = t.min ?? 0;
+			let free = cw - widths.reduce((a, w) => a + w, 0) - colGap * (n - 1) - frTracks.reduce((a, { k }) => a + mins.get(k)!, 0);
+			let growing = capped.filter(({ t, k }) => widths[k] < t.v);
+			while (free > 0.01 && growing.length) {
+				const share = free / growing.length;
+				for (const { t, k } of growing) {
+					const add = Math.min(share, t.v - widths[k]);
+					widths[k] += add;
+					free -= add;
+				}
+				growing = growing.filter(({ t, k }) => widths[k] < t.v - 0.01);
+			}
+		}
 		let flexible = frTracks.slice();
 		for (const { k } of frTracks) widths[k] = 0;
 		for (let pass = 0; pass <= frTracks.length; pass++) {
@@ -2397,6 +2458,14 @@ export class IgeUiLayoutEngine {
 				if (extra > 0 && auto.length) for (const k of auto) rowH[k] += extra / auto.length;
 			}
 		}
+		// A grid of no set height under a min-height its rows don't reach: its auto rows stretch to it, as they do into a
+		// set height (align-content: normal)
+		if (innerH === undefined && rows && /^(normal|stretch)$/.test(styleValue(s, "align-content"))) {
+			const least = this._specH(b, undefined, "min-height");
+			const auto = [...rowH.keys()].filter((k) => rowTrack(k).kind === "auto");
+			const extra = least !== undefined ? least - this._vEdges(b) - rowH.reduce((a, h) => a + h, 0) - rowGap * (rows - 1) : 0;
+			if (extra > 0.01 && auto.length) for (const k of auto) rowH[k] += extra / auto.length;
+		}
 		const rowY: number[] = [];
 		let yy = 0;
 		for (let k = 0; k < rows; k++) {
@@ -2419,8 +2488,10 @@ export class IgeUiLayoutEngine {
 			const self = styleValue(it.style, "align-self");
 			const align = self === "auto" ? alignItems : self;
 			const h = spanH(cell);
-			if ((align === "stretch" || align === "normal") && styleValue(it.style, "height") === "auto" && Math.abs(it.borderH + it.marginTop + it.marginBottom - h) > 0.01) {
-				this.layoutBox(it, w, innerH, { width: it.borderW, height: Math.max(0, h - it.marginTop - it.marginBottom) });
+			// (Stretched to its area, as far as its max-height lets it, and no less than its min-height)
+			const stretchTo = this._clampH(it, Math.max(0, h - it.marginTop - it.marginBottom), innerH);
+			if ((align === "stretch" || align === "normal") && styleValue(it.style, "height") === "auto" && Math.abs(it.borderH - stretchTo) > 0.01) {
+				this.layoutBox(it, w, innerH, { width: it.borderW, height: stretchTo });
 			} else if (styleValue(it.style, "height").includes("%")) {
 				// (A percentage height is of its grid area's)
 				this.layoutBox(it, w, h, { width: it.borderW });
@@ -2503,9 +2574,11 @@ export class IgeUiLayoutEngine {
 				const span = Math.max(1, parseInt(cell.el?.getAttribute("colspan") ?? "1", 10) || 1);
 				const s = this.intrinsic(cell);
 				if (span === 1) {
-					min[col] = Math.max(min[col] ?? 0, s.min);
-					max[col] = Math.max(max[col] ?? 0, s.max);
 					const w = this._specW(cell, undefined);
+					// (A cell with a width given: its content's minimum is its least, the width its most: _layoutTable)
+					const least = w !== undefined ? this._innerIntrinsic(cell).min + this._hEdges(cell) : s.min;
+					min[col] = Math.max(min[col] ?? 0, least);
+					max[col] = Math.max(max[col] ?? 0, s.max);
 					if (w !== undefined) fixed[col] = Math.max(fixed[col] ?? 0, w);
 					const pw = styleValue(cell.style, "width").trim();
 					if (/^[\d.]+%$/.test(pw)) percent[col] = Math.max(percent[col] ?? 0, parseFloat(pw));
@@ -2523,10 +2596,9 @@ export class IgeUiLayoutEngine {
 		for (let k = 0; k < n; k++) {
 			min[k] ??= 0;
 			max[k] ??= 0;
-			if (fixed[k] !== undefined) {
-				min[k] = Math.max(min[k], fixed[k]!);
-				max[k] = Math.max(min[k], fixed[k]!);
-			}
+			// (A width given is how wide it's made when there's room (its max), not a minimum: short of room it narrows to
+			// its content, as a browser's does)
+			if (fixed[k] !== undefined) max[k] = Math.max(min[k], fixed[k]!);
 		}
 		// Spanning cells widen their columns if they need more
 		for (const sp of spanned) {
@@ -2575,9 +2647,17 @@ export class IgeUiLayoutEngine {
 			}
 		} else if (sMin >= rest) ow = [...oMin];
 		else {
-			const room = rest - sMin;
-			const range = sMax - sMin;
-			ow = oMin.map((m, i) => m + (range > 0 ? (room * (oMax[i] - m)) / range : 0));
+			// Between: the columns with a width given grow to it first (from their content's minimum), then the rest
+			// towards their content's max, as a browser's "guesses" go
+			const oSpec = oMin.map((m, i) => (oFixed[i] !== undefined ? Math.max(m, oFixed[i]!) : m));
+			const sSpec = sum(oSpec);
+			if (rest <= sSpec) {
+				const range = sSpec - sMin;
+				ow = oMin.map((m, i) => m + (range > 0 ? ((rest - sMin) * (oSpec[i] - m)) / range : 0));
+			} else {
+				const range = sMax - sSpec;
+				ow = oSpec.map((m, i) => m + (range > 0 ? ((rest - sSpec) * (oMax[i] - m)) / range : 0));
+			}
 		}
 		others.forEach((k, i) => (widths[k] = ow[i]));
 		const colX: number[] = [];
@@ -2587,6 +2667,8 @@ export class IgeUiLayoutEngine {
 			xx += widths[k] + spacing;
 		}
 		const tableW = xx;
+		// (A table is never narrower than its columns: past its width, it widens to hold them, as a browser's does)
+		if (tableW > cw + 0.01) b.borderW += tableW - cw;
 		// Rows
 		let y = spacing;
 		const groupOf = new Map<IgeUiBox, IgeUiBox>();
