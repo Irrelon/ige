@@ -267,3 +267,18 @@ describe("ui2: text in a flex item's anonymous block", () => {
 		expect(b.querySelector(".pg")!.getBoundingClientRect().top - b.getBoundingClientRect().top).toBe(a.querySelector(".pg")!.getBoundingClientRect().top - a.getBoundingClientRect().top);
 	});
 });
+
+describe("ui2: borders of different colours", () => {
+	it("meet on the diagonal (a CSS triangle is a triangle, not a box)", () => {
+		const r = ui(`.tri { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #f00; } .sq { width: 10px; height: 10px; border: 2px solid #0f0; }`, 400, 300);
+		r.root.innerHTML = `<div class="tri"></div><div class="sq"></div>`;
+		r.update(0);
+		const tri = r.items.filter((i) => i.el === r.root.querySelector(".tri"));
+		expect(tri.map((i) => i.op)).toEqual(["fill"]);
+		const f = tri[0] as Extract<(typeof tri)[number], { op: "fill" }>;
+		// (One triangle: the top side's inner edge has no length)
+		expect(f.tris).toEqual([0, 0, 12, 0, 6, 8]);
+		// (All one colour: the usual border box)
+		expect(r.items.filter((i) => i.el === r.root.querySelector(".sq")).map((i) => i.op)).toEqual(["box"]);
+	});
+});

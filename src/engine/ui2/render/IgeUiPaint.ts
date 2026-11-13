@@ -529,6 +529,39 @@ export class IgeUiPainter {
 			this.items.push({ op: "box", ...base, x, y, w, h, color: t.c, border: t.w });
 			return;
 		}
+		// Sides of different colours meeting at a corner (a CSS triangle: transparent sides round a coloured one): each
+		// side a trapezoid, the corners cut on the diagonal as a browser draws them
+		const sameColour = (p: IgeCssColor, q: IgeCssColor) => p.r === q.r && p.g === q.g && p.b === q.b && p.a === q.a;
+		const meet = (p: { w: number; c: IgeCssColor }, q: { w: number; c: IgeCssColor }) => p.w > 0 && q.w > 0 && !sameColour(p.c, q.c);
+		if (!base.radii.some((v) => v > 0) && !base.chamfer && (meet(t, r) || meet(r, bt) || meet(bt, l) || meet(l, t))) {
+			const ix0 = x + l.w, iy0 = y + t.w, ix1 = x + w - r.w, iy1 = y + h - bt.w;
+			// Each side: its outer corners then its inner ones (clockwise), and the sides before and after it
+			const sides: [{ w: number; c: IgeCssColor }, number[], { w: number; c: IgeCssColor }, { w: number; c: IgeCssColor }][] = [
+				[t, [x, y, x + w, y, ix1, iy0, ix0, iy0], l, r],
+				[r, [x + w, y, x + w, y + h, ix1, iy1, ix1, iy0], t, bt],
+				[bt, [x + w, y + h, x, y + h, ix0, iy1, ix1, iy1], r, l],
+				[l, [x, y + h, x, y, ix0, iy0, ix0, iy1], bt, t]
+			];
+			const area = (q: number[], i: number, j: number, k: number) => Math.abs((q[j] - q[i]) * (q[k + 1] - q[i + 1]) - (q[j + 1] - q[i + 1]) * (q[k] - q[i])) / 2;
+			for (const [e, q, before, after] of sides) {
+				if (e.w <= 0 || e.c.a <= 0) continue;
+				// (A diagonal shared with a side of the same colour is cut sharp, so the two meet without a seam)
+				const startEdge = sameColour(before.c, e.c) && before.w > 0 ? 0 : 1, endEdge = sameColour(after.c, e.c) && after.w > 0 ? 0 : 1;
+				const tris: number[] = [], edges: number[] = [];
+				// (Outer A, B, inner C, D: A B C, its edges A-B outline, B-C the end diagonal; A C D, C-D the inner edge, D-A the start diagonal)
+				if (area(q, 0, 2, 4) > 1e-6) {
+					tris.push(q[0], q[1], q[2], q[3], q[4], q[5]);
+					edges.push(1 | (endEdge ? 2 : 0));
+				}
+				if (area(q, 0, 4, 6) > 1e-6) {
+					tris.push(q[0], q[1], q[4], q[5], q[6], q[7]);
+					edges.push(2 | (startEdge ? 4 : 0));
+				}
+				if (tris.length) this.items.push({ op: "fill", clip: base.clip, matrix: base.matrix, additive: base.additive, el: base.el, opacity: base.opacity, tris, edges, color: e.c });
+			}
+			void ctx;
+			return;
+		}
 		// Per side: strips (square ends), clipped by the box's own shape
 		const strip = (sx: number, sy: number, sw: number, sh: number, c: IgeCssColor) => {
 			if (sw > 0 && sh > 0 && c.a > 0) this.items.push({ op: "box", ...base, x: sx, y: sy, w: sw, h: sh, color: c, radii: [0, 0, 0, 0], chamfer: undefined });
