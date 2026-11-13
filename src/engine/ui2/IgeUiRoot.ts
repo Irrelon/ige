@@ -27,7 +27,7 @@ import { IgeUiImages } from "@/engine/ui2/dom/IgeUiImages";
 import { svgAnimating, svgClock } from "@/engine/ui2/render/IgeUiSvgSmil";
 import { IgeUiLayoutEngine } from "@/engine/ui2/layout/IgeUiLayout";
 import { IgeUiGlRenderer } from "@/engine/ui2/render/IgeUiGlRenderer";
-import { type IgeUiPaintItem, IgeUiPainter } from "@/engine/ui2/render/IgeUiPaint";
+import { gameThumb, type IgeUiPaintItem, IgeUiPainter } from "@/engine/ui2/render/IgeUiPaint";
 import { projectedBox } from "@/engine/ui2/render/IgeUiPerspective";
 import { type IgeUiPress, pressChain, pressClicks, pressMoved, touchScroller } from "@/engine/ui2/input/IgeUiPointers";
 import { adjustTap, IgeUiRangeInput, touchRadius } from "@/engine/ui2/input/IgeUiTap";
@@ -1463,13 +1463,82 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	 * The game's own scrollbars, whatever the CSS says (off by default): every scrollbar `width` CSS px, its thumb and
 	 * track in these colours (CSS colours); null, back to the CSS's (and the browser's look).
 	 */
-	gameScrollbars (opts: { width: number; thumb: string; track?: string } | null): void {
+	gameScrollbars (opts: { width: number; thumb: string; thumbHover?: string; track?: string } | null): void {
 		this.layoutEngine.scrollbarOverride = opts?.width;
 		const thumb = opts ? parseColor(opts.thumb) : undefined;
-		this.painter.scrollbarLook = opts && thumb ? { thumb, track: opts.track ? parseColor(opts.track) : undefined } : undefined;
+		this.painter.scrollbarLook = opts && thumb ? { thumb, thumbHover: opts.thumbHover ? parseColor(opts.thumbHover) : undefined, track: opts.track ? parseColor(opts.track) : undefined } : undefined;
+		this.painter.scrollbarActive = undefined;
+		this._barDrag = undefined;
 		this._layoutAll = true;
 		this._layoutDirty = true;
 		this._paintDirty = true;
+	}
+
+	/**
+	 * A game scrollbar's press (gameScrollbars): its thumb being dragged (`per`: how far its box scrolls, its own
+	 * pixels, for each client pixel the pointer moves along it), or its track pressed (`per` 0: paged once).
+	 */
+	_barDrag?: { id: number; el: IgeUiElement; vertical: boolean; from: number; pos: number; per: number };
+
+	/**
+	 * The game scrollbar (gameScrollbars) at a client point, if there's one there: its scroller (the element hit, or
+	 * the nearest round it with a bar there), which bar, where along its track and its thumb (the scroller's own,
+	 * zoomed, pixels), what it shows of its content, and client pixels per one of those along it.
+	 */
+	_barAt (x: number, y: number, hit: IgeUiElement | null): { el: IgeUiElement; vertical: boolean; along: number; view: number; content: number; pos: number; at: number; length: number; k: number } | undefined {
+		if (!this.painter.scrollbarLook) return undefined;
+		for (let el: IgeUiElement | null = hit; el; el = el.parentNode as IgeUiElement | null) {
+			const b = el._box;
+			if (!b || b.el !== el || b.pseudo || (!b.scrollbarY && !b.scrollbarX)) continue;
+			const r = el.getBoundingClientRect();
+			if (!r.width || !r.height || !b.borderW || !b.borderH) continue;
+			const kx = r.width / b.borderW, ky = r.height / b.borderH;
+			// (In its padding box)
+			const ix = (x - r.left) / kx - b.borderLeft, iy = (y - r.top) / ky - b.borderTop;
+			const sy = b.scrollbarY ?? 0, sx = b.scrollbarX ?? 0;
+			const w = b.borderW - b.borderLeft - b.borderRight, h = b.borderH - b.borderTop - b.borderBottom;
+			for (const vertical of [true, false]) {
+				const size = vertical ? sy : sx;
+				if (!size) continue;
+				const across = vertical ? ix - (w - size) : iy - (h - size), along = vertical ? iy : ix;
+				const len = vertical ? h - sx : w - sy;
+				if (across < 0 || across > size || along < 0 || along > len) continue;
+				// (Its thumb as it's drawn: IgeUiPaint's gameThumb)
+				const content = Math.max(len, vertical ? b.scrollH ?? len : b.scrollW ?? len);
+				const pos = vertical ? el._scrollTop : el._scrollLeft;
+				const t = gameThumb(len, len, content, pos);
+				return { el, vertical, along, view: len, content, pos, at: t.at, length: t.length, k: vertical ? ky : kx };
+			}
+		}
+		return undefined;
+	}
+
+	/** The game scrollbar drawn brighter (under the pointer, or being dragged): its run painted again, and the last one's. */
+	_barHot (hot: { el: IgeUiElement; vertical: boolean } | undefined): void {
+		const was = this.painter.scrollbarActive;
+		if (was?.el === hot?.el && was?.vertical === hot?.vertical) return;
+		this.painter.scrollbarActive = hot && { el: hot.el, vertical: hot.vertical };
+		if (was?.el) this._repaintEls.add(was.el);
+		if (hot) this._repaintEls.add(hot.el);
+	}
+
+	/**
+	 * A mouse's press on a game scrollbar: on its thumb, the thumb taken to be dragged; on its track before or after
+	 * it, a page that way (seven eighths of what it shows, as a browser pages), as a browser's bar takes a press.
+	 */
+	_barPress (bar: NonNullable<ReturnType<IgeUiRoot["_barAt"]>>, e: PointerEvent): void {
+		const { el, vertical } = bar;
+		const z = el._cssZoom || 1;
+		const set = (v: number) => {
+			if (vertical) el.scrollTop = v / z;
+			else el.scrollLeft = v / z;
+		};
+		let per = 0;
+		if (bar.along < bar.at) set(bar.pos - bar.view * 0.875);
+		else if (bar.along > bar.at + bar.length) set(bar.pos + bar.view * 0.875);
+		else per = (bar.content - bar.view) / Math.max(1e-6, (bar.view - 2 - bar.length) * bar.k);
+		this._barDrag = { id: e.pointerId ?? 1, el, vertical, from: vertical ? e.clientY : e.clientX, pos: bar.pos, per };
+		this._barHot(bar);
 	}
 
 	/** The renderer was made again (a lost context restored). */
@@ -1611,6 +1680,21 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			e.stopImmediatePropagation();
 			return;
 		}
+		// (A game scrollbar's press has the pointer wherever it goes, until it's let go: its thumb dragged along)
+		const bd = this._barDrag;
+		if (bd && bd.id === (e.pointerId ?? 1) && type !== "pointerdown") {
+			if (type === "pointermove" && bd.per) {
+				const v = bd.pos + ((bd.vertical ? e.clientY : e.clientX) - bd.from) * bd.per, z = bd.el._cssZoom || 1;
+				if (bd.vertical) bd.el.scrollTop = v / z;
+				else bd.el.scrollLeft = v / z;
+			}
+			if (type === "pointerup" || type === "pointercancel") {
+				this._barDrag = undefined;
+				this._barHot(this._barAt(e.clientX, e.clientY, this.hitTest(e.clientX, e.clientY)));
+			}
+			e.stopImmediatePropagation();
+			return;
+		}
 		// Pointers at once, each its own (input/IgeUiPointers.ts)
 		const id = e.pointerId ?? 1;
 		const touch = e.pointerType === "touch", primary = e.isPrimary !== false;
@@ -1628,10 +1712,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		if (ends) captures.delete(id);
 		if (type === "pointermove") {
 			const d = this._presses.get(id);
-			// Hover follows the mouse (or a pen); a finger's is where it pressed
+			// Hover follows the mouse (or a pen); a finger's is where it pressed. A game scrollbar under it is drawn brighter
 			if (!touch) {
 				this._pointerAt = e;
 				this._setHover(t, e);
+				if (this.painter.scrollbarLook) this._barHot(this._barAt(e.clientX, e.clientY, hit));
 			}
 			if (d) pressMoved(d, e.clientX, e.clientY);
 			// (A mouse held down in a field's text: the selection follows it; a range input's value, the pointer)
@@ -1661,6 +1746,15 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		if (type === "pointerdown") {
 			this._momentum = undefined;
 			this._keyboardModality = false;
+			// (A mouse's press on a game scrollbar is the bar's: its thumb dragged, or its track paged; nothing else sees it)
+			if (!touch && primary && (e.button ?? 0) === 0 && this.painter.scrollbarLook) {
+				const bar = this._barAt(e.clientX, e.clientY, hit);
+				if (bar) {
+					this._barPress(bar, e);
+					e.stopImmediatePropagation();
+					return;
+				}
+			}
 			if (!t) {
 				if (touch) this._outside.add(id);
 				// (Pressed outside the UI (the game behind it): the UI's focus goes, as a page's does)

@@ -513,7 +513,9 @@ export class IgeUiPainter {
 	/** The UI's scale (IgeUiRoot.scale): a browser's scrollbar's thumb is drawn in screen pixels. */
 	uiScale = 1;
 	/** The game's own scrollbars' colours (IgeUiRoot.gameScrollbars); undefined: the CSS's, else the browser's. */
-	scrollbarLook?: { thumb: IgeCssColor; track?: IgeCssColor };
+	scrollbarLook?: { thumb: IgeCssColor; thumbHover?: IgeCssColor; track?: IgeCssColor };
+	/** The game's scrollbar drawn brighter (thumbHover): the one under the pointer, or whose thumb is being dragged (IgeUiRoot). */
+	scrollbarActive?: { el: IgeUiElement | null; vertical: boolean };
 
 	_scrollbars (b: IgeUiBox, ctx: Ctx): void {
 		const sy = b.scrollbarY ?? 0, sx = b.scrollbarX ?? 0;
@@ -552,11 +554,16 @@ export class IgeUiPainter {
 			const pad = own ? 1 : 2 * k, thick = own ? Math.max(2, size - 2) : Math.max(2 * k, size - (thin ? 5 : 8) * k);
 			const nudge = thin ? 0.5 * k : 0;
 			const room = len - pad * 2;
-			const tl = Math.max(18 * k, (room * view) / content);
-			const at = pad + ((room - tl) * pos) / Math.max(1, content - view);
+			// (The game's thumb where the pointer finds it too: gameThumb, IgeUiRoot._barAt)
+			const g = own ? gameThumb(len, view, content, pos) : undefined;
+			const tl = g ? g.length : Math.max(18 * k, (room * view) / content);
+			const at = g ? g.at : pad + ((room - tl) * pos) / Math.max(1, content - view);
 			const r = thick / 2;
-			if (vertical) this.items.push({ op: "box", x: tx + (size - thick) / 2 + nudge, y: ty + at, w: thick, h: tl, radii: [r, r, r, r], color: thumb, ...base });
-			else this.items.push({ op: "box", x: tx + at, y: ty + (size - thick) / 2 + nudge, w: tl, h: thick, radii: [r, r, r, r], color: thumb, ...base });
+			// (Brighter under the pointer, or being dragged)
+			const hot = own && this.scrollbarActive?.el === el && this.scrollbarActive.vertical === vertical;
+			const color = hot ? own.thumbHover ?? thumb : thumb;
+			if (vertical) this.items.push({ op: "box", x: tx + (size - thick) / 2 + nudge, y: ty + at, w: thick, h: tl, radii: [r, r, r, r], color, ...base });
+			else this.items.push({ op: "box", x: tx + at, y: ty + (size - thick) / 2 + nudge, w: tl, h: thick, radii: [r, r, r, r], color, ...base });
 		};
 		if (sy) bar(true);
 		if (sx) bar(false);
@@ -987,6 +994,17 @@ export class IgeUiPainter {
 		if (!el.isDisabled) this.items.push({ op: "box", ...at, x, y: mid - 2, w: cx - x, h: 4, radii: [2, 2, 2, 2], color: accent });
 		this.items.push({ op: "box", ...at, x: cx - half, y: mid - half, w: RANGE_THUMB, h: RANGE_THUMB, radii: [half, half, half, half], color: accent });
 	}
+}
+
+/**
+ * A game scrollbar's thumb (IgeUiRoot.gameScrollbars), along a track `len` long showing `view` of `content`, scrolled
+ * `pos` (its box's pixels): where it starts along the track and how long it is, a pixel in from each end, never
+ * shorter than 18. As it's drawn, and as the pointer finds it.
+ */
+export function gameThumb (len: number, view: number, content: number, pos: number): { at: number; length: number } {
+	const room = len - 2;
+	const length = Math.max(18, (room * view) / Math.max(1e-6, content));
+	return { at: 1 + ((room - length) * pos) / Math.max(1, content - view), length };
 }
 
 /** The display list as text (render-list snapshots in tests). */
