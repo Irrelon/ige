@@ -110,6 +110,15 @@ describe("ui2 text fields, as a browser's", () => {
 		at("pointerup", 30, 30);
 	});
 
+	it("a composition an IME left behind (never ended) is over once the field's lost the focus", () => {
+		const { r, host, f } = ui(`<input value="Bo"><button>OK</button>`);
+		r.focus(f);
+		host.typing!.events.composition({ start: 2, end: 4 });
+		expect(f._composition).toEqual({ start: 2, end: 4 });
+		r.focus(r.document.querySelector("button"));
+		expect(f._composition).toBe(undefined);
+	});
+
 	it("the web host: the hidden input takes the field's maxlength and its value set by code; the window losing the focus keeps the field's", async () => {
 		const restore = fakePage();
 		try {

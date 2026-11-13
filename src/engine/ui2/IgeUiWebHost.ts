@@ -114,6 +114,8 @@ interface Selectable {
 function webTextEntry (): IgeUiHost["textEntry"] {
 	let input: HTMLInputElement | undefined;
 	let field: IgeUiTextEntryField | null = null;
+	/** An IME's composition under way (told to the field). */
+	let composing = false;
 	let events: IgeUiTextEntryEvents | undefined;
 	/** Mirrors the hidden input's selection onto the field as it changes (keys, the selection moved, a paste). */
 	const mirror = () => {
@@ -133,6 +135,13 @@ function webTextEntry (): IgeUiHost["textEntry"] {
 		el.addEventListener("change", () => events?.change());
 		// (Its keys to the field, unless the window's input (igeUiAttachWebInput) gave it them already; on to the page's
 		// listeners, as a browser's field's are)
+		// (A key that isn't an IME's while a composition's said to be under way: the IME let it go without ending it, as
+		// Chrome's does when a maxlength leaves it no room: the composition's over)
+		el.addEventListener("keydown", (e) => {
+			if (!composing || e.isComposing) return;
+			composing = false;
+			events?.composition(null);
+		});
 		el.addEventListener("keydown", (e) => {
 			if (!events || keysTaken.has(e)) return;
 			if (events.key({ key: e.key, code: e.code, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey })) e.preventDefault();
@@ -149,11 +158,15 @@ function webTextEntry (): IgeUiHost["textEntry"] {
 		// An IME's composition: where it starts as it begins (over what was selected), as long as what's composed
 		let composeFrom = 0;
 		el.addEventListener("compositionstart", () => {
+			composing = true;
 			composeFrom = Math.min(el.selectionStart ?? el.value.length, el.selectionEnd ?? el.value.length);
 			events?.composition({ start: composeFrom, end: composeFrom });
 		});
 		el.addEventListener("compositionupdate", (e) => events?.composition({ start: composeFrom, end: composeFrom + ((e as CompositionEvent).data ?? "").length }));
-		el.addEventListener("compositionend", () => events?.composition(null));
+		el.addEventListener("compositionend", () => {
+			composing = false;
+			events?.composition(null);
+		});
 		for (const type of ["input", "keydown", "keyup", "select", "focus", "mouseup"]) el.addEventListener(type, () => queueMicrotask(mirror));
 		document.addEventListener("selectionchange", () => {
 			if (document.activeElement === el) mirror();

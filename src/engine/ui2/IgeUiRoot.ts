@@ -537,6 +537,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		const prev = this.document.activeElement;
 		if (prev === el) return;
 		if (prev) {
+			// (A composition the IME left behind is over with the focus)
+			prev._composition = undefined;
 			prev._states.delete("focus");
 			prev._states.delete("focus-visible");
 			this.changed(prev, "state");
