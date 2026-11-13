@@ -129,9 +129,10 @@ function unitValue (v: number, unit: string, ctx: IgeCssLengthContext): Quantity
 		case "vh": return { v: (v / 100) * ctx.vh, kind: "len" };
 		case "vmin": return { v: (v / 100) * Math.min(ctx.vw, ctx.vh), kind: "len" };
 		case "vmax": return { v: (v / 100) * Math.max(ctx.vw, ctx.vh), kind: "len" };
-		case "cqw": return { v: (v / 100) * ctx.cqw, kind: "len" };
-		case "cqh": return { v: (v / 100) * ctx.cqh, kind: "len" };
+		case "cqw": case "cqi": return { v: (v / 100) * ctx.cqw, kind: "len" };
+		case "cqh": case "cqb": return { v: (v / 100) * ctx.cqh, kind: "len" };
 		case "cqmin": return { v: (v / 100) * Math.min(ctx.cqw, ctx.cqh), kind: "len" };
+		case "cqmax": return { v: (v / 100) * Math.max(ctx.cqw, ctx.cqh), kind: "len" };
 		case "pt": return { v: v * (4 / 3), kind: "len" };
 		case "deg": return { v, kind: "deg" };
 		case "rad": return { v: (v * 180) / Math.PI, kind: "deg" };

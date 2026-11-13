@@ -462,3 +462,20 @@ describe("ui2: a stylesheet replaced (an edited <style>)", () => {
 		expect(a._computed!.color).toBe("red");
 	});
 });
+
+describe("ui2: container query units", () => {
+	it("are of the nearest size container (cqh only of a container-type: size one), else the viewport", () => {
+		const r = ui(`.c { width: 200px; container-type: inline-size; } .s { width: 300px; height: 100px; container-type: size; } .w { width: 50cqw; height: 10cqh; } .i { width: 10cqi; height: 10cqb; } .m { width: 10cqmax; height: 10cqmin; }`, 800, 600);
+		r.root.innerHTML = `<div class="c"><div class="w"></div><div class="s"><div class="i"></div><div class="m"></div></div></div><div class="w out"></div>`;
+		r.update(0);
+		const box = (s: string) => {
+			const b = r.root.querySelector(s)!.getBoundingClientRect();
+			return [b.width, b.height];
+		};
+		// (In the inline-size container: cqw of it, cqh of the viewport)
+		expect(box(".c > .w")).toEqual([100, 60]);
+		expect(box(".i")).toEqual([30, 10]);
+		expect(box(".m")).toEqual([30, 10]);
+		expect(box(".w.out")).toEqual([400, 60]);
+	});
+});

@@ -205,10 +205,12 @@ export class IgeUiLayoutEngine {
 		el._reuseFrom = undefined;
 		if (kept) {
 			kept.parent = parent;
+			this._styleBox.set(kept.style, kept);
 			return kept;
 		}
 		const box = newBox(el, cs, display === "list-item" ? "block" : display, parent);
 		el._box = box;
+		this._styleBox.set(cs, box);
 		box.position = styleValue(cs, "position");
 		const z = styleValue(cs, "z-index");
 		if (z !== "auto" && box.position !== "static") box.zIndex = parseInt(z, 10) || 0;
@@ -320,8 +322,20 @@ export class IgeUiLayoutEngine {
 	// ---------------------------------------------------------------- lengths
 
 	_ctx (style: IgeUiComputedStyle, percent?: number): IgeCssLengthContext {
-		return { em: parseFloat(styleValue(style, "font-size")) || 16, rem: this.rootFontSize, percent, vw: this.viewport.w, vh: this.viewport.h, cqw: this.viewport.w, cqh: this.viewport.h };
+		// (cqw, cqh: the nearest size container round its box, else the viewport, as a browser has them)
+		let cqw: number | undefined, cqh: number | undefined;
+		for (let p = this._styleBox.get(style)?.parent; p && (cqw === undefined || cqh === undefined); p = p.parent) {
+			const c = this._cqSize.get(p);
+			if (!c) continue;
+			cqw ??= c.w;
+			if (c.h !== undefined) cqh ??= c.h;
+		}
+		return { em: parseFloat(styleValue(style, "font-size")) || 16, rem: this.rootFontSize, percent, vw: this.viewport.w, vh: this.viewport.h, cqw: cqw ?? this.viewport.w, cqh: cqh ?? this.viewport.h };
 	}
+
+	/** Each style's box (for the size container round it: cq units), and size containers' content sizes as laid out. */
+	_styleBox = new WeakMap<IgeUiComputedStyle, IgeUiBox>();
+	_cqSize = new WeakMap<IgeUiBox, { w: number; h?: number }>();
 
 	/** A length property in px, or undefined (auto, none, or a percentage of something unknown). */
 	len (style: IgeUiComputedStyle, prop: string, percent?: number): number | undefined {
@@ -334,6 +348,8 @@ export class IgeUiLayoutEngine {
 		const key = percent === undefined ? prop : `${prop}|${percent}`;
 		if (cache.has(key)) return cache.get(key);
 		const v = styleValue(style, prop);
+		// (Of a container's size: not kept, it may be asked for before the container's laid out)
+		if (v.includes("cq")) return resolveLength(v, this._ctx(style, percent));
 		let out: number | undefined;
 		if (v === "auto" || v === "none" || v === "normal" || v === "") out = undefined;
 		else if (v === "thin") out = 1;
@@ -890,6 +906,9 @@ export class IgeUiLayoutEngine {
 			if (spec !== undefined) fixedH = this._clampH(b, spec, cbH);
 		}
 		const innerH = fixedH !== undefined ? Math.max(0, fixedH - this._vEdges(b)) : opts.stretchH !== undefined ? Math.max(0, opts.stretchH - this._vEdges(b)) : undefined;
+		// A size container: its content box is what cqw and cqh in it are of (cqh only with container-type: size)
+		const ct = styleValue(s, "container-type");
+		if (ct === "inline-size" || ct === "size") this._cqSize.set(b, { w: cw, h: ct === "size" ? innerH : undefined });
 		// The contents
 		const d = b.display;
 		const contents = (): number => {
