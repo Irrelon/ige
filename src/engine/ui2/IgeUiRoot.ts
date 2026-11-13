@@ -1554,7 +1554,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 	/** The renderer was made again (a lost context restored). */
 	contextRestored (gl: WebGL2RenderingContext): void {
-		this.gl?.restore(webGl2GpuDevice(gl));
+		// (The device restored first, if it hasn't noticed yet: what's made next belongs to the restored context)
+		const device = webGl2GpuDevice(gl);
+		device.restore();
+		this.gl?.restore(device);
 	}
 
 	// ---------------------------------------------------------------- input

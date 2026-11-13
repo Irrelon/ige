@@ -199,4 +199,104 @@ describe("IgeGpuDevice: WebGL2", () => {
 		d.generateMipmaps(tex);
 		expect(calls.map(([k]) => k)).toEqual(["activeTexture", "generateMipmap"]);
 	});
+
+	it("draws a depth-only pass into a depth texture's own framebuffer (no colour buffers), made once and cleared", () => {
+		const { d, calls, take } = setUp();
+		const depth = d.createTexture({ width: 512, height: 512, format: "depth32float", sampler: { minFilter: "nearest", magFilter: "nearest" } });
+		take();
+		d.beginRenderPass({ depthStencil: { target: depth, depthLoadOp: "clear", depthClearValue: 1 } }).end();
+		const first = take();
+		expect(first).toEqual(expect.arrayContaining(["createFramebuffer", "framebufferTexture2D", "drawBuffers", "readBuffer", "clear"]));
+		expect(calls.length).toBe(0);
+		d.beginRenderPass({ depthStencil: { target: depth } }).end();
+		expect(take()).not.toContain("createFramebuffer");
+	});
+
+	it("keeps a framebuffer for each depth texture a colour texture is drawn with, and one for it alone", () => {
+		const { d, take } = setUp();
+		const colour = d.createTexture({ width: 64, height: 64, format: "r32float" });
+		const depthA = d.createTexture({ width: 64, height: 64, format: "depth16unorm" });
+		const depthB = d.createTexture({ width: 64, height: 64, format: "depth16unorm" });
+		take();
+		const made = (desc: Parameters<typeof d.beginRenderPass>[0]) => {
+			d.beginRenderPass(desc).end();
+			return take().filter((c) => c === "createFramebuffer").length;
+		};
+		expect(made({ color: { target: colour }, depthStencil: { target: depthA } })).toBe(1);
+		expect(made({ color: { target: colour }, depthStencil: { target: depthB } })).toBe(1);
+		expect(made({ color: { target: colour } })).toBe(1);
+		expect(made({ color: { target: colour }, depthStencil: { target: depthA } })).toBe(0);
+		// (Its depth gone: the framebuffer with it too)
+		d.destroyTexture(depthA);
+		expect(take().filter((c) => c === "deleteFramebuffer").length).toBe(1);
+	});
+
+	it("makes a multisampled texture a renderbuffer; resolves it with a blit, the scissor off; copies depth as depth", () => {
+		const { d, calls, take } = setUp();
+		const msaa = d.createTexture({ width: 320, height: 200, format: "rgba8unorm", sampleCount: 4 });
+		expect(calls.map(([k]) => k)).toEqual(["createRenderbuffer", "bindRenderbuffer", "renderbufferStorageMultisample", "bindRenderbuffer"]);
+		expect(calls[2][1][1]).toBe(4);
+		const scene = d.createTexture({ width: 320, height: 200, format: "rgba8unorm" });
+		take();
+		d.resolveTexture(msaa, scene);
+		const blit = calls.find(([k]) => k === "blitFramebuffer")!;
+		expect(blit[1].slice(0, 8)).toEqual([0, 0, 320, 200, 0, 0, 320, 200]);
+		expect(calls.map(([k]) => k)).toContain("framebufferRenderbuffer");
+		take();
+		const a = d.createTexture({ width: 16, height: 16, format: "depth32float" });
+		const b = d.createTexture({ width: 16, height: 16, format: "depth32float" });
+		take();
+		d.copyTextureToTexture(a, b);
+		const depthBlit = calls.find(([k]) => k === "blitFramebuffer")!;
+		const colourBlit = blit[1][8];
+		expect(depthBlit[1][8]).not.toBe(colourBlit);
+	});
+
+	it("reads a rectangle of a target back from its framebuffer", () => {
+		const { d, calls, take } = setUp();
+		const tex = d.createTexture({ width: 8, height: 8, format: "rgba8unorm" });
+		take();
+		const px = d.readTarget(tex, [1, 2, 3, 4]);
+		expect(px.length).toBe(3 * 4 * 4);
+		const read = calls.find(([k]) => k === "readPixels")!;
+		expect(read[1].slice(0, 4)).toEqual([1, 2, 3, 4]);
+		expect(read[1][6]).toBe(px);
+	});
+
+	it("binds a GLSL ES 1.00 module's attributes to the locations it names before linking", () => {
+		const { d, take } = setUp();
+		d.createShaderModule({ vertex: "attribute vec3 a_position; void main() {}", fragment: "void main() {}", attributes: { a_position: 0, a_normal: 1 } });
+		const sent = take();
+		expect(sent.filter((c) => c === "bindAttribLocation").length).toBe(2);
+		expect(sent.indexOf("bindAttribLocation")).toBeLessThan(sent.indexOf("linkProgram"));
+	});
+
+	it("after a lost context, makes each resource again as it's next used: its program and uniforms, vertex array, buffers and textures", () => {
+		const { d, take, quad, inst, pipeline, calls } = setUp();
+		const tex = d.createTexture({ width: 4, height: 4, format: "rgba8unorm" });
+		const draw = () => {
+			const pass = d.beginRenderPass({ color: { target: d.surface() } });
+			pass.setPipeline(pipeline);
+			pass.setVertexBuffer(0, quad);
+			pass.setVertexBuffer(1, inst);
+			pass.setTexture(0, tex);
+			pass.setUniforms([800, 600, 1]);
+			pass.draw(4, 2);
+		};
+		draw();
+		take();
+		d.lost = true;
+		d.restore();
+		draw();
+		const again = take();
+		for (const made of ["createProgram", "linkProgram", "createVertexArray", "createBuffer", "createTexture", "texImage2D", "uniform2f", "uniform1f"]) expect(again).toContain(made);
+		// (Once: then as before)
+		draw();
+		expect(take()).toEqual(["drawArraysInstanced"]);
+		expect(calls.length).toBe(0);
+		// (A second restore with no loss between does nothing)
+		d.restore();
+		draw();
+		expect(take()).toEqual(["drawArraysInstanced"]);
+	});
 });

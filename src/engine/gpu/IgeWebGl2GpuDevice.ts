@@ -23,13 +23,18 @@ interface GlTexture extends IgeGpuTexture {
 	width: number;
 	height: number;
 	layers: number;
-	_tex: WebGLTexture;
+	/** Its GL texture (null for a multisampled one: a renderbuffer, _rb). */
+	_tex: WebGLTexture | null;
+	_rb: WebGLRenderbuffer | null;
 	/** TEXTURE_2D or TEXTURE_2D_ARRAY. */
 	_target: number;
 	_sampler: IgeGpuSamplerDesc;
-	/** Its framebuffer (made as it's first drawn into), and the depth/stencil texture attached to it then. */
-	_fbo?: WebGLFramebuffer;
-	_fboDepth?: GlTexture | null;
+	/** Its framebuffers, made as first drawn into: by the depth/stencil texture with it (null: none; a depth texture's own, alone). */
+	_fbos?: Map<GlTexture | null, WebGLFramebuffer>;
+	/** A depth texture: the colour textures whose framebuffers have it attached. */
+	_users?: Set<GlTexture>;
+	/** The device's generation it was made in (older: made again as it's next used, after a lost context). */
+	_gen: number;
 }
 
 interface GlSurface extends IgeGpuSurface {
@@ -41,6 +46,7 @@ interface GlBuffer extends IgeGpuBuffer {
 	_buf: WebGLBuffer;
 	_target: number;
 	_stream: boolean;
+	_gen: number;
 }
 
 interface GlUniform {
@@ -55,6 +61,10 @@ interface GlUniform {
 interface GlModule extends IgeGpuShaderModule {
 	_program: WebGLProgram;
 	_shaders: WebGLShader[];
+	_desc: IgeGpuShaderModuleDesc;
+	/** Its texture slots' names (each given its unit in the program). */
+	_slots?: string[];
+	_gen: number;
 	/** Its uniform block and texture slots (from the first pipeline made with it: the others must agree). */
 	_uniforms?: GlUniform[];
 	_textures?: number;
@@ -65,6 +75,7 @@ interface GlModule extends IgeGpuShaderModule {
 
 interface GlLayout {
 	_vao: WebGLVertexArrayObject;
+	_gen: number;
 	_buffers: IgeGpuVertexBufferLayout[];
 	/** Each slot's buffer and byte offset its attributes point at now. */
 	_bound: ({ buf: GlBuffer; offset: number } | undefined)[];
@@ -193,6 +204,23 @@ export function webGl2CurrentSurface (device: IgeWebGl2GpuDevice): IgeGpuSurface
 	return webGl2Surface(device, fbo, gl.drawingBufferWidth, gl.drawingBufferHeight);
 }
 
+/**
+ * A device texture's GL texture, for GL code not yet drawing through the device (the 3D renderer, while it moves onto
+ * it): made again first if a lost context left it behind. Goes when nothing draws with GL of its own.
+ */
+export function webGl2Texture (device: IgeWebGl2GpuDevice, texture: IgeGpuTexture): WebGLTexture | null {
+	const t = texture as GlTexture;
+	if (t._gen !== device._gen) device._liveTexture(t);
+	return t._tex;
+}
+
+/** A device buffer's GL buffer, for GL code not yet drawing through the device (as webGl2Texture). */
+export function webGl2Buffer (device: IgeWebGl2GpuDevice, buffer: IgeGpuBuffer): WebGLBuffer {
+	const b = buffer as GlBuffer;
+	if (b._gen !== device._gen) device._liveBuffer(b);
+	return b._buf;
+}
+
 export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	readonly backend = "webgl2" as const;
 	readonly gl: GL;
@@ -203,6 +231,9 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	_surface: GlSurface;
 	/** The unit textures are bound to for uploads and copies (the last: draws use the first ones). */
 	_scratch: number;
+	/** Counts restores: a resource made in an older one is made again as it's next used. */
+	_gen = 0;
+	lost = false;
 
 	constructor (gl: GL) {
 		this.gl = gl;
@@ -211,7 +242,10 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE) as number,
 			maxTextureLayers: gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS) as number,
 			maxVertexAttributes: gl.getParameter(gl.MAX_VERTEX_ATTRIBS) as number,
-			maxTextureSlots: Math.min(16, units)
+			maxTextureSlots: Math.min(16, units),
+			maxSamples: gl.getParameter(gl.MAX_SAMPLES) as number,
+			// (Asking for it turns it on)
+			floatTargets: !!gl.getExtension("EXT_color_buffer_float")
 		};
 		this._scratch = Math.min(31, units - 1);
 		const stencil = !!gl.getContextAttributes()?.stencil;
@@ -220,6 +254,21 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			get width () { return gl.drawingBufferWidth; },
 			get height () { return gl.drawingBufferHeight; }
 		};
+		const canvas = gl.canvas as (EventTarget & { addEventListener?: EventTarget["addEventListener"] }) | undefined;
+		canvas?.addEventListener?.("webglcontextlost", () => {
+			this.lost = true;
+		});
+		canvas?.addEventListener?.("webglcontextrestored", () => this.restore());
+	}
+
+	restore (): void {
+		if (!this.lost) return;
+		this.lost = false;
+		this._gen++;
+		this._samplers.clear();
+		// (Extensions are the context's: turned on again)
+		if (this.limits.floatTargets) this.gl.getExtension("EXT_color_buffer_float");
+		this.invalidate();
 	}
 
 	surface (): IgeGpuSurface {
@@ -250,12 +299,24 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	createBuffer (desc: IgeGpuBufferDesc): IgeGpuBuffer {
 		const gl = this.gl;
 		const target = desc.usage === "index" ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-		const b: GlBuffer = { kind: "buffer", size: desc.size, usage: desc.usage, label: desc.label, _buf: gl.createBuffer()!, _target: target, _stream: !!desc.stream };
+		const b: GlBuffer = { kind: "buffer", size: desc.size, usage: desc.usage, label: desc.label, _buf: gl.createBuffer()!, _target: target, _stream: !!desc.stream, _gen: this._gen };
 		if (desc.size > 0) {
 			this._bindBuffer(b);
 			gl.bufferData(target, desc.size, desc.stream ? gl.STREAM_DRAW : gl.STATIC_DRAW);
 		}
 		return b;
+	}
+
+	/** A buffer made in an older generation (before a restore) made again, its size kept, its contents gone. */
+	_liveBuffer (b: GlBuffer): void {
+		if (b._gen === this._gen) return;
+		const gl = this.gl;
+		b._gen = this._gen;
+		b._buf = gl.createBuffer()!;
+		if (b.size > 0) {
+			this._bindBuffer(b);
+			gl.bufferData(b._target, b.size, b._stream ? gl.STREAM_DRAW : gl.STATIC_DRAW);
+		}
 	}
 
 	writeBuffer (buffer: IgeGpuBuffer, offset: number, data: ArrayBufferView): void {
@@ -275,12 +336,13 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 
 	destroyBuffer (buffer: IgeGpuBuffer): void {
 		const b = buffer as GlBuffer;
-		this.gl.deleteBuffer(b._buf);
+		if (b._gen === this._gen) this.gl.deleteBuffer(b._buf);
 		if (this._state.arrayBuffer === b._buf) this._state.arrayBuffer = undefined;
 	}
 
 	_bindBuffer (b: GlBuffer): void {
 		const gl = this.gl;
+		if (b._gen !== this._gen) this._liveBuffer(b);
 		if (b._target === gl.ARRAY_BUFFER) {
 			if (this._state.arrayBuffer === b._buf) return;
 			this._state.arrayBuffer = b._buf;
@@ -299,14 +361,30 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	createTexture (desc: IgeGpuTextureDesc): IgeGpuTexture {
 		const gl = this.gl;
 		const layered = desc.layers !== undefined;
+		const samples = Math.max(1, desc.sampleCount ?? 1);
 		const t: GlTexture = {
-			kind: "texture", width: 0, height: 0, layers: 0, format: desc.format, mipmaps: !!desc.mipmaps, label: desc.label,
-			_tex: gl.createTexture()!, _target: layered ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D,
-			_sampler: { magFilter: "linear", minFilter: "linear", mipmapFilter: "none", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }
+			kind: "texture", width: 0, height: 0, layers: 0, format: desc.format, mipmaps: !!desc.mipmaps, sampleCount: samples, label: desc.label,
+			_tex: samples > 1 ? null : gl.createTexture()!, _rb: samples > 1 ? gl.createRenderbuffer()! : null, _target: layered ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D,
+			_sampler: { magFilter: "linear", minFilter: "linear", mipmapFilter: "none", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" },
+			_gen: this._gen
 		};
 		this.resizeTexture(t, desc.width, desc.height, desc.layers);
-		this._applySampler(t, { ...t._sampler, ...(desc.sampler ?? {}) }, true);
+		if (!t._rb) this._applySampler(t, { ...t._sampler, ...(desc.sampler ?? {}) }, true);
+		else t._sampler = { ...t._sampler, ...(desc.sampler ?? {}) };
 		return t;
+	}
+
+	/** A texture made in an older generation (before a restore) made again: its size, format and sampling kept, its pixels gone. */
+	_liveTexture (t: GlTexture): void {
+		if (t._gen === this._gen) return;
+		const gl = this.gl;
+		t._gen = this._gen;
+		t._fbos = undefined;
+		t._users = undefined;
+		if (t._rb) t._rb = gl.createRenderbuffer()!;
+		else t._tex = gl.createTexture()!;
+		this.resizeTexture(t, t.width, t.height, t.layers);
+		if (t._tex) this._applySampler(t, t._sampler, true);
 	}
 
 	resizeTexture (texture: IgeGpuTexture, width: number, height: number, layers?: number): void {
@@ -314,6 +392,14 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		const f = FORMATS[t.format];
 		t.width = width;
 		t.height = height;
+		if (t._rb) {
+			if (t._gen !== this._gen) this._liveTexture(t);
+			t.layers = 1;
+			gl.bindRenderbuffer(gl.RENDERBUFFER, t._rb);
+			if (width > 0 && height > 0) gl.renderbufferStorageMultisample(gl.RENDERBUFFER, Math.min(t.sampleCount, this.limits.maxSamples), f.internal, width, height);
+			gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+			return;
+		}
 		this._bindScratch(t);
 		if (t._target === gl.TEXTURE_2D_ARRAY) {
 			t.layers = layers ?? t.layers;
@@ -372,11 +458,26 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 
 	destroyTexture (texture: IgeGpuTexture): void {
 		const gl = this.gl, t = texture as GlTexture;
-		gl.deleteTexture(t._tex);
-		if (t._fbo) gl.deleteFramebuffer(t._fbo);
-		if (this._state.fbo === t._fbo) this._state.fbo = undefined;
-		for (const u of this._state.units) if (u?.tex === t._tex) u.tex = null;
-		t._fbo = undefined;
+		if (t._gen === this._gen) {
+			if (t._tex) gl.deleteTexture(t._tex);
+			if (t._rb) gl.deleteRenderbuffer(t._rb);
+			// Its framebuffers, and those of the colour textures it's the depth of
+			const drop = (fbos: Map<GlTexture | null, WebGLFramebuffer> | undefined, key?: GlTexture) => {
+				if (!fbos) return;
+				for (const [k, fbo] of fbos) {
+					if (key !== undefined && k !== key) continue;
+					gl.deleteFramebuffer(fbo);
+					if (this._state.fbo === fbo) this._state.fbo = undefined;
+					fbos.delete(k);
+				}
+			};
+			for (const [k] of t._fbos ?? []) k?._users?.delete(t);
+			drop(t._fbos);
+			for (const user of t._users ?? []) drop(user._fbos, t);
+		}
+		for (const u of this._state.units) if (u && u.tex === t._tex) u.tex = null;
+		t._fbos = undefined;
+		t._users = undefined;
 	}
 
 	createSampler (desc: IgeGpuSamplerDesc): IgeGpuSampler {
@@ -428,6 +529,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	 * active unit's texture (bound already, its unit may still not be the active one).
 	 */
 	_bindScratch (t: GlTexture): void {
+		if (t._gen !== this._gen) this._liveTexture(t);
 		this._bindTexture(this._scratch, t._target, t._tex);
 		if (this._state.unit !== this._scratch) {
 			this.gl.activeTexture(this.gl.TEXTURE0 + this._scratch);
@@ -450,33 +552,60 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	// ---------------------------------------------------------------- shaders and pipelines
 
 	createShaderModule (desc: IgeGpuShaderModuleDesc): IgeGpuShaderModule {
-		const gl = this.gl;
+		const m = { kind: "shader", label: desc.label, _desc: desc, _gen: this._gen } as GlModule;
+		this._compile(m);
+		return m;
+	}
+
+	/** A module's program compiled and linked (its vertex inputs at the locations it names). */
+	_compile (m: GlModule): void {
+		const gl = this.gl, desc = m._desc;
 		const compile = (type: number, src: string) => {
 			const s = gl.createShader(type)!;
 			gl.shaderSource(s, src);
 			gl.compileShader(s);
-			if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(`IgeGpuDevice shader (${desc.label ?? "unnamed"}): ${gl.getShaderInfoLog(s)}`);
+			if (!gl.getShaderParameter(s, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error(`IgeGpuDevice shader (${desc.label ?? "unnamed"}): ${gl.getShaderInfoLog(s)}`);
 			return s;
 		};
 		const vs = compile(gl.VERTEX_SHADER, desc.vertex), fs = compile(gl.FRAGMENT_SHADER, desc.fragment);
 		const p = gl.createProgram()!;
 		gl.attachShader(p, vs);
 		gl.attachShader(p, fs);
+		for (const name in desc.attributes ?? {}) gl.bindAttribLocation(p, desc.attributes![name], name);
 		gl.linkProgram(p);
-		if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(`IgeGpuDevice program (${desc.label ?? "unnamed"}): ${gl.getProgramInfoLog(p)}`);
-		const m: GlModule = { kind: "shader", label: desc.label, _program: p, _shaders: [vs, fs] };
-		return m;
+		if (!gl.getProgramParameter(p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error(`IgeGpuDevice program (${desc.label ?? "unnamed"}): ${gl.getProgramInfoLog(p)}`);
+		m._program = p;
+		m._shaders = [vs, fs];
+	}
+
+	/** A module made in an older generation (before a restore) compiled again: its uniforms found again (and to be sent again), its texture slots given their units. */
+	_liveModule (m: GlModule): void {
+		if (m._gen === this._gen) return;
+		const gl = this.gl;
+		m._gen = this._gen;
+		this._compile(m);
+		if (!m._uniforms) return;
+		for (const u of m._uniforms) u.loc = gl.getUniformLocation(m._program, u.name);
+		m._known!.fill(0);
+		this._useProgram(m._program);
+		(m._slots ?? []).forEach((name, i) => {
+			const loc = gl.getUniformLocation(m._program, name);
+			if (loc) gl.uniform1i(loc, i);
+		});
 	}
 
 	destroyShaderModule (module: IgeGpuShaderModule): void {
 		const gl = this.gl, m = module as GlModule;
-		gl.deleteProgram(m._program);
-		for (const s of m._shaders) gl.deleteShader(s);
+		if (m._gen === this._gen) {
+			gl.deleteProgram(m._program);
+			for (const s of m._shaders) gl.deleteShader(s);
+		}
 		if (this._state.program === m._program) this._state.program = undefined;
 	}
 
 	createRenderPipeline (desc: IgeGpuRenderPipelineDesc): IgeGpuRenderPipeline {
 		const gl = this.gl, m = desc.module as GlModule;
+		if (m._gen !== this._gen) this._liveModule(m);
 		// The module's uniform block and texture slots: worked out once, its samplers given their units
 		if (!m._uniforms) {
 			let offset = 0;
@@ -489,6 +618,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			m._values = new Float32Array(offset);
 			m._known = new Uint8Array(m._uniforms.length);
 			m._textures = desc.textures?.length ?? 0;
+			m._slots = (desc.textures ?? []).map((t) => t.name);
 			this._useProgram(m._program);
 			(desc.textures ?? []).forEach((t, i) => {
 				const loc = gl.getUniformLocation(m._program, t.name);
@@ -514,19 +644,28 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		const key = JSON.stringify(buffers);
 		let l = this._layouts.get(key);
 		if (l) return l;
+		l = { _vao: null as unknown as WebGLVertexArrayObject, _gen: this._gen - 1, _buffers: buffers, _bound: [] };
+		this._liveLayout(l);
+		this._layouts.set(key, l);
+		return l;
+	}
+
+	/** A layout's vertex array made (again, after a restore): its attributes enabled, instance ones stepping per instance. */
+	_liveLayout (l: GlLayout): void {
+		if (l._gen === this._gen) return;
 		const gl = this.gl;
-		const vao = gl.createVertexArray()!;
-		gl.bindVertexArray(vao);
-		this._state.vao = vao;
-		for (const b of buffers) {
+		l._gen = this._gen;
+		l._vao = gl.createVertexArray()!;
+		l._bound = [];
+		l._index = undefined;
+		gl.bindVertexArray(l._vao);
+		this._state.vao = l._vao;
+		for (const b of l._buffers) {
 			for (const a of b.attributes) {
 				gl.enableVertexAttribArray(a.shaderLocation);
 				if (b.stepMode === "instance") gl.vertexAttribDivisor(a.shaderLocation, 1);
 			}
 		}
-		l = { _vao: vao, _buffers: buffers, _bound: [] };
-		this._layouts.set(key, l);
-		return l;
 	}
 
 	_useProgram (p: WebGLProgram): void {
@@ -539,12 +678,13 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 
 	beginRenderPass (desc: IgeGpuRenderPassDesc): IgeGpuRenderPass {
 		const gl = this.gl;
-		const target = desc.color.target;
+		const target = desc.color?.target;
 		const depth = desc.depthStencil?.target as GlTexture | undefined;
+		const size = (target ?? depth)!;
 		this._bindFramebuffer(this._framebuffer(target, depth));
-		const pass = new IgeWebGl2RenderPass(this, target.width, target.height);
+		const pass = new IgeWebGl2RenderPass(this, size.width, size.height);
 		let bits = 0;
-		if (desc.color.loadOp === "clear") {
+		if (desc.color?.loadOp === "clear") {
 			const c = desc.color.clearValue ?? [0, 0, 0, 0];
 			this._clearColor(c);
 			this._colorMask(true);
@@ -568,20 +708,70 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		return pass;
 	}
 
-	/** A target's framebuffer: a surface's own, or a texture's (made as it's first drawn into, with `depth` attached). */
-	_framebuffer (target: IgeGpuRenderTarget, depth: GlTexture | undefined): WebGLFramebuffer | null {
-		if (target.kind === "surface") return (target as GlSurface)._fbo;
-		const gl = this.gl, t = target as GlTexture;
-		if (t._fbo && (depth === undefined || t._fboDepth === depth)) return t._fbo;
-		if (!t._fbo) t._fbo = gl.createFramebuffer()!;
-		this._bindFramebuffer(t._fbo);
-		if (!t._fboDepth && t._fboDepth !== null) gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t._tex, 0);
-		if (depth !== undefined) {
-			const attach = depth.format === "depth24plus-stencil8" ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, attach, gl.TEXTURE_2D, depth._tex, 0);
+	/**
+	 * A target's framebuffer: a surface's own; or a texture's with `depth` attached (or none), or a depth texture's
+	 * alone (no colour: a depth-only pass). Made as first drawn into, kept.
+	 */
+	_framebuffer (target: IgeGpuRenderTarget | undefined, depth: GlTexture | undefined): WebGLFramebuffer | null {
+		if (target?.kind === "surface") return (target as GlSurface)._fbo;
+		const gl = this.gl;
+		const t = (target ?? depth) as GlTexture;
+		if (t._gen !== this._gen) this._liveTexture(t);
+		if (target && depth && depth._gen !== this._gen) this._liveTexture(depth);
+		const key = target ? depth ?? null : null;
+		const have = t._fbos?.get(key);
+		if (have) return have;
+		const fbo = gl.createFramebuffer()!;
+		(t._fbos ??= new Map()).set(key, fbo);
+		this._bindFramebuffer(fbo);
+		const attach = (a: GlTexture, point: number) => {
+			if (a._rb) gl.framebufferRenderbuffer(gl.FRAMEBUFFER, point, gl.RENDERBUFFER, a._rb);
+			else gl.framebufferTexture2D(gl.FRAMEBUFFER, point, gl.TEXTURE_2D, a._tex, 0);
+		};
+		const depthPoint = (a: GlTexture) => (a.format === "depth24plus-stencil8" ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT);
+		if (target) {
+			attach(t, gl.COLOR_ATTACHMENT0);
+			if (depth) {
+				attach(depth, depthPoint(depth));
+				(depth._users ??= new Set()).add(t);
+			}
+		} else {
+			attach(t, depthPoint(t));
+			gl.drawBuffers([gl.NONE]);
+			gl.readBuffer(gl.NONE);
 		}
-		t._fboDepth = depth ?? null;
-		return t._fbo;
+		return fbo;
+	}
+
+	resolveTexture (source: IgeGpuTexture, destination: IgeGpuRenderTarget): void {
+		this._blit(source as GlTexture, destination);
+	}
+
+	copyTextureToTexture (source: IgeGpuTexture, destination: IgeGpuTexture): void {
+		this._blit(source as GlTexture, destination);
+	}
+
+	/** A texture's whole picture (colour, or depth for a depth format) blitted into a target of its size. */
+	_blit (src: GlTexture, dst: IgeGpuRenderTarget): void {
+		const gl = this.gl;
+		const isDepth = src.format.startsWith("depth");
+		const read = isDepth ? this._framebuffer(undefined, src) : this._framebuffer(src, undefined);
+		const draw = dst.kind === "surface" ? (dst as GlSurface)._fbo : isDepth ? this._framebuffer(undefined, dst as GlTexture) : this._framebuffer(dst, undefined);
+		// (The scissor clips a blit)
+		this._scissorOn(false);
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, read);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, draw);
+		gl.blitFramebuffer(0, 0, src.width, src.height, 0, 0, dst.width, dst.height, isDepth ? gl.DEPTH_BUFFER_BIT : gl.COLOR_BUFFER_BIT, gl.NEAREST);
+		// (READ and DRAW differ now: whatever's next binds both)
+		this._state.fbo = undefined;
+	}
+
+	readTarget (target: IgeGpuRenderTarget, rect: [number, number, number, number], out?: Uint8Array): Uint8Array {
+		const gl = this.gl;
+		const px = out ?? new Uint8Array(rect[2] * rect[3] * 4);
+		this._bindFramebuffer(this._framebuffer(target, undefined));
+		gl.readPixels(rect[0], rect[1], rect[2], rect[3], gl.RGBA, gl.UNSIGNED_BYTE, px);
+		return px;
 	}
 
 	_bindFramebuffer (fbo: WebGLFramebuffer | null): void {
@@ -643,6 +833,8 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	/** A pipeline's fixed state and program set (only what's changed). */
 	_applyPipeline (p: GlPipeline, stencilRef: number): void {
 		const gl = this.gl, d = p._desc, s = this._state;
+		if (p._module._gen !== this._gen) this._liveModule(p._module);
+		if (p._layout._gen !== this._gen) this._liveLayout(p._layout);
 		this._useProgram(p._module._program);
 		if (s.vao !== p._layout._vao) {
 			gl.bindVertexArray(p._layout._vao);
@@ -848,6 +1040,7 @@ class IgeWebGl2RenderPass implements IgeGpuRenderPass {
 			const t = this._textures[i];
 			if (!t) continue;
 			// (None: unbound, so a texture drawn into isn't left where the program samples: a feedback loop)
+			if (t.t && t.t._gen !== d._gen) d._liveTexture(t.t);
 			d._bindTexture(i, t.t?._target ?? d.gl.TEXTURE_2D, t.t?._tex ?? null);
 			const so = t.s ? d._samplerObject(t.s.desc) : null;
 			if (d._state.samplers[i] !== so) {
@@ -872,6 +1065,13 @@ class IgeWebGl2RenderPass implements IgeGpuRenderPass {
 		if (!ix) throw new Error("IgeGpuDevice: drawIndexed with no index buffer set");
 		const p = this._prepare(firstInstance), d = this._d, gl = d.gl;
 		const l = p._layout;
+		if (ix.buf._gen !== d._gen) {
+			d._liveBuffer(ix.buf);
+			// (Made again with the vertex array unbound: its own binding set again below)
+			gl.bindVertexArray(l._vao);
+			d._state.vao = l._vao;
+			l._index = undefined;
+		}
 		if (l._index !== ix.buf) {
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ix.buf._buf);
 			l._index = ix.buf;

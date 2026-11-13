@@ -57,6 +57,11 @@ export interface IgeGpuTextureDesc {
 	 * GL, where a texture carries its sampling: backends without it keep a sampler for each texture.
 	 */
 	sampler?: IgeGpuSamplerDesc;
+	/**
+	 * Samples a pixel: more than one, a multisampled target (the scene drawn antialiased offscreen), drawn into and
+	 * then resolved into a single-sampled one (resolveTexture); never sampled itself. Up to limits.maxSamples.
+	 */
+	sampleCount?: number;
 	label?: string;
 }
 
@@ -68,6 +73,7 @@ export interface IgeGpuTexture {
 	readonly layers: number;
 	readonly format: IgeGpuTextureFormat;
 	readonly mipmaps: boolean;
+	readonly sampleCount: number;
 	label?: string;
 }
 
@@ -103,10 +109,16 @@ export interface IgeGpuBuffer {
 
 // ---------------------------------------------------------------- shaders and pipelines
 
-/** A shader module: a vertex and a fragment shader, GLSL ES 3.00 (layout(location = n) on its vertex inputs). */
+/**
+ * A shader module: a vertex and a fragment shader, GLSL ES 3.00 (layout(location = n) on its vertex inputs). Sources
+ * in GLSL ES 1.00 (the 3D renderer's library, until it's moved on) name their vertex inputs' locations in
+ * `attributes` instead.
+ */
 export interface IgeGpuShaderModuleDesc {
 	vertex: string;
 	fragment: string;
+	/** Each vertex input's location, by name (GLSL ES 1.00 `attribute`s, which can't say their own). */
+	attributes?: Record<string, number>;
 	label?: string;
 }
 
@@ -206,13 +218,14 @@ export interface IgeGpuRenderPipeline {
 // ---------------------------------------------------------------- passes
 
 export interface IgeGpuRenderPassDesc {
-	color: {
+	/** Its colour target (none: a depth-only pass, as a shadow map's, into depthStencil.target). */
+	color?: {
 		target: IgeGpuRenderTarget;
 		/** "load" (the default): what's there kept; "clear": cleared to `clearValue` first. */
 		loadOp?: "load" | "clear";
 		clearValue?: [number, number, number, number];
 	};
-	/** A depth/stencil texture with it (none: a surface's own stencil, if it has one). */
+	/** A depth/stencil texture with it (none: a surface's own depth and stencil, if it has them). */
 	depthStencil?: {
 		target?: IgeGpuTexture;
 		depthLoadOp?: "load" | "clear";
@@ -257,6 +270,10 @@ export interface IgeGpuLimits {
 	maxTextureLayers: number;
 	maxVertexAttributes: number;
 	maxTextureSlots: number;
+	/** The most samples a multisampled target can take. */
+	maxSamples: number;
+	/** Float formats (rgba16float, rgba32float, r32float) can be drawn into (WebGL2: EXT_color_buffer_float). */
+	floatTargets: boolean;
 }
 
 export interface IgeGpuDevice {
@@ -286,6 +303,18 @@ export interface IgeGpuDevice {
 	copyImageToTexture (source: unknown, texture: IgeGpuTexture, opts?: { premultiply?: boolean; flipY?: boolean }): void;
 	/** A rectangle of a target (what's been drawn there: device px from its bottom-left) copied into a texture. */
 	copyTargetToTexture (source: IgeGpuRenderTarget, rect: [number, number, number, number], texture: IgeGpuTexture, at?: [number, number]): void;
+	/**
+	 * A multisampled texture's samples resolved into a single-sampled target of its size: its colour, or for a depth
+	 * format its depth (the scene's, for depth of field).
+	 */
+	resolveTexture (source: IgeGpuTexture, destination: IgeGpuRenderTarget): void;
+	/** A texture copied whole into another of its size and format (colour, or depth for a depth format). */
+	copyTextureToTexture (source: IgeGpuTexture, destination: IgeGpuTexture): void;
+	/**
+	 * A rectangle of a target read back (device px from its bottom-left): RGBA bytes, rows bottom up, into `out` when
+	 * it's given. As it's asked for: a backend that can't read straight back waits for the GPU (picking, screenshots).
+	 */
+	readTarget (target: IgeGpuRenderTarget, rect: [number, number, number, number], out?: Uint8Array): Uint8Array;
 	/** Its smaller levels made from its first. */
 	generateMipmaps (texture: IgeGpuTexture): void;
 	/** How it's sampled when a draw sets no sampler of its own. */
@@ -307,4 +336,14 @@ export interface IgeGpuDevice {
 	invalidate (): void;
 	/** A frame's GPU work handed back: anything left set that others don't expect is put back (WebGL2: a context shared). */
 	release (): void;
+
+	/** The GPU's gone (WebGL2: the context lost) until it's restored: nothing drawn meanwhile. */
+	readonly lost: boolean;
+	/**
+	 * Back after a loss (WebGL2: the context restored; the device notices itself, and a host may call it first: once
+	 * is enough). Every resource made before stays a working handle, made again as it's next used, its contents gone:
+	 * its owner writes them again (geometry from its arrays, textures from their pictures). Targets drawn each frame
+	 * need nothing.
+	 */
+	restore (): void;
 }
