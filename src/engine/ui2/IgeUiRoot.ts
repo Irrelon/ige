@@ -603,7 +603,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_focusFixup (): void {
 		const a = this.document.activeElement;
 		if (!a) return;
-		let shown = a.isConnected;
+		// (Disabled, as a browser's focus fixup has it too)
+		let shown = a.isConnected && !a.isDisabled;
 		for (let n: IgeUiElement | null = a; n && shown; n = n.parentNode) if (styleValue(n._computed, "display") === "none") shown = false;
 		if (shown) return;
 		a._states.delete("focus");

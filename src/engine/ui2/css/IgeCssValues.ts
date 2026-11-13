@@ -245,7 +245,8 @@ export function resolveNumber (value: string, ctx?: IgeCssLengthContext): number
 /** A time in milliseconds ("0.2s", "150ms"). */
 export function resolveTime (value: string): number | undefined {
 	const m = /^(-?(?:\d+\.?\d*|\.\d+))(s|ms)$/.exec(value.trim());
-	if (!m) return undefined;
+	// (calc(), min(), max() and clamp() of times, in ms)
+	if (!m) return /^(calc|min|max|clamp)\(/.test(value.trim()) ? resolveNumber(value.trim()) : undefined;
 	return m[2] === "s" ? parseFloat(m[1]) * 1000 : parseFloat(m[1]);
 }
 

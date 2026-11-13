@@ -156,7 +156,7 @@ export class IgeUiLayoutEngine {
 		this._stamp++;
 		this._intrinsic.clear();
 		this._resetCaches();
-		this.rootFontSize = parseFloat(styleValue(root._computed, "font-size")) || 16;
+		this.rootFontSize = numOr(styleValue(root._computed, "font-size"), 16);
 		const box = this.build(root, null)!;
 		box.display = "block";
 		this.layoutBox(box, w, h, { width: w, height: h });
@@ -334,7 +334,7 @@ export class IgeUiLayoutEngine {
 			cqw ??= c.w;
 			if (c.h !== undefined) cqh ??= c.h;
 		}
-		return { em: parseFloat(styleValue(style, "font-size")) || 16, rem: this.rootFontSize, percent, vw: this.viewport.w, vh: this.viewport.h, cqw: cqw ?? this.viewport.w, cqh: cqh ?? this.viewport.h };
+		return { em: numOr(styleValue(style, "font-size"), 16), rem: this.rootFontSize, percent, vw: this.viewport.w, vh: this.viewport.h, cqw: cqw ?? this.viewport.w, cqh: cqh ?? this.viewport.h };
 	}
 
 	/** Each style's box (for the size container round it: cq units), and size containers' content sizes as laid out. */
@@ -525,7 +525,7 @@ export class IgeUiLayoutEngine {
 		let f = this._fonts.get(style);
 		if (!f) {
 			const fam = styleValue(style, "font-family");
-			f = { family: fam, size: parseFloat(styleValue(style, "font-size")) || 16, weight: fontWeight(styleValue(style, "font-weight")), style: styleValue(style, "font-style") === "italic" || styleValue(style, "font-style") === "oblique" ? "italic" : "normal" };
+			f = { family: fam, size: numOr(styleValue(style, "font-size"), 16), weight: fontWeight(styleValue(style, "font-weight")), style: styleValue(style, "font-style") === "italic" || styleValue(style, "font-style") === "oblique" ? "italic" : "normal" };
 			this._fonts.set(style, f);
 		}
 		return f;
@@ -810,14 +810,17 @@ export class IgeUiLayoutEngine {
 
 	_replacedSize (b: IgeUiBox): { w: number; h: number } {
 		const el = b.el!;
-		const attrW = Number(el.getAttribute("width")), attrH = Number(el.getAttribute("height"));
+		// (An attribute given is its size, 0 too; one not given, the element's own default)
+		const given = (v: string | null) => !!v && /^\s*(\d+\.?\d*|\.\d+)(px)?\s*$/.test(v);
+		const hasW = given(el.getAttribute("width")), hasH = given(el.getAttribute("height"));
+		const attrW = hasW ? parseFloat(el.getAttribute("width")!) : 0, attrH = hasH ? parseFloat(el.getAttribute("height")!) : 0;
 		switch (el.localName) {
-			case "canvas": return { w: attrW || 300, h: attrH || 150 };
+			case "canvas": return { w: hasW ? attrW : 300, h: hasH ? attrH : 150 };
 			case "img": {
 				const src = el.getAttribute("src") ?? "";
 				const nat = this.imageSizes.get(src);
 				if (!nat && src) this.requestImage?.(src);
-				const w = attrW || nat?.w || 0, h = attrH || (nat && w ? (nat.h * w) / nat.w : nat?.h) || 0;
+				const w = hasW ? attrW : nat?.w || 0, h = hasH ? attrH : (nat && w ? (nat.h * w) / nat.w : nat?.h) || 0;
 				return { w, h };
 			}
 			case "input": {
@@ -832,11 +835,11 @@ export class IgeUiLayoutEngine {
 				// (No size given: its viewBox's shape, 300 wide, as a browser sizes an inline SVG)
 				const vb = (el.getAttribute("viewBox") ?? "").trim().split(/[\s,]+/).map(Number);
 				const ratio = vb.length === 4 && vb[2] > 0 && vb[3] > 0 ? vb[3] / vb[2] : 0;
-				if (ratio && !attrH) return { w: attrW || 300, h: (attrW || 300) * ratio };
-				if (ratio && !attrW) return { w: attrH / ratio, h: attrH };
-				return { w: attrW || 300, h: attrH || 150 };
+				if (ratio && !hasH) return { w: hasW ? attrW : 300, h: (hasW ? attrW : 300) * ratio };
+				if (ratio && !hasW) return { w: attrH / ratio, h: attrH };
+				return { w: hasW ? attrW : 300, h: hasH ? attrH : 150 };
 			}
-			default: return { w: attrW || 300, h: attrH || 150 };
+			default: return { w: hasW ? attrW : 300, h: hasH ? attrH : 150 };
 		}
 	}
 
@@ -908,6 +911,10 @@ export class IgeUiLayoutEngine {
 				const r = this._replacedSize(b);
 				const specH = this._specH(b, cbH);
 				w = (specH !== undefined && r.h ? ((specH - this._vEdges(b)) * r.w) / r.h : r.w) + this._hEdges(b);
+			} else if (opts.shrink && this._ratio(b) && this._specH(b, cbH) !== undefined) {
+				// (aspect-ratio and a height: its width from them)
+				const ratio = this._ratio(b)!, h = this._specH(b, cbH)!;
+				w = this._borderBox(b) ? h * ratio : (h - this._vEdges(b)) * ratio + this._hEdges(b);
 			} else if (opts.shrink) {
 				// (Percentage paddings count nothing in its content sizes, as a browser's don't, but take their room once
 				// the containing block's width is known: a ticker's padding-left: 100% before its words)
@@ -937,7 +944,17 @@ export class IgeUiLayoutEngine {
 			const spec = this._specH(b, cbH);
 			if (spec !== undefined) fixedH = this._clampH(b, spec, cbH);
 		}
-		const innerH = fixedH !== undefined ? Math.max(0, fixedH - this._vEdges(b)) : opts.stretchH !== undefined ? Math.max(0, opts.stretchH - this._vEdges(b)) : undefined;
+		// aspect-ratio with no height: its height from its width (at least its content's, unless it scrolls or clips)
+		let ratioH: number | undefined;
+		const ratio = fixedH === undefined && opts.stretchH === undefined ? this._ratio(b) : undefined;
+		if (ratio) {
+			ratioH = this._clampH(b, this._borderBox(b) ? b.borderW / ratio : contentWidth(b) / ratio + this._vEdges(b), cbH);
+			if (ox !== "visible" || oy !== "visible") {
+				fixedH = ratioH;
+				ratioH = undefined;
+			}
+		}
+		const innerH = fixedH !== undefined ? Math.max(0, fixedH - this._vEdges(b)) : opts.stretchH !== undefined ? Math.max(0, opts.stretchH - this._vEdges(b)) : ratioH !== undefined ? Math.max(0, ratioH - this._vEdges(b)) : undefined;
 		// A size container: its content box is what cqw and cqh in it are of (cqh only with container-type: size)
 		const ct = styleValue(s, "container-type");
 		if (ct === "inline-size" || ct === "size") this._cqSize.set(b, { w: cw, h: ct === "size" ? innerH : undefined });
@@ -963,6 +980,7 @@ export class IgeUiLayoutEngine {
 			if (h === undefined) {
 				h = contentH + this._vEdges(b);
 				if (opts.stretchH !== undefined) h = Math.max(h, opts.stretchH);
+				if (ratioH !== undefined) h = Math.max(h, ratioH);
 				h = this._clampH(b, h, cbH);
 			}
 			return Math.max(0, h);
@@ -1115,6 +1133,17 @@ export class IgeUiLayoutEngine {
 		// (A move before the transform: whatever its origin, only the translation changes)
 		const [a, bb, c, d, e, f] = m ?? [1, 0, 0, 1, 0, 0];
 		return [a, bb, c, d, e + place[0], f + place[1]];
+	}
+
+	/** aspect-ratio: width over height, or undefined (auto; a replaced element keeps its own). */
+	_ratio (b: IgeUiBox): number | undefined {
+		if (!b.el || b.pseudo || REPLACED.has(b.el.localName)) return undefined;
+		const v = styleValue(b.style, "aspect-ratio");
+		if (!v || v === "auto") return undefined;
+		const m = /(\d*\.?\d+)\s*(?:\/\s*(\d*\.?\d+))?/.exec(v.replace(/auto/, ""));
+		if (!m) return undefined;
+		const r = parseFloat(m[1]) / (m[2] !== undefined ? parseFloat(m[2]) : 1);
+		return Number.isFinite(r) && r > 0 ? r : undefined;
 	}
 
 	_layoutHidden (b: IgeUiBox): void {
@@ -1547,8 +1576,8 @@ export class IgeUiLayoutEngine {
 			const va = styleValue(st, "vertical-align");
 			if (va === "baseline" || va === "top" || va === "bottom") return { valign: va, shift: 0 };
 			if (va === "middle") return { valign: va, shift: 0 };
-			if (va === "sub") return { valign: va, shift: -(parseFloat(styleValue(st, "font-size")) || 16) * 0.2 };
-			if (va === "super") return { valign: va, shift: (parseFloat(styleValue(st, "font-size")) || 16) * 0.35 };
+			if (va === "sub") return { valign: va, shift: -numOr(styleValue(st, "font-size"), 16) * 0.2 };
+			if (va === "super") return { valign: va, shift: numOr(styleValue(st, "font-size"), 16) * 0.35 };
 			if (va === "text-top" || va === "text-bottom") return { valign: va, shift: 0 };
 			const n = resolveLength(va, this._ctx(st, this.lineHeight(st)));
 			return { valign: "baseline", shift: n ?? 0 };
@@ -2754,4 +2783,10 @@ export function contentText (content: string, el: IgeUiElement): string {
 		else out += (m[1] ?? m[2]).replace(/\\([0-9a-fA-F]{1,6})\s?/g, (_, h: string) => String.fromCodePoint(parseInt(h, 16))).replace(/\\(.)/g, "$1");
 	}
 	return out;
+}
+
+/** A number read from CSS, or `d` when there's none (zero is zero). */
+function numOr (v: string | null | undefined, d: number): number {
+	const n = parseFloat(v ?? "");
+	return Number.isFinite(n) ? n : d;
 }

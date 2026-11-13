@@ -362,7 +362,8 @@ export function measureSvgText (svg: IgeUiElement, measure: (text: string, font:
 		};
 		const cs = (onPath ?? t)._computed ?? t._computed ?? {};
 		const text = (t.textContent ?? "").replace(/\s+/g, " ").trim();
-		const size = parseFloat(attr("font-size") ?? styleValue(cs, "font-size")) || 16;
+		const sizeV = parseFloat(attr("font-size") ?? styleValue(cs, "font-size"));
+		const size = Number.isFinite(sizeV) ? sizeV : 16;
 		const style = (attr("font-style") ?? styleValue(cs, "font-style")) === "italic" ? "italic" : "normal";
 		const font: IgeUiFontSpec = { family: attr("font-family") ?? styleValue(cs, "font-family"), size, weight: fontWeight(attr("font-weight") ?? styleValue(cs, "font-weight")), style };
 		const lsV = attr("letter-spacing") ?? styleValue(cs, "letter-spacing");

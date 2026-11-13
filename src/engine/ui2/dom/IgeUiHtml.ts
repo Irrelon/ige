@@ -148,6 +148,12 @@ export function parseHtml (html: string): IgeHtmlNode[] {
 		const parent = top();
 		if (parent !== root && IMPLIED[parent.tag]?.has(tag)) stack.pop();
 		if (tag === "tr" && top().tag === "tr") stack.pop();
+		// (A row straight in a table goes in a tbody the parser makes, as a browser's does)
+		if (tag === "tr" && top().tag === "table") {
+			const body: IgeHtmlElementNode = { type: "element", tag: "tbody", attrs: [], children: [] };
+			top().children.push(body);
+			stack.push(body);
+		}
 		const el: IgeHtmlElementNode = { type: "element", tag, attrs, children: [] };
 		top().children.push(el);
 		if (!selfClose && !VOID_TAGS.has(tag)) {

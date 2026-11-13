@@ -547,3 +547,91 @@ describe("ui2: an animated colour reaches the text in it", () => {
 		expect(fresh(r, 600)).toEqual(now);
 	});
 });
+
+describe("ui2: the casino port's gaps", () => {
+	it("a focused button made disabled loses the focus", () => {
+		const r = ui(``, 400, 300);
+		r.root.innerHTML = `<button>a</button>`;
+		const b = r.root.querySelector("button")!;
+		r.update(0);
+		r.focus(b);
+		r.update(16);
+		b.setAttribute("disabled", "");
+		r.update(32);
+		expect(r.document.activeElement).toBe(null);
+	});
+
+	it("a table's rows go in an implied tbody, as a browser's parser puts them", () => {
+		const r = ui(``, 400, 300);
+		r.root.innerHTML = `<table><tr><td>a</td></tr><tr><td>b</td></tr></table><table><thead><tr><th>h</th></tr></thead><tr><td>c</td></tr></table>`;
+		const [t1, t2] = [...r.root.querySelectorAll("table")];
+		expect(t1.children.map((c) => c.localName)).toEqual(["tbody"]);
+		expect(t1.querySelectorAll("tbody > tr").length).toBe(2);
+		expect(t2.children.map((c) => c.localName)).toEqual(["thead", "tbody"]);
+		expect(r.root.innerHTML).toContain("<tbody>");
+	});
+
+	it("zero is zero: an svg with width 0, font-size: 0", () => {
+		const r = ui(`.z { font-size: 0; } .z span { font-size: 10px; }`, 400, 300);
+		r.root.innerHTML = `<svg width="0" height="0"></svg><div class="z">  <span>x</span>  </div>`;
+		r.update(0);
+		expect(r.root.querySelector("svg")!.getBoundingClientRect().width).toBe(0);
+		expect(r.document.defaultView!.getComputedStyle(r.root.querySelector(".z")!).fontSize).toBe("0px");
+		expect(r.root.querySelector(".z")!.getBoundingClientRect().height).toBe(10);
+	});
+
+	it("aspect-ratio sizes the other side from the one given", () => {
+		const r = ui(`.a { width: 120px; aspect-ratio: 16 / 9; } .b { height: 50px; aspect-ratio: 2; display: inline-block; } .c { width: 100px; aspect-ratio: 1; }`, 400, 300);
+		r.root.innerHTML = `<div class="a"></div><div class="b"></div><div class="c">tall<br>tall<br>tall</div>`;
+		r.update(0);
+		const box = (s: string) => {
+			const b = r.root.querySelector(s)!.getBoundingClientRect();
+			return [Math.round(b.width * 100) / 100, Math.round(b.height * 100) / 100];
+		};
+		expect(box(".a")).toEqual([120, 67.5]);
+		expect(box(".b")).toEqual([100, 50]);
+		expect(box(".c")).toEqual([100, 100]);
+	});
+
+	it("an item wider than its flex container with auto margins starts at its start", () => {
+		const r = ui(`.f { display: flex; width: 100px; } .i { flex: none; width: 160px; margin: 0 auto; height: 10px; } .bl { width: 100px; } .bl .i { margin: 0 auto; }`, 400, 300);
+		r.root.innerHTML = `<div class="f"><div class="i"></div></div><div class="bl"><div class="i"></div></div>`;
+		r.update(0);
+		const [a, b] = [...r.root.querySelectorAll(".i")];
+		expect([a.getBoundingClientRect().left, b.getBoundingClientRect().left]).toEqual([0, 0]);
+	});
+
+	it("a scrolling grid item with a set height keeps it", () => {
+		const r = ui(`.g { display: grid; height: 300px; grid-template-rows: auto 1fr; } .s { height: 120px; overflow-y: auto; } .t { height: 1000px; }`, 400, 300);
+		r.root.innerHTML = `<div class="g"><div class="s"><div class="t"></div></div><div>rest</div></div>`;
+		r.update(0);
+		expect(r.root.querySelector(".s")!.getBoundingClientRect().height).toBe(120);
+	});
+
+	it("no line break between an opening bracket and the element after it", () => {
+		const r = ui(`.p { width: 40px; } b { font-weight: 400; }`, 400, 300);
+		// (5px glyphs: "abcde " is 30px; "(xyz)" 25px more)
+		r.root.innerHTML = `<div class="p">abcde (<b>xyz</b>)</div>`;
+		r.update(0);
+		const p = r.root.querySelector(".p")!, b = r.root.querySelector("b")!;
+		expect(b.getBoundingClientRect().top).toBeGreaterThan(p.getBoundingClientRect().top);
+		const open = r.items.find((i) => i.op === "text" && (i as { text: string }).text.includes("(")) as { y: number };
+		expect(open.y).toBeGreaterThan(p.getBoundingClientRect().top + 5);
+	});
+
+	it("a negative animation-delay worked out with calc() is honoured when settling", () => {
+		const r = ui(`@keyframes f { from { opacity: 0; } to { opacity: 1; } } .a { animation: f 1s linear infinite; animation-delay: calc(-0.1s * 3); }`, 400, 300);
+		r.root.innerHTML = `<div class="a">a</div>`;
+		r.update(0);
+		r.settleAnimations(0);
+		r.update(0);
+		expect(Number(r.root.querySelector(".a")!._computed!.opacity)).toBeCloseTo(0.3, 5);
+	});
+
+	it("an SVG element's opacity attribute is in its computed style", () => {
+		const r = ui(``, 400, 300);
+		r.root.innerHTML = `<svg width="10" height="10"><circle r="3" opacity="0.4"></circle></svg>`;
+		r.update(0);
+		expect(r.document.defaultView!.getComputedStyle(r.root.querySelector("circle")!).opacity).toBe("0.4");
+	});
+});

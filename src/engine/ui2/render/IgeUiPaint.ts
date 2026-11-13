@@ -134,7 +134,7 @@ interface Ctx {
 	matrix?: IgeCssMatrix;
 }
 
-const lenCtx = (style: IgeUiComputedStyle, percent?: number) => ({ em: parseFloat(styleValue(style, "font-size")) || 16, rem: 16, percent, vw: 0, vh: 0, cqw: 0, cqh: 0 });
+const lenCtx = (style: IgeUiComputedStyle, percent?: number) => ({ em: numOr(styleValue(style, "font-size"), 16), rem: 16, percent, vw: 0, vh: 0, cqw: 0, cqh: 0 });
 
 /** object-position: where a picture sits in its box (px from its corner), given the room left over each way. */
 function objectPosition (v: string, roomX: number, roomY: number, ctx: ReturnType<typeof lenCtx>): [number, number] {
@@ -791,3 +791,9 @@ export function describePaint (items: IgeUiPaintItem[]): string[] {
 
 export { IDENTITY };
 export type { IgeCssShadow };
+
+/** A number read from CSS, or `d` when there's none (zero is zero). */
+function numOr (v: string | null | undefined, d: number): number {
+	const n = parseFloat(v ?? "");
+	return Number.isFinite(n) ? n : d;
+}

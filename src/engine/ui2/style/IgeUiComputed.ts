@@ -100,7 +100,7 @@ export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: Ig
 	if (boxKey && box) return `${cssNumber(box[boxKey] as number)}px`;
 	switch (name) {
 		case "font-size":
-			return `${cssNumber(parseFloat(value) || 16)}px`;
+			return `${cssNumber(numOr(value, 16))}px`;
 		case "font-weight":
 			return value === "normal" ? "400" : value === "bold" ? "700" : value;
 		case "letter-spacing":
@@ -160,4 +160,10 @@ function absoluteUrl (v: string): string {
 		// (Not a URL a page could load: as written)
 	}
 	return `url("${url}")`;
+}
+
+/** A number read from CSS, or `d` when there's none (zero is zero). */
+function numOr (v: string | null | undefined, d: number): number {
+	const n = parseFloat(v ?? "");
+	return Number.isFinite(n) ? n : d;
 }
