@@ -21,6 +21,8 @@ interface IndexedRule {
 	rule: IgeCssStyleRule;
 	selector: IgeCssSelector;
 	specificity: [number, number, number];
+	/** The user agent's (the engine's defaults): under every author rule, whatever its specificity. */
+	ua?: boolean;
 }
 
 /** A compound selector's tag, classes and id as keys (".a", "#b", "td"), or "*" when it has none of those. */
@@ -69,11 +71,11 @@ export class IgeUiStyleEngine {
 	version = 0;
 
 	constructor () {
-		this.addStylesheet(UA_STYLESHEET);
+		this.addStylesheet(UA_STYLESHEET, true);
 	}
 
-	/** Adds a stylesheet's text (after those already added: later wins at equal specificity). */
-	addStylesheet (css: string): IgeCssStylesheet {
+	/** Adds a stylesheet's text (after those already added: later wins at equal specificity). `ua`: the defaults'. */
+	addStylesheet (css: string, ua = false): IgeCssStylesheet {
 		const sheet = parseStylesheet(css);
 		this.sheets.push(sheet);
 		for (const [k, v] of sheet.keyframes) this.keyframes.set(k, v);
@@ -98,7 +100,7 @@ export class IgeUiStyleEngine {
 				// What a :has() looks for (the element a change must be, or be in, to flip one)
 				for (const m of selector.text.matchAll(/:has\(([^)]*)\)/g)) addKeys(this.hasArguments, m[1].split(/[\s>+~]+/).filter(Boolean).pop() ?? "*");
 				for (const s of selector.states) this.stateDependent.add(s);
-				const entry: IndexedRule = { rule, selector, specificity: selector.specificity };
+				const entry: IndexedRule = { rule, selector, specificity: selector.specificity, ...(ua ? { ua } : {}) };
 				const key = selectorKey(selector);
 				if (key === "*") this._any.push(entry);
 				else {
@@ -166,7 +168,8 @@ export class IgeUiStyleEngine {
 			if (!matchesSelector(el, r.selector) || !this._containerHolds(el, r.rule.container)) continue;
 			(r.selector.pseudoElement === "before" ? before : r.selector.pseudoElement === "after" ? after : r.selector.pseudoElement === "placeholder" ? placeholder : own).push(r);
 		}
-		const byOrder = (a: IndexedRule, b: IndexedRule) => compareSpecificity(a.specificity, b.specificity) || a.rule.order - b.rule.order;
+		// (The defaults first: a page's rule beats the user agent's however specific that is, button:disabled's colours)
+		const byOrder = (a: IndexedRule, b: IndexedRule) => (a.ua ? 0 : 1) - (b.ua ? 0 : 1) || compareSpecificity(a.specificity, b.specificity) || a.rule.order - b.rule.order;
 		own.sort(byOrder);
 		before.sort(byOrder);
 		after.sort(byOrder);
