@@ -129,6 +129,28 @@ describe("ui2: layout", () => {
 		expect([a, b]).toEqual([200, 100]);
 	});
 
+	it("flex: a canvas with height: 100% and width: auto in a row is as wide as that height and its aspect ratio make it", () => {
+		const r = ui(`.m { display: flex; justify-content: center; width: 600px; height: 400px; } canvas { width: auto; height: 100%; max-width: 100%; }`, 800, 600);
+		r.root.innerHTML = `<div class="m"><canvas width="520" height="640"></canvas></div>`;
+		// (400 high: 520 × 400 / 640 = 325 wide, centred)
+		expect(box(r.root.querySelector("canvas")!)).toEqual([137.5, 0, 325, 400]);
+		// Centred in a column of a known height: the same
+		const c = ui(`.m { display: flex; flex-direction: column; align-items: center; width: 600px; height: 400px; } canvas { width: auto; height: 100%; max-width: 100%; }`, 800, 600);
+		c.root.innerHTML = `<div class="m"><canvas width="520" height="640"></canvas></div>`;
+		expect(box(c.root.querySelector("canvas")!)).toEqual([137.5, 0, 325, 400]);
+		// On a line in a block of a known height: the same
+		const b = ui(`.m { width: 600px; height: 400px; text-align: center; } canvas { width: auto; height: 100%; max-width: 100%; vertical-align: top; }`, 800, 600);
+		b.root.innerHTML = `<div class="m"><canvas width="520" height="640"></canvas></div>`;
+		expect(box(b.root.querySelector("canvas")!)).toEqual([137.5, 0, 325, 400]);
+	});
+
+	it("absolute positioning: with no offsets on an axis, a flex container's child goes where it would as its only item", () => {
+		const r = ui(`.m { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 400px; height: 300px; } .t { position: absolute; bottom: 10px; width: 100px; height: 20px; }`, 800, 600);
+		r.root.innerHTML = `<div class="m"><div class="t"></div></div>`;
+		// (Centred across; its bottom offset places it down the column)
+		expect(box(r.root.querySelector(".t")!)).toEqual([150, 270, 100, 20]);
+	});
+
 	it("inline text: a nowrap element that doesn't fit goes to the next line at the space before it", () => {
 		const r = ui(`.w { width: 100px; } small { white-space: nowrap; }`, 400, 300);
 		r.root.innerHTML = `<div class="w"><s>3,600</s> <small>HIGH SECURITY PRICE</small></div>`;

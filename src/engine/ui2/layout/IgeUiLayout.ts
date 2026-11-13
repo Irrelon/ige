@@ -888,7 +888,7 @@ export class IgeUiLayoutEngine {
 		if (!kids.length) return 0;
 		if (this._isInlineContext(b)) {
 			for (const c of kids) if (this._outOfFlow(c)) this._noteStatic(c, b, contentLeft(b), contentTop(b));
-			return this._layoutInline(b, kids, cw);
+			return this._layoutInline(b, kids, cw, innerH);
 		}
 		// Block children; runs of inline-level ones in anonymous blocks
 		const groups: IgeUiBox[] = [];
@@ -994,6 +994,35 @@ export class IgeUiLayoutEngine {
 		return pos !== "absolute" && pos !== "fixed";
 	}
 
+	/**
+	 * Where an absolutely positioned box with no offsets on an axis goes: its static position; in a flex container, as
+	 * if it were the container's only item (CSS Flexbox 4.1): justify-content on the main axis, its align-self (or the
+	 * container's align-items) on the cross axis.
+	 */
+	_staticAt (box: IgeUiBox, axis: "x" | "y"): number {
+		const at = (axis === "x" ? box.staticX : box.staticY) ?? 0;
+		const p = box.parent;
+		if (!p || !/^(inline-)?flex$/.test(p.display)) return at;
+		const ps = p.style;
+		const dir = styleValue(ps, "flex-direction");
+		const main = (axis === "x") === dir.startsWith("row");
+		const free = axis === "x"
+			? contentWidth(p) - box.borderW - box.marginLeft - box.marginRight
+			: p.borderH - this._vEdges(p) - box.borderH - box.marginTop - box.marginBottom;
+		let f = 0;
+		if (main) {
+			const j = styleValue(ps, "justify-content");
+			const end = j === "flex-end" || j === "end" || j === "right";
+			f = j === "center" ? 0.5 : end ? 1 : 0;
+			if (dir.endsWith("-reverse") && j !== "center") f = 1 - f;
+		} else {
+			const self = styleValue(box.style, "align-self");
+			const a = self === "auto" || self === "normal" ? styleValue(ps, "align-items") : self;
+			f = a === "center" ? 0.5 : a === "flex-end" || a === "end" ? 1 : 0;
+		}
+		return at + free * f;
+	}
+
 	_noteStatic (c: IgeUiBox, parent: IgeUiBox, x: number, y: number): void {
 		c.staticX = x;
 		c.staticY = y;
@@ -1024,6 +1053,19 @@ export class IgeUiLayoutEngine {
 		for (const c of b.children) this._inlineItems(c, b.style, out, own);
 		out.push({ kind: "close", box: b, style: b.style, edge: b.marginRight + b.borderRight + b.paddingRight, layer: own });
 		void parentStyle;
+	}
+
+	/**
+	 * A replaced element's width from a definite height and its aspect ratio (a canvas, an image with height: 100% and
+	 * width: auto), border box; undefined when its width is given, or its height isn't known (CSS Flexbox 9.2.3 B).
+	 */
+	_transferredWidth (it: IgeUiBox, cbH: number | undefined): number | undefined {
+		if (!it.el || it.pseudo || !REPLACED.has(it.el.localName) || it.el.localName === "input" || it.el.localName === "select" || it.el.localName === "textarea") return undefined;
+		if (styleValue(it.style, "width") !== "auto") return undefined;
+		const h = this._specH(it, cbH);
+		const r = this._replacedSize(it);
+		if (h === undefined || !r.w || !r.h) return undefined;
+		return (Math.max(0, h - this._vEdges(it)) * r.w) / r.h + this._hEdges(it);
 	}
 
 	/**
@@ -1069,7 +1111,7 @@ export class IgeUiLayoutEngine {
 	}
 
 	/** Lays out inline content into line boxes; returns the lines' height. Runs and fragments go on `b`. */
-	_layoutInline (b: IgeUiBox, kids: IgeUiBox[], cw: number): number {
+	_layoutInline (b: IgeUiBox, kids: IgeUiBox[], cw: number, cbH?: number): number {
 		const items: InlineItem[] = [];
 		for (const k of kids) this._inlineItems(k, b.style, items);
 		this._collapseSpaces(items);
@@ -1222,7 +1264,8 @@ export class IgeUiLayoutEngine {
 			}
 			if (it.kind === "atom") {
 				const a = it.box!;
-				this.layoutBox(a, cw, undefined, { shrink: true });
+				// (A percentage height on it is of the block's height, when that's known)
+				this.layoutBox(a, cw, cbH, { shrink: true });
 				a.atomic = true;
 				const mw = a.borderW + a.marginLeft + a.marginRight;
 				if (line.length && wrapOK && x + mw > cw + 0.01) finishLine(false);
@@ -1420,6 +1463,9 @@ export class IgeUiLayoutEngine {
 				const spec = row ? this._specW(it, cw) : this._specH(it, innerH);
 				if (spec !== undefined) base = spec;
 			}
+			// A canvas or an image with a definite height in a row: as wide as that height and its aspect ratio make it
+			const transferred = row ? this._transferredWidth(it, innerH) : undefined;
+			if (base === undefined && transferred !== undefined) base = transferred;
 			let contentH: number | undefined;
 			if (base === undefined) {
 				if (row) base = this.intrinsic(it).max;
@@ -1436,7 +1482,7 @@ export class IgeUiLayoutEngine {
 				if (minV === "auto" && ov === "visible") {
 					if (row) {
 						const spec = this._specW(it, cw);
-						min = Math.min(this.intrinsic(it).min, spec ?? Infinity);
+						min = Math.min(this.intrinsic(it).min, spec ?? Infinity, transferred ?? Infinity);
 					} else {
 						if (contentH === undefined) {
 							this.layoutBox(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s) });
@@ -1522,7 +1568,7 @@ export class IgeUiLayoutEngine {
 			for (const f of line) {
 				const it = f.box;
 				if (row) this.layoutBox(it, cw, innerH, { width: f.size });
-				else this.layoutBox(it, cw, innerH, { height: f.size, width: this._crossWidth(it, cw, s) });
+				else this.layoutBox(it, cw, innerH, { height: f.size, width: this._crossWidth(it, cw, s, innerH) });
 				max = Math.max(max, crossOf(f));
 				const self = styleValue(it.style, "align-self");
 				if ((self === "auto" ? alignItems : self) === "baseline" && row) {
@@ -1638,13 +1684,16 @@ export class IgeUiLayoutEngine {
 	}
 
 	/** A column flex item's width: its own, or the container's (stretched) unless it aligns otherwise. */
-	_crossWidth (it: IgeUiBox, cw: number, container: IgeUiComputedStyle): number | undefined {
+	_crossWidth (it: IgeUiBox, cw: number, container: IgeUiComputedStyle, cbH?: number): number | undefined {
 		const spec = this._specW(it, cw);
 		if (spec !== undefined) return this._clampW(it, spec, cw);
 		const self = styleValue(it.style, "align-self");
 		const align = self === "auto" ? styleValue(container, "align-items") : self;
 		const avail = cw - it.marginLeft - it.marginRight;
 		if (align === "stretch" || align === "normal") return this._clampW(it, avail, cw);
+		// (A canvas or an image whose height is known (a percentage of the column's): as wide as its aspect ratio makes it)
+		const transferred = this._transferredWidth(it, cbH);
+		if (transferred !== undefined) return this._clampW(it, Math.min(transferred, avail), cw);
 		const i = this.intrinsic(it);
 		return this._clampW(it, Math.min(i.max, Math.max(i.min, avail)), cw);
 	}
@@ -2123,12 +2172,12 @@ export class IgeUiLayoutEngine {
 			if (left !== undefined && right !== undefined && ml && mr) ax = cbX + left + (cbW - left - right - box.borderW) / 2;
 			else if (left !== undefined) ax = cbX + left + box.marginLeft;
 			else if (right !== undefined) ax = cbX + cbW - right - box.marginRight - box.borderW;
-			else ax = parentAbs.x + (box.staticX ?? 0) + box.marginLeft;
+			else ax = parentAbs.x + this._staticAt(box, "x") + box.marginLeft;
 			const mt = styleValue(s, "margin-top") === "auto", mb = styleValue(s, "margin-bottom") === "auto";
 			if (top !== undefined && bottom !== undefined && mt && mb) ay = cbY + top + (cbH - top - bottom - box.borderH) / 2;
 			else if (top !== undefined) ay = cbY + top + box.marginTop;
 			else if (bottom !== undefined) ay = cbY + cbH - bottom - box.marginBottom - box.borderH;
-			else ay = parentAbs.y + (box.staticY ?? 0) + box.marginTop;
+			else ay = parentAbs.y + this._staticAt(box, "y") + box.marginTop;
 			box.x = ax - parentAbs.x;
 			box.y = ay - parentAbs.y;
 			void root;

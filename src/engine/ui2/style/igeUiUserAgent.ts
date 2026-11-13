@@ -46,4 +46,5 @@ img, canvas, svg, video { display: inline-block; }
 svg { overflow: hidden; }
 a { cursor: pointer; }
 ::placeholder { color: #757575; }
+button:disabled { color: rgba(16, 16, 16, 0.3); background-color: rgba(239, 239, 239, 0.3); border-color: rgba(118, 118, 118, 0.3); }
 `;
