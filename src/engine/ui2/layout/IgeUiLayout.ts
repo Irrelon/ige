@@ -209,12 +209,10 @@ export class IgeUiLayoutEngine {
 		el._reuseFrom = undefined;
 		if (kept) {
 			kept.parent = parent;
-			this._styleBox.set(kept.style, kept);
 			return kept;
 		}
 		const box = newBox(el, cs, display === "list-item" ? "block" : display, parent);
 		el._box = box;
-		this._styleBox.set(cs, box);
 		box.position = styleValue(cs, "position");
 		const z = styleValue(cs, "z-index");
 		if (z !== "auto" && box.position !== "static") box.zIndex = parseInt(z, 10) || 0;
@@ -299,6 +297,8 @@ export class IgeUiLayoutEngine {
 		for (const [b, ne] of pairs) {
 			b.el = ne;
 			if (!b.pseudo) ne._box = b;
+			// (Its text's element too: the new one's colour is painted, and the old one isn't held)
+			for (const r of b.runs ?? []) if (r.el) r.el = map.get(r.el) ?? r.el;
 		}
 		for (const e of map.values()) e._reuseFrom = undefined;
 		return true;
@@ -328,7 +328,10 @@ export class IgeUiLayoutEngine {
 	_ctx (style: IgeUiComputedStyle, percent?: number): IgeCssLengthContext {
 		// (cqw, cqh: the nearest size container round its box, else the viewport, as a browser has them)
 		let cqw: number | undefined, cqh: number | undefined;
-		for (let p = this._styleBox.get(style)?.parent; p && (cqw === undefined || cqh === undefined); p = p.parent) {
+		// (From the box being laid out: round it for its own lengths (and its anonymous boxes'), from it for its children's)
+		let p: IgeUiBox | null | undefined = this._current;
+		while (p && p.style === style) p = p.parent;
+		for (; p && (cqw === undefined || cqh === undefined); p = p.parent) {
 			const c = this._cqSize.get(p);
 			if (!c) continue;
 			cqw ??= c.w;
@@ -340,8 +343,12 @@ export class IgeUiLayoutEngine {
 	/** Size containers laid out in this layout, their content boxes (for @container: IgeUiRoot). */
 	containersSeen = new Map<IgeUiElement, { w: number; h: number }>();
 
-	/** Each style's box (for the size container round it: cq units), and size containers' content sizes as laid out. */
-	_styleBox = new WeakMap<IgeUiComputedStyle, IgeUiBox>();
+	/**
+	 * The box being laid out (cq units are of the size container round it). Not a map from styles to boxes: a computed
+	 * style outlives the element it was worked out for (adopted, shared), and such a map kept dropped trees alive.
+	 */
+	_current?: IgeUiBox;
+	/** Size containers' content sizes as laid out (cq units). */
 	_cqSize = new WeakMap<IgeUiBox, { w: number; h?: number }>();
 
 	/** A length property in px, or undefined (auto, none, or a percentage of something unknown). */
@@ -903,6 +910,17 @@ export class IgeUiLayoutEngine {
 	}
 
 	_layoutBox (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number }): void {
+		// (The box being laid out, for cq units: _ctx)
+		const prev = this._current;
+		this._current = b;
+		try {
+			this._layoutBoxNow(b, cbW, cbH, opts);
+		} finally {
+			this._current = prev;
+		}
+	}
+
+	_layoutBoxNow (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number }): void {
 		this._edges(b, cbW);
 		const s = b.style;
 		// The width

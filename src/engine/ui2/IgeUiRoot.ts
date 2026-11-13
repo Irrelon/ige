@@ -780,8 +780,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			const t0 = this.host.time.now();
 			this.painter._scroll = (el) => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
 			this.items = this.rootBox ? this.painter.paint(this.rootBox) : [];
-			// (What's under the pointer is worked out when it's asked: hitTest)
+			// (What's under the pointer is worked out when it's asked: hitTest; the old list let go of meanwhile, so it
+			// doesn't hold elements a redraw dropped)
 			this._hitsDirty = true;
+			this.hitList = [];
 			this._paintDirty = false;
 			// What's under a pointer that hasn't moved, when what's there changed (a list redrawn under it), as a browser does after layout
 			if (this._pointerAt && (laidOut || this._hoverStale)) this._setHover(this.hitTest(this._pointerAt.clientX, this._pointerAt.clientY), this._pointerAt);
