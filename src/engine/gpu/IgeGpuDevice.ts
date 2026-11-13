@@ -179,6 +179,23 @@ export interface IgeGpuUniform {
 	count?: number;
 }
 
+/** Numbers each uniform type takes in a block. */
+const UNIFORM_FLOATS: Record<IgeGpuUniform["type"], number> = { f32: 1, i32: 1, vec2: 2, vec3: 3, vec4: 4, mat4: 16 };
+
+/**
+ * Where a uniform block's members are in the array setUniforms takes (in order, packed: each member's numbers straight
+ * after the one before), and its size: as IgeGpuRenderPipeline.uniformOffsets will say, for filling one before it's made.
+ */
+export function igeGpuUniformLayout (uniforms: IgeGpuUniform[]): { offsets: Record<string, number>; size: number } {
+	const offsets: Record<string, number> = {};
+	let size = 0;
+	for (const u of uniforms) {
+		offsets[u.name] = size;
+		size += UNIFORM_FLOATS[u.type] * (u.count ?? 1);
+	}
+	return { offsets, size };
+}
+
 /** A texture slot: a sampler in the shader, by name; its slot is its place in the pipeline's list. */
 export interface IgeGpuTextureSlot {
 	name: string;
@@ -244,8 +261,12 @@ export interface IgeGpuRenderPass {
 	setIndexBuffer (buffer: IgeGpuBuffer, format: "uint16" | "uint32", offset?: number): void;
 	/** A texture for the pipeline's texture `slot`, sampled as `sampler` says (none: as the texture's own); null, none. */
 	setTexture (slot: number, texture: IgeGpuTexture | null, sampler?: IgeGpuSampler): void;
-	/** The pipeline's uniform block, whole: its members in order (IgeGpuRenderPipeline.uniformOffsets). */
-	setUniforms (data: ArrayLike<number>): void;
+	/**
+	 * The pipeline's uniform block, whole: its members in order (IgeGpuRenderPipeline.uniformOffsets). `range` (offsets,
+	 * end exclusive): only that part changed since the block was last set whole in this pass (a draw's own members,
+	 * after the view's: a backend skips the rest).
+	 */
+	setUniforms (data: ArrayLike<number>, range?: [number, number]): void;
 	/** Device px from the target's bottom-left corner. */
 	setViewport (x: number, y: number, width: number, height: number): void;
 	/** Draws kept to a rectangle (device px from the bottom-left); null: none. */
@@ -255,7 +276,7 @@ export interface IgeGpuRenderPass {
 	 * A rectangle of the target cleared to `color` (the whole of it, with none), whatever's set: GL clears through a
 	 * scissor; an API without it draws a quad.
 	 */
-	clear (color: [number, number, number, number], rect?: [number, number, number, number]): void;
+	clear (color: [number, number, number, number], rect?: [number, number, number, number], depth?: number): void;
 	/** The stencil cleared to `value`. */
 	clearStencil (value: number): void;
 	draw (vertexCount: number, instanceCount?: number, firstVertex?: number, firstInstance?: number): void;

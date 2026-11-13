@@ -36,7 +36,7 @@ import {
 	type IgeWebGlRenderItem
 } from "@/engine/webgl/IgeWebGlInstancing";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
-import type { IgeGpuBlendState, IgeGpuBuffer, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuTexture, IgeGpuUniform, IgeGpuVertexBufferLayout } from "@/engine/gpu/IgeGpuDevice";
+import { igeGpuUniformLayout, type IgeGpuBlendState, type IgeGpuBuffer, type IgeGpuRenderPass, type IgeGpuRenderPipeline, type IgeGpuRenderPipelineDesc, type IgeGpuTexture, type IgeGpuUniform, type IgeGpuVertexBufferLayout } from "@/engine/gpu/IgeGpuDevice";
 import { type IgeWebGl2GpuDevice, webGl2ExternalTexture, webGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
 import { EFFECT_ATTRIBUTES, IgeGpuMeshPrograms, INSTANCE_LAYOUT, meshLayout, meshTopology } from "@/engine/webgl/IgeGpuMeshPrograms";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
@@ -106,6 +106,78 @@ const EFFECT_BLENDS: Record<"normal" | "additive" | "multiply", IgeGpuBlendState
 	additive: { color: { srcFactor: "src-alpha", dstFactor: "one" }, alpha: { srcFactor: "src-alpha", dstFactor: "one" } },
 	multiply: { color: { srcFactor: "dst", dstFactor: "zero" }, alpha: { srcFactor: "dst", dstFactor: "zero" } }
 };
+
+/**
+ * The lit (and skinned) programs' uniform block: the view's members first (camera, lights, shadows, fog, shading
+ * options), an item's last, so a draw sends only its own (setUniforms with a range).
+ */
+const LIT_VIEW_UNIFORMS: IgeGpuUniform[] = [
+	{ name: "u_viewMatrix", type: "mat4" }, { name: "u_projectionMatrix", type: "mat4" }, { name: "u_cameraPosition", type: "vec3" },
+	{ name: "u_ambientLightColor", type: "vec3" }, { name: "u_ambientLightIntensity", type: "f32" }, { name: "u_ambientGroundColor", type: "vec3" },
+	{ name: "u_hasDirectionalLight", type: "i32" }, { name: "u_directionalLightDir", type: "vec3" }, { name: "u_directionalLightColor", type: "vec3" }, { name: "u_directionalLightIntensity", type: "f32" },
+	{ name: "u_numPointLights", type: "i32" }, { name: "u_pointLightPositions", type: "vec3", count: 8 }, { name: "u_pointLightColors", type: "vec3", count: 8 },
+	{ name: "u_pointLightIntensities", type: "f32", count: 8 }, { name: "u_pointLightRanges", type: "f32", count: 8 }, { name: "u_pointLightDecays", type: "f32", count: 8 },
+	{ name: "u_numSpotLights", type: "i32" }, { name: "u_spotLightPositions", type: "vec3", count: 4 }, { name: "u_spotLightDirections", type: "vec3", count: 4 },
+	{ name: "u_spotLightColors", type: "vec3", count: 4 }, { name: "u_spotLightIntensities", type: "f32", count: 4 }, { name: "u_spotLightRanges", type: "f32", count: 4 },
+	{ name: "u_spotLightAngles", type: "f32", count: 4 }, { name: "u_spotLightPenumbras", type: "f32", count: 4 },
+	{ name: "u_hasShadowMap", type: "i32" }, { name: "u_shadowDebug", type: "i32" }, { name: "u_lightSpaceMatrix", type: "mat4" }, { name: "u_shadowBias", type: "f32" },
+	{ name: "u_shadowNormalBias", type: "f32" }, { name: "u_shadowMapSize", type: "f32" }, { name: "u_usePackedDepth", type: "i32" }, { name: "u_shadowNormalOffset", type: "f32" },
+	{ name: "u_numShadowPointLights", type: "i32" }, { name: "u_pointShadowFarPlane", type: "f32", count: 2 }, { name: "u_pointShadowBias", type: "f32", count: 2 },
+	{ name: "u_pointShadowFaceSize", type: "f32", count: 2 }, { name: "u_pointShadowMatrices", type: "mat4", count: 12 }, { name: "u_pointShadowLightIndex", type: "i32", count: 2 },
+	{ name: "u_usePBR", type: "i32" }, { name: "u_hasMetallicRoughnessTexture", type: "i32" }, { name: "u_hasAoTexture", type: "i32" }, { name: "u_ambientOcclusion", type: "f32" },
+	{ name: "u_hasNormalMap", type: "i32" },
+	{ name: "u_fogMode", type: "i32" }, { name: "u_fogColor", type: "vec3" }, { name: "u_fogNear", type: "f32" }, { name: "u_fogFar", type: "f32" }, { name: "u_fogDensity", type: "f32" }
+];
+const LIT_ITEM_UNIFORMS: IgeGpuUniform[] = [
+	{ name: "u_hasVertexColors", type: "i32" }, { name: "u_uvTransform", type: "vec4" }, { name: "u_worldMatrix", type: "mat4" }, { name: "u_baseColor", type: "vec4" },
+	{ name: "u_opacity", type: "f32" }, { name: "u_metallic", type: "f32" }, { name: "u_roughness", type: "f32" }, { name: "u_emissiveColor", type: "vec3" },
+	{ name: "u_emissiveIntensity", type: "f32" }, { name: "u_useSkinning", type: "i32" }
+];
+
+/** A lit program's whole block: the view's, the bone palette's size (skinned, instanced), an item's, its bones (skinned, not instanced). */
+function litUniforms (skinned: boolean, instanced: boolean): IgeGpuUniform[] {
+	return [
+		...LIT_VIEW_UNIFORMS,
+		...(skinned && instanced ? [{ name: "u_boneTextureSize", type: "vec2" as const }] : []),
+		...LIT_ITEM_UNIFORMS,
+		...(skinned && !instanced ? [{ name: "u_boneMatrices[0]", type: "mat4" as const, count: MAX_BONES }] : [])
+	];
+}
+
+/** The lit programs' texture slots: base colour, the directional shadow map, two point light atlases, the bone palette, emissive. */
+const LIT_TEXTURES = ["u_baseColorTexture", "u_shadowMap", "u_pointShadowAtlas[0]", "u_pointShadowAtlas[1]", "u_boneTexture", "u_emissiveTexture"].map((name) => ({ name }));
+
+/** The sprite program's block: the view's, then a sprite's. */
+const SPRITE_UNIFORMS: IgeGpuUniform[] = [
+	{ name: "u_viewMatrix", type: "mat4" }, { name: "u_projectionMatrix", type: "mat4" }, { name: "u_flipY", type: "f32" },
+	{ name: "u_uvBounds", type: "vec4" }, { name: "u_tint", type: "vec4" }, { name: "u_worldMatrix", type: "mat4" }, { name: "u_scale", type: "vec2" },
+	{ name: "u_opacity", type: "f32" }, { name: "u_billboardMode", type: "i32" }
+];
+
+const LINE_LAYOUT: IgeGpuVertexBufferLayout = { arrayStride: 28, attributes: [{ shaderLocation: 0, format: "float32x3", offset: 0 }, { shaderLocation: 3, format: "float32x4", offset: 12 }] };
+
+/**
+ * How the main pass draws a lit mesh: opaque (depth tested less-or-equal and written, blended over; its back faces
+ * culled, or not), transparent (not written), flat (an outline's mask: no depth test, no blending), or a silhouette's
+ * two halves (its own pixels marked in the stencil, invisibly; then drawn where something's in front, off the mark).
+ */
+const enum LitState { Opaque, OpaqueCulled, Transparent, Flat, MarkOccluded, Occluded }
+
+const NORMAL_BLEND: IgeGpuBlendState = { color: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" }, alpha: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" } };
+
+function litState (state: LitState): Pick<IgeGpuRenderPipelineDesc, "blend" | "depth" | "stencil" | "writeColor" | "primitive"> {
+	switch (state) {
+		case LitState.Opaque: return { blend: NORMAL_BLEND, depth: { compare: "less-equal", write: true } };
+		case LitState.OpaqueCulled: return { blend: NORMAL_BLEND, depth: { compare: "less-equal", write: true }, primitive: { cullMode: "back" } };
+		case LitState.Transparent: return { blend: NORMAL_BLEND, depth: { compare: "less-equal", write: false } };
+		case LitState.Flat: return {};
+		case LitState.MarkOccluded: return {
+			blend: NORMAL_BLEND, writeColor: false, depth: { compare: "less-equal", write: false, bias: { constant: -4, slopeScale: -1 } },
+			stencil: { compare: "always", passOp: "replace" }
+		};
+		case LitState.Occluded: return { blend: NORMAL_BLEND, depth: { compare: "greater", write: false }, stencil: { compare: "not-equal" } };
+	}
+}
 
 const IDENTITY_MATRIX = new Float32Array([
 	1, 0, 0, 0,
@@ -424,6 +496,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/** Drawing occluded silhouettes (flat colour): emissive maps aren't used. */
 	protected _drawingSilhouettes = false;
 	protected _opaqueSprites: IgeEntity[] = [];
+	protected _opaqueSpriteTextures: (WebGLTexture | null)[] = [];
+	protected _transparentSpriteTextures: (WebGLTexture | null)[] = [];
 	protected _transparentSprites: IgeEntity[] = [];
 	protected _maxPixelRatio: number = Infinity;
 	protected _shadowShareThreshold: number = 0.35;
@@ -435,6 +509,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/** The view being drawn, in device px from the canvas's bottom-left, and whether it's scissored to it (the effect passes draw into it). */
 	protected _view = { x: 0, y: 0, w: 0, h: 0, clip: false };
 	protected _effectBlock?: Float32Array;
+	/** The lit programs' uniform blocks, by kind (skinned, instanced): the view's part filled as each view starts. */
+	protected _litBlocks: { data: Float32Array; at: Record<string, number>; itemFrom: number }[] = [];
+	/** The view's textures for the lit programs: the shadow map, the point light atlases, the bone palette. */
+	protected _litViewTextures: (IgeGpuTexture | null)[] = [null, null, null, null];
+	protected _spriteBlock = igeGpuUniformLayout(SPRITE_UNIFORMS);
+	protected _spriteData = new Float32Array(this._spriteBlock.size);
+	protected _lineBuffer?: IgeGpuBuffer;
+	protected _lineData = new Float32Array(33);
 	/** Passed to entity preTick behaviours, which expect a Canvas 2D context. */
 	protected _tickContext = new IgeDummyContext();
 	protected _defaultParticleTexture: IgeGpuTexture | null = null;
@@ -499,6 +581,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _debugOptions = { bounds: false, shadowFrustum: false };
 	protected _debugLineData: Float32Array = new Float32Array(DEBUG_LINE_FLOATS * 2048);
 	protected _debugLineVertices: number = 0;
+	/** The lines queued with debugLine() (a view's bounds and frustum are added after them, and dropped after it). */
+	protected _debugLinesQueued: number = 0;
 	protected _debugLineBuffer: WebGLBuffer | null = null;
 
 	/**
@@ -1117,19 +1201,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 	}
 
-	/**
-	 * Draw this viewport's debug lines: lines queued with debugLine() plus,
-	 * when enabled, bounds and the shadow frustum (generated per viewport
-	 * and dropped again afterwards).
-	 */
-	protected _renderDebugLines(matrices: IgeCameraMatrices): void {
+	/** This viewport's debug shapes queued (bounds, the shadow frustum) after the lines queued with debugLine(). */
+	protected _pushDebugShapes(): void {
 		const debug = this._debugOptions;
-		const queued = this._debugLineVertices;
-		if (queued === 0 && !debug.bounds && !debug.shadowFrustum) return;
-
-		const gl = this._canvasContext;
-		const program = this._shaderManager?.getProgram("debug_line");
-		if (!gl || !program || !this._stateManager) return;
+		this._debugLinesQueued = this._debugLineVertices;
+		if (!debug.bounds && !debug.shadowFrustum) return;
 
 		if (debug.bounds) {
 			const pushItem = (item: IgeWebGlRenderItem) => {
@@ -1168,42 +1244,31 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				}
 			}
 		}
+	}
 
+	/** The queued debug lines, in the view's pass: depth tested, not written, blended over. */
+	protected _drawDebugLines(pass: IgeGpuRenderPass, matrices: IgeCameraMatrices): void {
 		const vertices = this._debugLineVertices;
-		if (vertices > 0) {
-			if (!this._debugLineBuffer) this._debugLineBuffer = gl.createBuffer();
-			const stride = DEBUG_LINE_FLOATS * 4;
-			const position = program.getAttributeLocation("a_position");
-			const color = program.getAttributeLocation("a_color");
-
-			program.use();
-			program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
-			program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
-
-			// Raw buffer binding: tell the state manager its cache is stale
-			this._stateManager.reset();
-			gl.bindBuffer(gl.ARRAY_BUFFER, this._debugLineBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, this._debugLineData.subarray(0, vertices * DEBUG_LINE_FLOATS), gl.STREAM_DRAW);
-			gl.enableVertexAttribArray(position);
-			gl.vertexAttribPointer(position, 3, gl.FLOAT, false, stride, 0);
-			gl.enableVertexAttribArray(color);
-			gl.vertexAttribPointer(color, 4, gl.FLOAT, false, stride, 12);
-
-			this._stateManager.setDepthTest(true);
-			this._stateManager.setDepthWrite(false);
-			this._stateManager.setBlend(true);
-			this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-			gl.drawArrays(gl.LINES, 0, vertices);
-
-			gl.disableVertexAttribArray(position);
-			gl.disableVertexAttribArray(color);
-			gl.bindBuffer(gl.ARRAY_BUFFER, null);
-			this._stateManager.reset();
-			this._stateManager.setDepthWrite(true);
-		}
-
-		// Keep only the queued lines for the next viewport
-		this._debugLineVertices = queued;
+		if (vertices === 0) return;
+		const device = this._device!, programs = this._gpuPrograms!;
+		this._lineBuffer ??= device.createBuffer({ size: 0, usage: "vertex", stream: true, label: "debug lines" });
+		device.writeBuffer(this._lineBuffer, 0, this._debugLineData.subarray(0, vertices * DEBUG_LINE_FLOATS));
+		const pipeline = programs.pipeline("debug_line", () => ({
+			module: programs.module("debug_line", EFFECT_ATTRIBUTES),
+			vertex: { buffers: [LINE_LAYOUT] },
+			primitive: { topology: "line-list" },
+			blend: NORMAL_BLEND,
+			depth: { compare: "less-equal", write: false },
+			uniforms: [{ name: "u_viewMatrix", type: "mat4" }, { name: "u_projectionMatrix", type: "mat4" }],
+			label: "debug lines"
+		}));
+		const block = this._lineData;
+		block.set(matrices.view.matrix, pipeline.uniformOffsets.u_viewMatrix);
+		block.set(matrices.projection.matrix, pipeline.uniformOffsets.u_projectionMatrix);
+		pass.setPipeline(pipeline);
+		pass.setVertexBuffer(0, this._lineBuffer);
+		pass.setUniforms(block);
+		pass.draw(vertices);
 	}
 
 	/**
@@ -2562,86 +2627,73 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		// ------------------------------------------------------------
-		// Main pass
+		// Main pass, through the device: into the post-processing's
+		// target, or the canvas
 		// ------------------------------------------------------------
-		// (Shadow passes leave the canvas bound: draw into the post-processing target if there is one)
-		this._postProcess?.bindTarget();
-		this._stateManager.setViewport(vpX, vpY, vpWidth, vpHeight);
-
-		// Always scissor the clear so split-screen viewports don't wipe each
-		// other; drawing itself is already confined by gl.viewport.
-		this._stateManager.setScissorTest(true);
-		this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
 		this._view.x = vpX;
 		this._view.y = vpY;
 		this._view.w = vpWidth;
 		this._view.h = vpHeight;
 		this._view.clip = !!viewport._clipping;
 
-		const cc = this._clearColor;
-		gl.clearColor(cc.r, cc.g, cc.b, cc.a);
-		this._stateManager.setDepthWrite(true);
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-		if (!viewport._clipping) {
-			this._stateManager.setScissorTest(false);
-		}
-
-		// Opaque pass
-		this._stateManager.setDepthTest(true);
-		this._stateManager.setDepthWrite(true);
-		this._stateManager.setDepthFunc(gl.LEQUAL);
-		this._stateManager.setBlend(true);
-		this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
 		// A y-down 2D camera (preset "screen2d") draws sprites flat with
 		// their full 2D transform, as the Canvas 2D renderer does
 		const flat2d = !!(camera._up && camera._up.y < 0);
-		this._renderSprites(opaqueSprites, matrices, flat2d);
-		this._renderModelBatches(batcher.batches, matrices);
-
-		// Ground decals go on top of the opaque ground, under everything
-		// transparent
-		this._renderDecalSystems(data.decals, matrices);
-
-		// Transparent pass (back to front, no depth writes)
-		this._stateManager.setDepthWrite(false);
-
 		if (transparentSprites.length > 1) {
 			transparentSprites.sort(sortSpritesBackToFront);
 		}
-		this._renderSprites(transparentSprites, matrices, flat2d);
-
 		if (transparent.length > 0) {
 			transparent.sort(sortItemsBackToFront);
-			this._renderTransparentItems(transparent, matrices);
 		}
 
-		this._renderParticleSystems(data.particles, matrices);
+		// What's drawn is drawn with: its textures made first (the texture manager's own GL), the decals and particles in view
+		const spriteTextures = this._spriteTextures(opaqueSprites, this._opaqueSpriteTextures);
+		const transparentSpriteTextures = this._spriteTextures(transparentSprites, this._transparentSpriteTextures);
+		for (const batch of batcher.batches) this._prepareTextures(batch, batch.items[0]);
+		for (const item of transparent) this._prepareTextures(item, item);
+		for (const item of occludedItems) this._prepareTextures(item, item);
+		const decals = this._visibleDecals(data.decals, matrices);
+		const particles = this._visibleParticles(data.particles, matrices);
+		this._pushDebugShapes();
 
-		// Silhouettes of marked entities where something stands in front of them
-		if (occludedItems.length > 0) this._renderOccluded(occludedItems, matrices);
+		const device = this._gpuBegin();
+		const post = this._postProcess?.target();
+		const pass = device.beginRenderPass(post ? { color: { target: post.color }, depthStencil: { target: post.depth } } : { color: { target: device.surface() } });
+		try {
+			pass.setViewport(vpX, vpY, vpWidth, vpHeight);
+			// Always scissor the clear so split-screen viewports don't wipe each other; drawing itself is already confined
+			// by the viewport
+			const cc = this._clearColor;
+			pass.clear([cc.r, cc.g, cc.b, cc.a], [vpX, vpY, vpWidth, vpHeight], 1);
+			pass.setScissorRect(viewport._clipping ? [vpX, vpY, vpWidth, vpHeight] : null);
+			this._writeLitView(matrices);
+
+			// Opaque: sprites, then meshes front to back
+			this._drawSprites(pass, opaqueSprites, spriteTextures, matrices, flat2d, false);
+			this._drawLitBatches(pass, batcher.batches);
+
+			// Ground decals go on top of the opaque ground, under everything transparent
+			this._drawDecals(pass, decals, matrices);
+
+			// Transparent (back to front, no depth writes)
+			this._drawSprites(pass, transparentSprites, transparentSpriteTextures, matrices, flat2d, true);
+			this._drawLitItems(pass, transparent, LitState.Transparent);
+			this._drawParticles(pass, particles, matrices);
+
+			// Silhouettes of marked entities where something stands in front of them
+			if (occludedItems.length > 0) this._drawOccluded(pass, occludedItems);
+
+			this._drawDebugLines(pass, matrices);
+		} finally {
+			pass.end();
+			this._gpuHandBack(this._postProcess?.targetFramebuffer() ?? null, vpX, vpY, vpWidth, vpHeight);
+		}
 
 		// Outlined items: drawn round once the frame's finished (and post-processed)
 		if (outlined) (this._outlineJobs ??= []).push({ items: outlined, matrices, view: { x0: vpX, y0: vpY, x1: vpX + vpWidth, y1: vpY + vpHeight } });
 
-		this._renderDebugLines(matrices);
-
-		this._stateManager.setDepthWrite(true);
-		this._stateManager.setScissorTest(false);
-	}
-
-	/**
-	 * Pick the program for a model batch.
-	 */
-	protected _selectProgram(
-		skinned: boolean,
-		instanced: boolean,
-		baseId: string,
-		skinnedId: string
-	): IgeWebGlProgram | undefined {
-		const id = skinned ? skinnedId : baseId;
-		return this._shaderManager?.getProgram(instanced ? `${id}_instanced` : id);
+		// Keep only the queued lines for the next viewport
+		this._debugLineVertices = this._debugLinesQueued;
 	}
 
 	/**
@@ -2655,57 +2707,441 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
-	 * Draw a batch with one instanced call (geometry must already be bound).
+	 * GL handed back to the renderer's own GL code after the main pass, as its own main pass left it: the view's target
+	 * bound with its viewport, no scissor, depth tested less-or-equal and written, blended over, no culling or stencil,
+	 * unit 0 active; the state manager's cache forgotten.
 	 */
-	protected _drawInstanced(batch: IgeWebGlItemBatch, program: IgeWebGlProgram): void {
+	protected _gpuHandBack(target: WebGLFramebuffer | null, x: number, y: number, w: number, h: number): void {
 		const gl = this._canvasContext as WebGL2RenderingContext;
-		const geometry = batch.geometry;
-		const count = batch.items.length;
+		const device = this._device!;
+		device.release();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, target);
+		gl.viewport(x, y, w, h);
+		gl.enable(gl.DEPTH_TEST);
+		gl.depthFunc(gl.LEQUAL);
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		gl.disable(gl.CULL_FACE);
+		gl.disable(gl.POLYGON_OFFSET_FILL);
+		gl.activeTexture(gl.TEXTURE0);
+		this._stateManager?.reset();
+	}
 
-		this._instanceBuffer!.upload(batch.items, 0, count);
-		this._instanceBuffer!.bind(program);
-		// Items in an instanced batch share their texture transform (it's part of the batch key)
-		const m = batch.items[0].material;
-		program.setUniform4f("u_uvTransform", m.uvScaleU, m.uvScaleV, m.uvOffsetU, m.uvOffsetV);
-
-		if (geometry.indexBuffer && geometry.indexCount > 0) {
-			// The instance buffer rebinds ARRAY_BUFFER only, the index buffer stays bound
-			gl.drawElementsInstanced(geometry.drawMode, geometry.indexCount, geometry.indexType, 0, count);
-		} else if (geometry.vertexCount > 0) {
-			gl.drawArraysInstanced(geometry.drawMode, 0, geometry.vertexCount, count);
+	/** A lit program's uniform block, by kind (laid out as its pipelines' are). */
+	protected _litBlock(skinned: boolean, instanced: boolean): { data: Float32Array; at: Record<string, number>; itemFrom: number } {
+		const kind = (skinned ? 2 : 0) + (instanced ? 1 : 0);
+		let block = this._litBlocks[kind];
+		if (!block) {
+			const { offsets, size } = igeGpuUniformLayout(litUniforms(skinned, instanced));
+			block = this._litBlocks[kind] = { data: new Float32Array(size), at: offsets, itemFrom: offsets.u_hasVertexColors };
 		}
-
-		this._instanceBuffer!.unbind();
-		this._stats.instancedDrawCalls++;
-		this._stats.instances += count;
-		this._countTriangles(geometry, count);
+		return block;
 	}
 
 	/**
-	 * Point an instanced skinned program at the bone palette texture.
+	 * The view's part of every lit block (the camera, lights, shadows, fog, shading options) and the view's textures for
+	 * the lit programs, as the old per-program setup set them.
 	 */
-	protected _bindBonePalette(program: IgeWebGlProgram): void {
-		if (!this._bonePalette) return;
-		program.setUniform1i("u_boneTexture", BONE_TEXTURE_UNIT);
-		program.setUniform2f("u_boneTextureSize", this._bonePalette.width, Math.max(1, this._bonePalette.height));
-		program.setUniform1i("u_useSkinning", 1);
+	protected _writeLitView(matrices: IgeCameraMatrices): void {
+		const textures = this._litViewTextures;
+		textures[0] = textures[1] = textures[2] = null;
+		textures[3] = this._bonePalette?.texture ?? null;
+		for (let kind = 0; kind < 4; kind++) {
+			const skinned = kind >= 2, instanced = (kind & 1) === 1;
+			const { data, at } = this._litBlock(skinned, instanced);
+			data.set(matrices.view.matrix, at.u_viewMatrix);
+			data.set(matrices.projection.matrix, at.u_projectionMatrix);
+			const cam = matrices.cameraPosition;
+			data[at.u_cameraPosition] = cam.x;
+			data[at.u_cameraPosition + 1] = cam.y;
+			data[at.u_cameraPosition + 2] = cam.z;
+
+			this._lightManager?.writeLightUniforms(data, at);
+
+			if (this.shadowsEnabled() && this._shadowManager) {
+				textures[0] = this._shadowManager.writeShadowUniforms(data, at, this._shadowLightId);
+				data[at.u_shadowDebug] = this._shadowDebugMode;
+			} else {
+				data[at.u_hasShadowMap] = 0;
+				data[at.u_shadowDebug] = 0;
+				data.set(IDENTITY_MATRIX, at.u_lightSpaceMatrix);
+			}
+			data[at.u_shadowNormalOffset] = 0;
+
+			if (this._shadowCastingPointLights.length > 0 && this._shadowManager && this._lightManager) {
+				const count = Math.min(this._shadowCastingPointLights.length, 2);
+				data[at.u_numShadowPointLights] = count;
+				for (let i = 0; i < count; i++) {
+					const light = this._shadowCastingPointLights[i];
+					textures[1 + i] = this._shadowManager.writePointShadowUniforms(data, at, i, light.id());
+					data[at.u_pointShadowLightIndex + i] = this._lightManager.activePointLights().indexOf(light);
+				}
+			} else {
+				data[at.u_numShadowPointLights] = 0;
+			}
+
+			// Simple lighting unless the game opted in to physically based lighting (see pbr())
+			data[at.u_usePBR] = this._pbr ? 1 : 0;
+			data[at.u_hasMetallicRoughnessTexture] = 0;
+			data[at.u_hasAoTexture] = 0;
+			data[at.u_ambientOcclusion] = 1;
+			data[at.u_hasNormalMap] = 0;
+
+			const fog = this._fog;
+			const fogMode = fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0;
+			data[at.u_fogMode] = fogMode;
+			if (fogMode) {
+				data[at.u_fogColor] = fog.color.r;
+				data[at.u_fogColor + 1] = fog.color.g;
+				data[at.u_fogColor + 2] = fog.color.b;
+				data[at.u_fogNear] = fog.near;
+				data[at.u_fogFar] = fog.far;
+				data[at.u_fogDensity] = fog.density;
+			}
+
+			if (skinned && instanced && this._bonePalette) {
+				data[at.u_boneTextureSize] = this._bonePalette.width;
+				data[at.u_boneTextureSize + 1] = Math.max(1, this._bonePalette.height);
+			}
+		}
+	}
+
+	/** A lit mesh's pipeline for how it's drawn (kept on the mesh, by kind and state). */
+	protected _litPipeline(skinned: boolean, instanced: boolean, geometry: IgeWebGlGeometry, state: LitState): IgeGpuRenderPipeline {
+		const slot = (state * 2 + (skinned ? 1 : 0)) * 2 + (instanced ? 1 : 0);
+		const kept = (geometry.gpuLitPipelines ??= [])[slot];
+		if (kept) return kept;
+		const base = skinned ? "skinned" : "lit";
+		const id = instanced ? `${base}_instanced` : base;
+		const { layout, key } = meshLayout(geometry);
+		const st = litState(state);
+		return geometry.gpuLitPipelines[slot] = this._gpuPrograms!.pipeline(`lit|${id}|${state}|${key}`, () => ({
+			module: this._gpuPrograms!.module(id),
+			vertex: { buffers: instanced ? [layout, INSTANCE_LAYOUT] : [layout] },
+			...st,
+			primitive: { topology: meshTopology(geometry), cullMode: st.primitive?.cullMode ?? "none" },
+			uniforms: litUniforms(skinned, instanced),
+			textures: LIT_TEXTURES,
+			label: `${id} ${state}`
+		}));
 	}
 
 	/**
-	 * Upload one item's bone matrices to a non-instanced skinned program.
+	 * A batch's or item's textures made ready (base colour, emissive) before the pass: blob textures, IgeTextures (the
+	 * texture manager's own GL, which makes them as first asked for), the white texture when there's none.
 	 */
-	protected _uploadBoneUniforms(program: IgeWebGlProgram, item: IgeWebGlRenderItem): void {
+	protected _prepareTextures(into: { gpuBase?: WebGLTexture | null; gpuEmissive?: WebGLTexture | null; blobTextureId?: string; texture?: IgeTexture }, item: IgeWebGlRenderItem): void {
+		const tm = this._textureManager!;
+		let base: WebGLTexture | null | undefined;
+		if (into.blobTextureId) base = tm.getBlobTexture(into.blobTextureId);
+		else if (into.texture) base = tm.getTextureForIgeTexture(into.texture);
+		into.gpuBase = base || tm.getDefaultWhiteTexture();
+		let emissive: WebGLTexture | null | undefined;
+		if (item.emissiveBlobTextureId) emissive = tm.getBlobTexture(item.emissiveBlobTextureId);
+		else if (item.emissiveTexture) emissive = tm.getTextureForIgeTexture(item.emissiveTexture);
+		into.gpuEmissive = emissive || null;
+	}
+
+	/** A lit draw's textures: the view's (shadows, bones) and its own (base colour; emissive, or the base colour again). */
+	protected _setLitTextures(pass: IgeGpuRenderPass, base: WebGLTexture | null | undefined, emissive: WebGLTexture | null | undefined): void {
+		const device = this._device!;
+		const baseTex = base ? webGl2ExternalTexture(device, base) : null;
+		const t = this._litViewTextures;
+		pass.setTexture(0, baseTex);
+		pass.setTexture(1, t[0]);
+		pass.setTexture(2, t[1]);
+		pass.setTexture(3, t[2]);
+		pass.setTexture(4, t[3]);
+		pass.setTexture(5, emissive && !this._drawingSilhouettes ? webGl2ExternalTexture(device, emissive) : baseTex);
+	}
+
+	/** An item's own uniforms (a non-instanced draw's). */
+	protected _writeItemUniforms(block: { data: Float32Array; at: Record<string, number> }, item: IgeWebGlRenderItem): void {
+		const { data, at } = block, mat = item.material;
+		data.set(item.worldMatrix, at.u_worldMatrix);
+		data[at.u_baseColor] = mat.r;
+		data[at.u_baseColor + 1] = mat.g;
+		data[at.u_baseColor + 2] = mat.b;
+		data[at.u_baseColor + 3] = mat.a;
+		data[at.u_opacity] = mat.opacity;
+		data[at.u_metallic] = mat.metallic;
+		data[at.u_roughness] = mat.roughness;
+		data[at.u_emissiveColor] = mat.emissiveR;
+		data[at.u_emissiveColor + 1] = mat.emissiveG;
+		data[at.u_emissiveColor + 2] = mat.emissiveB;
+		data[at.u_emissiveIntensity] = mat.emissiveIntensity;
+		data[at.u_uvTransform] = mat.uvScaleU;
+		data[at.u_uvTransform + 1] = mat.uvScaleV;
+		data[at.u_uvTransform + 2] = mat.uvOffsetU;
+		data[at.u_uvTransform + 3] = mat.uvOffsetV;
+	}
+
+	/** One lit mesh's draw (its geometry set), indexed or not, `count` instances. */
+	protected _drawMesh(pass: IgeGpuRenderPass, geometry: IgeWebGlGeometry, count: number): void {
+		if (geometry.gpuIndex && geometry.indexCount > 0) pass.drawIndexed(geometry.indexCount, count);
+		else if (geometry.vertexCount > 0) pass.draw(geometry.vertexCount, count);
+	}
+
+	/** A mesh's buffers set on the pass. */
+	protected _setMesh(pass: IgeGpuRenderPass, geometry: IgeWebGlGeometry): void {
+		pass.setVertexBuffer(0, geometry.gpuVertex!);
+		if (geometry.gpuIndex && geometry.indexCount > 0) pass.setIndexBuffer(geometry.gpuIndex, geometry.indexType === 0x1405 ? "uint32" : "uint16");
+	}
+
+	/**
+	 * Opaque model batches with the lit programs, instanced where possible (skinned ones too, from the bone palette):
+	 * front to back, back faces culled when backFaceCulling() is on (double-sided materials aside).
+	 */
+	protected _drawLitBatches(pass: IgeGpuRenderPass, batches: IgeWebGlItemBatch[]): void {
+		const device = this._device!;
+		for (let b = 0; b < batches.length; b++) {
+			const batch = batches[b];
+			const geometry = batch.geometry;
+			if (!geometry.gpuVertex) continue;
+			const instanced = this._shouldInstance(batch);
+			const skinned = batch.skinned;
+			const state = this._backFaceCulling && !batch.items[0].doubleSided ? LitState.OpaqueCulled : LitState.Opaque;
+			const pipeline = this._litPipeline(skinned, instanced, geometry, state);
+			const block = this._litBlock(skinned, instanced);
+			const { data, at } = block;
+			pass.setPipeline(pipeline);
+			this._setMesh(pass, geometry);
+			this._setLitTextures(pass, batch.gpuBase, batch.gpuEmissive);
+			data[at.u_hasVertexColors] = geometry.hasVertexColors ? 1 : 0;
+
+			if (instanced) {
+				const count = batch.items.length;
+				this._gpuInstanceData = packInstances(batch.items, 0, count, this._gpuInstanceData);
+				device.writeBuffer(this._gpuInstances!, 0, this._gpuInstanceData.subarray(0, count * INSTANCE_FLOATS));
+				pass.setVertexBuffer(1, this._gpuInstances!);
+				// Items in an instanced batch share their texture transform (it's part of the batch key)
+				const m = batch.items[0].material;
+				data[at.u_uvTransform] = m.uvScaleU;
+				data[at.u_uvTransform + 1] = m.uvScaleV;
+				data[at.u_uvTransform + 2] = m.uvOffsetU;
+				data[at.u_uvTransform + 3] = m.uvOffsetV;
+				if (skinned) data[at.u_useSkinning] = 1;
+				pass.setUniforms(data, [block.itemFrom, data.length]);
+				this._drawMesh(pass, geometry, count);
+				this._stats.instancedDrawCalls++;
+				this._stats.instances += count;
+				this._countTriangles(geometry, count);
+			} else {
+				for (let i = 0; i < batch.items.length; i++) {
+					const item = batch.items[i];
+					this._writeItemUniforms(block, item);
+					if (skinned) this._writeBones(block, item);
+					pass.setUniforms(data, [block.itemFrom, data.length]);
+					this._drawMesh(pass, geometry, 1);
+					this._stats.drawCalls++;
+					this._countTriangles(geometry, 1);
+				}
+			}
+		}
+	}
+
+	/** A skinned item's bones (a non-instanced draw's). */
+	protected _writeBones(block: { data: Float32Array; at: Record<string, number> }, item: IgeWebGlRenderItem): void {
 		const skeleton = item.skeleton;
-		if (!skeleton) {
-			program.setUniform1i("u_useSkinning", 0);
-			return;
-		}
+		block.data[block.at.u_useSkinning] = skeleton ? 1 : 0;
+		if (!skeleton) return;
+		const boneCount = Math.min(skeleton.data.boneCount, MAX_BONES);
+		block.data.set(skeleton.skinMatrices.subarray(0, boneCount * 16), block.at["u_boneMatrices[0]"]);
+	}
 
-		program.setUniform1i("u_useSkinning", 1);
-		const location = program.getUniformLocation("u_boneMatrices[0]");
-		if (location) {
-			const boneCount = Math.min(skeleton.data.boneCount, MAX_BONES);
-			this._canvasContext!.uniformMatrix4fv(location, false, skeleton.skinMatrices.subarray(0, boneCount * 16));
+	/** Lit items drawn one at a time, in their order (transparent ones back to front; a mask's; silhouettes'). */
+	protected _drawLitItems(pass: IgeGpuRenderPass, items: IgeWebGlRenderItem[], state: LitState): void {
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i];
+			const skinned = !!item.skeleton;
+			const geometry = item.drawGeometry;
+			if (!geometry.gpuVertex) continue;
+			const pipeline = this._litPipeline(skinned, false, geometry, state);
+			const block = this._litBlock(skinned, false);
+			const { data, at } = block;
+			pass.setPipeline(pipeline);
+			this._setMesh(pass, geometry);
+			this._setLitTextures(pass, item.gpuBase, item.gpuEmissive);
+			data[at.u_hasVertexColors] = geometry.hasVertexColors ? 1 : 0;
+			this._writeItemUniforms(block, item);
+			if (skinned) this._writeBones(block, item);
+			pass.setUniforms(data, [block.itemFrom, data.length]);
+			this._drawMesh(pass, geometry, 1);
+			this._stats.drawCalls++;
+			this._countTriangles(geometry, 1);
+		}
+	}
+
+	/**
+	 * Draw items again as flat coloured silhouettes where they are hidden:
+	 * the depth test passes only behind what's already drawn (GREATER), and
+	 * a stencil mask of the items' own visible pixels keeps a character's
+	 * far side from showing through its near side, so only the parts behind
+	 * walls (and other things) show. Lighting is cancelled by drawing with a
+	 * black base colour and the silhouette colour as emission.
+	 */
+	protected _drawOccluded(pass: IgeGpuRenderPass, items: IgeWebGlRenderItem[]): void {
+		// Each item's own material values, kept to put back afterwards (9 numbers per item)
+		const n = items.length * 9;
+		if (!this._occludedSaved || this._occludedSaved.length < n) this._occludedSaved = new Float32Array(n * 2);
+		const saved = this._occludedSaved;
+
+		// 1. Mark in the stencil where these items are the front-most surface (drawn invisibly, depth "less or equal"
+		//    with a little bias), so their own far side isn't outlined through their near side
+		pass.clearStencil(0);
+		pass.setStencilReference(1);
+		this._drawLitItems(pass, items, LitState.MarkOccluded);
+
+		// 2. The silhouettes: only behind something else (depth GREATER) and not over the items themselves
+		for (let i = 0; i < items.length; i++) {
+			const mat = items[i].material, c = items[i].occluded!, o = i * 9;
+			saved[o] = mat.r; saved[o + 1] = mat.g; saved[o + 2] = mat.b; saved[o + 3] = mat.a; saved[o + 4] = mat.opacity;
+			saved[o + 5] = mat.emissiveR; saved[o + 6] = mat.emissiveG; saved[o + 7] = mat.emissiveB; saved[o + 8] = mat.emissiveIntensity;
+			mat.r = mat.g = mat.b = 0;
+			mat.a = c.a;
+			mat.opacity = 1;
+			mat.emissiveR = c.r;
+			mat.emissiveG = c.g;
+			mat.emissiveB = c.b;
+			mat.emissiveIntensity = 1;
+		}
+		this._drawingSilhouettes = true;
+		this._drawLitItems(pass, items, LitState.Occluded);
+		this._drawingSilhouettes = false;
+		// Put them back for the next view (the same items draw in every split-screen view)
+		for (let i = 0; i < items.length; i++) {
+			const mat = items[i].material, o = i * 9;
+			mat.r = saved[o]; mat.g = saved[o + 1]; mat.b = saved[o + 2]; mat.a = saved[o + 3]; mat.opacity = saved[o + 4];
+			mat.emissiveR = saved[o + 5]; mat.emissiveG = saved[o + 6]; mat.emissiveB = saved[o + 7]; mat.emissiveIntensity = saved[o + 8];
+		}
+	}
+
+	/** Items drawn as flat, opaque white into an outline's mask (lighting cancelled: a black base, white emission), their own materials put back after. */
+	protected _drawFlat(pass: IgeGpuRenderPass, items: IgeWebGlRenderItem[]): void {
+		const n = items.length * 9;
+		if (!this._occludedSaved || this._occludedSaved.length < n) this._occludedSaved = new Float32Array(n * 2);
+		const saved = this._occludedSaved;
+		for (let i = 0; i < items.length; i++) {
+			const mat = items[i].material, o = i * 9;
+			saved[o] = mat.r; saved[o + 1] = mat.g; saved[o + 2] = mat.b; saved[o + 3] = mat.a; saved[o + 4] = mat.opacity;
+			saved[o + 5] = mat.emissiveR; saved[o + 6] = mat.emissiveG; saved[o + 7] = mat.emissiveB; saved[o + 8] = mat.emissiveIntensity;
+			mat.r = mat.g = mat.b = 0;
+			mat.a = mat.opacity = 1;
+			mat.emissiveR = mat.emissiveG = mat.emissiveB = 1;
+			mat.emissiveIntensity = 1;
+		}
+		this._drawingSilhouettes = true;
+		this._drawLitItems(pass, items, LitState.Flat);
+		this._drawingSilhouettes = false;
+		for (let i = 0; i < items.length; i++) {
+			const mat = items[i].material, o = i * 9;
+			mat.r = saved[o]; mat.g = saved[o + 1]; mat.b = saved[o + 2]; mat.a = saved[o + 3]; mat.opacity = saved[o + 4];
+			mat.emissiveR = saved[o + 5]; mat.emissiveG = saved[o + 6]; mat.emissiveB = saved[o + 7]; mat.emissiveIntensity = saved[o + 8];
+		}
+	}
+
+	/**
+	 * Each sprite's texture made ready before the pass, in draw order: a smart texture or bitmap font sheet drawn for its
+	 * entity, or its IgeTexture's (one that isn't ready keeps the one before it, as a texture left bound did).
+	 */
+	protected _spriteTextures(sprites: IgeEntity[], into: (WebGLTexture | null)[]): (WebGLTexture | null)[] {
+		into.length = sprites.length;
+		const tm = this._textureManager;
+		if (!tm) return into;
+		let bound: IgeTexture | undefined;
+		let current: WebGLTexture | null = tm.getDefaultWhiteTexture();
+		for (let i = 0; i < sprites.length; i++) {
+			const entity = sprites[i];
+			const texture = entity._texture!;
+			const perEntity = texture._renderMode === IgeTextureRenderMode.smartTexture || texture._rendersPerEntity;
+			if (perEntity) {
+				current = tm.getSmartTexture(texture, entity, this._devicePixelRatio, this._frameId) || tm.getDefaultWhiteTexture();
+				bound = undefined;
+			} else if (texture !== bound) {
+				const t = tm.getTextureForIgeTexture(texture);
+				if (t) current = t;
+				bound = texture;
+			}
+			into[i] = current;
+		}
+		return into;
+	}
+
+	/** 2D sprites (textured quads, billboarded to face the camera, or flat in a y-down 2D view). */
+	protected _drawSprites(pass: IgeGpuRenderPass, sprites: IgeEntity[], textures: (WebGLTexture | null)[], matrices: IgeCameraMatrices, flat2d: boolean, transparent: boolean): void {
+		if (sprites.length === 0 || !this._geometryManager) return;
+		const quad = this._geometryManager.getSharedQuadGeometry();
+		if (!quad?.gpuVertex) return;
+		const device = this._device!, programs = this._gpuPrograms!;
+		const pipeline = (additive: boolean) => programs.pipeline(`sprite|${transparent ? 1 : 0}|${additive ? 1 : 0}`, () => ({
+			module: programs.module("sprite", EFFECT_ATTRIBUTES),
+			vertex: { buffers: [meshLayout(quad).layout] },
+			primitive: { topology: "triangle-list" },
+			blend: additive ? EFFECT_BLENDS.additive : NORMAL_BLEND,
+			depth: { compare: "less-equal", write: !transparent },
+			uniforms: SPRITE_UNIFORMS,
+			textures: [{ name: "u_texture" }],
+			label: `sprites${transparent ? " transparent" : ""}${additive ? " additive" : ""}`
+		}));
+		const data = this._spriteData, at = this._spriteBlock.offsets;
+		const itemFrom = at.u_uvBounds;
+		data.set(matrices.view.matrix, at.u_viewMatrix);
+		data.set(matrices.projection.matrix, at.u_projectionMatrix);
+		data[at.u_flipY] = flat2d ? -1 : 1;
+		let first = true;
+		for (let i = 0; i < sprites.length; i++) {
+			const entity = sprites[i];
+			const texture = entity._texture!;
+			const material = entity._materialData;
+			const perEntity = texture._renderMode === IgeTextureRenderMode.smartTexture || texture._rendersPerEntity;
+
+			// Additive sprites brighten what's behind them (fire, sparks, magic)
+			pass.setPipeline(pipeline(material?.blending === "additive"));
+			pass.setVertexBuffer(0, quad.gpuVertex);
+			pass.setIndexBuffer(quad.gpuIndex!, "uint16");
+			const tex = textures[i];
+			pass.setTexture(0, tex ? webGl2ExternalTexture(device, tex) : null);
+
+			// Sprite sheet cell (cells are 1-based [x, y, width, height] in pixels)
+			const cells = (texture as any)._cells as number[][] | undefined;
+			const cell = cells && entity._cell ? cells[entity._cell] : undefined;
+			const texW = (texture as any)._sizeX as number;
+			const texH = (texture as any)._sizeY as number;
+			if (!perEntity && cell && texW > 0 && texH > 0) {
+				data[at.u_uvBounds] = cell[0] / texW;
+				data[at.u_uvBounds + 1] = cell[1] / texH;
+				data[at.u_uvBounds + 2] = (cell[0] + cell[2]) / texW;
+				data[at.u_uvBounds + 3] = (cell[1] + cell[3]) / texH;
+			} else {
+				data[at.u_uvBounds] = 0;
+				data[at.u_uvBounds + 1] = 0;
+				data[at.u_uvBounds + 2] = 1;
+				data[at.u_uvBounds + 3] = 1;
+			}
+
+			// Tint from the entity's material colour
+			const color = material?.color;
+			let r = 1, g = 1, b = 1, a = 1;
+			if (color && typeof color === "object") {
+				r = color.r; g = color.g; b = color.b; a = color.a ?? 1;
+			} else if (typeof color === "string") {
+				const rgb = parseHexColor(color);
+				r = rgb[0]; g = rgb[1]; b = rgb[2];
+			}
+			data[at.u_tint] = r;
+			data[at.u_tint + 1] = g;
+			data[at.u_tint + 2] = b;
+			data[at.u_tint + 3] = a;
+
+			data.set(entity._worldMatrix4!.matrix, at.u_worldMatrix);
+			data[at.u_scale] = entity._bounds2d.x;
+			data[at.u_scale + 1] = entity._bounds2d.y;
+			data[at.u_opacity] = entity._opacity;
+			data[at.u_billboardMode] = flat2d ? 0 : entity._billboardMode;
+			pass.setUniforms(data, first ? undefined : [itemFrom, data.length]);
+			first = false;
+			pass.drawIndexed(quad.indexCount);
+			this._stats.drawCalls++;
 		}
 	}
 
@@ -3087,180 +3523,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
-	 * Set the per-viewport uniforms a lit program needs (camera, lights,
-	 * shadows, fog). Called whenever the active program changes.
-	 */
-	protected _setupLitProgram(program: IgeWebGlProgram, matrices: IgeCameraMatrices): void {
-		program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
-		program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
-		program.setUniform3f("u_cameraPosition",
-			matrices.cameraPosition.x,
-			matrices.cameraPosition.y,
-			matrices.cameraPosition.z
-		);
-
-		this._lightManager?.applyLightUniforms(program);
-
-		if (this.shadowsEnabled() && this._shadowManager) {
-			this._shadowManager.applyShadowUniforms(program, this._shadowLightId, SHADOW_TEXTURE_UNIT);
-			program.setUniform1i("u_shadowDebug", this._shadowDebugMode);
-		} else {
-			program.setUniform1i("u_hasShadowMap", 0);
-			program.setUniform1i("u_shadowDebug", 0);
-			program.setUniformMatrix4fv("u_lightSpaceMatrix", IDENTITY_MATRIX);
-		}
-		program.setUniform1f("u_shadowNormalOffset", 0.0);
-
-		if (this._shadowCastingPointLights.length > 0 && this._shadowManager && this._lightManager) {
-			const count = Math.min(this._shadowCastingPointLights.length, 2);
-			program.setUniform1i("u_numShadowPointLights", count);
-			for (let i = 0; i < count; i++) {
-				const light = this._shadowCastingPointLights[i];
-				this._shadowManager.applyPointShadowUniforms(program, i, light.id(), POINT_SHADOW_TEXTURE_UNIT + i);
-				const pointLightIndex = this._lightManager!.activePointLights().indexOf(light);
-				program.setUniform1i(`u_pointShadowLightIndex[${i}]`, pointLightIndex);
-			}
-		} else {
-			program.setUniform1i("u_numShadowPointLights", 0);
-		}
-
-		// The shadow manager binds its textures with raw GL calls
-		this._stateManager?.invalidateTextureBindings();
-
-		// Simple lighting unless the game opted in to physically based lighting (see pbr())
-		program.setUniform1i("u_usePBR", this._pbr ? 1 : 0);
-		program.setUniform1i("u_hasMetallicRoughnessTexture", 0);
-		program.setUniform1i("u_hasAoTexture", 0);
-		program.setUniform1f("u_ambientOcclusion", 1);
-		program.setUniform1i("u_hasNormalMap", 0);
-		program.setUniform1i("u_baseColorTexture", 0);
-
-		const fog = this._fog;
-		const fogMode = fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0;
-		program.setUniform1i("u_fogMode", fogMode);
-		if (fogMode) {
-			program.setUniform3f("u_fogColor", fog.color.r, fog.color.g, fog.color.b);
-			program.setUniform1f("u_fogNear", fog.near);
-			program.setUniform1f("u_fogFar", fog.far);
-			program.setUniform1f("u_fogDensity", fog.density);
-		}
-	}
-
-	/**
-	 * Bind the base colour texture for a batch or item to unit 0.
-	 */
-	protected _bindBaseTexture(blobTextureId: string | undefined, texture: IgeTexture | undefined): void {
-		const textureManager = this._textureManager!;
-		let webGlTexture: WebGLTexture | null | undefined;
-
-		if (blobTextureId) {
-			webGlTexture = textureManager.getBlobTexture(blobTextureId);
-		} else if (texture) {
-			webGlTexture = textureManager.getTextureForIgeTexture(texture);
-			// Lazily created textures are uploaded with raw GL binds
-			this._stateManager!.invalidateTextureBindings();
-		}
-
-		this._stateManager!.bindTexture(webGlTexture || textureManager.getDefaultWhiteTexture(), 0);
-	}
-
-	/**
-	 * Bind an item's emissive map to its unit and point the lit shader's
-	 * emissive sampler at it; without one (or while drawing silhouettes) the
-	 * sampler reads unit 0, the base colour texture, as it always has.
-	 */
-	protected _bindEmissiveTexture(program: IgeWebGlProgram, item: IgeWebGlRenderItem): void {
-		let webGlTexture: WebGLTexture | null | undefined;
-		if (!this._drawingSilhouettes) {
-			if (item.emissiveBlobTextureId) {
-				webGlTexture = this._textureManager!.getBlobTexture(item.emissiveBlobTextureId);
-			} else if (item.emissiveTexture) {
-				webGlTexture = this._textureManager!.getTextureForIgeTexture(item.emissiveTexture);
-				this._stateManager!.invalidateTextureBindings();
-			}
-		}
-		if (webGlTexture) {
-			this._stateManager!.bindTexture(webGlTexture, EMISSIVE_TEXTURE_UNIT);
-			program.setUniform1i("u_emissiveTexture", EMISSIVE_TEXTURE_UNIT);
-		} else {
-			program.setUniform1i("u_emissiveTexture", 0);
-		}
-	}
-
-	/**
-	 * Set one item's per-draw uniforms on a non-instanced lit program.
-	 */
-	protected _applyItemUniforms(program: IgeWebGlProgram, item: IgeWebGlRenderItem): void {
-		const mat = item.material;
-		program.setUniformMatrix4fv("u_worldMatrix", item.worldMatrix);
-		program.setUniform4f("u_baseColor", mat.r, mat.g, mat.b, mat.a);
-		program.setUniform1f("u_opacity", mat.opacity);
-		program.setUniform1f("u_metallic", mat.metallic);
-		program.setUniform1f("u_roughness", mat.roughness);
-		program.setUniform3f("u_emissiveColor", mat.emissiveR, mat.emissiveG, mat.emissiveB);
-		program.setUniform1f("u_emissiveIntensity", mat.emissiveIntensity);
-		program.setUniform4f("u_uvTransform", mat.uvScaleU, mat.uvScaleV, mat.uvOffsetU, mat.uvOffsetV);
-	}
-
-	/**
-	 * Render opaque model batches with the lit shaders, instancing where
-	 * possible. Supports skinned meshes with skeletal animation.
-	 */
-	protected _renderModelBatches(batches: IgeWebGlItemBatch[], matrices: IgeCameraMatrices): void {
-		if (!this._geometryManager || !this._textureManager || !this._stateManager) {
-			return;
-		}
-
-		let current: IgeWebGlProgram | undefined;
-
-		for (let b = 0; b < batches.length; b++) {
-			const batch = batches[b];
-			const instanced = this._shouldInstance(batch);
-			const program = this._selectProgram(batch.skinned, instanced, "lit", "skinned");
-			if (!program) continue;
-
-			if (program !== current) {
-				program.use();
-				this._setupLitProgram(program, matrices);
-				current = program;
-			}
-
-			this._geometryManager.bindGeometry(batch.geometry, program);
-			this._bindBaseTexture(batch.blobTextureId, batch.texture);
-			this._bindEmissiveTexture(program, batch.items[0]);
-			program.setUniform1i("u_hasVertexColors", batch.geometry.hasVertexColors ? 1 : 0);
-			if (this._backFaceCulling) {
-				// Shadow passes cull front faces with raw GL calls
-				this._stateManager.setCullFaceMode(this._canvasContext!.BACK);
-				this._stateManager.setCullFace(!batch.items[0].doubleSided);
-			}
-
-			if (instanced) {
-				if (batch.skinned) {
-					this._bindBonePalette(program);
-				}
-				this._drawInstanced(batch, program);
-			} else {
-				for (let i = 0; i < batch.items.length; i++) {
-					const item = batch.items[i];
-					this._applyItemUniforms(program, item);
-					if (batch.skinned) {
-						this._uploadBoneUniforms(program, item);
-					}
-					this._geometryManager.drawGeometry(batch.geometry);
-					this._stats.drawCalls++;
-					this._countTriangles(batch.geometry, 1);
-				}
-			}
-
-			this._geometryManager.unbindGeometry(batch.geometry, program);
-		}
-
-		// Everything drawn after opaque meshes is double-sided
-		this._stateManager.setCullFace(false);
-	}
-
-	/**
 	 * Outlines (IgeEntity.outline()), over the finished frame: for each view's
 	 * outlined items, grouped by outline, the items are drawn flat into a
 	 * mask (only inside their rectangle on screen), then IgeWebGlOutlinePass
@@ -3293,14 +3555,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				}
 				const rect = outlineRect(spheres.subarray(0, n), job.matrices.viewProjection.matrix, job.view, radius + 2);
 				if (!rect) continue;
-				this._stateManager.reset();
-				if (!pass.beginMask(width, height, rect, this._clearColor)) break;
+				for (const item of group.items) this._prepareTextures(item, item);
 				// The items, flat and opaque, in the view they were drawn in: no depth test, no blending
-				this._stateManager.setViewport(job.view.x0, job.view.y0, job.view.x1 - job.view.x0, job.view.y1 - job.view.y0);
-				this._stateManager.setDepthTest(false);
-				this._stateManager.setDepthWrite(false);
-				this._stateManager.setBlend(false);
-				this._drawFlat(group.items, job.matrices);
+				const mask = pass.beginMask(width, height, rect);
+				if (!mask) break;
+				mask.setViewport(job.view.x0, job.view.y0, job.view.x1 - job.view.x0, job.view.y1 - job.view.y0);
+				this._writeLitView(job.matrices);
+				this._drawFlat(mask, group.items);
+				pass.endMask(mask);
 				pass.composite(target, rect, o, radius);
 				this._stats.drawCalls++;
 			}
@@ -3309,133 +3571,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, target);
 		this._stateManager.reset();
 		gl.depthFunc(gl.LEQUAL);
-	}
-
-	/** Items drawn as flat, opaque white (lighting cancelled: a black base, white emission), their own materials put back after. */
-	protected _drawFlat(items: IgeWebGlRenderItem[], matrices: IgeCameraMatrices): void {
-		const n = items.length * 9;
-		if (!this._occludedSaved || this._occludedSaved.length < n) this._occludedSaved = new Float32Array(n * 2);
-		const saved = this._occludedSaved;
-		for (let i = 0; i < items.length; i++) {
-			const mat = items[i].material, o = i * 9;
-			saved[o] = mat.r; saved[o + 1] = mat.g; saved[o + 2] = mat.b; saved[o + 3] = mat.a; saved[o + 4] = mat.opacity;
-			saved[o + 5] = mat.emissiveR; saved[o + 6] = mat.emissiveG; saved[o + 7] = mat.emissiveB; saved[o + 8] = mat.emissiveIntensity;
-			mat.r = mat.g = mat.b = 0;
-			mat.a = mat.opacity = 1;
-			mat.emissiveR = mat.emissiveG = mat.emissiveB = 1;
-			mat.emissiveIntensity = 1;
-		}
-		this._drawingSilhouettes = true;
-		this._renderTransparentItems(items, matrices);
-		this._drawingSilhouettes = false;
-		for (let i = 0; i < items.length; i++) {
-			const mat = items[i].material, o = i * 9;
-			mat.r = saved[o]; mat.g = saved[o + 1]; mat.b = saved[o + 2]; mat.a = saved[o + 3]; mat.opacity = saved[o + 4];
-			mat.emissiveR = saved[o + 5]; mat.emissiveG = saved[o + 6]; mat.emissiveB = saved[o + 7]; mat.emissiveIntensity = saved[o + 8];
-		}
-	}
-
-	/**
-	 * Draw items again as flat coloured silhouettes where they are hidden:
-	 * the depth test passes only behind what's already drawn (GREATER), and
-	 * a stencil mask of the items' own visible pixels keeps a character's
-	 * far side from showing through its near side, so only the parts behind
-	 * walls (and other things) show. Lighting is cancelled by drawing with a
-	 * black base colour and the silhouette colour as emission.
-	 */
-	protected _renderOccluded(items: IgeWebGlRenderItem[], matrices: IgeCameraMatrices): void {
-		const gl = this._canvasContext;
-		if (!gl || !this._stateManager) return;
-		this._stateManager.setDepthWrite(false);
-		this._stateManager.setDepthFunc(gl.GREATER);
-		this._stateManager.setBlend(true);
-		this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		// Each item's own material values, kept to put back afterwards (9 numbers per item)
-		const n = items.length * 9;
-		if (!this._occludedSaved || this._occludedSaved.length < n) this._occludedSaved = new Float32Array(n * 2);
-		const saved = this._occludedSaved;
-
-		// 1. Mark in the stencil where these items are the front-most surface (drawn invisibly, depth
-		//    "less or equal" with a little bias), so their own far side isn't outlined through their near side
-		gl.enable(gl.STENCIL_TEST);
-		gl.stencilMask(0xff);
-		gl.clearStencil(0);
-		gl.clear(gl.STENCIL_BUFFER_BIT);
-		gl.stencilFunc(gl.ALWAYS, 1, 0xff);
-		gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-		gl.colorMask(false, false, false, false);
-		gl.enable(gl.POLYGON_OFFSET_FILL);
-		gl.polygonOffset(-1, -4);
-		this._stateManager.setDepthFunc(gl.LEQUAL);
-		this._renderTransparentItems(items, matrices);
-		gl.disable(gl.POLYGON_OFFSET_FILL);
-		gl.colorMask(true, true, true, true);
-
-		// 2. The silhouettes: only behind something else (depth GREATER) and not over the items themselves
-		gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);
-		gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-		this._stateManager.setDepthFunc(gl.GREATER);
-		for (let i = 0; i < items.length; i++) {
-			const mat = items[i].material, c = items[i].occluded!, o = i * 9;
-			saved[o] = mat.r; saved[o + 1] = mat.g; saved[o + 2] = mat.b; saved[o + 3] = mat.a; saved[o + 4] = mat.opacity;
-			saved[o + 5] = mat.emissiveR; saved[o + 6] = mat.emissiveG; saved[o + 7] = mat.emissiveB; saved[o + 8] = mat.emissiveIntensity;
-			mat.r = mat.g = mat.b = 0;
-			mat.a = c.a;
-			mat.opacity = 1;
-			mat.emissiveR = c.r;
-			mat.emissiveG = c.g;
-			mat.emissiveB = c.b;
-			mat.emissiveIntensity = 1;
-		}
-		this._drawingSilhouettes = true;
-		this._renderTransparentItems(items, matrices);
-		this._drawingSilhouettes = false;
-		gl.disable(gl.STENCIL_TEST);
-		// Put them back for the next view (the same items draw in every split-screen view)
-		for (let i = 0; i < items.length; i++) {
-			const mat = items[i].material, o = i * 9;
-			mat.r = saved[o]; mat.g = saved[o + 1]; mat.b = saved[o + 2]; mat.a = saved[o + 3]; mat.opacity = saved[o + 4];
-			mat.emissiveR = saved[o + 5]; mat.emissiveG = saved[o + 6]; mat.emissiveB = saved[o + 7]; mat.emissiveIntensity = saved[o + 8];
-		}
-		this._stateManager.setDepthFunc(gl.LEQUAL);
-	}
-
-	/**
-	 * Render transparent model items one at a time in back-to-front order.
-	 */
-	protected _renderTransparentItems(items: IgeWebGlRenderItem[], matrices: IgeCameraMatrices): void {
-		if (!this._geometryManager || !this._textureManager || !this._stateManager) {
-			return;
-		}
-
-		let current: IgeWebGlProgram | undefined;
-
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i];
-			const skinned = !!item.skeleton;
-			const program = this._selectProgram(skinned, false, "lit", "skinned");
-			if (!program) continue;
-
-			if (program !== current) {
-				program.use();
-				this._setupLitProgram(program, matrices);
-				current = program;
-			}
-
-			const geometry = item.drawGeometry;
-			this._geometryManager.bindGeometry(geometry, program);
-			this._bindBaseTexture(item.blobTextureId, item.texture);
-			this._bindEmissiveTexture(program, item);
-			program.setUniform1i("u_hasVertexColors", geometry.hasVertexColors ? 1 : 0);
-			this._applyItemUniforms(program, item);
-			if (skinned) {
-				this._uploadBoneUniforms(program, item);
-			}
-			this._geometryManager.drawGeometry(geometry);
-			this._geometryManager.unbindGeometry(geometry, program);
-			this._stats.drawCalls++;
-			this._countTriangles(geometry, 1);
-		}
 	}
 
 	/**
@@ -3613,60 +3748,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		return block;
 	}
 
-	/**
-	 * A pass on the device into the view being drawn (the canvas, or the post-processing's offscreen target), loaded,
-	 * with its viewport and, when it clips, its scissor. Inside a device stretch (_gpuBegin()).
-	 */
-	protected _effectPass(): IgeGpuRenderPass {
-		const device = this._device!;
-		const post = this._postProcess?.target();
-		const pass = device.beginRenderPass(post ? { color: { target: post.color }, depthStencil: { target: post.depth } } : { color: { target: device.surface() } });
-		const v = this._view;
-		pass.setViewport(v.x, v.y, v.w, v.h);
-		pass.setScissorRect(v.clip ? [v.x, v.y, v.w, v.h] : null);
-		return pass;
-	}
-
-	/**
-	 * GL handed back to the main pass after an effect pass, as its own effect drawing left it: blended over, depth
-	 * tested less-or-equal and written, no polygon offset, no culling, the view's scissor if it clips (its viewport and
-	 * scissor box are the view's still), unit 0 active; the state manager's cache forgotten.
-	 */
-	protected _effectEnd(pass: IgeGpuRenderPass): void {
-		const gl = this._canvasContext as WebGL2RenderingContext;
-		pass.end();
-		this._device!.release();
-		if (this._view.clip) gl.enable(gl.SCISSOR_TEST);
-		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		gl.enable(gl.DEPTH_TEST);
-		gl.depthFunc(gl.LEQUAL);
-		gl.depthMask(true);
-		gl.disable(gl.POLYGON_OFFSET_FILL);
-		gl.disable(gl.CULL_FACE);
-		gl.colorMask(true, true, true, true);
-		gl.activeTexture(gl.TEXTURE0);
-		this._stateManager?.reset();
-	}
-
-	/** A system's texture (its own, from the texture manager; made, if it must be, before the device stretch starts). */
-	protected _effectTexture(texture: IgeTexture | undefined): WebGLTexture | null {
-		if (!texture || !this._textureManager) return null;
-		return this._textureManager.getTextureForIgeTexture(texture) || this._textureManager.getDefaultWhiteTexture();
-	}
-
-	/**
-	 * Draw decal systems as quads lying on the ground, one instanced call per system, then their projected decals:
-	 * drawn after the opaque pass with depth testing, no depth writes and a polygon offset so they never fight with
-	 * the ground they lie on.
-	 */
-	protected _renderDecalSystems(systems: IgeDecalSystem3d[], matrices: IgeCameraMatrices): void {
-		if (systems.length === 0 || !this._device || !this._geometryManager || !this._textureManager) {
-			return;
-		}
-
-		// What's drawn, and with what (textures made first, with GL of the texture manager's own)
+	/** The decal systems in view (their quads, and their projected decals), with their textures made ready before the pass. */
+	protected _visibleDecals(systems: IgeDecalSystem3d[], matrices: IgeCameraMatrices): { quads: { system: IgeDecalSystem3d; count: number; texture: WebGLTexture | null }[]; meshes: { system: IgeDecalSystem3d; texture: WebGLTexture | null }[] } {
 		const quads: { system: IgeDecalSystem3d; count: number; texture: WebGLTexture | null }[] = [];
+		const meshes: { system: IgeDecalSystem3d; texture: WebGLTexture | null }[] = [];
 		for (let s = 0; s < systems.length; s++) {
 			const system = systems[s];
 			const { count } = system.renderData();
@@ -3674,25 +3759,33 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const c = system._boundsCenter;
 			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius)) continue;
 			system._lastRenderedFrame = this._frameId;
-			quads.push({ system, count, texture: this._effectTexture(system._options.texture) });
+			quads.push({ system, count, texture: this._systemTexture(system._options.texture) });
 		}
-		const meshes: { system: IgeDecalSystem3d; texture: WebGLTexture | null }[] = [];
 		for (let s = 0; s < systems.length; s++) {
 			const system = systems[s];
 			if (system.meshRenderData().vertexCount === 0) continue;
 			const c = system._meshBoundsCenter;
 			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._meshBoundsRadius)) continue;
-			meshes.push({ system, texture: this._effectTexture(system._options.texture) });
+			meshes.push({ system, texture: this._systemTexture(system._options.texture) });
 		}
-		if (!quads.length && !meshes.length) {
-			this._freeDecalMeshBuffers();
-			return;
-		}
+		return { quads, meshes };
+	}
 
-		const device = this._gpuBegin();
-		const quad = this._geometryManager.getSharedQuadGeometry()!;
-		const pass = this._effectPass();
-		try {
+	/** A particle or decal system's own texture (the texture manager's, made as first asked for), or the white one. */
+	protected _systemTexture(texture: IgeTexture | undefined): WebGLTexture | null {
+		if (!texture || !this._textureManager) return null;
+		return this._textureManager.getTextureForIgeTexture(texture) || this._textureManager.getDefaultWhiteTexture();
+	}
+
+	/**
+	 * Decal systems as quads lying on the ground, one instanced call per system, then their projected decals: depth
+	 * tested, not written, pulled forward so they never fight the ground they lie on.
+	 */
+	protected _drawDecals(pass: IgeGpuRenderPass, decals: ReturnType<IgeWebGlRenderer["_visibleDecals"]>, matrices: IgeCameraMatrices): void {
+		const { quads, meshes } = decals;
+		if (quads.length || meshes.length) {
+			const device = this._device!;
+			const quad = this._geometryManager!.getSharedQuadGeometry()!;
 			for (const { system, count, texture } of quads) {
 				const entry = this._particleBuffers.get(system);
 				if (!entry) continue;
@@ -3713,8 +3806,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				this._stats.instances += count;
 			}
 			this._renderProjectedDecals(pass, meshes, matrices);
-		} finally {
-			this._effectEnd(pass);
 		}
 		this._freeDecalMeshBuffers();
 	}
@@ -3762,15 +3853,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		});
 	}
 
-	/**
-	 * Draw particle systems as camera-facing quads, one instanced call per system. Drawn after the transparent pass
-	 * with depth testing but no depth writes.
-	 */
-	protected _renderParticleSystems(systems: IgeParticleSystem3d[], matrices: IgeCameraMatrices): void {
-		if (systems.length === 0 || !this._device || !this._geometryManager || !this._textureManager) {
-			return;
-		}
-
+	/** The particle systems in view, with their textures made ready before the pass. */
+	protected _visibleParticles(systems: IgeParticleSystem3d[], matrices: IgeCameraMatrices): { system: IgeParticleSystem3d; count: number; texture: WebGLTexture | null }[] {
 		const drawn: { system: IgeParticleSystem3d; count: number; texture: WebGLTexture | null }[] = [];
 		for (let s = 0; s < systems.length; s++) {
 			const system = systems[s];
@@ -3779,130 +3863,30 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const c = system._boundsCenter;
 			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius)) continue;
 			system._lastRenderedFrame = this._frameId;
-			drawn.push({ system, count, texture: this._effectTexture(system._options.texture) });
+			drawn.push({ system, count, texture: this._systemTexture(system._options.texture) });
 		}
-		if (!drawn.length) return;
-
-		const device = this._gpuBegin();
-		const quad = this._geometryManager.getSharedQuadGeometry()!;
-		const pass = this._effectPass();
-		try {
-			for (const { system, count, texture } of drawn) {
-				const entry = this._particleBuffers.get(system);
-				if (!entry) continue;
-				const pipeline = this._effectPipeline("particle", system._options.blending !== "normal" ? "additive" : "normal");
-				pass.setPipeline(pipeline);
-				pass.setVertexBuffer(0, quad.gpuVertex!);
-				pass.setVertexBuffer(1, entry.buffer);
-				pass.setIndexBuffer(quad.gpuIndex!, "uint16");
-				pass.setTexture(0, texture ? webGl2ExternalTexture(device, texture) : this._getDefaultParticleTexture());
-				pass.setUniforms(this._effectUniforms(pipeline, matrices));
-				pass.drawIndexed(quad.indexCount, count);
-				this._stats.instancedDrawCalls++;
-				this._stats.instances += count;
-			}
-		} finally {
-			this._effectEnd(pass);
-		}
+		return drawn;
 	}
 
-	/**
-	 * Render 2D sprites (textured quads, billboarded to face the camera).
-	 */
-	protected _renderSprites(sprites: IgeEntity[], matrices: IgeCameraMatrices, flat2d: boolean = false): void {
-		if (sprites.length === 0 || !this._shaderManager || !this._geometryManager || !this._textureManager || !this._stateManager) {
-			return;
+	/** Particle systems as camera-facing quads, one instanced call per system: depth tested, not written. */
+	protected _drawParticles(pass: IgeGpuRenderPass, drawn: ReturnType<IgeWebGlRenderer["_visibleParticles"]>, matrices: IgeCameraMatrices): void {
+		if (!drawn.length) return;
+		const device = this._device!;
+		const quad = this._geometryManager!.getSharedQuadGeometry()!;
+		for (const { system, count, texture } of drawn) {
+			const entry = this._particleBuffers.get(system);
+			if (!entry) continue;
+			const pipeline = this._effectPipeline("particle", system._options.blending !== "normal" ? "additive" : "normal");
+			pass.setPipeline(pipeline);
+			pass.setVertexBuffer(0, quad.gpuVertex!);
+			pass.setVertexBuffer(1, entry.buffer);
+			pass.setIndexBuffer(quad.gpuIndex!, "uint16");
+			pass.setTexture(0, texture ? webGl2ExternalTexture(device, texture) : this._getDefaultParticleTexture());
+			pass.setUniforms(this._effectUniforms(pipeline, matrices));
+			pass.drawIndexed(quad.indexCount, count);
+			this._stats.instancedDrawCalls++;
+			this._stats.instances += count;
 		}
-
-		const spriteProgram = this._shaderManager.getProgram("sprite");
-		const quadGeometry = this._geometryManager.getSharedQuadGeometry();
-
-		if (!spriteProgram || !quadGeometry) {
-			return;
-		}
-
-		spriteProgram.use();
-		spriteProgram.setUniformMatrix4fv("u_viewMatrix", matrices.view);
-		spriteProgram.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
-		spriteProgram.setUniform1i("u_texture", 0);
-		spriteProgram.setUniform1f("u_flipY", flat2d ? -1 : 1);
-
-		this._geometryManager.bindGeometry(quadGeometry, spriteProgram);
-
-		const gl = this._canvasContext!;
-		let boundTexture: IgeTexture | undefined;
-		let additive = false;
-
-		for (let i = 0; i < sprites.length; i++) {
-			const entity = sprites[i];
-			const texture = entity._texture!;
-			const material = entity._materialData;
-
-			// Smart textures and bitmap font sheets are drawn per entity (they
-			// read its data, text and size)
-			const perEntity = texture._renderMode === IgeTextureRenderMode.smartTexture || texture._rendersPerEntity;
-			if (perEntity) {
-				const webglTexture = this._textureManager.getSmartTexture(texture, entity, this._devicePixelRatio, this._frameId);
-				this._stateManager.invalidateTextureBindings();
-				this._stateManager.bindTexture(webglTexture || this._textureManager.getDefaultWhiteTexture(), 0);
-				boundTexture = undefined;
-			} else if (texture !== boundTexture) {
-				const webglTexture = this._textureManager.getTextureForIgeTexture(texture);
-				this._stateManager.invalidateTextureBindings();
-				if (webglTexture) {
-					this._stateManager.bindTexture(webglTexture, 0);
-				}
-				boundTexture = texture;
-			}
-
-			// Additive sprites brighten what's behind them (fire, sparks, magic)
-			const wantAdditive = material?.blending === "additive";
-			if (wantAdditive !== additive) {
-				this._stateManager.setBlendFunc(gl.SRC_ALPHA, wantAdditive ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
-				additive = wantAdditive;
-			}
-
-			// Sprite sheet cell (cells are 1-based [x, y, width, height] in pixels)
-			const cells = (texture as any)._cells as number[][] | undefined;
-			const cell = cells && entity._cell ? cells[entity._cell] : undefined;
-			const texW = (texture as any)._sizeX as number;
-			const texH = (texture as any)._sizeY as number;
-			if (!perEntity && cell && texW > 0 && texH > 0) {
-				spriteProgram.setUniform4f("u_uvBounds",
-					cell[0] / texW,
-					cell[1] / texH,
-					(cell[0] + cell[2]) / texW,
-					(cell[1] + cell[3]) / texH
-				);
-			} else {
-				spriteProgram.setUniform4f("u_uvBounds", 0, 0, 1, 1);
-			}
-
-			// Tint from the entity's material colour
-			const color = material?.color;
-			if (color && typeof color === "object") {
-				spriteProgram.setUniform4f("u_tint", color.r, color.g, color.b, color.a ?? 1);
-			} else if (typeof color === "string") {
-				const rgb = parseHexColor(color);
-				spriteProgram.setUniform4f("u_tint", rgb[0], rgb[1], rgb[2], 1);
-			} else {
-				spriteProgram.setUniform4f("u_tint", 1, 1, 1, 1);
-			}
-
-			spriteProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4!);
-			spriteProgram.setUniform2f("u_scale", entity._bounds2d.x, entity._bounds2d.y);
-			spriteProgram.setUniform1f("u_opacity", entity._opacity);
-			spriteProgram.setUniform1i("u_billboardMode", flat2d ? 0 : entity._billboardMode);
-
-			this._geometryManager.drawGeometry(quadGeometry);
-			this._stats.drawCalls++;
-		}
-
-		if (additive) {
-			this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		}
-
-		this._geometryManager.unbindGeometry(quadGeometry, spriteProgram);
 	}
 
 	/**

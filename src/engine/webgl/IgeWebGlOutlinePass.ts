@@ -18,8 +18,8 @@
  * device's, its shader GLSL ES 1.00). After a lost context the renderer
  * forgets this pass (contextLost) and a new one is made.
  */
-import type { IgeGpuBuffer, IgeGpuRenderPipeline, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
-import { type IgeWebGl2GpuDevice, webGl2Framebuffer, webGl2Surface } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import type { IgeGpuBuffer, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
+import { type IgeWebGl2GpuDevice, webGl2Surface } from "@/engine/gpu/IgeWebGl2GpuDevice";
 
 
 /** The widest outline drawn (device pixels): wider ones are drawn this wide. */
@@ -163,27 +163,26 @@ export class IgeWebGlOutlinePass {
 	}
 
 	/**
-	 * Binds the mask target (made, or remade at `width` × `height`, the
-	 * drawing buffer's size) with the scissor on `rect`, cleared there.
-	 * The caller then draws the outlined items flat (alpha 1) in the same
-	 * viewport it draws the frame in, with GL of its own. False if no target
-	 * could be made. `clear` is the clear colour to leave set after (the
-	 * renderer's: never read back from GL, a query that waits for the GPU).
+	 * A pass into the mask target (made, or remade at `width` × `height`, the
+	 * drawing buffer's size), cleared inside `rect` and scissored to it: the
+	 * caller draws the outlined items flat (alpha 1) into it, in the same
+	 * viewport it draws the frame in, then ends it (endMask). Null if no
+	 * target could be made.
 	 */
-	beginMask (width: number, height: number, rect: IgeOutlineRect, clear: { r: number; g: number; b: number; a: number } = { r: 0, g: 0, b: 0, a: 0 }): boolean {
-		if (!this._target(width, height)) return false;
-		const d = this._device, gl = d.gl;
+	beginMask (width: number, height: number, rect: IgeOutlineRect): IgeGpuRenderPass | null {
+		if (!this._target(width, height)) return null;
+		const d = this._device;
 		d.invalidate();
 		const pass = d.beginRenderPass({ color: { target: this._texture! } });
-		pass.clear([0, 0, 0, 0], [rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0]);
+		const r: [number, number, number, number] = [rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0];
+		pass.clear([0, 0, 0, 0], r);
+		pass.setScissorRect(r);
+		return pass;
+	}
+
+	/** The mask's pass ended. */
+	endMask (pass: IgeGpuRenderPass): void {
 		pass.end();
-		d.release();
-		// (GL as the caller draws: the mask bound, scissored to the rectangle, its clear colour put back)
-		gl.bindFramebuffer(gl.FRAMEBUFFER, webGl2Framebuffer(d, this._texture!));
-		gl.enable(gl.SCISSOR_TEST);
-		gl.scissor(rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0);
-		gl.clearColor(clear.r, clear.g, clear.b, clear.a);
-		return true;
 	}
 
 	/**

@@ -49,6 +49,9 @@ export interface IgeWebGlRenderItem {
 	blobTextureId?: string;
 	/** IgeTexture assigned to the entity, used when there is no blob texture. */
 	texture?: IgeTexture;
+	/** Its base colour and emissive GL textures, made ready before the pass that draws it (the texture manager's). */
+	gpuBase?: WebGLTexture | null;
+	gpuEmissive?: WebGLTexture | null;
 	/** Batch key component describing the texture. */
 	textureKey: string;
 	/** Emissive map: a glTF one (createTextureFromBlob id) or an IgeTexture (see IgeMaterialData.emissiveTexture). */
@@ -110,6 +113,9 @@ export interface IgeWebGlItemBatch {
 	texture?: IgeTexture;
 	skinned: boolean;
 	items: IgeWebGlRenderItem[];
+	/** Its base colour and emissive GL textures, made ready before the pass that draws it (the texture manager's). */
+	gpuBase?: WebGLTexture | null;
+	gpuEmissive?: WebGLTexture | null;
 }
 
 /**

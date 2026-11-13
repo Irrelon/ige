@@ -947,12 +947,14 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	}
 
 	/** A module's uniform block set from `data`: the members that changed. */
-	_applyUniforms (m: GlModule, data: ArrayLike<number> | undefined): void {
+	_applyUniforms (m: GlModule, data: ArrayLike<number> | undefined, from: number = 0, to: number = Infinity): void {
 		if (!data || !m._uniforms!.length) return;
 		const gl = this.gl, vals = m._values!, known = m._known!;
 		this._useProgram(m._program);
 		for (let k = 0; k < m._uniforms!.length; k++) {
 			const u = m._uniforms![k];
+			// (Outside the range said to have changed: as set before)
+			if (u.offset + u.size <= from || u.offset >= to) continue;
 			let same = known[k] === 1;
 			for (let i = 0; same && i < u.size; i++) if (Math.fround(data[u.offset + i]) !== vals[u.offset + i]) same = false;
 			if (same) continue;
@@ -1010,6 +1012,8 @@ class IgeWebGl2RenderPass implements IgeGpuRenderPass {
 	/** Uniforms set since the last draw (or a pipeline whose block hasn't been sent): sent before the next. */
 	_uniformsDirty = true;
 	_uniformModule?: GlModule;
+	/** The part of the block set since the last draw (by offset), when the caller said: all of it, otherwise. */
+	_uniformRange: [number, number] | null = null;
 	_viewport: [number, number, number, number];
 	_scissor: [number, number, number, number] | null = null;
 	_ref = 0;
@@ -1036,7 +1040,11 @@ class IgeWebGl2RenderPass implements IgeGpuRenderPass {
 		this._textures[slot] = { t: texture as GlTexture | null, s: sampler };
 	}
 
-	setUniforms (data: ArrayLike<number>): void {
+	setUniforms (data: ArrayLike<number>, range?: [number, number]): void {
+		// (Ranges set since the last draw add up; the whole block, or another array, is the whole of it)
+		if (!range || data !== this._uniforms) this._uniformRange = null;
+		else if (!this._uniformsDirty) this._uniformRange = range;
+		else if (this._uniformRange) this._uniformRange = [Math.min(this._uniformRange[0], range[0]), Math.max(this._uniformRange[1], range[1])];
 		this._uniforms = data;
 		this._uniformsDirty = true;
 	}
@@ -1053,15 +1061,19 @@ class IgeWebGl2RenderPass implements IgeGpuRenderPass {
 		this._ref = reference;
 	}
 
-	clear (color: [number, number, number, number], rect?: [number, number, number, number]): void {
+	clear (color: [number, number, number, number], rect?: [number, number, number, number], depth?: number): void {
 		const d = this._d, gl = d.gl;
 		d._clearColor(color);
 		d._colorMask(true);
+		if (depth !== undefined) {
+			d._depthMask(true);
+			gl.clearDepth(depth);
+		}
 		if (rect) {
 			d._scissorOn(true);
 			d._scissor(rect);
 		} else d._scissorOn(false);
-		gl.clear(gl.COLOR_BUFFER_BIT);
+		gl.clear(depth !== undefined ? gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT : gl.COLOR_BUFFER_BIT);
 	}
 
 	clearStencil (value: number): void {
@@ -1095,8 +1107,11 @@ class IgeWebGl2RenderPass implements IgeGpuRenderPass {
 			}
 		}
 		if (this._uniformsDirty || this._uniformModule !== p._module) {
-			d._applyUniforms(p._module, this._uniforms);
+			// (A range only once the whole block's been sent for this module in this pass)
+			const r = this._uniformModule === p._module ? this._uniformRange : null;
+			d._applyUniforms(p._module, this._uniforms, r ? r[0] : 0, r ? r[1] : Infinity);
 			this._uniformsDirty = false;
+			this._uniformRange = null;
 			this._uniformModule = p._module;
 		}
 		d._applyVertexBuffers(p, this._slots, firstInstance);

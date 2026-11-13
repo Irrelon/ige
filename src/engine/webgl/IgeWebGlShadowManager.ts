@@ -460,6 +460,39 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
+	 * A light's shadow uniforms written into a uniform block (for a pipeline on the GPU device), as applyShadowUniforms
+	 * sets them on a program. Returns its shadow map, to set in the shadow map's texture slot (null: none).
+	 */
+	writeShadowUniforms(block: Float32Array, at: Readonly<Record<string, number>>, lightId: string): IgeGpuTexture | null {
+		const shadowMap = this._enabled ? this._shadowMaps.get(lightId) : undefined;
+		if (!shadowMap) {
+			block[at.u_hasShadowMap] = 0;
+			return null;
+		}
+		block[at.u_hasShadowMap] = 1;
+		block.set(shadowMap.lightSpaceMatrix, at.u_lightSpaceMatrix);
+		block[at.u_shadowBias] = shadowMap.bias;
+		block[at.u_shadowNormalBias] = shadowMap.normalBias;
+		block[at.u_shadowMapSize] = shadowMap.size;
+		block[at.u_usePackedDepth] = 0;
+		return shadowMap.depth;
+	}
+
+	/**
+	 * A point light's shadow uniforms (slot `shadowIndex`) written into a uniform block, as applyPointShadowUniforms sets
+	 * them. Returns its atlas, for that slot's texture (null: none).
+	 */
+	writePointShadowUniforms(block: Float32Array, at: Readonly<Record<string, number>>, shadowIndex: number, lightId: string): IgeGpuTexture | null {
+		const data = this._pointShadowMaps.get(lightId);
+		if (!data) return null;
+		block[at.u_pointShadowFarPlane + shadowIndex] = data.farPlane;
+		block[at.u_pointShadowBias + shadowIndex] = data.bias;
+		block[at.u_pointShadowFaceSize + shadowIndex] = data.faceSize;
+		for (let face = 0; face < 6; face++) block.set(data.lightSpaceMatrices[face].matrix, at.u_pointShadowMatrices + (shadowIndex * 6 + face) * 16);
+		return data.atlas;
+	}
+
+	/**
 	 * Get the light space matrix for a light.
 	 */
 	getLightSpaceMatrix(lightId: string): Float32Array | null {

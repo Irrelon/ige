@@ -271,6 +271,43 @@ describe("IgeGpuDevice: WebGL2", () => {
 		expect(sent.indexOf("bindAttribLocation")).toBeLessThan(sent.indexOf("linkProgram"));
 	});
 
+	it("sends only the members in a range said to have changed, once the whole block's been sent in the pass", () => {
+		const { d, calls, take, quad, inst, pipeline } = setUp();
+		const pass = d.beginRenderPass({ color: { target: d.surface() } });
+		pass.setPipeline(pipeline);
+		pass.setVertexBuffer(0, quad);
+		pass.setVertexBuffer(1, inst);
+		const block = new Float32Array([800, 600, 1]);
+		pass.setUniforms(block, [2, 3]);
+		pass.draw(4, 1);
+		// (The first in the pass: the whole of it, range or not)
+		expect(take().filter((c) => c.startsWith("uniform"))).toEqual(["uniform2f", "uniform1f"]);
+		block[0] = 1024;
+		block[2] = 2;
+		pass.setUniforms(block, [2, 3]);
+		pass.draw(4, 1);
+		// (Only u_scale looked at: u_resolution's change goes unsent, as the caller said)
+		expect(calls.filter(([k]) => k.startsWith("uniform")).map(([k, a]) => [k, a[1]])).toEqual([["uniform1f", 2]]);
+		take();
+		pass.setUniforms(block);
+		pass.draw(4, 1);
+		expect(take().filter((c) => c.startsWith("uniform"))).toEqual(["uniform2f"]);
+	});
+
+	it("clears a rectangle's depth with its colour when asked", () => {
+		const { d, calls, take } = setUp();
+		const pass = d.beginRenderPass({ color: { target: d.surface() } });
+		take();
+		pass.clear([0, 0, 0, 1], [0, 0, 10, 10], 1);
+		const sent = calls.map(([k]) => k);
+		expect(sent).toEqual(expect.arrayContaining(["clearDepth", "scissor", "clear"]));
+		const clear = calls.find(([k]) => k === "clear")!;
+		take();
+		pass.clear([0, 0, 0, 1], [0, 0, 10, 10]);
+		const colourOnly = calls.find(([k]) => k === "clear")!;
+		expect(clear[1][0]).not.toBe(colourOnly[1][0]);
+	});
+
 	it("sets a picture's premultiplying and flipping either way as it's copied in (GL code may have left them on)", () => {
 		const { d, calls, take } = setUp();
 		const tex = d.createTexture({ width: 0, height: 0, format: "rgba8unorm" });

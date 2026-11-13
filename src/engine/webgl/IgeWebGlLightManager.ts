@@ -251,6 +251,73 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 	}
 
 	/**
+	 * The light uniforms written into a uniform block (for a pipeline on the GPU device), as applyLightUniforms sets
+	 * them on a program: `at` is where each member starts (the arrays' elements one after another).
+	 */
+	writeLightUniforms(block: Float32Array, at: Readonly<Record<string, number>>): void {
+		const amb = this._combinedAmbient, ground = this._combinedGround;
+		block[at.u_ambientLightColor] = amb.r;
+		block[at.u_ambientLightColor + 1] = amb.g;
+		block[at.u_ambientLightColor + 2] = amb.b;
+		block[at.u_ambientLightIntensity] = amb.intensity;
+		block[at.u_ambientGroundColor] = ground.r;
+		block[at.u_ambientGroundColor + 1] = ground.g;
+		block[at.u_ambientGroundColor + 2] = ground.b;
+
+		if (this._directionalLights.length > 0) {
+			const data = this._directionalLights[0].getLightData();
+			const dir = data.direction!;
+			block[at.u_hasDirectionalLight] = 1;
+			block[at.u_directionalLightDir] = -dir.x;
+			block[at.u_directionalLightDir + 1] = -dir.y;
+			block[at.u_directionalLightDir + 2] = -dir.z;
+			block[at.u_directionalLightColor] = data.color.r;
+			block[at.u_directionalLightColor + 1] = data.color.g;
+			block[at.u_directionalLightColor + 2] = data.color.b;
+			block[at.u_directionalLightIntensity] = data.intensity;
+		} else {
+			block[at.u_hasDirectionalLight] = 0;
+		}
+
+		const points = this.activePointLights();
+		block[at.u_numPointLights] = points.length;
+		for (let i = 0; i < points.length; i++) {
+			const data = points[i].getLightData();
+			const p3 = at.u_pointLightPositions + i * 3, c3 = at.u_pointLightColors + i * 3;
+			block[p3] = data.position.x;
+			block[p3 + 1] = data.position.y;
+			block[p3 + 2] = data.position.z;
+			block[c3] = data.color.r;
+			block[c3 + 1] = data.color.g;
+			block[c3 + 2] = data.color.b;
+			block[at.u_pointLightIntensities + i] = data.intensity;
+			block[at.u_pointLightRanges + i] = (data as any).range || 100;
+			block[at.u_pointLightDecays + i] = (data as any).decay || 2;
+		}
+
+		const spots = this.activeSpotLights();
+		block[at.u_numSpotLights] = spots.length;
+		for (let i = 0; i < spots.length; i++) {
+			const data = spots[i].getLightData();
+			const dir = data.direction!;
+			const p3 = at.u_spotLightPositions + i * 3, d3 = at.u_spotLightDirections + i * 3, c3 = at.u_spotLightColors + i * 3;
+			block[p3] = data.position.x;
+			block[p3 + 1] = data.position.y;
+			block[p3 + 2] = data.position.z;
+			block[d3] = dir.x;
+			block[d3 + 1] = dir.y;
+			block[d3 + 2] = dir.z;
+			block[c3] = data.color.r;
+			block[c3 + 1] = data.color.g;
+			block[c3 + 2] = data.color.b;
+			block[at.u_spotLightIntensities + i] = data.intensity;
+			block[at.u_spotLightRanges + i] = (data as any).range || 100;
+			block[at.u_spotLightAngles + i] = Math.cos((data as any).angle || Math.PI / 4);
+			block[at.u_spotLightPenumbras + i] = (data as any).penumbra || 0.1;
+		}
+	}
+
+	/**
 	 * Get the number of active lights.
 	 */
 	getLightCount(): {

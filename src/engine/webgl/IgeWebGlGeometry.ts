@@ -32,6 +32,8 @@ export class IgeWebGlGeometry extends IgeBaseClass {
 	gpuLayout?: { layout: IgeGpuVertexBufferLayout; key: string };
 	/** Its depth passes' pipelines, by kind (point light or not, skinned or not, instanced or not). */
 	gpuDepthPipelines?: (IgeGpuRenderPipeline | undefined)[];
+	/** Its main pass pipelines, by kind and how they're drawn. */
+	gpuLitPipelines?: (IgeGpuRenderPipeline | undefined)[];
 	/** The GL buffers behind gpuVertex and gpuIndex, for the passes not yet drawing through the device. */
 	vertexBuffer: WebGLBuffer | null = null;
 	indexBuffer: WebGLBuffer | null = null;
