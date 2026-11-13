@@ -135,8 +135,8 @@ export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: Ig
 		case "background-image":
 		case "mask-image":
 		case "filter":
-			// (Split at the commas between its functions: the commas inside one are kept)
-			return value === "none" ? value : splitTop(value, ",").map((f) => cssColorsIn(f.trim(), current)).join(", ");
+			// (Split at the commas between its functions: the commas inside one are kept; a url() made whole, as Chrome gives it)
+			return value === "none" ? value : splitTop(value, ",").map((f) => absoluteUrl(cssColorsIn(f.trim(), current))).join(", ");
 		case "border-top-left-radius":
 		case "border-top-right-radius":
 		case "border-bottom-right-radius":
@@ -147,4 +147,17 @@ export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: Ig
 		default:
 			return value;
 	}
+}
+
+/** A url() in a computed value made absolute against the page (Chrome's computed styles give whole URLs), quoted as Chrome quotes it. */
+function absoluteUrl (v: string): string {
+	const m = /^url\(\s*(["']?)(.*?)\1\s*\)$/.exec(v);
+	if (!m) return v;
+	let url = m[2];
+	try {
+		if (typeof document !== "undefined" && !/^(data|blob):/i.test(url)) url = new URL(url, document.baseURI).href;
+	} catch {
+		// (Not a URL a page could load: as written)
+	}
+	return `url("${url}")`;
 }
