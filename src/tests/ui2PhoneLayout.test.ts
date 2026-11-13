@@ -147,6 +147,18 @@ describe("ui2: layout at a phone's sizes, as Chrome's", () => {
 		expect(seen).toEqual(Array(3).fill([1, 105, 105]));
 	});
 
+	it("a flex column too short for its items' own heights shrinks them to their content's height, as Chrome does", () => {
+		const col = `.c { display: flex; flex-direction: column; height: 100px; } i { display: block; }`;
+		// (Each to its content's height at the least; one that clips, to nothing)
+		const r = ui(`${col} .c > div { height: 80px; } .b { overflow: hidden; }`, `<div class="c"><div><i style="height: 20px"></i></div><div><i style="height: 40px"></i></div><div class="b"><i style="height: 60px"></i></div></div>`);
+		expect(heights(r, ".c > div")).toEqual([30, 40, 30]);
+		// (Empty; with padding and borders; a flex column itself; capped by a max-height below its height)
+		expect(heights(ui(`${col} .c > div { height: 80px; }`, `<div class="c"><div></div><div></div></div>`), ".c > div")).toEqual([50, 50]);
+		expect(heights(ui(`${col} .c > div { height: 80px; padding: 5px; border: 2px solid; box-sizing: border-box; }`, `<div class="c"><div><i style="height: 30px"></i></div><div><i style="height: 10px"></i></div></div>`), ".c > div")).toEqual([50, 50]);
+		expect(heights(ui(`${col} .c > div { height: 80px; display: flex; flex-direction: column; } .c > div > i { flex: 1; min-height: 15px; }`, `<div class="c"><div><i></i><i></i></div><div><i></i></div></div>`), ".c > div")).toEqual([50, 50]);
+		expect(heights(ui(`${col} .c > div { height: 80px; max-height: 70px; }`, `<div class="c"><div><i style="height: 30px"></i></div><div><i style="height: 30px"></i></div></div>`), ".c > div")).toEqual([50, 50]);
+	});
+
 	it("what's in a positioned box laid out afresh and then found as it was in the same layout is placed where it now is", () => {
 		// (Slots in a list that gains a scrollbar: each laid out again narrower, then met again unchanged; the "1" pushed to the
 		// row's end by an auto margin goes with the row)

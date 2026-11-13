@@ -911,10 +911,10 @@ export class IgeUiLayoutEngine {
 	 * Lays out a box's contents for a width: `opts.width` (border box) fixes it, else its own
 	 * width or (block-level) all there is, or (`shrink`) shrink-to-fit. Its x, y are its parent's to set.
 	 */
-	layoutBox (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number } = {}): void {
+	layoutBox (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number; autoH?: boolean } = {}): void {
 		b.lastCb = [cbW, cbH];
 		// Laid out before for the same inputs, and nothing in it changed since: as it was
-		const key = `${cbW}|${cbH}|${opts.width}|${opts.height}|${opts.shrink ? 1 : 0}|${opts.stretchH}|${b.collapsed ?? ""}`;
+		const key = `${cbW}|${cbH}|${opts.width}|${opts.height}|${opts.shrink ? 1 : 0}|${opts.stretchH}|${b.collapsed ?? ""}${opts.autoH ? "|auto" : ""}`;
 		if (IgeUiLayoutEngine.noCache !== true && b.layoutOk && !b.escapingKids) {
 			if (b.cacheKey === key) {
 				if (b.extShift) this._shiftContent(b, -b.extShift);
@@ -956,8 +956,8 @@ export class IgeUiLayoutEngine {
 	 * A box's height for these inputs, without laying it out again when it was laid out for them before (and nothing in
 	 * it has changed): a flex column measuring its items, then laying them out at their sizes, every time.
 	 */
-	measureH (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number } = {}): number {
-		const key = `${cbW}|${cbH}|${opts.width}|${opts.height}|${opts.shrink ? 1 : 0}|${opts.stretchH}|${b.collapsed ?? ""}`;
+	measureH (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number; autoH?: boolean } = {}): number {
+		const key = `${cbW}|${cbH}|${opts.width}|${opts.height}|${opts.shrink ? 1 : 0}|${opts.stretchH}|${b.collapsed ?? ""}${opts.autoH ? "|auto" : ""}`;
 		if (IgeUiLayoutEngine.noCache !== true && b.layoutOk && !b.escapingKids) {
 			const h = b.measures?.get(key);
 			if (h !== undefined) {
@@ -969,7 +969,7 @@ export class IgeUiLayoutEngine {
 		return b.borderH;
 	}
 
-	_layoutBox (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number }): void {
+	_layoutBox (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number; autoH?: boolean }): void {
 		// (The box being laid out, for cq units: _ctx)
 		const prev = this._current;
 		this._current = b;
@@ -980,7 +980,7 @@ export class IgeUiLayoutEngine {
 		}
 	}
 
-	_layoutBoxNow (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number }): void {
+	_layoutBoxNow (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number; autoH?: boolean }): void {
 		this._edges(b, cbW);
 		const s = b.style;
 		// The width
@@ -1022,7 +1022,8 @@ export class IgeUiLayoutEngine {
 		let cw = contentWidth(b);
 		// Height known up front (used by flex columns, percentages inside)
 		let fixedH = opts.height;
-		if (fixedH === undefined) {
+		// (autoH: as tall as its content, whatever height it has set: a flex column item's content size suggestion)
+		if (fixedH === undefined && !opts.autoH) {
 			const spec = this._specH(b, cbH);
 			if (spec !== undefined) fixedH = this._clampH(b, spec, cbH);
 		}
@@ -1917,7 +1918,7 @@ export class IgeUiLayoutEngine {
 		b.children = [...items, ...b.children.filter((c) => this._outOfFlow(c))];
 		items.sort((p, q) => (parseInt(styleValue(p.style, "order"), 10) || 0) - (parseInt(styleValue(q.style, "order"), 10) || 0));
 		// Each item's base size and its limits
-		type F = { box: IgeUiBox; base: number; hypo: number; min: number; max: number; grow: number; shrink: number; size: number; frozen: boolean; marginMain: number; autoStart: boolean; autoEnd: boolean };
+		type F = { box: IgeUiBox; base: number; hypo: number; min: number; max: number; grow: number; shrink: number; size: number; frozen: boolean; marginMain: number; autoStart: boolean; autoEnd: boolean; contentMin?: boolean };
 		const flex: F[] = items.map((it) => {
 			this._edges(it, cw);
 			const grow = parseFloat(styleValue(it.style, "flex-grow")) || 0;
@@ -1942,8 +1943,10 @@ export class IgeUiLayoutEngine {
 				else base = contentH = this.measureH(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s) });
 			}
 			const ov = styleValue(it.style, row ? "overflow-x" : "overflow-y");
+			const max = (row ? this._specW(it, cw, "max-width") : this._specH(it, innerH, "max-height")) ?? Infinity;
 			// The automatic minimum: its min-content (unless it scrolls or clips): in a column, its content's height
 			let min = row ? this._specW(it, cw, "min-width") : this._specH(it, innerH, "min-height");
+			let contentMin = false;
 			if (min === undefined) {
 				const minV = styleValue(it.style, row ? "min-width" : "min-height");
 				if (minV === "auto" && ov === "visible") {
@@ -1954,17 +1957,25 @@ export class IgeUiLayoutEngine {
 						const content = it.display !== "text" && !(it.el && REPLACED.has(it.el.localName) && !it.pseudo) ? this._innerIntrinsic(it).min + this._hEdges(it) : this.intrinsic(it).min;
 						min = Math.min(content, spec ?? Infinity, transferred ?? Infinity);
 					} else {
-						if (contentH === undefined) contentH = this.measureH(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s) });
 						const spec = this._specH(it, innerH);
-						min = Math.min(contentH, spec ?? Infinity);
+						// (Its own height set, its size before flexing: its content's height, which can be less, matters only if
+						// the line shrinks, so it's measured then: resolved below. Till then, that height)
+						if (spec !== undefined && base === spec && spec <= max) {
+							min = spec;
+							contentMin = true;
+						} else {
+							// (Its content's height, not the height it has set)
+							if (spec !== undefined) contentH = this.measureH(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s), autoH: true });
+							else if (contentH === undefined) contentH = this.measureH(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s) });
+							min = Math.min(contentH, spec ?? Infinity);
+						}
 					}
 				} else min = row ? this._hEdges(it) : this._vEdges(it);
 			}
-			const max = (row ? this._specW(it, cw, "max-width") : this._specH(it, innerH, "max-height")) ?? Infinity;
 			const ms = styleValue(it.style, row ? "margin-left" : "margin-top"), me = styleValue(it.style, row ? "margin-right" : "margin-bottom");
 			const marginMain = row ? it.marginLeft + it.marginRight : it.marginTop + it.marginBottom;
 			const hypo = Math.max(min ?? 0, Math.min(max, base));
-			return { box: it, base, hypo, min: min ?? 0, max, grow, shrink: Number.isFinite(shrink) ? shrink : 1, size: hypo, frozen: false, marginMain, autoStart: ms === "auto", autoEnd: me === "auto" };
+			return { box: it, base, hypo, min: min ?? 0, max, grow, shrink: Number.isFinite(shrink) ? shrink : 1, size: hypo, frozen: false, marginMain, autoStart: ms === "auto", autoEnd: me === "auto", contentMin };
 		});
 		// A column with no height of its own but a limit on it (max-height, min-height): its items flex in the height it
 		// will have (the container's main size comes first: CSS Flexbox 9.3), so a scrolling item shrinks into a capped panel
@@ -2002,6 +2013,15 @@ export class IgeUiLayoutEngine {
 				continue;
 			}
 			const growing = sumHypo < avail;
+			// (Shrinking: a column item with a height of its own goes down to its content's height, as CSS Flexbox's content
+			// size suggestion has it, not just to that height)
+			if (!growing) {
+				for (const f of line) {
+					if (!f.contentMin || f.shrink === 0) continue;
+					const content = this.measureH(f.box, cw, undefined, { shrink: false, width: this._crossWidth(f.box, cw, s), autoH: true });
+					f.min = Math.min(content, f.min);
+				}
+			}
 			for (const f of line) {
 				f.frozen = (growing ? f.grow === 0 : f.shrink === 0) || (growing && f.base > f.hypo) || (!growing && f.base < f.hypo);
 				f.size = f.frozen ? f.hypo : f.base;
