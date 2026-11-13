@@ -143,3 +143,13 @@ describe("ui2: dashed and dotted borders", () => {
 		expect(describePaint(boxes.filter((i) => i.op === "box" && i.color?.g === 0))).toEqual(["box 0,1 3x46 rgba(255,0,0,1)"]);
 	});
 });
+
+describe("ui2: masked backdrops", () => {
+	it("a backdrop blur with a linear-gradient mask-image carries the mask (tilt-shift's soft bands)", () => {
+		const r = ui(".b { position: absolute; left: 0; right: 0; top: 0; height: 100px; backdrop-filter: blur(5px); mask-image: linear-gradient(to bottom, #000 10%, transparent); }");
+		r.document.body.innerHTML = `<div class="b"></div>`;
+		r.update();
+		const bd = r.items.find((i) => i.op === "box" && i.backdrop) as { mask?: { type: string; angle?: number } } | undefined;
+		expect(bd?.mask).toMatchObject({ type: "linear", angle: 180 });
+	});
+});

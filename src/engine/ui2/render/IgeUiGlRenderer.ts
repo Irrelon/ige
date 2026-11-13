@@ -137,6 +137,15 @@ float blurredBox(vec2 lower, vec2 upper, vec2 p, float sigma, float corner) {
 	return v;
 }
 
+// A mask-image's linear gradient at p (its alpha), over the item's box
+float maskAlpha(vec2 p) {
+	vec2 c = v_shape.xy + v_shape.zw * 0.5;
+	vec2 dir = vec2(sin(v_grad.z), -cos(v_grad.z));
+	float len = abs(v_shape.z * sin(v_grad.z)) + abs(v_shape.w * cos(v_grad.z));
+	float t = dot(p - c, dir) / max(len, 0.0001) + 0.5;
+	return texture(u_ramp, vec2(clamp(t, 0.0, 1.0) * (255.0 / 256.0) + 0.5 / 256.0, (v_grad.x + 0.5) / 512.0)).a;
+}
+
 vec4 fill(vec2 p) {
 	if (v_grad.x < 0.0) return vec4(v_color.rgb * v_color.a, v_color.a);
 	float t;
@@ -221,6 +230,8 @@ void main() {
 		// An image (or a blurred backdrop: v_params.y set, the first pass, clears its shape for it), cut to its box's shape
 		col = v_params.y > 0.5 ? vec4(0.0, 0.0, 0.0, 1.0) : texture(u_image, v_tex);
 		a = clamp(0.5 - shape(v_local, v_shape, v_radii, v_chamfer) / px, 0.0, 1.0);
+		// (A backdrop's mask-image: its gradient's alpha)
+		if (v_grad.x >= 0.0) a *= maskAlpha(v_local);
 	}
 	a *= v_m1.z;
 	if (a <= 0.002) discard;
@@ -606,6 +617,13 @@ export class IgeUiGlRenderer {
 				const x1 = Math.min(width, Math.ceil(Math.max(...xs) * scale + offset[0]) + pad), y1 = Math.min(height, Math.ceil(Math.max(...ys) * scale + offset[1]) + pad);
 				if (x1 <= x0 || y1 <= y0 || !this._blurProgram) continue;
 				const bd = { x: x0, y: y0, w: x1 - x0, h: y1 - y0, sigma };
+				// (A mask-image's linear gradient fades it: its ramp's alpha over the box)
+				let mask = NOGRAD;
+				if (it.mask?.type === "linear") {
+					let ang = ((it.mask.angle ?? 180) * Math.PI) / 180;
+					if (it.mask.toCorner) ang = Math.atan2(it.mask.toCorner[0] * it.h, -it.mask.toCorner[1] * it.w);
+					mask = [this._rampRow(it.mask, Math.abs(it.w * Math.sin(ang)) + Math.abs(it.h * Math.cos(ang))), 0, ang, 0];
+				}
 				batch = { start: n, count: 0, image: null, additive: false, backdrop: bd, blend: "erase" };
 				batches.push(batch);
 				const oe = push(null, false);
@@ -613,11 +631,11 @@ export class IgeUiGlRenderer {
 				// down: scaled to the part of the texture it fills once the frame's textures are sized)
 				const tl = [(Math.min(...xs) * scale + offset[0] - x0) / bd.w, (bd.h - (Math.min(...ys) * scale + offset[1] - y0)) / bd.h];
 				const br = [(Math.max(...xs) * scale + offset[0] - x0) / bd.w, (bd.h - (Math.max(...ys) * scale + offset[1] - y0)) / bd.h];
-				write(oe, [it.x, it.y, it.w, it.h], [it.x, it.y, it.w, it.h], it.radii, [1, 1, 1, 1], [6, 1, 0, 0], [tl[0], tl[1], br[0], br[1]], it.chamfer ?? Z4, clip, it.matrix, it.opacity, 0, NOGRAD);
+				write(oe, [it.x, it.y, it.w, it.h], [it.x, it.y, it.w, it.h], it.radii, [1, 1, 1, 1], [6, 1, 0, 0], [tl[0], tl[1], br[0], br[1]], it.chamfer ?? Z4, clip, it.matrix, it.opacity, 0, mask);
 				batch = { start: n, count: 0, image: null, additive: false, blend: "add" };
 				batches.push(batch);
 				const o = push(null, false);
-				write(o, [it.x, it.y, it.w, it.h], [it.x, it.y, it.w, it.h], it.radii, [1, 1, 1, 1], [6, 0, 0, 0], [tl[0], tl[1], br[0], br[1]], it.chamfer ?? Z4, clip, it.matrix, it.opacity, 0, NOGRAD);
+				write(o, [it.x, it.y, it.w, it.h], [it.x, it.y, it.w, it.h], it.radii, [1, 1, 1, 1], [6, 0, 0, 0], [tl[0], tl[1], br[0], br[1]], it.chamfer ?? Z4, clip, it.matrix, it.opacity, 0, mask);
 				backdrops.push({ o, bd });
 				batch = undefined;
 				continue;

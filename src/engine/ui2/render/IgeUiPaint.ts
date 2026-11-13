@@ -48,6 +48,8 @@ export interface IgeUiPaintBox extends IgeUiPaintBase {
 	border?: number;
 	/** A glow (outer box-shadow) or an inset shadow, with its blur. */
 	shadow?: "outer" | "inset";
+	/** A backdrop's mask-image (a linear gradient): its alpha fades the blurred backdrop. */
+	mask?: IgeCssGradient;
 	/** Drawn exactly where it is (an SVG shape), not snapped to device pixels as a box is. */
 	exact?: boolean;
 	/** backdrop-filter: blur(): what's already drawn behind it, blurred this much (its shape cut out), under its fills. */
@@ -408,7 +410,10 @@ export class IgeUiPainter {
 		const bd = /blur\(\s*([^)]+)\)/.exec(styleValue(s, "backdrop-filter"));
 		if (bd) {
 			const blur = resolveLength(bd[1].trim(), lenCtx(s)) ?? 0;
-			if (blur > 0) this.items.push({ op: "box", ...base, x, y, w, h, backdrop: true, blur, color: { r: 0, g: 0, b: 0, a: 1 } });
+			// (mask-image: a linear gradient fades it, tilt-shift's soft bands)
+			const maskV = styleValue(s, "mask-image") !== "none" ? styleValue(s, "mask-image") : styleValue(s, "-webkit-mask-image");
+			const mask = maskV && maskV !== "none" ? parseGradient(maskV, current) : undefined;
+			if (blur > 0) this.items.push({ op: "box", ...base, x, y, w, h, backdrop: true, blur, color: { r: 0, g: 0, b: 0, a: 1 }, ...(mask?.type === "linear" ? { mask } : {}) });
 		}
 		// Fills: the colour, then image layers (the first listed on top)
 		const bg = parseColor(styleValue(s, "background-color"), current);
