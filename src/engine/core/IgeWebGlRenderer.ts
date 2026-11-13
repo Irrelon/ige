@@ -42,7 +42,7 @@ import type { IgeRaycastHit, IgeRaycastOptions } from "@/engine/webgl/IgeRaycast
 import { raycastEntities } from "@/engine/webgl/IgeRaycast";
 import { takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
 import type { IgeHeightfieldRayOptions } from "@/engine/webgl/IgeHeightfieldRay";
-import { IGE_POST_PROCESS_DEFAULTS, IgeWebGlPostProcess, type IgePostProcessSettings } from "@/engine/webgl/IgeWebGlPostProcess";
+import { IGE_POST_PROCESS_DEFAULTS, igePictureEffectsOn, IgeWebGlPostProcess, type IgePostProcessSettings } from "@/engine/webgl/IgeWebGlPostProcess";
 import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
 import { type IgeUiSettings, type IgeUiView, placeUi } from "@/engine/webgl/IgeUiLayout";
 import { type IgeUiQuad, IgeWebGlUiPass } from "@/engine/webgl/IgeWebGlUiPass";
@@ -846,6 +846,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 *     renderer.postProcess({ enabled: true, toneMapping: "aces", exposure: 1.3, bloom: 0.4, vignette: 0.3, temperature: 0.2 });
 	 * @example #Turn it off
 	 *     renderer.postProcess({ enabled: false });
+	 * @example #A drunk sway: the world's picture moved, turned, zoomed and softened (the UI stays put; works with it off too)
+	 *     renderer.postProcess({ offsetX: 0.006, offsetY: -0.004, rotation: 0.015, zoom: 1.05, blur: 0.0012 });
 	 */
 	postProcess(): IgePostProcessSettings;
 	postProcess(settings: Partial<IgePostProcessSettings>): this;
@@ -856,9 +858,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		return this;
 	}
 
-	/** The post-processor for this frame, created on first use (null on WebGL 1 or when off). */
+	/** The post-processor for this frame, created on first use (null on WebGL 1, or when off and no picture effect's set). */
 	protected _postProcessor(): IgeWebGlPostProcess | null {
-		if (!this._postSettings.enabled || this._webglVersion !== 2 || !this._canvasContext) return null;
+		if ((!this._postSettings.enabled && !igePictureEffectsOn(this._postSettings)) || this._webglVersion !== 2 || !this._canvasContext) return null;
 		if (!this._postProcess) {
 			this._postProcess = new IgeWebGlPostProcess(this._canvasContext as WebGL2RenderingContext, this._postSettings);
 		}

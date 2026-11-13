@@ -17,7 +17,15 @@
  *   half resolution, each sample weighted by how out of focus it is so
  *   sharp edges don't smear into the blur behind them.
  *
+ * - the picture itself moved, turned and zoomed on the screen, softened and
+ *   doubled (a drunk sway, a stunned blur): `offsetX`, `offsetY`, `rotation`,
+ *   `zoom`, `blur`, `ghost`. Only the world's picture moves: what's drawn after
+ *   it (outlines, the UI layer, the document UI) stays put.
+ *
  * Off by default. Enable it with `renderer.postProcess({ enabled: true, ... })`.
+ * The picture effects work with it off too: while any is set, the frame goes
+ * offscreen for them alone (no bloom, tone mapping or grading), at the cost of
+ * that offscreen target, a resolve and one full-screen pass.
  * It runs once over the whole canvas, after every viewport has drawn.
  */
 
@@ -64,6 +72,30 @@ export interface IgePostProcessSettings {
 	 * far behind it wants a smaller range.
 	 */
 	dofRange: number;
+	/**
+	 * The picture moved on the screen, as a fraction of the screen's height (x to the right, y down): a sway or a
+	 * shake. 0 = unmoved.
+	 */
+	offsetX: number;
+	offsetY: number;
+	/** The picture turned about the screen's middle, radians (clockwise on screen). */
+	rotation: number;
+	/** The picture zoomed about the screen's middle (1 = unchanged; a little over 1 hides the edges a sway shows). */
+	zoom: number;
+	/** A soft blur over the whole picture, its radius as a fraction of the screen's height (0 = sharp). */
+	blur: number;
+	/** Double vision: a second, shifted copy of the picture's bright parts, lightening it (0 = none, 1 = full). */
+	ghost: number;
+	/** The ghost's shift, as a fraction of the screen's height (x to the right, y down). */
+	ghostX: number;
+	ghostY: number;
+	/** The ghost's tint (0-1 each). */
+	ghostColor: { r: number; g: number; b: number };
+}
+
+/** Whether any of the picture effects (offset, rotation, zoom, blur, ghost) is set: the frame goes offscreen for them. */
+export function igePictureEffectsOn (s: Pick<IgePostProcessSettings, "offsetX" | "offsetY" | "rotation" | "zoom" | "blur" | "ghost">): boolean {
+	return s.offsetX !== 0 || s.offsetY !== 0 || s.rotation !== 0 || s.zoom !== 1 || s.blur > 0 || s.ghost > 0;
 }
 
 export const IGE_POST_PROCESS_DEFAULTS: IgePostProcessSettings = {
@@ -85,7 +117,16 @@ export const IGE_POST_PROCESS_DEFAULTS: IgePostProcessSettings = {
 	dofFocus: 0,
 	dofFocusX: 0.5,
 	dofFocusY: 0.5,
-	dofRange: 0.15
+	dofRange: 0.15,
+	offsetX: 0,
+	offsetY: 0,
+	rotation: 0,
+	zoom: 1,
+	blur: 0,
+	ghost: 0,
+	ghostX: 0,
+	ghostY: 0,
+	ghostColor: { r: 1, g: 1, b: 1 }
 };
 
 /** Depth to distance and circle of confusion, shared by the depth-of-field passes. */
@@ -223,16 +264,54 @@ uniform float u_temperature;
 uniform float u_vignette;
 uniform float u_vignetteSoftness;
 uniform vec2 u_resolution;
+// The picture's place: its offset (in heights, y up), turn and zoom; its blur (in heights); the ghost
+uniform vec2 u_offset;
+uniform float u_rotation;
+uniform float u_zoom;
+uniform float u_blur;
+uniform float u_ghost;
+uniform vec2 u_ghostShift;
+uniform vec3 u_ghostColor;
 
 vec3 aces(vec3 x) {
 	const float a = 2.51, b = 0.03, c = 2.43, d = 0.59, e = 0.14;
 	return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
 }
 
+// Where on the drawn frame a point of the screen shows: the picture's move, turn and zoom undone (about the middle,
+// in units of the screen's height so a turn keeps its shape)
+vec2 placed(vec2 uv) {
+	float aspect = u_resolution.x / max(u_resolution.y, 1.0);
+	vec2 p = (uv - 0.5) * vec2(aspect, 1.0) - u_offset;
+	float cs = cos(u_rotation), sn = sin(u_rotation);
+	p = vec2(cs * p.x + sn * p.y, -sn * p.x + cs * p.y) / u_zoom;
+	return p / vec2(aspect, 1.0) + 0.5;
+}
+
+// The frame there, softened by the blur (eight taps round a ring and the middle)
+vec3 sceneAt(vec2 uv) {
+	vec3 c = texture(u_scene, uv).rgb;
+	if (u_blur <= 0.0) return c;
+	vec2 r = vec2(u_blur / max(u_resolution.x / max(u_resolution.y, 1.0), 1e-4), u_blur);
+	vec3 s = c * 2.0;
+	for (int i = 0; i < 8; i++) {
+		float a = float(i) * 0.785398;
+		s += texture(u_scene, uv + vec2(cos(a), sin(a)) * r).rgb;
+	}
+	return s / 10.0;
+}
+
+
 void main() {
-	vec3 c = texture(u_scene, v_uv).rgb;
+	vec2 uv = placed(v_uv);
+	vec3 c = sceneAt(uv);
+	if (u_ghost > 0.0) {
+		// Double vision: the shifted copy's bright parts lighten the picture
+		vec3 g = sceneAt(uv - u_ghostShift / vec2(u_resolution.x / max(u_resolution.y, 1.0), 1.0)) * u_ghostColor;
+		c = mix(c, max(c, g), u_ghost);
+	}
 	if (u_bloom > 0.0) {
-		c += (texture(u_bloom0, v_uv).rgb * 0.55 + texture(u_bloom1, v_uv).rgb * 0.45) * u_bloom;
+		c += (texture(u_bloom0, uv).rgb * 0.55 + texture(u_bloom1, uv).rgb * 0.45) * u_bloom;
 	}
 	c *= u_exposure;
 	c *= vec3(1.0 + u_temperature * 0.08, 1.0 + u_temperature * 0.01, 1.0 - u_temperature * 0.08);
@@ -264,6 +343,12 @@ interface Target {
 interface Program {
 	program: WebGLProgram;
 	uniforms: Map<string, WebGLUniformLocation | null>;
+}
+
+/** The picture effects of some settings (what's kept when post-processing is off and only they're on). */
+function pictureOf (s: IgePostProcessSettings): Partial<IgePostProcessSettings> {
+	const { offsetX, offsetY, rotation, zoom, blur, ghost, ghostX, ghostY, ghostColor, samples } = s;
+	return { offsetX, offsetY, rotation, zoom, blur, ghost, ghostX, ghostY, ghostColor, samples };
 }
 
 export class IgeWebGlPostProcess {
@@ -310,7 +395,7 @@ export class IgeWebGlPostProcess {
 	 */
 	begin (width: number, height: number): boolean {
 		this._active = false;
-		if (!this.settings.enabled || this._failed || width < 1 || height < 1) return false;
+		if ((!this.settings.enabled && !igePictureEffectsOn(this.settings)) || this._failed || width < 1 || height < 1) return false;
 		try {
 			this._ensure(width, height);
 		} catch (error) {
@@ -340,7 +425,9 @@ export class IgeWebGlPostProcess {
 	end (): void {
 		if (!this._active) return;
 		this._active = false;
-		const gl = this._gl, s = this.settings;
+		const gl = this._gl;
+		// (On only for the picture effects: none of the rest)
+		const s = this.settings.enabled ? this.settings : { ...IGE_POST_PROCESS_DEFAULTS, ...pictureOf(this.settings), enabled: false };
 		const scene = this._scene!;
 		const programs = this._programs!;
 
@@ -406,6 +493,14 @@ export class IgeWebGlPostProcess {
 		gl.uniform1f(u("u_vignette"), s.vignette);
 		gl.uniform1f(u("u_vignetteSoftness"), s.vignetteSoftness);
 		gl.uniform2f(u("u_resolution"), this._w, this._h);
+		// (Screen terms to the shader's: y up, so a clockwise turn is negative)
+		gl.uniform2f(u("u_offset"), s.offsetX, -s.offsetY);
+		gl.uniform1f(u("u_rotation"), -s.rotation);
+		gl.uniform1f(u("u_zoom"), Math.max(0.01, s.zoom));
+		gl.uniform1f(u("u_blur"), Math.max(0, s.blur));
+		gl.uniform1f(u("u_ghost"), Math.max(0, Math.min(1, s.ghost)));
+		gl.uniform2f(u("u_ghostShift"), s.ghostX, -s.ghostY);
+		gl.uniform3f(u("u_ghostColor"), s.ghostColor.r, s.ghostColor.g, s.ghostColor.b);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 		gl.bindVertexArray(null);
@@ -457,7 +552,8 @@ export class IgeWebGlPostProcess {
 			};
 			this._vao = gl.createVertexArray();
 		}
-		const half = this.settings.hdr && !!gl.getExtension("EXT_color_buffer_float");
+		// (On for the picture effects alone, nothing's tone mapped: plain 8-bit colour, half the memory to move)
+		const half = this.settings.hdr && this.settings.enabled && !!gl.getExtension("EXT_color_buffer_float");
 		const samples = Math.max(0, Math.min(this.settings.samples, gl.getParameter(gl.MAX_SAMPLES) as number));
 		if (width === this._w && height === this._h && half === this._half && samples === this._samples && this._msaaFbo) return;
 		this._freeTargets();
