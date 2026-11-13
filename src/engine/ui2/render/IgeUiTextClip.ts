@@ -55,26 +55,35 @@ export function paintTextInBackground (items: IgeUiPaintItem[], item: IgeUiPaint
 		if (c && c.a > 0) items.push({ ...item, color: c });
 		return;
 	}
-	// The gradient's direction (CSS's angle: 0 up, 90 right; or towards a corner) and its line's length
+	for (const band of gradientBands(g, x, y, w, h, item.clip)) items.push({ ...item, color: band.color, clip: band.clip });
+}
+
+/**
+ * A linear gradient over the box (x, y, w, h) as bands across the way it mostly runs (about 3px each, at most 24),
+ * each a clip rectangle (within `clip`, the outer ones open past the box's edges) and the gradient's colour at its
+ * middle: what's drawn once per band, clipped, follows the gradient.
+ */
+export function gradientBands (g: IgeCssGradient, x: number, y: number, w: number, h: number, clip: [number, number, number, number] | null | undefined): { clip: [number, number, number, number]; color: IgeCssColor }[] {
+	// Its direction (CSS's angle: 0 up, 90 right; or towards a corner) and its line's length
 	let ang = ((g.angle ?? 180) * Math.PI) / 180;
 	if (g.toCorner) ang = Math.atan2(g.toCorner[0] * h, -g.toCorner[1] * w);
 	const dx = Math.sin(ang), dy = -Math.cos(ang);
 	const length = Math.abs(w * dx) + Math.abs(h * dy);
 	const cx = x + w / 2, cy = y + h / 2;
 	const tAt = (px: number, py: number) => ((px - cx) * dx + (py - cy) * dy) / Math.max(1e-6, length) + 0.5;
-	// Bands across the way it mostly runs, about 3px each
 	const down = Math.abs(dy) >= Math.abs(dx);
 	const extent = down ? h : w;
 	const n = Math.max(2, Math.min(24, Math.round(extent / 3)));
-	const clip = item.clip ?? [-1e6, -1e6, 1e6, 1e6];
+	const c = clip ?? [-1e6, -1e6, 1e6, 1e6];
+	const out: { clip: [number, number, number, number]; color: IgeCssColor }[] = [];
 	for (let i = 0; i < n; i++) {
 		const a = (down ? y : x) + (extent * i) / n, b = (down ? y : x) + (extent * (i + 1)) / n;
-		// (The first and last bands reach out, so nothing past the box's edge goes unpainted)
 		const lo = i === 0 ? -1e6 : a, hi = i === n - 1 ? 1e6 : b;
-		const band: [number, number, number, number] = down ? [clip[0], Math.max(clip[1], lo), clip[2], Math.min(clip[3], hi)] : [Math.max(clip[0], lo), clip[1], Math.min(clip[2], hi), clip[3]];
+		const band: [number, number, number, number] = down ? [c[0], Math.max(c[1], lo), c[2], Math.min(c[3], hi)] : [Math.max(c[0], lo), c[1], Math.min(c[2], hi), c[3]];
 		if (band[2] <= band[0] || band[3] <= band[1]) continue;
 		const mid = (a + b) / 2;
-		const c = gradientColorAt(g, Math.min(1, Math.max(0, down ? tAt(cx, mid) : tAt(mid, cy))), length);
-		if (c.a > 0) items.push({ ...item, color: c, clip: band });
+		const color = gradientColorAt(g, Math.min(1, Math.max(0, down ? tAt(cx, mid) : tAt(mid, cy))), length);
+		if (color.a > 0) out.push({ clip: band, color });
 	}
+	return out;
 }

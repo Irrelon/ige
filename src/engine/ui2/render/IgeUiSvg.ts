@@ -10,14 +10,16 @@
  *   inside one path is drawn sharp rather than smoothed, so a mesh of
  *   triangles fills without seams, as a browser fills a path as one shape;
  * - circles and rectangles: the painter's boxes (smooth rings and corners);
- * - `fill="url(#id)"` with a `<pattern>`: its tile repeated over the shape.
+ * - `fill="url(#id)"` with a `<pattern>`: its tile repeated over the shape;
+ *   with a gradient: as a CSS gradient (IgeUiSvgGradient).
  *
  * Layout uses the same geometry for the shapes' client rects (their bounds,
  * stroke not included, as a browser gives them).
  */
-import { type IgeCssColor, type IgeCssMatrix, IDENTITY, multiply, parseColor, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
+import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix, IDENTITY, multiply, parseColor, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import type { IgeUiClip, IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
+import { paintGradientTriangles, svgGradient, svgGradientMiddle } from "@/engine/ui2/render/IgeUiSvgGradient";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 
 /** A subpath's points (x, y, x, y…, in user units) and whether it's closed. */
@@ -558,14 +560,16 @@ function intersect (a: IgeUiClip, b: IgeUiClip): IgeUiClip {
 	return [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.min(a[2], b[2]), Math.min(a[3], b[3])];
 }
 
-/** A paint (fill or stroke) value: a colour, a pattern (url(#id)), or nothing. */
-function paintOf (value: string, el: IgeUiElement, current: IgeCssColor): { color?: IgeCssColor; pattern?: IgeUiElement } {
+/** A paint (fill or stroke) value: a colour, a pattern or gradient (url(#id)), or nothing. */
+function paintOf (value: string, el: IgeUiElement, current: IgeCssColor): { color?: IgeCssColor; pattern?: IgeUiElement; gradient?: IgeCssGradient } {
 	const v = value.trim();
 	if (!v || v === "none") return {};
 	const url = /^url\(\s*["']?#([^"')]+)["']?\s*\)\s*(.*)$/.exec(v);
 	if (url) {
 		const ref = findById(el, url[1]);
 		if (ref?.localName === "pattern") return { pattern: ref };
+		const gradient = ref ? svgGradient(ref, current) : undefined;
+		if (gradient) return { gradient };
 		// (A gradient or something missing: its fallback colour, if it gave one)
 		return url[2] ? { color: parseColor(url[2], current) } : {};
 	}
@@ -584,6 +588,8 @@ function shape (
 	current: IgeCssColor, pattern: (pattern: IgeUiElement, bounds: [number, number, number, number]) => void
 ): void {
 	const fill = paintOf(p.fill, el, current), stroke = paintOf(p.stroke, el, current);
+	// (A stroke in a gradient: its middle colour)
+	if (stroke.gradient) stroke.color = svgGradientMiddle(stroke.gradient);
 	const fillOpacity = clamp01(resolveNumber(p["fill-opacity"]) ?? 1), strokeOpacity = clamp01(resolveNumber(p["stroke-opacity"]) ?? 1);
 	const nonScaling = (cs["vector-effect"] ?? el.getAttribute("vector-effect")) === "non-scaling-stroke";
 	const swUser = Math.max(0, parseFloat(p["stroke-width"]) || 0);
@@ -609,6 +615,7 @@ function shape (
 			if (bw <= 0 || bh <= 0) return;
 		}
 		if (fill.color && fill.color.a > 0) items.push({ op: "box", x: bx, y: by, w: bw, h: bh, radii: [r, r, r, r], color: fill.color, opacity: opacity * fillOpacity, ...at });
+		else if (fill.gradient) items.push({ op: "box", x: bx, y: by, w: bw, h: bh, radii: [r, r, r, r], gradient: fill.gradient, opacity: opacity * fillOpacity, ...at });
 		else if (fill.pattern) {
 			const b = svgShapeBounds(el);
 			if (b) pattern(fill.pattern, b);
@@ -626,6 +633,9 @@ function shape (
 		if (fill.color && fill.color.a > 0) {
 			const { tris, edges } = fillTriangles(geometry, m);
 			if (tris.length) items.push({ op: "fill", tris, edges, color: fill.color, opacity: opacity * fillOpacity, ...at });
+		} else if (fill.gradient) {
+			const { tris, edges } = fillTriangles(geometry, m);
+			if (tris.length) paintGradientTriangles(items, { op: "fill", tris, edges, opacity: opacity * fillOpacity, ...at }, fill.gradient);
 		} else if (fill.pattern) {
 			const b = svgShapeBounds(el);
 			if (b) pattern(fill.pattern, b);
