@@ -16,8 +16,10 @@
  * on its own with draw().
  */
 import type { IgeCssStylesheet } from "@/engine/ui2/css/IgeCssParser";
-import { placeTextField, takeSelection, textFieldPaint, wireTextField } from "@/engine/ui2/dom/IgeUiTextField";
-import { type IgeUiAdoption, igeUiSameStart, IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
+import { isTextField, textFieldPaint } from "@/engine/ui2/dom/IgeUiTextField";
+import type { IgeUiHost, IgeUiInputEvent, IgeUiInputResult, IgeUiTextEntryEvents, IgeUiTextEntryField } from "@/engine/ui2/IgeUiHost";
+import { igeUiAttachWebInput, webUiHost } from "@/engine/ui2/IgeUiWebHost";
+import { type IgeUiAdoption, igeUiEventClock, igeUiSameStart, IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
 import { type IgeUiBox, stickyShift } from "@/engine/ui2/layout/IgeUiBox";
 import { IgeUiDragDrop } from "@/engine/ui2/input/IgeUiDragDrop";
 import { IgeUiImages } from "@/engine/ui2/dom/IgeUiImages";
@@ -30,7 +32,7 @@ import { IgeUiAnimator, LAYOUT_PROPS } from "@/engine/ui2/style/IgeUiAnimator";
 import { cssNumber, serializeComputed } from "@/engine/ui2/style/IgeUiComputed";
 import { INHERITED } from "@/engine/ui2/style/IgeUiProperties";
 import { type IgeUiComputedStyle, IgeUiStyleEngine, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
-import { IgeUiCanvasFonts, IgeUiFixedFonts, type IgeUiFontProvider } from "@/engine/ui2/text/IgeUiFonts";
+import type { IgeUiFontProvider } from "@/engine/ui2/text/IgeUiFonts";
 import { IgeUiSdfAtlas } from "@/engine/ui2/text/IgeUiSdfAtlas";
 import { svgTransform } from "@/engine/ui2/render/IgeUiSvg";
 
@@ -117,7 +119,9 @@ interface HitEntry {
 }
 
 export interface IgeUiRootOptions {
-	/** Measure text with the page's fonts (default in the browser) or a fixed-width stand-in (headless). */
+	/** The platform: time, the display, fonts, pictures, 2D surfaces and typing (default: the browser's, webUiHost()). */
+	host?: IgeUiHost;
+	/** Measure text with these fonts (default: the host's: the page's in a browser, a fixed-width stand-in without one). */
 	fonts?: IgeUiFontProvider;
 	/** The screen's size in CSS px (default: the window's). */
 	width?: number;
@@ -139,7 +143,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	scale = 1;
 	safe = { x: 0, y: 0 };
 	/** Device pixels per CSS pixel (as drawn last; border widths in computed styles snap to them). */
-	dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+	dpr = 1;
+	/** The platform it runs on (IgeUiHost). */
+	readonly host: IgeUiHost;
 	/** Where the UI's canvas sits on the page (CSS px), for client coordinates. */
 	pageOffset = { x: 0, y: 0 };
 	rootBox?: IgeUiBox;
@@ -181,7 +187,6 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_keyboardModality: boolean | undefined = undefined;
 	/** HTML drag and drop from the pointer (draggable="true"). */
 	readonly drag: IgeUiDragDrop = new IgeUiDragDrop(this);
-	_textInput?: HTMLInputElement;
 	/** Time spent in each stage last frame (ms), and counts, for the stats overlay and tests. */
 	stats = { style: 0, layout: 0, paint: 0, draw: 0, elements: 0, items: 0, drawCalls: 0, partial: 0, adopted: 0, kept: 0, partialPaint: 0 };
 	/** Events the game shouldn't see (the UI took them): set as each is handled. */
@@ -189,11 +194,16 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_detach?: () => void;
 
 	constructor (opts: IgeUiRootOptions = {}) {
+		this.host = opts.host ?? webUiHost();
+		this.dpr = this.host.display.dpr();
+		this.images.host = this.host;
+		// (Events made by the UI are stamped with the host's clock)
+		igeUiEventClock.now = () => this.host.time.now();
 		this.document = new IgeUiDocument();
 		(this.document as IgeUiDocument & { _uiRoot?: IgeUiRoot })._uiRoot = this;
 		this.document.host = this;
 		this.document.defaultView = this._view();
-		const fonts = opts.fonts ?? (typeof document !== "undefined" ? new IgeUiCanvasFonts() : new IgeUiFixedFonts());
+		const fonts = opts.fonts ?? this.host.text.fonts;
 		this.layoutEngine = new IgeUiLayoutEngine(fonts);
 		// <img> pictures: loaded as layout meets them, laid out at their size, the UI drawn again as each arrives
 		this.layoutEngine.imageSizes = this.images.sizes;
@@ -208,16 +218,13 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		// The focused field's caret or selection, over its text (dom/IgeUiTextField)
 		this.painter.fieldPaint = textFieldPaint(this.layoutEngine, () => this.document.activeElement);
 		if (opts.width !== undefined && opts.height !== undefined) this.screen = { w: opts.width, h: opts.height };
-		else if (typeof window !== "undefined") this.screen = { w: window.innerWidth, h: window.innerHeight };
+		else this.screen = this.host.display.size();
 		this.animator.keyframes = this.styles.keyframes;
 		this._updateViewport();
 		// The engine's own bits: the tooltip and the default look of focus
 		this.styles.addStylesheet(ENGINE_STYLES);
 		// Fonts loading late: measured and drawn again
-		if (typeof document !== "undefined" && document.fonts) {
-			document.fonts.addEventListener?.("loadingdone", () => this.fontsChanged());
-			void document.fonts.ready?.then(() => this.fontsChanged());
-		}
+		this._fontsOff = this.host.text.onChange(() => this.fontsChanged());
 	}
 
 	get root (): IgeUiElement {
@@ -227,13 +234,12 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** The document's window stand-in: its observers, computed styles and frames. */
 	_view (): IgeUiView {
 		const root = this;
-		const raf = (fn: (t: number) => void): number => (typeof requestAnimationFrame === "function" ? requestAnimationFrame(fn) : (setTimeout(() => fn(perf()), 16) as unknown as number));
 		return {
 			MutationObserver: IgeUiMutationObserver as unknown as IgeUiView["MutationObserver"],
 			ResizeObserver: IgeUiResizeObserver as unknown as IgeUiView["ResizeObserver"],
 			getComputedStyle: (el: IgeUiElement) => root.computedStyle(el),
-			requestAnimationFrame: raf,
-			cancelAnimationFrame: (id: number) => (typeof cancelAnimationFrame === "function" ? cancelAnimationFrame(id) : clearTimeout(id)),
+			requestAnimationFrame: (fn: (t: number) => void) => root.host.time.frame(fn),
+			cancelAnimationFrame: (id: number) => root.host.time.cancelFrame(id),
 			get innerWidth () {
 				return root.viewport.w;
 			},
@@ -278,7 +284,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				const m = svgTransform(el.getAttribute("transform"));
 				if (m) return `matrix(${m.map(cssNumber).join(", ")})`;
 			}
-			return serializeComputed(name, cs, ctx, b, this.dpr);
+			return serializeComputed(name, cs, ctx, b, this.dpr, (u) => this.host.images.resolve(u));
 		};
 		return new Proxy({} as Record<string, string> & { getPropertyValue (name: string): string }, {
 			get (_t, key) {
@@ -308,7 +314,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 	/** The fonts changed (loaded): measured again. */
 	fontsChanged (): void {
-		const f = this.layoutEngine.fonts as IgeUiCanvasFonts;
+		const f = this.layoutEngine.fonts as { reset? (): void };
 		f.reset?.();
 		this.atlas?.reset();
 		this._layoutDirty = true;
@@ -502,7 +508,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		if (!this._mutationQueued) {
 			this._mutationQueued = true;
-			queueMicrotask(() => {
+			void Promise.resolve().then(() => {
 				this._mutationQueued = false;
 				for (const o of [...this._observers]) {
 					const recs = o.takeRecords();
@@ -528,7 +534,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			const typing = (el.localName === "input" && !["button", "submit", "reset", "checkbox", "radio", "range", "color", "file", "image"].includes(el.getAttribute("type") ?? "text")) || el.localName === "textarea";
 			this._focusRing = opts?.focusVisible ?? ((this._keyboardModality ?? true) || typing);
 			// (Shown while the page has the system's focus: a browser's window without it shows no focus at all)
-			this._pageFocused = pageHasFocus();
+			this._pageFocused = this.host.display.focused();
 			if (this._pageFocused) {
 				el._states.add("focus");
 				if (this._focusRing) el._states.add("focus-visible");
@@ -547,7 +553,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 	/** The page gained or lost the system's focus: the focused element's :focus (and ring) shown or taken away, as a browser's are. */
 	_pageFocus (): void {
-		const now = pageHasFocus();
+		const now = this.host.display.focused();
 		if (now === this._pageFocused) return;
 		this._pageFocused = now;
 		const a = this.document.activeElement;
@@ -592,7 +598,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** A text field's selection set by code (select(), setSelectionRange()): drawn, and given to the hidden input if it's focused. */
 	selectionChanged (el: IgeUiElement): void {
 		if (el !== this.document.activeElement) return;
-		if (this._textInput && this._textInput.value === (el.value ?? "")) takeSelection(this._textInput, el);
+		const sel = el as unknown as { selectionStart?: number | null; selectionEnd?: number | null };
+		this.host.textEntry.select(sel.selectionStart ?? 0, sel.selectionEnd ?? 0);
 		this._paintDirty = true;
 	}
 
@@ -734,7 +741,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	}
 
 	/** The frame's work: animations, styles, layout, the display list. */
-	update (now: number = typeof performance !== "undefined" ? performance.now() : Date.now()): void {
+	update (now: number = this.host.time.now()): void {
 		this._now = now;
 		// (SVG's own animations read this frame's time: render/IgeUiSvgSmil)
 		svgClock.now = now;
@@ -749,10 +756,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._tooltipStep(now);
 		if (!this._paintDirty && this._repaintEls.size) {
 			// Only animations moved on: their runs of items painted again (all of it, if that can't be done)
-			const t0 = perf();
+			const t0 = this.host.time.now();
 			if (this._repaintPart()) {
 				this._hitsDirty = true;
-				this.stats.paint = perf() - t0;
+				this.stats.paint = this.host.time.now() - t0;
 				this.stats.items = this.items.length;
 				this.stats.partialPaint++;
 			} else this._paintDirty = true;
@@ -760,7 +767,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		this._repaintEls.clear();
 		if (this._paintDirty) {
-			const t0 = perf();
+			const t0 = this.host.time.now();
 			this.painter._scroll = (el) => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
 			this.items = this.rootBox ? this.painter.paint(this.rootBox) : [];
 			// (What's under the pointer is worked out when it's asked: hitTest)
@@ -769,7 +776,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			// What's under a pointer that hasn't moved, when what's there changed (a list redrawn under it), as a browser does after layout
 			if (this._pointerAt && (laidOut || this._hoverStale)) this._setHover(this.hitTest(this._pointerAt.clientX, this._pointerAt.clientY), this._pointerAt);
 			this._hoverStale = false;
-			this.stats.paint = perf() - t0;
+			this.stats.paint = this.host.time.now() - t0;
 			this.stats.items = this.items.length;
 			// (An SVG animating: drawn again next frame)
 			if (svgAnimating()) this._paintDirty = true;
@@ -777,7 +784,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	}
 
 	/** Every animation settled (transitions done, one-shots at their end, endless ones held at their start), then drawn so. */
-	settleAnimations (now: number = this._now || perf()): void {
+	settleAnimations (now: number = this._now || this.host.time.now()): void {
 		this.flush();
 		if (this._pointerAt && this._hoverStale) {
 			// (What's under a pointer that hasn't moved, after a redraw: hovered now, and its :hover styles settled too)
@@ -885,7 +892,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		this._styleSelf.clear();
 		if (!this._styleAll && !this._styleRoots.size) return;
-		const t0 = perf();
+		const t0 = this.host.time.now();
 		let count = 0, adopted = 0;
 		const now = this._now;
 		const visit = (el: IgeUiElement, parent: IgeUiComputedStyle | undefined, force: boolean) => {
@@ -948,7 +955,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._styleRoots.clear();
 		this._layoutDirty = true;
 		this._paintDirty = true;
-		this.stats.style = perf() - t0;
+		this.stats.style = this.host.time.now() - t0;
 		this.stats.elements = count;
 		this.stats.adopted = adopted;
 	}
@@ -970,7 +977,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	}
 
 	_layout (): void {
-		const t0 = perf();
+		const t0 = this.host.time.now();
 		const v = this.viewport;
 		this.layoutEngine.viewport = v;
 		this.layoutEngine.pixelGrid = this.scale * this.dpr;
@@ -998,7 +1005,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			for (const c of b.children) clamp(c);
 		};
 		for (const b of partial ?? (this.rootBox ? [this.rootBox] : [])) clamp(b);
-		this.stats.layout = perf() - t0;
+		this.stats.layout = this.host.time.now() - t0;
 		// (What's under a pointer that hasn't moved is looked at again after the paint, whoever asked for this layout)
 		this._hoverStale = true;
 		this._focusFixup();
@@ -1058,7 +1065,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			}
 			if (entries.length) due.push([o, entries]);
 		}
-		if (due.length) queueMicrotask(() => {
+		if (due.length) void Promise.resolve().then(() => {
 			for (const [o, entries] of due) if (this._resizeObservers.has(o)) o.callback(entries, o);
 		});
 	}
@@ -1189,12 +1196,12 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		this.update();
 		if (!this.gl) {
-			this.atlas ??= new IgeUiSdfAtlas();
+			this.atlas ??= new IgeUiSdfAtlas(this.host.surface);
 			this.gl = new IgeUiGlRenderer(gl, this.atlas);
 		} else if (this.gl.gl !== gl) this.gl.restore(gl);
-		const t0 = perf();
+		const t0 = this.host.time.now();
 		const calls = this.gl.draw(this.drag.withGhost(this.items), width, height, this.scale * dpr, [(this.safe.x + this.pageOffset.x) * dpr, (this.safe.y + this.pageOffset.y) * dpr]);
-		this.stats.draw = perf() - t0;
+		this.stats.draw = this.host.time.now() - t0;
 		this.stats.drawCalls = calls;
 		return calls;
 	}
@@ -1213,7 +1220,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		if (!gl) throw new Error("IgeUiRoot: no WebGL 2 for the canvas");
 		let frame = 0;
 		const draw = () => {
-			const dpr = window.devicePixelRatio || 1;
+			const dpr = this.host.display.dpr();
 			const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
 			if (canvas.width !== w || canvas.height !== h) {
 				canvas.width = w;
@@ -1226,10 +1233,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		};
 		const tick = () => {
 			draw();
-			frame = requestAnimationFrame(tick);
+			frame = this.host.time.frame(tick);
 		};
-		if (opts.loop !== false) frame = requestAnimationFrame(tick);
-		return { draw, stop: () => cancelAnimationFrame(frame) };
+		if (opts.loop !== false) frame = this.host.time.frame(tick);
+		return { draw, stop: () => this.host.time.cancelFrame(frame) };
 	}
 
 	/** The renderer was made again (a lost context restored). */
@@ -1243,33 +1250,59 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	 * Takes the page's pointer and wheel events (capture, on the window): what lands on the UI is dispatched to it
 	 * and kept from the game. Returns a function that stops it.
 	 */
-	attachInput (target: Window = window): () => void {
-		const opts = { capture: true, passive: false } as AddEventListenerOptions;
-		const on = (type: string, fn: (e: Event) => void) => {
-			target.addEventListener(type, fn, opts);
-			return () => target.removeEventListener(type, fn, opts);
-		};
-		const offs = [
-			on("pointermove", (e) => this._pointer("pointermove", e as PointerEvent)),
-			on("pointerdown", (e) => this._pointer("pointerdown", e as PointerEvent)),
-			on("pointerup", (e) => this._pointer("pointerup", e as PointerEvent)),
-			on("pointercancel", (e) => this._pointer("pointercancel", e as PointerEvent)),
-			// (Out of the window: nothing's under the pointer any more)
-			on("pointerout", (e) => {
-				if ((e as PointerEvent).relatedTarget) return;
-				this._pointerAt = undefined;
-				this._setHover(null, e as PointerEvent);
-			}),
-			on("click", (e) => this._swallow(e as MouseEvent)),
-			on("mousedown", (e) => this._swallow(e as MouseEvent)),
-			on("mouseup", (e) => this._swallow(e as MouseEvent)),
-			on("contextmenu", (e) => this._mouse("contextmenu", e as MouseEvent)),
-			on("wheel", (e) => this._wheel(e as WheelEvent)),
-			on("keydown", (e) => this._key("keydown", e as KeyboardEvent)),
-			on("keyup", (e) => this._key("keyup", e as KeyboardEvent))
-		];
-		this._detach = () => offs.forEach((f) => f());
+	attachInput (target?: EventTarget): () => void {
+		this._detach = igeUiAttachWebInput(this, target);
 		return this._detach;
+	}
+
+	/**
+	 * An input event from the host (a pointer, the mouse's own, the wheel, a key): hit-tested and dispatched in the
+	 * UI. Returns whether the UI took it (the game shouldn't see it: `stop`) and cancelled its default (`prevent`).
+	 * The web's events come through attachInput; a native host calls this with its own.
+	 */
+	input (e: IgeUiInputEvent): IgeUiInputResult {
+		const result: IgeUiInputResult = { stop: false, prevent: !!e.defaultPrevented };
+		// (What the handlers read of an event: its fields, and the calls that stop and cancel it)
+		const ev = {
+			button: 0, buttons: 0, pointerId: 1, pointerType: "mouse", isPrimary: true, detail: 0, clientX: 0, clientY: 0, deltaX: 0, deltaY: 0, deltaMode: 0, key: "", code: "",
+			shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, repeat: false, ...e,
+			stopImmediatePropagation: () => void (result.stop = true),
+			stopPropagation: () => void (result.stop = true),
+			preventDefault: () => void (result.prevent = true),
+			get defaultPrevented () {
+				return result.prevent;
+			}
+		};
+		switch (e.type) {
+			case "pointermove":
+			case "pointerdown":
+			case "pointerup":
+			case "pointercancel":
+				this._pointer(e.type, ev as unknown as PointerEvent);
+				break;
+			case "pointerout":
+				// (Out of the window: nothing's under the pointer any more)
+				if (e.relatedTarget) break;
+				this._pointerAt = undefined;
+				this._setHover(null, ev as unknown as PointerEvent);
+				break;
+			case "click":
+			case "mousedown":
+			case "mouseup":
+				this._swallow(ev as unknown as MouseEvent);
+				break;
+			case "contextmenu":
+				this._mouse("contextmenu", ev as unknown as MouseEvent);
+				break;
+			case "wheel":
+				this._wheel(ev as unknown as WheelEvent);
+				break;
+			case "keydown":
+			case "keyup":
+				this._key(e.type, ev as unknown as KeyboardEvent);
+				break;
+		}
+		return result;
 	}
 
 	_event (type: string, e: MouseEvent | PointerEvent | WheelEvent, extra: Record<string, unknown> = {}): IgeUiEvent {
@@ -1453,7 +1486,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				}
 				// (A field tapped: its hidden input focused again as the finger lifts, where a phone shows its keyboard for
 				// a focus that comes with the tap (iOS doesn't for one made as it's pressed))
-				if (touch && this._textInput && this.document.activeElement === t.closest("input, textarea")) this._textInput.focus({ preventScroll: true });
+				if (touch && this.document.activeElement === t.closest("input, textarea")) this.host.textEntry.reopen();
 			}
 			e.stopImmediatePropagation();
 		}
@@ -1569,59 +1602,75 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 	/** A focused field types through a hidden page input (IME, on-screen keyboards, paste); its value mirrors back. */
 	_syncTextInput (): void {
-		if (typeof document === "undefined") return;
 		const a = this.document.activeElement;
 		const typing = a && (a.localName === "input" || a.localName === "textarea") && !["range", "checkbox", "radio", "button"].includes(a.getAttribute("type") ?? "text");
 		if (!typing) {
-			this._textInput?.blur();
+			this.host.textEntry.focus(null, this._typing);
 			return;
 		}
-		if (!this._textInput) {
-			const input = document.createElement("input");
-			input.setAttribute("aria-hidden", "true");
-			// (The engine's own on the page, marked so a game watching the page can tell: data-ige)
-			input.setAttribute("data-ige", "text-input");
-			input.style.cssText = "position:fixed;left:-1000px;top:0;width:200px;height:20px;opacity:0;pointer-events:none;";
-			document.body.appendChild(input);
-			input.addEventListener("input", () => {
-				const el = this.document.activeElement;
-				if (!el) return;
-				el.value = input.value;
-				el.dispatchEvent(new IgeUiEvent("input", { bubbles: true }));
-			});
-			input.addEventListener("change", () => this.document.activeElement?.dispatchEvent(new IgeUiEvent("change", { bubbles: true })));
-			input.addEventListener("keydown", (e) => {
-				const el = this.document.activeElement;
-				if (!el) return;
-				const ev = new IgeUiEvent("keydown", { bubbles: true, cancelable: true, key: e.key, code: e.code, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey });
-				el.dispatchEvent(ev);
-				if (ev.defaultPrevented) e.preventDefault();
-				e.stopPropagation();
-			});
-			input.addEventListener("blur", () => {
-				// (The page took focus from the field (a click outside the UI): the field loses it. Focus the UI moved on
-				// itself (a button pressed, which blurs this input as it goes) stays where it went)
-				const a = this.document.activeElement;
-				if (a && this._textInput === input && (a.localName === "input" || a.localName === "textarea")) this.focus(null);
-			});
-			wireTextField(input, () => this.document.activeElement, () => {
-				this._paintDirty = true;
-			});
-			this._textInput = input;
-		}
-		if (this._textInput.value !== a!.value) this._textInput.value = a!.value;
-		this._textInput.type = a!.getAttribute("type") === "password" ? "password" : "text";
-		// (Over the field, with the field's selection: an IME's window beside it, a phone's keyboard scrolled to it)
-		placeTextField(this._textInput, a!);
-		if (document.activeElement !== this._textInput) takeSelection(this._textInput, a!);
-		this._textInput.focus({ preventScroll: true });
+		const sel = a as unknown as { selectionStart?: number | null; selectionEnd?: number | null };
+		const field: IgeUiTextEntryField = {
+			el: a,
+			value: a.value ?? "",
+			selectionStart: sel.selectionStart ?? null,
+			selectionEnd: sel.selectionEnd ?? null,
+			type: a.getAttribute("type") === "password" ? "password" : "text",
+			rect: () => {
+				const r = a.getBoundingClientRect();
+				return { x: r.left, y: r.top, w: r.width, h: r.height };
+			}
+		};
+		// (Typing goes to it: the host's text input over the field, with the field's value and selection)
+		this.host.textEntry.focus(field, this._typing);
 	}
+
+	/** What the host's text input tells the focused field (IgeUiHost.textEntry). */
+	readonly _typing: IgeUiTextEntryEvents = {
+		input: (value) => {
+			const el = this.document.activeElement;
+			if (!el) return;
+			el.value = value;
+			el.dispatchEvent(new IgeUiEvent("input", { bubbles: true }));
+		},
+		change: () => this.document.activeElement?.dispatchEvent(new IgeUiEvent("change", { bubbles: true })),
+		key: (e) => {
+			const el = this.document.activeElement;
+			if (!el) return false;
+			const ev = new IgeUiEvent("keydown", { bubbles: true, cancelable: true, key: e.key, code: e.code, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey });
+			el.dispatchEvent(ev);
+			return ev.defaultPrevented;
+		},
+		selection: (start, end) => {
+			const el = this.document.activeElement;
+			if (!isTextField(el)) return;
+			const sel = el as unknown as { selectionStart?: number | null; selectionEnd?: number | null };
+			sel.selectionStart = start;
+			sel.selectionEnd = end;
+			this._paintDirty = true;
+		},
+		composition: (range) => {
+			const el = this.document.activeElement;
+			if (!isTextField(el)) return;
+			el._composition = range ?? undefined;
+			this._paintDirty = true;
+		},
+		blur: () => {
+			// (The platform took the typing (a click outside the UI): the field loses the focus. Focus the UI moved on
+			// itself (a button pressed, which takes the typing away as it goes) stays where it went)
+			const a = this.document.activeElement;
+			if (a && (a.localName === "input" || a.localName === "textarea")) this.focus(null);
+		}
+	};
 
 	destroy (): void {
 		this._detach?.();
-		this._textInput?.remove();
+		this._fontsOff?.();
+		this.host.textEntry.focus(null, this._typing);
 		this.gl?.destroy();
 	}
+
+	/** Stops following the host's fonts (destroy). */
+	_fontsOff?: () => void;
 }
 
 function mul (m: [number, number, number, number, number, number], n: [number, number, number, number, number, number]): [number, number, number, number, number, number] {
@@ -1661,11 +1710,6 @@ function sameStyle (a: IgeUiComputedStyle | undefined, b: IgeUiComputedStyle | u
 	return n === 0;
 }
 
-/** Whether the page has the system's focus (always, with no page: tests). */
-function pageHasFocus (): boolean {
-	return typeof document === "undefined" || typeof document.hasFocus !== "function" || document.hasFocus();
-}
-
 /** Inline-level displays and what they become for a flex or grid item, or a box out of the flow. */
 const BLOCKIFIED: Record<string, string> = { inline: "block", "inline-block": "block", "inline-flex": "flex", "inline-grid": "grid", "inline-table": "table" };
 
@@ -1678,10 +1722,6 @@ function invert (m: [number, number, number, number, number, number]): [number, 
 
 function apply (m: [number, number, number, number, number, number], x: number, y: number): [number, number] {
 	return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
-}
-
-function perf (): number {
-	return typeof performance !== "undefined" ? performance.now() : Date.now();
 }
 
 const ENGINE_STYLES = `

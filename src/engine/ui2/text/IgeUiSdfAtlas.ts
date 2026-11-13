@@ -11,6 +11,7 @@
  * applies the font's GPOS kerning), so glyphs land where layout measured
  * them.
  */
+import type { IgeUiHostSurface, IgeUiSurface } from "@/engine/ui2/IgeUiHost";
 import { cssFont, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 
 /** The size glyphs are drawn at, the field's padding and how far it reaches (px at that size). */
@@ -73,12 +74,13 @@ export class IgeUiSdfAtlas {
 	_shelfX = 0;
 	_shelfY = 0;
 	_shelfH = 0;
-	_canvas: HTMLCanvasElement | OffscreenCanvas | null = null;
+	_canvas: IgeUiSurface | null = null;
 	_ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null = null;
 	_measure: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null = null;
 
-	constructor () {
-		const make = (w: number, h: number) => (typeof document !== "undefined" ? Object.assign(document.createElement("canvas"), { width: w, height: h }) : typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(w, h) : null);
+	/** `surface`: where glyphs are drawn to be measured and turned into distance fields (the host's 2D surfaces). */
+	constructor (surface?: IgeUiHostSurface) {
+		const make = (w: number, h: number) => surface?.create(w, h) ?? null;
 		this._canvas = make(SDF_SIZE * 3 + SDF_BUFFER * 2, SDF_SIZE * 2 + SDF_BUFFER * 2);
 		this._ctx = (this._canvas?.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D | null) ?? null;
 		this._measure = (make(8, 8)?.getContext("2d") as CanvasRenderingContext2D | null) ?? null;

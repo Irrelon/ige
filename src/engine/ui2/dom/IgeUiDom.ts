@@ -9,6 +9,7 @@
  * Changes tell the document what's out of date (styles, layout, paint), so
  * a frame only redoes what changed (IgeUiRoot).
  */
+import type { IgeUiHost, IgeUiSurface } from "@/engine/ui2/IgeUiHost";
 import { igeUiCanvasSurfaceScale } from "./IgeUiCanvasSurface";
 import { matchesSelector, parseSelectorList, type IgeCssMatchable, type IgeCssSelector } from "@/engine/ui2/css/IgeCssSelector";
 import { escapeAttr, escapeText, parseHtml, VOID_TAGS, type IgeHtmlNode } from "@/engine/ui2/dom/IgeUiHtml";
@@ -22,6 +23,9 @@ export interface IgeUiEventInit {
 	[key: string]: unknown;
 }
 
+/** The clock events made by the UI are stamped with (its IgeUiRoot's host's: the page's performance.now() on the web). */
+export const igeUiEventClock = { now: (): number => 0 };
+
 export class IgeUiEvent {
 	readonly type: string;
 	readonly bubbles: boolean;
@@ -30,7 +34,7 @@ export class IgeUiEvent {
 	currentTarget: IgeUiNode | null = null;
 	eventPhase = 0;
 	defaultPrevented = false;
-	timeStamp = typeof performance !== "undefined" ? performance.now() : Date.now();
+	timeStamp = igeUiEventClock.now();
 	_stop = false;
 	_stopNow = false;
 	// Pointer, wheel and key fields (set as they apply)
@@ -482,6 +486,8 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	_scrollbarY?: boolean;
 	/** Moved by this much where it's drawn, before its transform, with no restyle or layout (IgeUiRoot.placeAt). */
 	_place?: [number, number];
+	/** A text field's IME composition in progress: the part of its value being composed (IgeUiHost.textEntry). */
+	_composition?: { start: number; end: number };
 	_pseudo?: { before?: Record<string, string>; after?: Record<string, string>; placeholder?: Record<string, string> };
 	_styleDirty = true;
 	/** Scrolled by. */
@@ -491,7 +497,7 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	_value?: string;
 	_checked?: boolean;
 	/** A canvas element's drawing surface (the page's, when there is one). */
-	_canvas?: HTMLCanvasElement | OffscreenCanvas;
+	_canvas?: IgeUiSurface;
 	_canvasVersion = 0;
 	/** Its surface's pixels per canvas unit (data-resolution="auto": IgeUiCanvasSurface.ts). */
 	_surfaceScale = 1;
@@ -1152,9 +1158,9 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	getContext (kind: string, opts?: unknown): RenderingContext | OffscreenCanvasRenderingContext2D | null {
 		if (this.localName !== "canvas") return null;
 		if (!this._canvas) {
-			if (typeof document !== "undefined") this._canvas = document.createElement("canvas");
-			else if (typeof OffscreenCanvas !== "undefined") this._canvas = new OffscreenCanvas(this.width, this.height);
-			else return null;
+			// (Its surface: the host's (a page canvas on the web), none where there are none (a test))
+			this._canvas = this.ownerDocument.host?.host?.surface.create(this.width, this.height);
+			if (!this._canvas) return null;
 			this._canvas.width = this.width;
 			this._canvas.height = this.height;
 		}
@@ -1171,7 +1177,7 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		// (Drawn on: its texture's uploaded again each frame it's shown)
 		this._canvasVersion++;
 		this.ownerDocument._changed(this, "paint");
-		const ctx = (this._canvas as HTMLCanvasElement).getContext(kind, opts as CanvasRenderingContext2DSettings) as RenderingContext | null;
+		const ctx = this._canvas.getContext(kind, opts) as RenderingContext | null;
 		if (this._surfaceScale !== 1) (ctx as CanvasRenderingContext2D | null)?.setTransform(this._surfaceScale, 0, 0, this._surfaceScale, 0, 0);
 		return ctx;
 	}
@@ -1384,6 +1390,8 @@ export interface IgeUiDocumentHost {
 	listened? (type: string): void;
 	/** A text field's selection set by code (select(), setSelectionRange()). */
 	selectionChanged? (el: IgeUiElement): void;
+	/** The platform (IgeUiHost): canvases' surfaces, the display's pixel ratio. */
+	readonly host?: IgeUiHost;
 }
 
 /**

@@ -19,6 +19,6 @@ export function igeUiCanvasSurfaceScale (el: IgeUiElement): number {
 	// Shown at the box's size, or kept to its shape inside it (object-fit: contain)
 	const fit = (el as unknown as { _computed?: Record<string, string> })._computed?.["object-fit"];
 	const shown = fit === "contain" || fit === "scale-down" ? Math.min(cw / w, ch / h) : cw / w;
-	const device = shown * (el.ownerDocument._zoom || 1) * ((globalThis as { devicePixelRatio?: number }).devicePixelRatio || 1);
+	const device = shown * (el.ownerDocument._zoom || 1) * (el.ownerDocument.host?.host?.display.dpr() || 1);
 	return Math.max(0.5, Math.min(4, Math.ceil(device * 8) / 8));
 }

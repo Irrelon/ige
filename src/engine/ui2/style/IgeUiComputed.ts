@@ -80,7 +80,7 @@ export function cssColorsIn (value: string, current: IgeCssColor): string {
  * One property's computed value as a browser writes it (`box`: the element's laid out box, for margins and
  * paddings in px and for transforms' percentages; `dpr`: device pixels per CSS pixel, which border widths snap to).
  */
-export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: IgeCssLengthContext, box?: IgeUiBox, dpr: number = 1): string {
+export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: IgeCssLengthContext, box?: IgeUiBox, dpr: number = 1, resolveUrl?: (url: string) => string): string {
 	const value = styleValue(cs, name);
 	const current = parseColor(styleValue(cs, "color")) ?? { r: 0, g: 0, b: 0, a: 1 };
 	if (COLOR_PROPS.has(name)) {
@@ -136,7 +136,7 @@ export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: Ig
 		case "mask-image":
 		case "filter":
 			// (Split at the commas between its functions: the commas inside one are kept; a url() made whole, as Chrome gives it)
-			return value === "none" ? value : splitTop(value, ",").map((f) => absoluteUrl(cssColorsIn(f.trim(), current))).join(", ");
+			return value === "none" ? value : splitTop(value, ",").map((f) => absoluteUrl(cssColorsIn(f.trim(), current), resolveUrl)).join(", ");
 		case "border-top-left-radius":
 		case "border-top-right-radius":
 		case "border-bottom-right-radius":
@@ -150,15 +150,11 @@ export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: Ig
 }
 
 /** A url() in a computed value made absolute against the page (Chrome's computed styles give whole URLs), quoted as Chrome quotes it. */
-function absoluteUrl (v: string): string {
+function absoluteUrl (v: string, resolve?: (url: string) => string): string {
 	const m = /^url\(\s*(["']?)(.*?)\1\s*\)$/.exec(v);
 	if (!m) return v;
-	let url = m[2];
-	try {
-		if (typeof document !== "undefined" && !/^(data|blob):/i.test(url)) url = new URL(url, document.baseURI).href;
-	} catch {
-		// (Not a URL a page could load: as written)
-	}
+	// (Made absolute by the host: against the page on the web)
+	const url = resolve ? resolve(m[2]) : m[2];
 	return `url("${url}")`;
 }
 

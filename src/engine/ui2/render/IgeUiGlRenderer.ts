@@ -487,17 +487,13 @@ export class IgeUiGlRenderer {
 		} else {
 			const src = el.getAttribute("src") ?? "";
 			// (The picture its UI's already loaded, if it has: dom/IgeUiImages)
-			let img = this._imageEls.get(src) ?? (el.ownerDocument as unknown as { _uiRoot?: { images?: { get (src: string): HTMLImageElement | undefined } } })._uiRoot?.images?.get(src);
-			if (img) this._imageEls.set(src, img);
-			if (!img && src && typeof Image !== "undefined") {
-				img = new Image();
-				img.src = src;
+			const images = (el.ownerDocument as unknown as { _uiRoot?: { images?: { get (src: string): unknown; request (src: string): void } } })._uiRoot?.images;
+			const img = this._imageEls.get(src) ?? (images?.get(src) as HTMLImageElement | undefined);
+			if (img) {
 				this._imageEls.set(src, img);
-			}
-			if (img?.complete && img.naturalWidth) {
 				source = img as unknown as TexImageSource;
 				version = 1;
-			}
+			} else if (src) images?.request(src);
 		}
 		if (!source) return null;
 		let entry = this._images.get(el);

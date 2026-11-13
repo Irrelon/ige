@@ -5,14 +5,9 @@
  * - The caret, or the selection's highlight, drawn over the field's text
  *   (`textFieldPaint`, the painter's hook): where they fall measured with
  *   the field's own font, letter-spacing included.
- * - The hidden page input that does the typing (IME, paste, on-screen
- *   keyboards) kept over the field (`placeTextField`): an IME's candidate
- *   window opens beside the field, and a phone scrolls the field into view
- *   for its keyboard rather than a corner of the page. Its font is at least
- *   16px, so a phone doesn't zoom the page in as it focuses.
- * - The selection mirrored from the hidden input (`wireTextField`): arrow
- *   keys, shift-select, select-all and a paste over a selection all land on
- *   the field (`selectionStart`, `selectionEnd`), and it's drawn again.
+ * - The typing itself is the host's (IgeUiHost.textEntry: on the web a
+ *   hidden page input kept over the field, IgeUiWebHost.ts), its selection
+ *   mirrored onto the field (`selectionStart`, `selectionEnd`).
  */
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import { contentLeft, contentTop, type IgeUiBox } from "@/engine/ui2/layout/IgeUiBox";
@@ -70,51 +65,4 @@ export function textFieldPaint (layout: IgeUiLayoutEngine, active: () => IgeUiEl
 		if (caret.a <= 0) return;
 		items.push({ op: "box", ...base, x: x + at(end), y, w: 1, h, color: caret } as IgeUiPaintItem);
 	};
-}
-
-/** Keeps the hidden input over the field (page px) at a size a phone won't zoom in on. */
-export function placeTextField (input: HTMLInputElement, el: IgeUiElement): void {
-	const r = el.getBoundingClientRect();
-	const st = input.style;
-	st.left = `${Math.round(r.left)}px`;
-	st.top = `${Math.round(r.top)}px`;
-	st.width = `${Math.max(1, Math.round(r.width))}px`;
-	st.height = `${Math.max(1, Math.round(r.height))}px`;
-	st.fontSize = "16px";
-}
-
-/**
- * Mirrors the hidden input's selection onto the focused field as it changes (keys, the selection moved, a paste),
- * calling `changed` to draw it again; and a field's own selection (set by code: select(), setSelectionRange()) onto
- * the hidden input as it's focused.
- */
-export function wireTextField (input: HTMLInputElement, active: () => IgeUiElement | null, changed: () => void): void {
-	const mirror = () => {
-		const el = active();
-		if (!isTextField(el)) return;
-		const sel = el as unknown as Selectable;
-		if (sel.selectionStart === input.selectionStart && sel.selectionEnd === input.selectionEnd) return;
-		sel.selectionStart = input.selectionStart;
-		sel.selectionEnd = input.selectionEnd;
-		changed();
-	};
-	for (const type of ["input", "keydown", "keyup", "select", "focus", "mouseup"]) input.addEventListener(type, () => queueMicrotask(mirror));
-	if (typeof document !== "undefined") document.addEventListener("selectionchange", () => {
-		if (document.activeElement === input) mirror();
-	});
-}
-
-/** The field's selection onto the hidden input (as it takes over the typing), else the caret at the end. */
-export function takeSelection (input: HTMLInputElement, el: IgeUiElement): void {
-	const sel = el as unknown as Selectable;
-	const len = input.value.length;
-	const end = Math.max(0, Math.min(len, sel.selectionEnd ?? len));
-	const start = Math.max(0, Math.min(end, sel.selectionStart ?? end));
-	try {
-		input.setSelectionRange(start, end);
-	} catch {
-		// (A type without a selection)
-	}
-	sel.selectionStart = start;
-	sel.selectionEnd = end;
 }
