@@ -508,3 +508,19 @@ describe("ui2: a word across inline elements", () => {
 		expect(r.root.querySelector(".q")!.getBoundingClientRect().width).toBe(20);
 	});
 });
+
+describe("ui2: positioned boxes painted and hit in the document's order", () => {
+	it("a flex container's ::before ring under its positioned value; a positioned box over a later static one", () => {
+		const r = ui(`.chip { display: flex; position: relative; width: 40px; height: 20px; } .chip::before { content: ""; position: absolute; inset: 0; background: #f00; } .v { position: relative; background: #00f; width: 20px; height: 20px; } .a { position: absolute; left: 0; top: 30px; width: 50px; height: 20px; } .b { margin-top: 10px; height: 20px; width: 50px; background: #0f0; }`, 400, 300);
+		r.root.innerHTML = `<div class="chip"><span class="v">7</span></div><div class="a"></div><div class="b"></div>`;
+		r.update(0);
+		const chip = r.root.querySelector(".chip")!, v = r.root.querySelector(".v")!;
+		const ring = r.items.findIndex((i) => i.el === chip && i.op === "box");
+		const value = r.items.findIndex((i) => i.el === v && i.op === "box");
+		expect(ring).toBeGreaterThanOrEqual(0);
+		expect(value).toBeGreaterThan(ring);
+		expect(r.hitTest(5, 5)).toBe(v);
+		// (.a is positioned, .b static and later: .a is painted over .b, and hit there)
+		expect(r.hitTest(5, 35)).toBe(r.root.querySelector(".a"));
+	});
+});

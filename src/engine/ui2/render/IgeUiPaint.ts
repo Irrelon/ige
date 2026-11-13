@@ -153,8 +153,41 @@ export class IgeUiPainter {
 	paint (root: IgeUiBox): IgeUiPaintItem[] {
 		this.items = [];
 		this.groups = new Map();
+		this._treeOrder(root.el);
 		this._context(root, { clip: null, dx: 0, dy: 0, opacity: 1 });
 		return this.items;
+	}
+
+	/** Each element's place in the document, before and after what's in it (positioned boxes are painted in this order). */
+	_order = new Map<IgeUiElement, [number, number]>();
+
+	_treeOrder (root: IgeUiElement | null): void {
+		this._order = new Map();
+		if (!root) return;
+		let i = 0;
+		const walk = (el: IgeUiElement) => {
+			const at = i++;
+			for (const c of el.children) walk(c);
+			this._order.set(el, [at, i++]);
+		};
+		walk(root);
+	}
+
+	/**
+	 * Where a box comes in the document's order (its ::before after its element's start, its ::after before its end):
+	 * positioned boxes are painted in this order, whatever order a flex or grid container laid them out in.
+	 */
+	treeKey (b: IgeUiBox): number | undefined {
+		const o = b.el ? this._order.get(b.el) : undefined;
+		if (!o) return undefined;
+		return b.pseudo === "before" ? o[0] + 0.5 : b.pseudo === "after" ? o[1] - 0.5 : o[0];
+	}
+
+	/** Positioned boxes' paint order: z-index, then the document's order. */
+	positionedOrder (p: { box: IgeUiBox; z: number; order: number }, q: { box: IgeUiBox; z: number; order: number }): number {
+		if (p.z !== q.z) return p.z - q.z;
+		const a = this.treeKey(p.box), b = this.treeKey(q.box);
+		return (a !== undefined && b !== undefined ? a - b : 0) || p.order - q.order;
 	}
 
 	/**
@@ -281,7 +314,7 @@ export class IgeUiPainter {
 		this._inlineContent(b, inner);
 		collect(b, inner);
 		this._scrollbars(b, own.ctx);
-		positioned.sort((p, q) => p.z - q.z || p.order - q.order);
+		positioned.sort((p, q) => this.positionedOrder(p, q));
 		const neg = positioned.filter((p) => p.z < 0);
 		const rest = positioned.filter((p) => p.z >= 0);
 		if (neg.length) {

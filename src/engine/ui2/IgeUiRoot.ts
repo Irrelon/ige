@@ -1014,12 +1014,17 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			if (it.op === "box" && it.shadow === "outer") continue;
 			seen.add(el);
 		}
-		// Every box (painted or not: transparent boxes still take the pointer), in tree and z order like paint
+		// Every box (painted or not: transparent boxes still take the pointer), in the order they're painted: a box,
+		// its positioned boxes with negative z, what's in its flow, then its positioned boxes by z and the document's
+		// order (as IgeUiPainter._contextInner paints them), so what's drawn on top is hit
 		const scrollOf = (el: IgeUiElement | null): [number, number] => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
 		type M = [number, number, number, number, number, number];
-		const walk = (b: IgeUiBox, clip: HitEntry["clip"], dx: number, dy: number, m?: M) => {
-			const fixed = b.position === "fixed";
-			if (fixed) {
+		type At = { clip: HitEntry["clip"]; dx: number; dy: number; m?: M };
+		const painter = this.painter;
+		/** Where a box is: fixed to the UI, held by sticky, its transform. */
+		const enter = (b: IgeUiBox, at: At): At => {
+			let { clip, dx, dy, m } = at;
+			if (b.position === "fixed") {
 				clip = null;
 				dx = 0;
 				dy = 0;
@@ -1032,7 +1037,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			}
 			if (b.transform) {
 				// Its transform about its origin: what's in it is tested in its own pixels (the clip from round it brought in)
-				const [ox, oy] = this.painter._origin(b);
+				const [ox, oy] = painter._origin(b);
 				const ax = b.ax + dx + ox, ay = b.ay + dy + oy;
 				const t = b.transform;
 				const local: M = [t[0], t[1], t[2], t[3], ax + t[4] - t[0] * ax - t[2] * ay, ay + t[5] - t[1] * ax - t[3] * ay];
@@ -1043,25 +1048,54 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 					clip = [Math.min(a[0], c2[0]), Math.min(a[1], c2[1]), Math.max(a[0], c2[0]), Math.max(a[1], c2[1])];
 				}
 			}
-			const inv = m ? invert(m) : undefined;
-			const el = b.el;
-			if (el && !b.pseudo && styleValue(b.style, "visibility") !== "hidden") {
-				if (b.inlineRects) for (const r of b.inlineRects) list.push({ el, x: r.x + dx, y: r.y + dy, w: r.w, h: r.h, clip, inv });
-				else list.push({ el, x: b.ax + dx, y: b.ay + dy, w: b.borderW, h: b.borderH, clip, inv });
-			}
-			const ox = styleValue(b.style, "overflow-x"), oy = styleValue(b.style, "overflow-y");
-			let c = clip, ddx = dx, ddy = dy;
-			if ((ox !== "visible" || oy !== "visible") && el && !b.pseudo) {
-				const x0 = b.ax + dx + b.borderLeft, y0 = b.ay + dy + b.borderTop;
-				const nc: [number, number, number, number] = [x0, y0, x0 + b.borderW - b.borderLeft - b.borderRight, y0 + b.borderH - b.borderTop - b.borderBottom];
-				c = c ? [Math.max(c[0], nc[0]), Math.max(c[1], nc[1]), Math.min(c[2], nc[2]), Math.min(c[3], nc[3])] : nc;
-				ddx -= el._scrollLeft;
-				ddy -= el._scrollTop;
-			}
-			const kids = [...b.children].map((k, i) => ({ k, i })).sort((p, q) => zOf(p.k) - zOf(q.k) || p.i - q.i);
-			for (const { k } of kids) walk(k, c, ddx, ddy, m);
+			return { clip, dx, dy, m };
 		};
-		if (this.rootBox) walk(this.rootBox, null, 0, 0);
+		/** A box's own entry. */
+		const entry = (b: IgeUiBox, at: At) => {
+			const el = b.el;
+			if (!el || b.pseudo || styleValue(b.style, "visibility") === "hidden") return;
+			const inv = at.m ? invert(at.m) : undefined;
+			if (b.inlineRects) for (const r of b.inlineRects) list.push({ el, x: r.x + at.dx, y: r.y + at.dy, w: r.w, h: r.h, clip: at.clip, inv });
+			else list.push({ el, x: b.ax + at.dx, y: b.ay + at.dy, w: b.borderW, h: b.borderH, clip: at.clip, inv });
+		};
+		/** Where what's in a box is: its clip and scrolling. */
+		const inside = (b: IgeUiBox, at: At): At => {
+			const el = b.el;
+			const ox = styleValue(b.style, "overflow-x"), oy = styleValue(b.style, "overflow-y");
+			if ((ox === "visible" && oy === "visible") || !el || b.pseudo) return at;
+			const x0 = b.ax + at.dx + b.borderLeft, y0 = b.ay + at.dy + b.borderTop;
+			const nc: [number, number, number, number] = [x0, y0, x0 + b.borderW - b.borderLeft - b.borderRight, y0 + b.borderH - b.borderTop - b.borderBottom];
+			const c = at.clip;
+			return { clip: c ? [Math.max(c[0], nc[0]), Math.max(c[1], nc[1]), Math.min(c[2], nc[2]), Math.min(c[3], nc[3])] : nc, dx: at.dx - el._scrollLeft, dy: at.dy - el._scrollTop, m: at.m };
+		};
+		const context = (b: IgeUiBox, from: At) => {
+			const at = enter(b, from);
+			entry(b, at);
+			const positioned: { box: IgeUiBox; at: At; z: number; order: number }[] = [];
+			const collect = (box: IgeUiBox, here: At) => {
+				for (const child of box.children) {
+					if (child.position !== "static" || painter._isStacking(child)) {
+						positioned.push({ box: child, at: here, z: child.zIndex ?? 0, order: positioned.length });
+						continue;
+					}
+					const ca = enter(child, here);
+					entry(child, ca);
+					collect(child, inside(child, ca));
+				}
+			};
+			const start = list.length;
+			collect(b, inside(b, at));
+			positioned.sort((p, q) => painter.positionedOrder(p, q));
+			const neg = positioned.filter((p) => p.z < 0);
+			if (neg.length) {
+				// (Under what's in its flow)
+				const flow = list.splice(start);
+				for (const p of neg) context(p.box, p.at);
+				list.push(...flow);
+			}
+			for (const p of positioned) if (p.z >= 0) context(p.box, p.at);
+		};
+		if (this.rootBox) context(this.rootBox, { clip: null, dx: 0, dy: 0 });
 		this.hitList = list;
 	}
 
@@ -1527,10 +1561,6 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._textInput?.remove();
 		this.gl?.destroy();
 	}
-}
-
-function zOf (b: IgeUiBox): number {
-	return b.position !== "static" ? b.zIndex ?? 0 : 0;
 }
 
 function mul (m: [number, number, number, number, number, number], n: [number, number, number, number, number, number]): [number, number, number, number, number, number] {
