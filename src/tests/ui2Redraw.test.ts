@@ -295,3 +295,22 @@ describe("ui2: computed styles as a browser reports them", () => {
 		expect(view.getComputedStyle(r.root.querySelector("circle")!).transform).toBe("none");
 	});
 });
+
+describe("ui2: a text field's selection set by code", () => {
+	it("select() highlights the whole value while the field's focused", () => {
+		const r = ui(`input { font-size: 10px; width: 100px; }`, 400, 300);
+		r.root.innerHTML = `<input value="hello">`;
+		const input = r.root.querySelector("input")!;
+		r.update(0);
+		r.focus(input);
+		input.select();
+		r.update(16);
+		const sel = input as unknown as { selectionStart: number; selectionEnd: number };
+		expect([sel.selectionStart, sel.selectionEnd]).toEqual([0, 5]);
+		const marks = r.items.filter((i) => i.el === input && i.op === "box" && (i as { w: number }).w > 1 && (i as { color?: { a: number } }).color?.a === 0.4);
+		expect(marks.length).toBe(1);
+		input.setSelectionRange(2, 2);
+		r.update(32);
+		expect(r.items.filter((i) => i.el === input && i.op === "box" && (i as { w: number }).w === 1).length).toBe(1);
+	});
+});

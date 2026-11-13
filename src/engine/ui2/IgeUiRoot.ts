@@ -496,6 +496,13 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._syncTextInput();
 	}
 
+	/** A text field's selection set by code (select(), setSelectionRange()): drawn, and given to the hidden input if it's focused. */
+	selectionChanged (el: IgeUiElement): void {
+		if (el !== this.document.activeElement) return;
+		if (this._textInput && this._textInput.value === (el.value ?? "")) takeSelection(this._textInput, el);
+		this._paintDirty = true;
+	}
+
 	/**
 	 * The focused element hidden (display: none, here or round it) or gone: nothing's focused, as a browser's focus
 	 * fixup has it (quietly, as it is when the element's removed).

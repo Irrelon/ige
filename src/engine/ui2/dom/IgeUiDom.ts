@@ -956,8 +956,18 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		this.dispatchEvent(new IgeUiEvent("click", { bubbles: true, cancelable: true }));
 	}
 
+	/** A text field's whole value selected (highlighted while it's focused; the hidden page input takes it over: IgeUiTextField). */
 	select (): void {
-		// (A text field's whole value: the page's own input takes the keys, IgeUiTextInput)
+		this.setSelectionRange(0, (this.value ?? "").length);
+	}
+
+	/** A text field's selection, from `start` to `end` (equal: the caret there). */
+	setSelectionRange (start: number, end: number): void {
+		const len = (this.value ?? "").length;
+		const sel = this as unknown as { selectionStart?: number | null; selectionEnd?: number | null };
+		sel.selectionStart = Math.max(0, Math.min(len, start));
+		sel.selectionEnd = Math.max(sel.selectionStart, Math.min(len, end));
+		this.ownerDocument.host?.selectionChanged?.(this);
 	}
 
 	// ---- geometry (from the last layout)
@@ -1368,6 +1378,8 @@ export interface IgeUiDocumentHost {
 	scrollIntoView (el: IgeUiElement, block: "start" | "center" | "end" | "nearest"): void;
 	flush (): void;
 	listened? (type: string): void;
+	/** A text field's selection set by code (select(), setSelectionRange()). */
+	selectionChanged? (el: IgeUiElement): void;
 }
 
 /**
