@@ -605,6 +605,10 @@ export class IgeUiLayoutEngine {
 			}
 		}
 		max = Math.max(max, line);
+		// (Content that doesn't wrap (nowrap, pre) breaks nowhere, round inline blocks and inline elements' edges
+		// too: its narrowest is its widest line, as a browser's is, so a nowrap button holds its width in a flex row)
+		const ws0 = styleValue(style, "white-space");
+		if (ws0 === "nowrap" || ws0 === "pre") min = Math.max(min, max);
 		return { min: Math.ceil(min * 1000) / 1000, max: Math.ceil(max * 1000) / 1000 };
 	}
 
@@ -659,8 +663,14 @@ export class IgeUiLayoutEngine {
 				const specH = this._specH(b, cbH);
 				w = (specH !== undefined && r.h ? ((specH - this._vEdges(b)) * r.w) / r.h : r.w) + this._hEdges(b);
 			} else if (opts.shrink) {
+				// (Percentage paddings count nothing in its content sizes, as a browser's don't, but take their room once
+				// the containing block's width is known: a ticker's padding-left: 100% before its words)
+				this._edges(b, 0);
+				const e0 = this._hEdges(b);
 				const i = this.intrinsic(b);
-				w = Math.min(i.max, Math.max(i.min, cbW - b.marginLeft - b.marginRight));
+				this._edges(b, cbW);
+				const extra = Math.max(0, this._hEdges(b) - e0);
+				w = Math.min(i.max + extra, Math.max(i.min + extra, cbW - b.marginLeft - b.marginRight));
 			} else w = cbW - b.marginLeft - b.marginRight;
 			w = this._clampW(b, w, cbW);
 		}
@@ -1073,6 +1083,8 @@ export class IgeUiLayoutEngine {
 		const indent = this.len(style, "text-indent", cw) ?? 0;
 		let line: PlacedItem[] = [];
 		let x = indent;
+		/** Where the inline elements closed on this line end, their right padding and border included (the line's width). */
+		let closeEnd = 0;
 		let y = 0;
 		// Inline elements open across lines
 		const open: IgeUiBox[] = [];
@@ -1092,7 +1104,8 @@ export class IgeUiLayoutEngine {
 				}
 				if (trimmed) break;
 			}
-			let lineW = 0;
+			let lineW = closeEnd;
+			closeEnd = 0;
 			for (const p of line) lineW = Math.max(lineW, p.x + p.w);
 			// Heights round the baseline
 			let above = strut.above, below = strut.below;
@@ -1202,6 +1215,7 @@ export class IgeUiLayoutEngine {
 				const o = lineOpen.find((l) => l.box === box);
 				if (o) o.to = x;
 				x += it.edge ?? 0;
+				if (line.length) closeEnd = Math.max(closeEnd, x);
 				const i = open.indexOf(box);
 				if (i >= 0) open.splice(i, 1);
 				continue;
@@ -1229,8 +1243,17 @@ export class IgeUiLayoutEngine {
 			const text = it.text ?? "";
 			if (!text) continue;
 			const f = this.font(it.style);
-			const m = this.metrics(f);
-			const lh = this.lineHeight(it.style);
+			let m = this.metrics(f);
+			let lh = this.lineHeight(it.style);
+			// (Characters from another font (a symbol the font hasn't got) make a normal line as tall as that font's, as a
+			// browser's does)
+			if (styleValue(it.style, "line-height") === "normal") {
+				const fb = this.fonts.fallback?.(text, f, this.pixelGrid > 0 ? this.pixelGrid : 1);
+				if (fb && (fb.ascent > m.ascent || fb.descent > m.descent)) {
+					m = { ...m, ascent: Math.max(m.ascent, fb.ascent), descent: Math.max(m.descent, fb.descent) };
+					lh = m.ascent + m.descent;
+				}
+			}
 			const lead = this._leading(lh, m);
 			// (Text straight in the block is on the baseline: the block's own vertical-align, a table cell's, isn't its)
 			const v = it.style === style ? { valign: "baseline", shift: 0 } : vfor(it.style);

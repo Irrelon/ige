@@ -15,6 +15,7 @@
  * Draws through IgeWebGlRenderer.addOverlay() (after the UI layer pass), or
  * on its own with draw().
  */
+import { placeTextField, takeSelection, textFieldPaint, wireTextField } from "@/engine/ui2/dom/IgeUiTextField";
 import { IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
 import { type IgeUiBox, stickyShift } from "@/engine/ui2/layout/IgeUiBox";
 import { IgeUiLayoutEngine } from "@/engine/ui2/layout/IgeUiLayout";
@@ -169,6 +170,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this.document.defaultView = this._view();
 		const fonts = opts.fonts ?? (typeof document !== "undefined" ? new IgeUiCanvasFonts() : new IgeUiFixedFonts());
 		this.layoutEngine = new IgeUiLayoutEngine(fonts);
+		// The focused field's caret or selection, over its text (dom/IgeUiTextField)
+		this.painter.fieldPaint = textFieldPaint(this.layoutEngine, () => this.document.activeElement);
 		if (opts.width !== undefined && opts.height !== undefined) this.screen = { w: opts.width, h: opts.height };
 		else if (typeof window !== "undefined") this.screen = { w: window.innerWidth, h: window.innerHeight };
 		this.animator.keyframes = this.styles.keyframes;
@@ -1057,12 +1060,21 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				e.stopPropagation();
 			});
 			input.addEventListener("blur", () => {
-				if (this.document.activeElement && this._textInput === input) this.focus(null);
+				// (The page took focus from the field (a click outside the UI): the field loses it. Focus the UI moved on
+				// itself (a button pressed, which blurs this input as it goes) stays where it went)
+				const a = this.document.activeElement;
+				if (a && this._textInput === input && (a.localName === "input" || a.localName === "textarea")) this.focus(null);
+			});
+			wireTextField(input, () => this.document.activeElement, () => {
+				this._paintDirty = true;
 			});
 			this._textInput = input;
 		}
-		this._textInput.value = a!.value;
+		if (this._textInput.value !== a!.value) this._textInput.value = a!.value;
 		this._textInput.type = a!.getAttribute("type") === "password" ? "password" : "text";
+		// (Over the field, with the field's selection: an IME's window beside it, a phone's keyboard scrolled to it)
+		placeTextField(this._textInput, a!);
+		if (document.activeElement !== this._textInput) takeSelection(this._textInput, a!);
 		this._textInput.focus({ preventScroll: true });
 	}
 

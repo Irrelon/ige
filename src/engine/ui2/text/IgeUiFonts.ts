@@ -29,6 +29,11 @@ export interface IgeUiFontProvider {
 	measure (text: string, font: IgeUiFontSpec): number;
 	/** The font's vertical metrics at its size; `grid` (device px per px): ascent and descent rounded to it, as a browser does. */
 	metrics (font: IgeUiFontSpec, grid?: number): IgeUiFontMetrics;
+	/**
+	 * A run's ascent and descent when some of its characters come from another font (a symbol the font hasn't got:
+	 * ◆, ◎, ▲), whose own ascent and descent a browser's line takes too; undefined when the font has them all.
+	 */
+	fallback? (text: string, font: IgeUiFontSpec, grid?: number): { ascent: number; descent: number } | undefined;
 }
 
 /** The CSS font shorthand for canvas ("italic 600 13px 'Exo 2', sans-serif"). */
@@ -62,6 +67,7 @@ export class IgeUiCanvasFonts implements IgeUiFontProvider {
 		this._cache.clear();
 		this._metrics.clear();
 		this._gaps.clear();
+		this._fallbacks.clear();
 	}
 
 	measure (text: string, font: IgeUiFontSpec): number {
@@ -96,6 +102,59 @@ export class IgeUiCanvasFonts implements IgeUiFontProvider {
 			below = Math.round(below * grid) / grid;
 		}
 		return { ascent, descent: descent + below, xHeight: m.xHeight * font.size, capHeight: m.capHeight * font.size };
+	}
+
+	/** Characters' line metrics per px (from other fonts, where the font hasn't them), by face and character. */
+	_fallbacks = new Map<string, { ascent: number; descent: number } | null>();
+
+	fallback (text: string, font: IgeUiFontSpec, grid?: number): { ascent: number; descent: number } | undefined {
+		// (Only symbols and other scripts: the UI's fonts have Latin and its punctuation)
+		let ascent = 0, descent = 0, any = false;
+		for (const ch of text) {
+			const cp = ch.codePointAt(0)!;
+			if (cp < 0x2070 || (cp >= 0xfe00 && cp <= 0xfe0f)) continue;
+			const r = this._fallbackRatios(ch, font);
+			if (!r) continue;
+			any = true;
+			ascent = Math.max(ascent, r.ascent);
+			descent = Math.max(descent, r.descent);
+		}
+		if (!any) return undefined;
+		let a = ascent * font.size, d = descent * font.size;
+		if (grid) {
+			a = Math.round(a * grid) / grid;
+			d = Math.round(d * grid) / grid;
+		}
+		return { ascent: a, descent: d };
+	}
+
+	/**
+	 * A character's line metrics per px when it makes the line taller than the font alone does (null when it doesn't),
+	 * from the page's own layout of it: the line's height and where its baseline falls, at a large size.
+	 */
+	_fallbackRatios (ch: string, font: IgeUiFontSpec): { ascent: number; descent: number } | null {
+		const key = `${cssFont({ ...font, size: 1 })}|${ch}`;
+		const known = this._fallbacks.get(key);
+		if (known !== undefined) return known;
+		let out: { ascent: number; descent: number } | null = null;
+		if (typeof document !== "undefined" && document.body) {
+			const at = 1000;
+			const el = document.createElement("div");
+			el.style.cssText = "position:absolute;left:-100000px;top:0;visibility:hidden;white-space:nowrap;line-height:normal;margin:0;padding:0;border:0";
+			el.style.font = cssFont({ ...font, size: at });
+			const mark = document.createElement("i");
+			mark.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+			el.append(ch, mark);
+			document.body.appendChild(el);
+			const box = el.getBoundingClientRect(), base = mark.getBoundingClientRect().top - box.top;
+			el.remove();
+			const r = this._ratios(font), gap = this._gap(font);
+			const a = base / at, d = (box.height - base) / at;
+			// (Taller than the font's own line, above or below: that character's font counts)
+			if (box.height > 0 && (a > r.ascent + 1e-4 || d > r.descent + gap + 1e-4)) out = { ascent: Math.max(a, r.ascent), descent: Math.max(d, r.descent + gap) };
+		}
+		this._fallbacks.set(key, out);
+		return out;
 	}
 
 	_gaps = new Map<string, number>();

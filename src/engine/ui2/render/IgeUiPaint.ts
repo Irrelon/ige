@@ -115,6 +115,8 @@ export class IgeUiPainter {
 	viewport = { w: 1280, h: 720 };
 	/** Each scrolling box's offset (by element). */
 	_scroll = (el: IgeUiElement | null): [number, number] => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
+	/** Drawn after a box's text: the focused field's caret or selection (dom/IgeUiTextField). */
+	fieldPaint?: (b: IgeUiBox, ctx: Ctx, items: IgeUiPaintItem[]) => void;
 
 	paint (root: IgeUiBox): IgeUiPaintItem[] {
 		this.items = [];
@@ -330,7 +332,9 @@ export class IgeUiPainter {
 		}
 		// Fills: the colour, then image layers (the first listed on top)
 		const bg = parseColor(styleValue(s, "background-color"), current);
-		if (bg && bg.a > 0) this.items.push({ op: "box", ...base, x, y, w, h, color: bg });
+		// (A range slider is drawn as its track and thumb (below), not its field's colour, as a browser's is)
+		const slider = el.localName === "input" && el.getAttribute("type") === "range" && !b.pseudo;
+		if (bg && bg.a > 0 && !slider) this.items.push({ op: "box", ...base, x, y, w, h, color: bg });
 		const img = styleValue(s, "background-image");
 		if (img !== "none") {
 			const layers = splitTop(img, ",").map((l) => l.trim()).reverse();
@@ -442,7 +446,11 @@ export class IgeUiPainter {
 	 * what's in that positioned inline element (drawn in its own place in the stacking order); else what isn't in one.
 	 */
 	_inlineContent (b: IgeUiBox, ctx: Ctx, layer?: IgeUiBox): void {
-		if (!b.runs && !b.fragments) return;
+		if (!b.runs && !b.fragments) {
+			// (An empty field still shows its caret)
+			if (!layer) this.fieldPaint?.(b, ctx, this.items);
+			return;
+		}
 		const hidden = styleValue(b.style, "visibility") === "hidden";
 		for (const f of b.fragments ?? []) {
 			if (f.layer !== layer) continue;
@@ -463,6 +471,7 @@ export class IgeUiPainter {
 		}
 		if (hidden) return;
 		for (const r of b.runs ?? []) if (r.layer === layer) this._text(b, r, ctx);
+		if (!layer) this.fieldPaint?.(b, ctx, this.items);
 	}
 
 	_text (b: IgeUiBox, r: IgeUiTextRun, ctx: Ctx): void {

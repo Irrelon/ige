@@ -20,10 +20,20 @@ export function cssNumber (n: number): string {
 	return s.includes("e") ? n.toFixed(6).replace(/\.?0+$/, "") : s;
 }
 
+/**
+ * A colour's alpha as a browser writes it: kept in eight bits (0 to 255), then written with two decimals when they
+ * come back to the same eight bits, else three (0.015 is kept as 4/255 and written 0.016; 0.35 stays 0.35).
+ */
+export function cssAlpha (alpha: number): number {
+	const a8 = Math.round(Math.max(0, Math.min(1, alpha)) * 255);
+	const two = Math.round((a8 / 255) * 100) / 100;
+	return Math.round(two * 255) === a8 ? two : Math.round((a8 / 255) * 1000) / 1000;
+}
+
 /** A colour as rgb(r, g, b), or rgba(r, g, b, a) when it's see-through. */
 export function cssColor (c: IgeCssColor): string {
 	const ch = (v: number) => Math.round(Math.max(0, Math.min(255, v)));
-	const a = Math.round(Math.max(0, Math.min(1, c.a)) * 1000) / 1000;
+	const a = cssAlpha(c.a);
 	return a >= 1 ? `rgb(${ch(c.r)}, ${ch(c.g)}, ${ch(c.b)})` : `rgba(${ch(c.r)}, ${ch(c.g)}, ${ch(c.b)}, ${cssNumber(a)})`;
 }
 

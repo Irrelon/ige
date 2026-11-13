@@ -36,9 +36,9 @@ col { display: table-column; }
 colgroup { display: table-column-group; }
 button, input, select, textarea { display: inline-block; font-family: Arial, sans-serif; font-size: 13.333px; font-weight: 400; font-style: normal; line-height: normal; letter-spacing: normal; word-spacing: normal; text-transform: none; text-indent: 0; text-shadow: none; color: #000; text-align: start; box-sizing: border-box; }
 button { text-align: center; }
-button { padding: 1px 6px; border: 2px outset #767676; background-color: #efefef; cursor: default; }
+button { padding: 1px 6px; border: 2px outset #000; background-color: #efefef; cursor: default; }
 input, textarea { padding: 1px 2px; border: 2px inset #767676; background-color: #fff; text-align: start; cursor: text; }
-input[type=range] { border: none; background-color: transparent; padding: 0; width: 129px; height: 21px; }
+input[type=range] { border: none; padding: 0; margin: 2px; width: 129px; height: 16px; color: #101010; cursor: default; }
 input[type=checkbox], input[type=radio] { border: none; background-color: transparent; padding: 0; width: 13px; height: 13px; margin: 3px 3px 3px 4px; }
 select { padding: 1px 2px; border: 1px solid #767676; background-color: #fff; }
 textarea { white-space: pre-wrap; }

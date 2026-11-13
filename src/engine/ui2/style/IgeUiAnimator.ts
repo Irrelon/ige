@@ -355,7 +355,11 @@ export class IgeUiAnimator {
 			}
 			const span = next.offset - prev.offset;
 			const local = span > 0 ? (p - prev.offset) / span : 1;
-			out[prop] = interpolate(prop, prev.value, next.value, (prev.ease ? easing(prev.ease) : ease)(local));
+			let v = interpolate(prop, prev.value, next.value, (prev.ease ? easing(prev.ease) : ease)(local));
+			// (A transform animated to or from none lands on the other end's functions at their identity, as a
+			// browser's does: an entrance from translateX(-8px), held at its end, is translateX(0px), not none)
+			if (prop === "transform" && v === "none" && (prev.value !== "none" || next.value !== "none")) v = identityTransform(prev.value !== "none" ? prev.value : next.value);
+			out[prop] = v;
 		}
 	}
 }
