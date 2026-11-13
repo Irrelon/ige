@@ -75,7 +75,8 @@ describe("ui2: what the menus need (the journal, the controls overlay, the title
 		expect((caret[0] as { x: number }).x).toBe(3 + 15);
 		(f as unknown as { selectionStart: number; selectionEnd: number }).selectionStart = 0;
 		(f as unknown as { selectionStart: number; selectionEnd: number }).selectionEnd = 2;
-		r.changed(f, "paint" as never);
+		// (As the hidden input's selection mirrored onto the field does: drawn again)
+		(r as unknown as { _paintDirty: boolean })._paintDirty = true;
 		r.update();
 		const sel = r.items.filter((i) => i.op === "box" && i.el === f && (i as { w: number }).w === 10);
 		expect(sel.length).toBe(1);

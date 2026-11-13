@@ -933,7 +933,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		if (type === "pointerdown") {
 			this._momentum = undefined;
-			if (!t) return;
+			if (!t) {
+				// (Pressed outside the UI (the game behind it): the UI's focus goes, as a page's does)
+				if (this.document.activeElement) this.focus(null);
+				return;
+			}
 			this._down = { el: t, x: e.clientX, y: e.clientY, time: e.timeStamp, pointerType: e.pointerType, scroller: this._scroller(t) };
 			this._active = t;
 			for (let n: IgeUiElement | null = t; n; n = n.parentNode) n._states.add("active");

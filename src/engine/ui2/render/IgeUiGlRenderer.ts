@@ -112,6 +112,8 @@ vec4 fill(vec2 p) {
 		vec2 d = p - (v_shape.xy + v_grad.zw);
 		t = fract((atan(d.x, -d.y) - v_params.y) / 6.2831853 + 1.0);
 	}
+	// A repeating gradient (linear or radial): its ramp holds one period (v_params.y, in t), repeated
+	if (v_grad.y < 1.5 && v_params.y > 0.0) t = fract(t / v_params.y);
 	return texture(u_ramp, vec2(clamp(t, 0.0, 1.0) * (255.0 / 256.0) + 0.5 / 256.0, (v_grad.x + 0.5) / 512.0));
 }
 
@@ -230,6 +232,20 @@ void main() {
 	}
 	outColor = sum / total;
 }`;
+
+/**
+ * A repeating gradient's period, in the gradient line's own 0-1 (its last stop less its first: px against the line's
+ * length); 0 when it doesn't repeat (or can't: a conic one, stops that don't move on).
+ */
+function repeatPeriod (g: IgeCssGradient, length: number): number {
+	if (!g.repeating || g.type === "conic" || g.stops.length < 2) return 0;
+	const at = (k: number) => {
+		const st = g.stops[k];
+		return st.at !== undefined ? st.at : st.atPx !== undefined ? st.atPx / Math.max(1, length) : k === 0 ? 0 : 1;
+	};
+	const period = at(g.stops.length - 1) - at(0);
+	return period > 1e-6 && period < 1 ? period : 0;
+}
 
 export class IgeUiGlRenderer {
 	gl: WebGL2RenderingContext;
@@ -357,8 +373,10 @@ export class IgeUiGlRenderer {
 			for (let k = i; k < j; k++) pos[k] = a + ((b - a) * (k - i + 1)) / (j - i + 1);
 		}
 		const off = row * 256 * 4;
+		const period = repeatPeriod(g, length);
 		for (let x = 0; x < 256; x++) {
-			const t = x / 255;
+			// (Repeating: one period from t 0, each sample where it falls in the stops' run)
+			const t = period ? pos[0]! + ((((x / 255) * period - pos[0]!) % period) + period) % period : x / 255;
 			let k = 0;
 			while (k < pos.length - 1 && pos[k + 1]! < t) k++;
 			const c0 = g.stops[k].color, c1 = g.stops[Math.min(k + 1, g.stops.length - 1)].color;
@@ -574,6 +592,7 @@ export class IgeUiGlRenderer {
 						if (g.toCorner) ang = Math.atan2(g.toCorner[0] * it.h, -g.toCorner[1] * it.w);
 						const len = Math.abs(it.w * Math.sin(ang)) + Math.abs(it.h * Math.cos(ang));
 						grad = [this._rampRow(g, len), 0, ang, 0];
+						params = [0, repeatPeriod(g, len), 0, 0];
 					} else if (g.type === "conic") {
 						grad = [this._rampRow(g, 360), 2, (g.cx ?? 0.5) * it.w, (g.cy ?? 0.5) * it.h];
 						params = [0, ((g.from ?? 0) * Math.PI) / 180, 0, 0];
@@ -591,7 +610,7 @@ export class IgeUiGlRenderer {
 							rx = ry = r;
 						}
 						grad = [this._rampRow(g, Math.max(rx, ry)), 1, cx, cy];
-						params = [0, 0, rx, ry];
+						params = [0, repeatPeriod(g, Math.max(rx, ry)), rx, ry];
 					}
 					write(push(null, additive), rect, rect, it.radii, [0, 0, 0, 1], params, Z4, cut, clip, it.matrix, it.opacity, 0, grad);
 					continue;
