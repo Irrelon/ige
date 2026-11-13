@@ -844,15 +844,19 @@ function imageSource (source: unknown): { el: IgeUiElement; width: number; heigh
 
 /** An engine-drawn surface (the host seam's IgeUiSurface, with its paint): its 2D context records, its paint draws it. */
 export function igeUiCanvas2dSurface (w: number, h: number, fonts: IgeUiCanvas2dFonts, changed?: () => void): IgeUiSurface & { context: IgeUiCanvas2d } {
+	let width = w, height = h;
 	const surface = {
-		width: w,
-		height: h,
+		// (Set, it clears what's drawn and the state at once, as a canvas's width and height do)
+		get width () { return width; },
+		set width (v: number) { width = v; surface.context._sized(); },
+		get height () { return height; },
+		set height (v: number) { height = v; surface.context._sized(); },
 		context: undefined as unknown as IgeUiCanvas2d,
 		getContext: (kind: string) => (kind === "2d" ? surface.context : null),
 		paint: (items: IgeUiPaintItem[], x: number, y: number, pw: number, ph: number, opacity: number, clip: IgeUiClip, matrix?: IgeCssMatrix) => surface.context.paint(items, x, y, pw, ph, opacity, clip, matrix)
 	};
 	// (Its size, the surface's: set by its canvas element as its width and height change, which clears it)
-	surface.context = new IgeUiCanvas2d(surface, fonts, () => [surface.width, surface.height], changed);
+	surface.context = new IgeUiCanvas2d(surface, fonts, () => [width, height], changed);
 	return surface;
 }
 
