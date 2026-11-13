@@ -911,11 +911,21 @@ export class IgeUiLayoutEngine {
 		let y = contentTop(b);
 		let prevMB: number | undefined;
 		const left = contentLeft(b);
+		// Margins that meet through this box (no border or padding between, no formatting context of its own): its first
+		// child's top margin and its last child's bottom margin collapse with its own, as a browser's do
+		const through = this._collapsesThrough(b);
+		const topOpen = through && b.borderTop === 0 && b.paddingTop === 0;
+		const bottomOpen = through && b.borderBottom === 0 && b.paddingBottom === 0 && innerH === undefined && !(this.len(b.style, "min-height") ?? 0);
+		let first = true;
+		let lastBlock = false;
 		for (const c of groups) {
 			if (this._outOfFlow(c)) {
 				this._noteStatic(c, b, left, y + (prevMB !== undefined ? Math.max(0, prevMB) : 0));
 				continue;
 			}
+			const isFirst = first;
+			first = false;
+			lastBlock = false;
 			if (c.el === null && !c.pseudo) {
 				// An anonymous block of inline content
 				c.style = b.style;
@@ -929,7 +939,8 @@ export class IgeUiLayoutEngine {
 				prevMB = 0;
 				continue;
 			}
-			this.layoutBox(c, cw, innerH);
+			// (A button in the flow is as wide as what's in it, as a browser's is, unless it's given a width)
+			this.layoutBox(c, cw, innerH, c.el?.localName === "button" && !c.pseudo ? { shrink: true } : {});
 			// Auto margins centre a block with a width
 			let x = left + c.marginLeft;
 			const ml = styleValue(c.style, "margin-left"), mr = styleValue(c.style, "margin-right");
@@ -938,13 +949,39 @@ export class IgeUiLayoutEngine {
 			else if (ml === "auto") x = left + Math.max(0, cw - c.borderW - c.marginRight);
 			else if (mr !== "auto" && free < 0 && false) x = left;
 			c.x = x;
-			const gap = prevMB === undefined ? c.marginTop : collapse(prevMB, c.marginTop);
+			let gap = prevMB === undefined ? c.marginTop : collapse(prevMB, c.marginTop);
+			// (The first child's top margin is this box's now: it starts at the top of its content)
+			if (isFirst && topOpen) {
+				b.marginTop = collapse(b.marginTop, c.marginTop);
+				gap = 0;
+			}
 			c.y = y + gap;
 			y = c.y + c.borderH;
 			prevMB = c.marginBottom;
+			lastBlock = true;
 			this._applyRelative(c, cw, innerH);
 		}
+		// (The last child's bottom margin likewise: this box ends at its border)
+		if (bottomOpen && lastBlock && prevMB !== undefined) {
+			b.marginBottom = collapse(b.marginBottom, prevMB);
+			return y - contentTop(b);
+		}
 		return y + (prevMB ?? 0) - contentTop(b);
+	}
+
+	/**
+	 * Whether a block's margins can collapse with its children's: an element's block in a block flow, not a
+	 * formatting context of its own (a flex or grid item, a scroller, a button, something out of the flow).
+	 */
+	_collapsesThrough (b: IgeUiBox): boolean {
+		if (!b.el || b.pseudo || (b.display !== "block" && b.display !== "list-item")) return false;
+		const p = b.parent;
+		if (!p || /^(inline-)?(flex|grid)$/.test(p.display)) return false;
+		if (b.el.localName === "button" || REPLACED.has(b.el.localName)) return false;
+		const s = b.style;
+		if (styleValue(s, "overflow-x") !== "visible" || styleValue(s, "overflow-y") !== "visible") return false;
+		const pos = styleValue(s, "position");
+		return pos !== "absolute" && pos !== "fixed";
 	}
 
 	_noteStatic (c: IgeUiBox, parent: IgeUiBox, x: number, y: number): void {
@@ -1206,6 +1243,13 @@ export class IgeUiLayoutEngine {
 			}
 			const itemWs = styleValue(it.style, "white-space");
 			const canWrap = itemWs !== "nowrap" && itemWs !== "pre";
+			// Text that can't wrap (nowrap) and doesn't fit: on the next line, if the line can break before it (after a
+			// space it may wrap at, or an inline block), as a browser's does
+			if (!canWrap && wrapOK && line.length) {
+				const prev = line[line.length - 1];
+				const breakable = prev.item.kind === "atom" || (prev.item.kind === "text" && / $/.test(prev.text ?? "") && !/^(nowrap|pre)$/.test(styleValue(prev.item.style, "white-space")));
+				if (breakable && x + this.textWidth(text.replace(/ +$/, ""), it.style) > cw + 0.05) finishLine(false);
+			}
 			const pieces = itemWs === "pre" || itemWs === "pre-wrap" || itemWs === "pre-line" ? text.split(/(\n)/) : [text];
 			for (const piece of pieces) {
 				if (piece === "\n") {

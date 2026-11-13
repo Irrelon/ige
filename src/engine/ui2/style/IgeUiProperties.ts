@@ -55,9 +55,17 @@ function borderParts (value: string): { width?: string; style?: string; color?: 
 	return out;
 }
 
+/** The keywords every property takes (a shorthand given one sets each of its longhands to it). */
+const CSS_WIDE = new Set(["inherit", "initial", "unset", "revert", "revert-layer"]);
+
 /** A shorthand into its longhands (undefined: it isn't one). */
 export function expandShorthand (name: string, value: string): [string, string][] | undefined {
 	const v = value.trim();
+	// font: inherit, margin: unset…: every longhand to the keyword (flex: initial has its own values, below)
+	if (CSS_WIDE.has(v.toLowerCase()) && name !== "flex") {
+		const keys = shorthandKeys(name);
+		return keys ? keys.map((k) => [k, v.toLowerCase()]) : undefined;
+	}
 	switch (name) {
 		case "margin": case "padding": {
 			const s = fourSides(v);
@@ -166,7 +174,7 @@ export function expandShorthand (name: string, value: string): [string, string][
 
 /** The longhands a shorthand sets (undefined: not a shorthand). */
 export function shorthandKeys (name: string): string[] | undefined {
-	for (const sample of ["initial", "0", "none", "normal 16px serif", "1px solid red"]) {
+	for (const sample of ["0", "none", "normal 16px serif", "1px solid red"]) {
 		const longs = expandShorthand(name, sample);
 		if (longs) return longs.map(([k]) => k);
 	}

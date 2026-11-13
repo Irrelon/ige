@@ -97,6 +97,40 @@ describe("ui2: layout", () => {
 		expect(box(c)).toEqual([150, 74, 100, 5]);
 	});
 
+	it("block flow: a first child's top margin and a last child's bottom margin collapse through a parent with no border or padding, not through a scroller", () => {
+		const r = ui(`.p { margin-top: 4px; } .k { margin: 6px 0 14px; height: 10px; } .q { height: 3px; } .s { overflow: auto; height: 60px; } .f { display: flex; flex-direction: column; }`, 400, 300);
+		r.root.innerHTML = `<div class="p"><div class="k"></div></div><div class="q"></div><div class="s"><div class="k"></div></div><div class="f"><div class="p"><div class="k"></div></div></div>`;
+		const [p, q, s, f] = r.root.children;
+		// (4px and 6px meet at the top: 6; 14px below, outside .p, before .q)
+		expect(box(p)).toEqual([0, 6, 400, 10]);
+		expect(box(p.children[0])).toEqual([0, 6, 400, 10]);
+		expect(box(q)).toEqual([0, 30, 400, 3]);
+		// A scroller keeps its child's margins inside; a flex item does too
+		expect(box(s.children[0])).toEqual([0, 39, 400, 10]);
+		expect(box(f.children[0])).toEqual([0, 97, 400, 30]);
+		expect(box(f.children[0].children[0])).toEqual([0, 103, 400, 10]);
+	});
+
+	it("block flow: a button is as wide as its contents, unless it has a width; auto margins move it", () => {
+		const r = ui(`button { display: block; padding: 0 5px; border: 0; font: inherit; } .r { margin-left: auto; } .w { width: 200px; }`, 400, 300);
+		r.root.innerHTML = `<button>abcd</button><button class="r">abcd</button><button class="w">abcd</button>`;
+		const [a, b, c] = r.root.children.map((e) => box(e));
+		expect(a[2]).toBeLessThan(100);
+		expect(b[0] + b[2]).toBe(400);
+		expect(b[2]).toBe(a[2]);
+		expect(c[2]).toBe(200);
+	});
+
+	it("inline text: a nowrap element that doesn't fit goes to the next line at the space before it", () => {
+		const r = ui(`.w { width: 100px; } small { white-space: nowrap; }`, 400, 300);
+		r.root.innerHTML = `<div class="w"><s>3,600</s> <small>HIGH SECURITY PRICE</small></div>`;
+		const s = box(r.root.querySelector("s")!), sm = box(r.root.querySelector("small")!);
+		// (Two lines: the price on the second, at its start)
+		expect(box(r.root.querySelector(".w")!)[3]).toBe(20);
+		expect(sm[0]).toBe(0);
+		expect(sm[1]).toBeGreaterThan(s[1]);
+	});
+
 	it("flex: a row with gap, grow and the automatic minimum; columns; centring", () => {
 		const r = ui(`.row { display: flex; gap: 10px; width: 300px; align-items: center; } .row > * { height: 20px; } .g { flex: 1; } .f { width: 50px; flex: none; } .t { height: 40px !important; }
 			.col { display: flex; flex-direction: column; height: 100px; justify-content: space-between; width: 50px; } .col > div { height: 10px; }`, 400, 300);
@@ -202,6 +236,15 @@ describe("ui2: shorthands, all, and the window's computed styles", () => {
 		shadow.root.innerHTML = `<div class="s"></div>`;
 		const s = shadow.document.defaultView!.getComputedStyle(shadow.root.querySelector(".s")!);
 		expect([s.boxShadow, s.textShadow, s.transform]).toEqual(["rgba(0, 0, 0, 0.5) 0px 4px 14px 0px, rgb(255, 255, 255) 0px 0px 0px 1px inset", "rgb(95, 227, 255) 0px 0px 8px", "matrix(0.5, 0, 0, 0.5, 0, 14)"]);
+	});
+	it("a shorthand given inherit, initial or unset sets each of its longhands to it (font: inherit takes the parent's font)", () => {
+		const r = ui(`.m { font: 12px monospace; letter-spacing: 2px; } button { font: 600 11px serif; } .m button.i { font: inherit; } .z { margin: 8px; } .z.u { margin: initial; }`, 400, 300);
+		r.root.innerHTML = `<div class="m"><button class="i">x</button><button>y</button></div><div class="z u"></div>`;
+		const view = r.document.defaultView!;
+		const [i, y] = [...r.root.querySelectorAll("button")].map((b) => view.getComputedStyle(b));
+		expect([i.fontFamily, i.fontSize, i.fontWeight]).toEqual(["monospace", "12px", "400"]);
+		expect([y.fontFamily, y.fontSize, y.fontWeight]).toEqual(["serif", "11px", "600"]);
+		expect(view.getComputedStyle(r.root.querySelector(".z")!).marginTop).toBe("0px");
 	});
 });
 
