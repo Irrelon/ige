@@ -486,7 +486,9 @@ export class IgeUiGlRenderer {
 			version = -1;
 		} else {
 			const src = el.getAttribute("src") ?? "";
-			let img = this._imageEls.get(src);
+			// (The picture its UI's already loaded, if it has: dom/IgeUiImages)
+			let img = this._imageEls.get(src) ?? (el.ownerDocument as unknown as { _uiRoot?: { images?: { get (src: string): HTMLImageElement | undefined } } })._uiRoot?.images?.get(src);
+			if (img) this._imageEls.set(src, img);
 			if (!img && src && typeof Image !== "undefined") {
 				img = new Image();
 				img.src = src;
@@ -798,7 +800,11 @@ export class IgeUiGlRenderer {
 				// How far a segment's end reaches past its point, and whether it's round there: a cap at an open end;
 				// at a corner, round, or square ends out to where the two outer edges meet (a miter), or none (bevel)
 				const end = (corner: number, a: number, b: number): [number, boolean] => {
-					if (corner < 0) return cap === "butt" ? [0, false] : [w / 2, cap === "round"];
+					if (corner < 0) {
+						// (-1 its start, -2 its end: each with its own cap when it has two)
+						const c = it.caps ? it.caps[corner === -1 ? 0 : 1] : cap;
+						return c === "butt" ? [0, false] : [w / 2, c === "round"];
+					}
 					if (join === "round") return [w / 2, true];
 					if (join === "bevel") return [0, false];
 					// The turn's angle from the two segments' directions
@@ -820,7 +826,7 @@ export class IgeUiGlRenderer {
 					const c = (x1 - x0) / len, s = (y1 - y0) / len;
 					const open0 = !it.closed && i === 0, open1 = !it.closed && j === n2 - 1;
 					const [e0, r0] = open0 ? end(-1, 0, 0) : end(i, (i + n2 - 1) % n2, j);
-					const [e1, r1] = open1 ? end(-1, 0, 0) : end(j, i, (j + 1) % n2);
+					const [e1, r1] = open1 ? end(-2, 0, 0) : end(j, i, (j + 1) % n2);
 					// A segment: a box along it, turned about its start (and then the item's own transform)
 					const rot: IgeCssMatrix = [c, s, -s, c, x0 - c * x0 + s * y0, y0 - s * x0 - c * y0];
 					const m = it.matrix ? multiply2(it.matrix, rot) : rot;
@@ -856,18 +862,16 @@ export class IgeUiGlRenderer {
 		}
 		if (shadowGroups.length) {
 			// The drop shadows' textures sized for the frame's biggest, and each composite's uv scaled to its part of them
-			const parts: { o: number; hw: number; hh: number }[] = [];
+			const parts: { o: number; k: number; hw: number; hh: number }[] = [];
 			for (const g of shadowGroups) {
 				if (!g.region) continue;
-				for (const c of g.composites) {
-					const [hw, hh] = this._shadows.size(this, g.region, (g.shadows[c.index].blur / 2) * scale);
-					parts.push({ o: c.o, hw, hh });
-				}
+				const sizes = this._shadows.size(this, g, scale);
+				for (const c of g.composites) parts.push({ o: c.o, k: c.index, hw: sizes[c.index][0], hh: sizes[c.index][1] });
 			}
-			for (const { o, hw, hh } of parts) {
-				const b = this._shadows.b!;
+			for (const { o, k, hw, hh } of parts) {
+				const t = this._shadows.outs[k]!;
 				// (The blurred copy's rows are bottom up: its top-left corner is at v = its height)
-				this._data.set([0, hh / b.h, hw / b.w, 0], o + 20);
+				this._data.set([0, hh / t.h, hw / t.w, 0], o + 20);
 			}
 		}
 		gl.bufferData(gl.ARRAY_BUFFER, this._data.subarray(0, n * STRIDE), gl.STREAM_DRAW);
@@ -910,7 +914,8 @@ export class IgeUiGlRenderer {
 		};
 		for (const b of batches) {
 			if (b.shadow) {
-				// A drop shadow: what it's of rendered alone (once for all its shadows), blurred, then drawn from that
+				// A drop shadow: what it's of rendered alone and its shadows made from that, in the filter's order (once for
+				// them all), then each drawn from its own
 				const g = b.shadow.group;
 				if (!g.region) continue;
 				const frame = { width, height, offset, target };
@@ -920,9 +925,10 @@ export class IgeUiGlRenderer {
 						// (Not a backdrop's passes or another shadow: what's drawn of the element itself)
 						if (!s.backdrop && !s.blend && !s.shadow) drawBatch(s);
 					}, frame);
+					this._shadows.chain(this, g, scale, frame);
+					calls += 3 * g.shadows.length;
 				}
-				b.image = this._shadows.blur(this, g, (g.shadows[b.shadow.index].blur / 2) * scale, frame);
-				calls += 2;
+				b.image = this._shadows.outs[b.shadow.index]!.tex;
 			}
 			if (b.backdrop) {
 				blurred = this._blurBackdrop(b.backdrop, height, target);
@@ -966,9 +972,12 @@ export class IgeUiGlRenderer {
 		}
 		const sigma = Math.max(...g.shadows.map((s) => (s.blur / 2) * scale));
 		const pad = Math.ceil(sigma * 3) + 2;
-		const reach = Math.max(...g.shadows.map((s) => Math.max(Math.abs(s.x), Math.abs(s.y)) * scale)) + pad;
-		const rx0 = Math.max(-reach, Math.floor(x0) - pad), ry0 = Math.max(-reach, Math.floor(y0) - pad);
-		const rx1 = Math.min(width + reach, Math.ceil(x1) + pad), ry1 = Math.min(height + reach, Math.ceil(y1) + pad);
+		// (A chain's shadows are each cast from the last: their offsets add up)
+		const reach = g.shadows.reduce((a, s) => a + Math.max(Math.abs(s.x), Math.abs(s.y)) * scale, 0) + pad;
+		// (Room round it for the blur, and in a chain for the shadows the next ones are cast from too)
+		const grow = g.shadows.length > 1 ? reach : pad;
+		const rx0 = Math.max(-reach, Math.floor(x0) - grow), ry0 = Math.max(-reach, Math.floor(y0) - grow);
+		const rx1 = Math.min(width + reach, Math.ceil(x1) + grow), ry1 = Math.min(height + reach, Math.ceil(y1) + grow);
 		g.region = rx1 > rx0 && ry1 > ry0 ? { x: rx0, y: ry0, w: rx1 - rx0, h: ry1 - ry0 } : undefined;
 	}
 

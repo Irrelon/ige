@@ -20,6 +20,8 @@ import { placeTextField, takeSelection, textFieldPaint, wireTextField } from "@/
 import { type IgeUiAdoption, igeUiSameStart, IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
 import { type IgeUiBox, stickyShift } from "@/engine/ui2/layout/IgeUiBox";
 import { IgeUiDragDrop } from "@/engine/ui2/input/IgeUiDragDrop";
+import { IgeUiImages } from "@/engine/ui2/dom/IgeUiImages";
+import { svgAnimating, svgClock } from "@/engine/ui2/render/IgeUiSvgSmil";
 import { IgeUiLayoutEngine } from "@/engine/ui2/layout/IgeUiLayout";
 import { IgeUiGlRenderer } from "@/engine/ui2/render/IgeUiGlRenderer";
 import { type IgeUiPaintItem, IgeUiPainter } from "@/engine/ui2/render/IgeUiPaint";
@@ -126,6 +128,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	readonly styles = new IgeUiStyleEngine();
 	readonly layoutEngine: IgeUiLayoutEngine;
 	readonly painter = new IgeUiPainter();
+	/** `<img>` pictures (dom/IgeUiImages). */
+	readonly images = new IgeUiImages();
 	readonly animator = new IgeUiAnimator();
 	atlas?: IgeUiSdfAtlas;
 	gl?: IgeUiGlRenderer;
@@ -190,6 +194,16 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this.document.defaultView = this._view();
 		const fonts = opts.fonts ?? (typeof document !== "undefined" ? new IgeUiCanvasFonts() : new IgeUiFixedFonts());
 		this.layoutEngine = new IgeUiLayoutEngine(fonts);
+		// <img> pictures: loaded as layout meets them, laid out at their size, the UI drawn again as each arrives
+		this.layoutEngine.imageSizes = this.images.sizes;
+		this.layoutEngine.requestImage = (src) => this.images.request(src);
+		this.painter.imageSizes = this.images.sizes;
+		this.images.onLoad = (src, ok) => {
+			this._layoutDirty = true;
+			this._layoutAll = true;
+			this._paintDirty = true;
+			for (const img of this.document.querySelectorAll("img")) if (img.getAttribute("src") === src) img.dispatchEvent(new IgeUiEvent(ok ? "load" : "error"));
+		};
 		// The focused field's caret or selection, over its text (dom/IgeUiTextField)
 		this.painter.fieldPaint = textFieldPaint(this.layoutEngine, () => this.document.activeElement);
 		if (opts.width !== undefined && opts.height !== undefined) this.screen = { w: opts.width, h: opts.height };
@@ -694,6 +708,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** The frame's work: animations, styles, layout, the display list. */
 	update (now: number = typeof performance !== "undefined" ? performance.now() : Date.now()): void {
 		this._now = now;
+		// (SVG's own animations read this frame's time: render/IgeUiSvgSmil)
+		svgClock.now = now;
 		this._pageFocus();
 		this._animate(now);
 		this._restyle();
@@ -726,6 +742,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			this._hoverStale = false;
 			this.stats.paint = perf() - t0;
 			this.stats.items = this.items.length;
+			// (An SVG animating: drawn again next frame)
+			if (svgAnimating()) this._paintDirty = true;
 		}
 	}
 

@@ -20,6 +20,7 @@ import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix, IDENTITY, mul
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import type { IgeUiClip, IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 import { paintGradientTriangles, svgGradient, svgGradientMiddle } from "@/engine/ui2/render/IgeUiSvgGradient";
+import { animated, unanimated } from "@/engine/ui2/render/IgeUiSvgSmil";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import { fontWeight, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 
@@ -334,6 +335,8 @@ export interface IgeUiSvgText {
 	/** Its font, its size in user units (scaled with the drawing when it's painted). */
 	font: IgeUiFontSpec;
 	letterSpacing: number;
+	/** Text on a path (`<textPath>`): each glyph's start on the baseline, its turn (radians) and its advance. */
+	glyphs?: { ch: string; x: number; y: number; angle: number; w: number }[];
 }
 
 /** Each `<text>`'s run, measured at layout (the painter has no fonts). */
@@ -345,15 +348,19 @@ export const SVG_TEXT = new WeakMap<IgeUiElement, IgeUiSvgText>();
  */
 export function measureSvgText (svg: IgeUiElement, measure: (text: string, font: IgeUiFontSpec) => number, metrics: (font: IgeUiFontSpec) => { ascent: number; descent: number }): void {
 	for (const t of svg.querySelectorAll("text")) {
+		// (On a path: its <textPath>'s attributes first)
+		const onPath = [...t.children].find((c) => c.localName.toLowerCase() === "textpath");
 		// (A presentation attribute on it or on a group round it, else its style)
 		const attr = (name: string): string | undefined => {
+			const own = onPath?.getAttribute(name);
+			if (own !== null && own !== undefined) return own;
 			for (let n: IgeUiElement | null = t; n && n !== svg.parentNode; n = n.parentNode) {
 				const v = n.getAttribute(name);
 				if (v !== null) return v;
 			}
 			return undefined;
 		};
-		const cs = t._computed ?? {};
+		const cs = (onPath ?? t)._computed ?? t._computed ?? {};
 		const text = (t.textContent ?? "").replace(/\s+/g, " ").trim();
 		const size = parseFloat(attr("font-size") ?? styleValue(cs, "font-size")) || 16;
 		const style = (attr("font-style") ?? styleValue(cs, "font-style")) === "italic" ? "italic" : "normal";
@@ -365,14 +372,81 @@ export function measureSvgText (svg: IgeUiElement, measure: (text: string, font:
 		const anchor = attr("text-anchor") ?? styleValue(cs, "text-anchor");
 		const x = first("x") - (anchor === "middle" ? w / 2 : anchor === "end" ? w : 0);
 		const m = metrics(font);
-		SVG_TEXT.set(t, { text, x, y: first("y"), w, ascent: m.ascent, descent: m.descent, font, letterSpacing });
+		const run: IgeUiSvgText = { text, x, y: first("y"), w, ascent: m.ascent, descent: m.descent, font, letterSpacing };
+		if (onPath) run.glyphs = alongPath(svg, onPath, text, font, letterSpacing, anchor, measure);
+		SVG_TEXT.set(t, run);
 	}
+}
+
+/**
+ * Text on a path: each glyph's middle on the path at its distance along it (from startOffset, moved back for
+ * text-anchor), turned with the path there, as a browser sets it; glyphs off either end aren't drawn.
+ */
+function alongPath (svg: IgeUiElement, tp: IgeUiElement, text: string, font: IgeUiFontSpec, letterSpacing: number, anchor: string | undefined, measure: (text: string, font: IgeUiFontSpec) => number): IgeUiSvgText["glyphs"] {
+	const ref = (tp.getAttribute("href") ?? tp.getAttribute("xlink:href") ?? "").replace(/^#/, "");
+	const path = ref ? findById(svg, ref) : null;
+	const sub = path ? svgShapeGeometry(path) : undefined;
+	const pts = sub?.[0]?.points;
+	if (!pts || pts.length < 4) return [];
+	// Distances along the path's points
+	const at: number[] = [0];
+	for (let i = 2; i + 1 < pts.length; i += 2) at.push(at[at.length - 1] + Math.hypot(pts[i] - pts[i - 2], pts[i + 1] - pts[i - 1]));
+	const length = at[at.length - 1];
+	const pointAt = (d: number): [number, number, number] | undefined => {
+		if (d < 0 || d > length) return undefined;
+		let k = 1;
+		while (k < at.length - 1 && at[k] < d) k++;
+		const f = (d - at[k - 1]) / Math.max(1e-9, at[k] - at[k - 1]);
+		const x0 = pts[(k - 1) * 2], y0 = pts[(k - 1) * 2 + 1], x1 = pts[k * 2], y1 = pts[k * 2 + 1];
+		return [x0 + (x1 - x0) * f, y0 + (y1 - y0) * f, Math.atan2(y1 - y0, x1 - x0)];
+	};
+	const so = (tp.getAttribute("startOffset") ?? "0").trim();
+	const start = so.endsWith("%") ? (parseFloat(so) / 100) * length : parseFloat(so) || 0;
+	const chars = [...text];
+	// (Each glyph's advance as the run sets it: the text up to and past it measured, so kerning between pairs counts)
+	let before = 0;
+	const adv = chars.map((_, i) => {
+		const upTo = measure(chars.slice(0, i + 1).join(""), font);
+		const a = upTo - before;
+		before = upTo;
+		return a + letterSpacing;
+	});
+	const total = adv.reduce((a, w) => a + w, 0);
+	let d = start - (anchor === "middle" ? total / 2 : anchor === "end" ? total : 0);
+	const out: NonNullable<IgeUiSvgText["glyphs"]> = [];
+	chars.forEach((ch, i) => {
+		const w = adv[i] - letterSpacing;
+		const mid = pointAt(d + w / 2);
+		if (mid && ch.trim()) {
+			const [mx, my, angle] = mid;
+			// (Its cell as wide as its advance, the spacing after it too, as a browser measures the run)
+			out.push({ ch, x: mx - Math.cos(angle) * (w / 2), y: my - Math.sin(angle) * (w / 2), angle, w: adv[i] });
+		}
+		d += adv[i];
+	});
+	return out;
 }
 
 /** A shape's bounds (x0, y0, x1, y1, user units; stroke not included), or undefined for one with no geometry. */
 export function svgShapeBounds (el: IgeUiElement): [number, number, number, number] | undefined {
+	// (A run inside a <text>, on a path or not: the text's box, as a browser gives it)
+	const lower = el.localName.toLowerCase();
+	if ((lower === "textpath" || lower === "tspan") && el.parentNode) return svgShapeBounds(el.parentNode);
 	if (el.localName === "text") {
 		const t = SVG_TEXT.get(el);
+		if (t?.glyphs) {
+			// (On a path: round its glyphs' boxes)
+			if (!t.glyphs.length) return undefined;
+			const xs: number[] = [], ys: number[] = [];
+			for (const g of t.glyphs) {
+				const c = Math.cos(g.angle), s = Math.sin(g.angle);
+				for (const [u, v] of [[0, -t.ascent], [g.w, -t.ascent], [0, t.descent], [g.w, t.descent]]) {
+					xs.push(g.x + u * c - v * s);
+					ys.push(g.y + u * s + v * c);
+				}
+			}
+			return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+		}
 		return t && t.text ? [t.x, t.y - t.ascent, t.x + t.w, t.y + t.descent] : undefined;
 	}
 	// (Circles and ellipses exactly, not through their polygons)
@@ -407,7 +481,7 @@ export function svgLayoutBounds (svg: IgeUiElement, viewport: IgeCssMatrix, shap
 		const t = svgTransform(n.getAttribute("transform"));
 		if (t) m = multiply(m, t);
 	}
-	const b = svgShapeBounds(shape);
+	const b = svgShapeBounds(animated(shape, svg));
 	if (!b) return undefined;
 	const pts = [apply(m, b[0], b[1]), apply(m, b[2], b[1]), apply(m, b[2], b[3]), apply(m, b[0], b[3])];
 	return [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[1]))];
@@ -550,7 +624,9 @@ export function paintSvg (items: IgeUiPaintItem[], svg: IgeUiElement, x: number,
 	const base = svgProps(svg, SVG_INHERITED);
 	const colorOf = (cs: IgeUiComputedStyle) => parseColor(styleValue(cs, "color")) ?? current;
 	const walk = (parent: IgeUiElement, props: SvgProps, m: IgeCssMatrix, opacity: number, clipHere: IgeUiClip) => {
-		for (const c of parent.children) {
+		for (const real of parent.children) {
+			// (As it is now, its <animate>s at their values)
+			const c = animated(real, svg);
 			const cs = c._computed ?? {};
 			if (styleValue(cs, "display") === "none" || c.getAttribute("display") === "none") continue;
 			const name = c.localName;
@@ -650,7 +726,20 @@ function svgTextRun (items: IgeUiPaintItem[], el: IgeUiElement, p: SvgProps, m: 
 	const s = scaleOf(m);
 	const [x, y] = apply(m, t.x, t.y);
 	const fillOpacity = clamp01(resolveNumber(p["fill-opacity"]) ?? 1);
-	items.push({ op: "text", text: t.text, x, y, w: t.w * s, font: { ...t.font, size: t.font.size * s }, letterSpacing: t.letterSpacing * s, color, opacity: opacity * fillOpacity, clip, matrix, el });
+	const font = { ...t.font, size: t.font.size * s };
+	if (t.glyphs) {
+		// On a path: each glyph on its own, turned where it sits (through the drawing: its turn worked out on the page)
+		for (const g of t.glyphs) {
+			const [gx, gy] = apply(m, g.x, g.y);
+			const [tx, ty] = apply(m, g.x + Math.cos(g.angle), g.y + Math.sin(g.angle));
+			const a = Math.atan2(ty - gy, tx - gx), c = Math.cos(a), sn = Math.sin(a);
+			// (Turned about where it sits, so it keeps the page's pixels and the clip round it stays put)
+			const turn: IgeCssMatrix = [c, sn, -sn, c, gx - c * gx + sn * gy, gy - sn * gx - c * gy];
+			items.push({ op: "text", text: g.ch, x: gx, y: gy, w: g.w * s, font, letterSpacing: 0, color, opacity: opacity * fillOpacity, clip, matrix: matrix ? multiply(matrix, turn) : turn, el: unanimated(el) });
+		}
+		return;
+	}
+	items.push({ op: "text", text: t.text, x, y, w: t.w * s, font, letterSpacing: t.letterSpacing * s, color, opacity: opacity * fillOpacity, clip, matrix, el: unanimated(el) });
 }
 
 function shape (
@@ -669,9 +758,10 @@ function shape (
 	const num = (a: string) => Number(el.getAttribute(a) ?? 0) || 0;
 	const name = el.localName;
 	// (Where the drawing puts them, not snapped to device pixels as boxes are)
-	const at = { clip, matrix, el, exact: true };
+	const at = { clip, matrix, el: unanimated(el), exact: true };
 	// Circles and plain rectangles as boxes (exact, smooth); everything else as triangles and lines
-	if ((name === "circle" && uniform) || (name === "rect" && axisAligned && !el.hasAttribute("rx") && !el.hasAttribute("ry"))) {
+	// (A stroke in a gradient goes the long way: drawn in pieces, below)
+	if (!stroke.gradient && ((name === "circle" && uniform) || (name === "rect" && axisAligned && !el.hasAttribute("rx") && !el.hasAttribute("ry")))) {
 		let bx: number, by: number, bw: number, bh: number, r: number;
 		if (name === "circle") {
 			const [cx, cy] = apply(m, num("cx"), num("cy"));
@@ -721,10 +811,79 @@ function shape (
 			// (A closed subpath's repeated last point dropped: it closes round)
 			if (s.closed && pts.length >= 6 && Math.abs(pts[0] - pts[pts.length - 2]) < 1e-9 && Math.abs(pts[1] - pts[pts.length - 1]) < 1e-9) pts.length -= 2;
 			if (pts.length < 4) continue;
+			if (stroke.gradient) {
+				gradientStroke(items, pts, !!s.closed, stroke.gradient, shapeBox(el, m), { width: sw, cap, join, opacity: opacity * strokeOpacity, ...at });
+				continue;
+			}
 			items.push({ op: "line", points: pts, width: sw, color: stroke.color, opacity: opacity * strokeOpacity, closed: s.closed || undefined, cap, join, miterLimit, ...at });
 		}
 	}
 	void svg;
+}
+
+/** A shape's bounding box through `m` (UI px: x, y, w, h), as a gradient on it is laid over. */
+function shapeBox (el: IgeUiElement, m: IgeCssMatrix): [number, number, number, number] {
+	const b = svgShapeBounds(el);
+	if (!b) return [0, 0, 1, 1];
+	const pts = [apply(m, b[0], b[1]), apply(m, b[2], b[1]), apply(m, b[0], b[3]), apply(m, b[2], b[3])];
+	const x0 = Math.min(...pts.map((q) => q[0])), y0 = Math.min(...pts.map((q) => q[1]));
+	return [x0, y0, Math.max(...pts.map((q) => q[0])) - x0, Math.max(...pts.map((q) => q[1])) - y0];
+}
+
+/** A gradient's colour at a point (UI px) over a box: where the point falls along its line (linear) or out from its middle (radial). */
+export function gradientColorAtPoint (g: IgeCssGradient, box: [number, number, number, number], x: number, y: number): IgeCssColor {
+	const [bx, by, bw, bh] = box;
+	let t: number;
+	if (g.type === "radial") {
+		const cx = bx + (g.cx ?? 0.5) * bw, cy = by + (g.cy ?? 0.5) * bh;
+		const rx = (g.radii ? g.radii[0] : 0.5) * bw, ry = (g.radii ? g.radii[1] : 0.5) * bh;
+		t = Math.hypot((x - cx) / Math.max(1e-6, rx), (y - cy) / Math.max(1e-6, ry));
+	} else {
+		const a = ((g.angle ?? 180) * Math.PI) / 180, ux = Math.sin(a), uy = -Math.cos(a);
+		const len = Math.abs(bw * ux) + Math.abs(bh * uy);
+		t = ((x - bx - bw / 2) * ux + (y - by - bh / 2) * uy) / Math.max(1e-6, len) + 0.5;
+	}
+	const stops = g.stops;
+	let k = 0;
+	while (k < stops.length - 1 && (stops[k + 1].at ?? 1) < t) k++;
+	const s0 = stops[k], s1 = stops[Math.min(k + 1, stops.length - 1)];
+	const p0 = s0.at ?? 0, p1 = s1.at ?? 1;
+	const f = t <= p0 ? 0 : t >= p1 ? 1 : (t - p0) / Math.max(1e-6, p1 - p0);
+	const c0 = s0.color, c1 = s1.color;
+	const a = c0.a + (c1.a - c0.a) * f;
+	// (An SVG gradient's colours mixed as they are; a CSS one's premultiplied)
+	if (g.unpremultiplied || a <= 0) return { r: c0.r + (c1.r - c0.r) * f, g: c0.g + (c1.g - c0.g) * f, b: c0.b + (c1.b - c0.b) * f, a };
+	const mix = (p: number, q: number) => (p * c0.a + (q * c1.a - p * c0.a) * f) / a;
+	return { r: mix(c0.r, c1.r), g: mix(c0.g, c1.g), b: mix(c0.b, c1.b), a };
+}
+
+/**
+ * A stroke in a gradient: the line in short pieces, each in the gradient's colour at its middle, over the shape's box.
+ * The pieces meet end to end along a segment; at a corner, rounded or square ends stand in for the join; the
+ * line's own ends keep its cap.
+ */
+function gradientStroke (items: IgeUiPaintItem[], pts: number[], closed: boolean, g: IgeCssGradient, box: [number, number, number, number], line: { width: number; cap: "butt" | "round" | "square"; join: "miter" | "round" | "bevel"; opacity: number; clip: IgeUiClip; matrix?: IgeCssMatrix; el: IgeUiElement; exact: boolean }): void {
+	// (Over a box with no width or no height a gradient isn't drawn at all, as SVG has it)
+	if (box[2] <= 1e-6 || box[3] <= 1e-6) return;
+	const n = pts.length / 2;
+	const segs = closed ? n : n - 1;
+	const corner = line.join === "round" ? "round" : "square";
+	const { width, cap, join, ...rest } = line;
+	void join;
+	for (let i = 0; i < segs; i++) {
+		const j = (i + 1) % n;
+		const x0 = pts[i * 2], y0 = pts[i * 2 + 1], x1 = pts[j * 2], y1 = pts[j * 2 + 1];
+		const len = Math.hypot(x1 - x0, y1 - y0);
+		const k = Math.max(1, Math.ceil(len / 3));
+		for (let q = 0; q < k; q++) {
+			const a = q / k, b = (q + 1) / k;
+			const ax = x0 + (x1 - x0) * a, ay = y0 + (y1 - y0) * a, bx = x0 + (x1 - x0) * b, by = y0 + (y1 - y0) * b;
+			const startEnd = q === 0 ? (!closed && i === 0 ? cap : corner) : "butt";
+			const endEnd = q === k - 1 ? (!closed && i === segs - 1 ? cap : corner) : "butt";
+			const color = gradientColorAtPoint(g, box, (ax + bx) / 2, (ay + by) / 2);
+			if (color.a > 0) items.push({ op: "line", points: [ax, ay, bx, by], width, color, caps: [startEnd, endEnd], ...rest });
+		}
+	}
 }
 
 function clamp01 (v: number): number {

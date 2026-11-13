@@ -106,6 +106,8 @@ export class IgeUiLayoutEngine {
 	kept = 0;
 	/** Natural sizes of images by src (filled in as they load). */
 	imageSizes = new Map<string, { w: number; h: number }>();
+	/** Asks for a picture whose size isn't known yet (IgeUiRoot's images: laid out again when it arrives). */
+	requestImage?: (src: string) => void;
 	/**
 	 * How much room a scrollbar takes (scrollbar-width: auto; thin is at most 11): a desktop browser's classic
 	 * scrollbar is 15, overlay scrollbars (phones, a Mac's trackpad) take none: set 0 for those.
@@ -810,7 +812,9 @@ export class IgeUiLayoutEngine {
 		switch (el.localName) {
 			case "canvas": return { w: attrW || 300, h: attrH || 150 };
 			case "img": {
-				const nat = this.imageSizes.get(el.getAttribute("src") ?? "");
+				const src = el.getAttribute("src") ?? "";
+				const nat = this.imageSizes.get(src);
+				if (!nat && src) this.requestImage?.(src);
 				const w = attrW || nat?.w || 0, h = attrH || (nat && w ? (nat.h * w) / nat.w : nat?.h) || 0;
 				return { w, h };
 			}
@@ -822,7 +826,14 @@ export class IgeUiLayoutEngine {
 				const size = Number(el.getAttribute("size")) || 20;
 				return { w: Math.round(size * f.size * 0.55), h: Math.round(this.lineHeight(b.style)) };
 			}
-			case "svg": return { w: attrW || 300, h: attrH || 150 };
+			case "svg": {
+				// (No size given: its viewBox's shape, 300 wide, as a browser sizes an inline SVG)
+				const vb = (el.getAttribute("viewBox") ?? "").trim().split(/[\s,]+/).map(Number);
+				const ratio = vb.length === 4 && vb[2] > 0 && vb[3] > 0 ? vb[3] / vb[2] : 0;
+				if (ratio && !attrH) return { w: attrW || 300, h: (attrW || 300) * ratio };
+				if (ratio && !attrW) return { w: attrH / ratio, h: attrH };
+				return { w: attrW || 300, h: attrH || 150 };
+			}
 			default: return { w: attrW || 300, h: attrH || 150 };
 		}
 	}

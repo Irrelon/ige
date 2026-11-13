@@ -195,3 +195,63 @@ describe("ui2: SVG text", () => {
 		expect(b.height).toBe(24);
 	});
 });
+
+describe("ui2: SVG text on a path", () => {
+	it("a <textPath>'s glyphs sit along the path from startOffset, middle-anchored, each turned with it", () => {
+		const r = ui(".s { width: 200px; height: 100px; display: block; } text { font: 10px monospace; }");
+		r.document.body.innerHTML = `<svg class="s" viewBox="0 0 200 100"><defs><path id="arc" d="M 0 50 L 100 50 L 200 0"/></defs><text><textPath href="#arc" startOffset="50%" text-anchor="middle">ABCD</textPath></text></svg>`;
+		r.update();
+		const glyphs = r.items.filter((i) => i.op === "text") as { text: string; x: number; y: number; matrix?: number[] }[];
+		expect(glyphs.map((g) => g.text)).toEqual(["A", "B", "C", "D"]);
+		// The path is 100 + 111.8 long: its middle at 105.9, the four glyphs (6 wide) from 93.9; the first two on the flat
+		expect(Math.round(glyphs[0].x * 10) / 10).toBeCloseTo(93.9, 0);
+		expect(glyphs[0].y).toBeCloseTo(50, 5);
+		expect(glyphs[0].matrix![1]).toBeCloseTo(0, 5);
+		// The last two past the corner, turned up the slope
+		expect(glyphs[3].matrix![1]).toBeCloseTo(Math.sin(Math.atan2(-50, 100)), 3);
+		expect(glyphs[3].y).toBeLessThan(50);
+	});
+});
+
+describe("ui2: SVG gradient strokes", () => {
+	it("a stroke in a linear gradient is drawn in short pieces, each the gradient's colour where it is; the line's ends keep its cap", () => {
+		const r = ui(".s { width: 100px; height: 100px; display: block; }");
+		r.document.body.innerHTML = `<svg class="s" viewBox="0 0 100 100"><defs><linearGradient id="lr"><stop offset="0" stop-color="#ff0000"/><stop offset="1" stop-color="#0000ff"/></linearGradient></defs>`
+			+ `<path d="M0 0 L100 100" stroke="url(#lr)" stroke-width="4" stroke-linecap="round" fill="none"/></svg>`;
+		r.update();
+		const lines = r.items.filter((i) => i.op === "line") as { points: number[]; color: { r: number; b: number }; caps?: string[] }[];
+		expect(lines.length).toBeGreaterThan(20);
+		expect(lines[0].color.r).toBeGreaterThan(240);
+		expect(lines[lines.length - 1].color.b).toBeGreaterThan(240);
+		expect(lines[0].caps).toEqual(["round", "butt"]);
+		expect(lines[lines.length - 1].caps).toEqual(["butt", "round"]);
+	});
+});
+
+describe("ui2: object-fit and object-position", () => {
+	it("cover fills the box with the picture (cut to it), placed by object-position; none keeps its size", () => {
+		const r = ui("canvas { display: block; width: 50px; height: 50px; } .c { object-fit: cover; object-position: 0% 100%; } .n { object-fit: none; }");
+		r.document.body.innerHTML = `<canvas class="c" width="100" height="50"></canvas><canvas class="n" width="20" height="10"></canvas>`;
+		r.update();
+		const [c, n] = r.items.filter((i) => i.op === "image") as { x: number; y: number; w: number; h: number; clip: number[] | null }[];
+		expect([c.x, c.y, c.w, c.h]).toEqual([0, 0, 100, 50]);
+		expect(c.clip).toEqual([0, 0, 50, 50]);
+		// (none: its own size, in the middle by default)
+		expect([n.x, n.y, n.w, n.h]).toEqual([15, 70, 20, 10]);
+	});
+});
+
+describe("ui2: SVG <animate>", () => {
+	it("a shape's attribute moves through its values over dur, timed from when its svg was first drawn", () => {
+		const r = ui(".s { width: 100px; height: 100px; display: block; }");
+		r.document.body.innerHTML = `<svg class="s" viewBox="0 0 100 100"><circle cx="50" cy="50" r="6" fill="#fff"><animate attributeName="r" values="5;9;5" dur="2s" repeatCount="indefinite"/></circle></svg>`;
+		const radius = (t: number) => {
+			r.update(t);
+			return (r.items.find((i) => i.op === "box") as { w: number }).w / 2;
+		};
+		expect(radius(1000)).toBe(5);
+		expect(radius(1500)).toBe(7);
+		expect(radius(2000)).toBe(9);
+		expect(radius(5000)).toBe(5);
+	});
+});

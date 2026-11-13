@@ -98,6 +98,8 @@ export interface IgeUiPaintLine extends IgeUiPaintBase {
 	closed?: boolean;
 	/** Its ends and corners (SVG's stroke-linecap and stroke-linejoin); round when not given. */
 	cap?: "butt" | "round" | "square";
+	/** Its two ends' caps when they differ (a piece of a longer line: a gradient stroke's). */
+	caps?: ["butt" | "round" | "square", "butt" | "round" | "square"];
 	join?: "miter" | "round" | "bevel";
 	miterLimit?: number;
 }
@@ -134,6 +136,17 @@ interface Ctx {
 
 const lenCtx = (style: IgeUiComputedStyle, percent?: number) => ({ em: parseFloat(styleValue(style, "font-size")) || 16, rem: 16, percent, vw: 0, vh: 0, cqw: 0, cqh: 0 });
 
+/** object-position: where a picture sits in its box (px from its corner), given the room left over each way. */
+function objectPosition (v: string, roomX: number, roomY: number, ctx: ReturnType<typeof lenCtx>): [number, number] {
+	const KW: Record<string, number> = { left: 0, top: 0, center: 0.5, right: 1, bottom: 1 };
+	let parts = (v || "50% 50%").trim().split(/\s+/);
+	if (parts.length === 1) parts = [parts[0], "center"];
+	// (Keywords the other way round: "top left")
+	if (parts[0] === "top" || parts[0] === "bottom" || parts[1] === "left" || parts[1] === "right") parts = [parts[1], parts[0]];
+	const one = (t: string, room: number) => (t in KW ? KW[t] * room : t.endsWith("%") ? (parseFloat(t) / 100) * room : resolveLength(t, ctx) ?? room / 2);
+	return [one(parts[0], roomX), one(parts[1], roomY)];
+}
+
 function intersect (a: IgeUiClip, b: IgeUiClip): IgeUiClip {
 	if (!a) return b;
 	if (!b) return a;
@@ -149,6 +162,9 @@ export class IgeUiPainter {
 	_scroll = (el: IgeUiElement | null): [number, number] => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
 	/** Drawn after a box's text: the focused field's caret or selection (dom/IgeUiTextField). */
 	fieldPaint?: (b: IgeUiBox, ctx: Ctx, items: IgeUiPaintItem[]) => void;
+
+	/** `<img>` pictures' own sizes by src (IgeUiRoot's images), for object-fit. */
+	imageSizes?: Map<string, { w: number; h: number }>;
 
 	paint (root: IgeUiBox): IgeUiPaintItem[] {
 		this.items = [];
@@ -529,18 +545,24 @@ export class IgeUiPainter {
 			const cx = x + b.borderLeft + b.paddingLeft, cy = y + b.borderTop + b.paddingTop;
 			const cw = w - b.borderLeft - b.borderRight - b.paddingLeft - b.paddingRight, ch = h - b.borderTop - b.borderBottom - b.paddingTop - b.paddingBottom;
 			if (el.localName === "canvas" || el.localName === "img") {
-				// object-fit: contain (and scale-down): the picture kept to its shape, in the middle of its box
+				// object-fit: contain and scale-down keep the picture to its shape inside its box, cover fills the box with it
+				// (cut to the box), none leaves it its own size; object-position says where it sits
 				const fit = styleValue(s, "object-fit");
 				let [ix, iy, iw, ih] = [cx, cy, cw, ch];
-				const nw = el.width, nh = el.height;
-				if ((fit === "contain" || fit === "scale-down") && nw > 0 && nh > 0 && cw > 0 && ch > 0) {
-					const k = Math.min(cw / nw, ch / nh, fit === "scale-down" ? 1 : Infinity);
+				let clip = ctx.clip;
+				// (A picture's own size: an <img>'s once it's arrived, a canvas's surface)
+				const nat = el.localName === "img" ? this.imageSizes?.get(el.getAttribute("src") ?? "") : undefined;
+				const nw = nat ? nat.w : el.width, nh = nat ? nat.h : el.height;
+				if (fit !== "fill" && nw > 0 && nh > 0 && cw > 0 && ch > 0) {
+					const k = fit === "cover" ? Math.max(cw / nw, ch / nh) : fit === "none" ? 1 : Math.min(cw / nw, ch / nh, fit === "scale-down" ? 1 : Infinity);
 					iw = nw * k;
 					ih = nh * k;
-					ix = cx + (cw - iw) / 2;
-					iy = cy + (ch - ih) / 2;
+					const [px, py] = objectPosition(styleValue(s, "object-position"), cw - iw, ch - ih, lenCtx(s));
+					ix = cx + px;
+					iy = cy + py;
+					if (iw > cw + 0.01 || ih > ch + 0.01) clip = intersect(clip, [cx, cy, cx + cw, cy + ch]);
 				}
-				this.items.push({ op: "image", x: ix, y: iy, w: iw, h: ih, source: el, opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el, pixelated: styleValue(s, "image-rendering") === "pixelated" });
+				this.items.push({ op: "image", x: ix, y: iy, w: iw, h: ih, source: el, opacity: ctx.opacity, clip, matrix: ctx.matrix, el, pixelated: styleValue(s, "image-rendering") === "pixelated" });
 			} else if (el.localName === "svg") this._svg(el, cx, cy, cw, ch, ctx, current);
 			else if (el.localName === "input" && (el.getAttribute("type") === "range")) this._range(el, cx, cy, cw, ch, ctx);
 		}
