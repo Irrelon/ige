@@ -17,7 +17,9 @@ import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiSty
 import type { IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 import { hasDashedSide, paintDashedBorder } from "@/engine/ui2/render/IgeUiBorderDash";
 import { type IgeUiDropShadow, parseDropShadows } from "@/engine/ui2/render/IgeUiDropShadow";
+import { enter3d, invert3, needs3d, perspectiveOf, project } from "@/engine/ui2/render/IgeUiPerspective";
 import { fillTriangles, paintSvg } from "@/engine/ui2/render/IgeUiSvg";
+import { paintTextDecorations, textDecorations } from "@/engine/ui2/render/IgeUiTextDecoration";
 import { clipsToText, paintTextInBackground } from "@/engine/ui2/render/IgeUiTextClip";
 
 export type IgeUiClip = [number, number, number, number] | null;
@@ -41,6 +43,8 @@ export interface IgeUiPaintBox extends IgeUiPaintBase {
 	h: number;
 	/** Corner radii: top-left, top-right, bottom-right, bottom-left. */
 	radii: [number, number, number, number];
+	/** The corners' vertical radii when one's elliptical (border-radius: 50% on an oblong box), the same order; else as radii. */
+	radiiY?: [number, number, number, number];
 	/** Cut corners (clip-path chamfers), the same order. */
 	chamfer?: [number, number, number, number];
 	/** A fill: a colour, or a gradient layer. */
@@ -132,6 +136,23 @@ interface Ctx {
 	dy: number;
 	opacity: number;
 	matrix?: IgeCssMatrix;
+	/** In a preserve-3d parent: its 3D transform, its 3D context's plane on the screen, and the clip in that plane (IgeUiPerspective). */
+	m4?: number[];
+	root?: IgeCssMatrix;
+	rootClip?: IgeUiClip;
+	/** The parent's perspective, for children turned in 3D. */
+	persp?: number[];
+}
+
+/** A clip (in the plane round a box) in the box's own pixels: the box round its corners brought back through `rel`; none if that can't be done. */
+function clipInto (clip: IgeUiClip, rel: IgeCssMatrix): IgeUiClip {
+	if (!clip) return null;
+	const inv = invert3(rel);
+	if (!inv) return null;
+	const pts = [[clip[0], clip[1]], [clip[2], clip[1]], [clip[0], clip[3]], [clip[2], clip[3]]].map(([x, y]) => project(inv, x, y));
+	if (pts.some((p) => !p)) return null;
+	const xs = pts.map((p) => p![0]), ys = pts.map((p) => p![1]);
+	return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
 }
 
 const lenCtx = (style: IgeUiComputedStyle, percent?: number) => ({ em: numOr(styleValue(style, "font-size"), 16), rem: 16, percent, vw: 0, vh: 0, cqw: 0, cqh: 0 });
@@ -162,6 +183,9 @@ export class IgeUiPainter {
 	_scroll = (el: IgeUiElement | null): [number, number] => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
 	/** Drawn after a box's text: the focused field's caret or selection (dom/IgeUiTextField). */
 	fieldPaint?: (b: IgeUiBox, ctx: Ctx, items: IgeUiPaintItem[]) => void;
+
+	/** A font's ascent and the device's pixels per UI px, for text decorations (IgeUiRoot's layout's). */
+	decorationMetrics?: (font: IgeUiFontSpec) => { ascent: number; grid: number };
 
 	/** `<img>` pictures' own sizes by src (IgeUiRoot's images), for object-fit. */
 	imageSizes?: Map<string, { w: number; h: number }>;
@@ -350,6 +374,19 @@ export class IgeUiPainter {
 	_enter (b: IgeUiBox, ctx: Ctx): { ctx: Ctx } | undefined {
 		const op = resolveNumber(styleValue(b.style, "opacity")) ?? 1;
 		if (op <= 0.001) return undefined;
+		// Turned in 3D, in a preserve-3d parent, or keeping 3D for its children: its plane in perspective (IgeUiPerspective)
+		const lc = lenCtx(b.style);
+		const st = { matrix: ctx.matrix, m4: ctx.m4, root: ctx.root, persp: ctx.persp };
+		if (needs3d(b, st, lc)) {
+			const r = enter3d(b, b.ax + ctx.dx, b.ay + ctx.dy, this._origin(b), st, lc);
+			// (Its back turned and hidden: nothing of it drawn)
+			if (r.hidden) return undefined;
+			const outer = ctx.m4 ? ctx.rootClip ?? null : ctx.clip;
+			const k = r.children;
+			return { ctx: { clip: clipInto(outer, r.rel), dx: ctx.dx, dy: ctx.dy, opacity: ctx.opacity * op, matrix: r.matrix, m4: k.m4, root: k.root, rootClip: k.m4 ? outer : undefined, persp: k.persp } };
+		}
+		// (Its perspective, for children turned in 3D)
+		const persp = styleValue(b.style, "perspective") && styleValue(b.style, "perspective") !== "none" ? perspectiveOf(b, b.ax + ctx.dx, b.ay + ctx.dy, lc) : undefined;
 		let matrix = ctx.matrix;
 		if (b.transform) {
 			const ox = b.ax + ctx.dx, oy = b.ay + ctx.dy;
@@ -368,11 +405,11 @@ export class IgeUiPainter {
 						return [(local[3] * px - local[2] * py) / det, (-local[1] * px + local[0] * py) / det];
 					};
 					const [x0, y0] = inv(ctx.clip[0], ctx.clip[1]), [x1, y1] = inv(ctx.clip[2], ctx.clip[3]);
-					return { ctx: { clip: [Math.min(x0, x1), Math.min(y0, y1), Math.max(x0, x1), Math.max(y0, y1)], dx: ctx.dx, dy: ctx.dy, opacity: ctx.opacity * op, matrix } };
+					return { ctx: { clip: [Math.min(x0, x1), Math.min(y0, y1), Math.max(x0, x1), Math.max(y0, y1)], dx: ctx.dx, dy: ctx.dy, opacity: ctx.opacity * op, matrix, persp } };
 				}
 			}
 		}
-		return { ctx: { clip: ctx.clip, dx: ctx.dx, dy: ctx.dy, opacity: ctx.opacity * op, matrix } };
+		return { ctx: { clip: ctx.clip, dx: ctx.dx, dy: ctx.dy, opacity: ctx.opacity * op, matrix, persp } };
 	}
 
 	_origin (b: IgeUiBox): [number, number] {
@@ -448,7 +485,7 @@ export class IgeUiPainter {
 			const x = b.ax + ctx.dx, y = b.ay + ctx.dy;
 			clip = intersect(clip, [x, y, x + b.borderW, y + b.borderH]);
 		}
-		return { clip, dx, dy, opacity: ctx.opacity, matrix: ctx.matrix };
+		return { ...ctx, clip, dx, dy };
 	}
 
 	// ---------------------------------------------------------------- backgrounds, borders, shadows
@@ -465,15 +502,17 @@ export class IgeUiPainter {
 		if (w <= 0 && h <= 0) return;
 		const current = parseColor(styleValue(s, "color")) ?? { r: 0, g: 0, b: 0, a: 1 };
 		const radii = this._radii(b);
+		const radiiY = this._radiiY(b);
 		const chamfer = this._chamfer(b);
 		const additive = /screen|plus-lighter|lighten/.test(styleValue(s, "mix-blend-mode"));
-		const base: Omit<IgeUiPaintBox, "op" | "x" | "y" | "w" | "h"> = { radii, chamfer, opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, additive: additive || undefined, el };
+		const base: Omit<IgeUiPaintBox, "op" | "x" | "y" | "w" | "h"> = { radii, radiiY, chamfer, opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, additive: additive || undefined, el };
+		const grow = (r: [number, number, number, number] | undefined, by: number) => r?.map((v) => (v > 0 ? v + by : v)) as [number, number, number, number] | undefined;
 		// Outer shadows (glows), behind it (none with a clip-path: it cuts them off, as it does in a browser)
 		const shadows = parseShadows(styleValue(s, "box-shadow"), lenCtx(s), current);
 		const clipped = styleValue(s, "clip-path") !== "none";
 		for (const sh of [...shadows].reverse()) {
 			if (sh.inset || sh.color.a <= 0 || clipped) continue;
-			this.items.push({ op: "box", ...base, x: x + sh.x - sh.spread, y: y + sh.y - sh.spread, w: w + sh.spread * 2, h: h + sh.spread * 2, color: sh.color, shadow: "outer", blur: sh.blur, spread: sh.spread, radii: radii.map((r) => (r > 0 ? r + sh.spread : r)) as [number, number, number, number] });
+			this.items.push({ op: "box", ...base, x: x + sh.x - sh.spread, y: y + sh.y - sh.spread, w: w + sh.spread * 2, h: h + sh.spread * 2, color: sh.color, shadow: "outer", blur: sh.blur, spread: sh.spread, radii: radii.map((r) => (r > 0 ? r + sh.spread : r)) as [number, number, number, number], radiiY: grow(radiiY, sh.spread) });
 		}
 		// What's behind it, blurred (backdrop-filter: blur(), the panels' frosted glass)
 		const bd = /blur\(\s*([^)]+)\)/.exec(styleValue(s, "backdrop-filter"));
@@ -518,10 +557,15 @@ export class IgeUiPainter {
 				if (g) this.items.push({ op: "box", ...base, x, y, w, h, gradient: g });
 			}
 		}
-		// Inset shadows, over the fill
+		// Inset shadows, over the fill: inside the padding box (within the border), its corners' curves, as CSS draws them
+		const ry = radiiY ?? radii;
+		const [bt, br, bb, bl] = [b.borderTop, b.borderRight, b.borderBottom, b.borderLeft];
+		const padX = [radii[0] - bl, radii[1] - br, radii[2] - br, radii[3] - bl].map((v) => Math.max(0, v)) as [number, number, number, number];
+		const padY = [ry[0] - bt, ry[1] - bt, ry[2] - bb, ry[3] - bb].map((v) => Math.max(0, v)) as [number, number, number, number];
+		const padRadiiY = padY.some((v, i) => Math.abs(v - padX[i]) > 1e-6) ? padY : undefined;
 		for (const sh of [...shadows].reverse()) {
 			if (!sh.inset || sh.color.a <= 0) continue;
-			this.items.push({ op: "box", ...base, x, y, w, h, color: sh.color, shadow: "inset", blur: sh.blur, spread: sh.spread, radii, ...{ insetX: sh.x, insetY: sh.y } as object });
+			this.items.push({ op: "box", ...base, x: x + bl, y: y + bt, w: w - bl - br, h: h - bt - bb, color: sh.color, shadow: "inset", blur: sh.blur, spread: sh.spread, radii: padX, radiiY: padRadiiY, ...{ insetX: sh.x, insetY: sh.y } as object });
 		}
 		this._borders(b, ctx, x, y, w, h, current, base);
 		// Outline (focus rings, the safe-area frame): a ring outside the border
@@ -532,12 +576,13 @@ export class IgeUiPainter {
 			if (ow > 0 && oc && oc.a > 0) {
 				const ox = x - off - ow, oy = y - off - ow, owd = w + 2 * (off + ow), oh = h + 2 * (off + ow);
 				const oradii = radii.map((r) => (r > 0 ? r + off + ow : 0)) as [number, number, number, number];
+				const oradiiY = radiiY?.map((r) => (r > 0 ? r + off + ow : 0)) as [number, number, number, number] | undefined;
 				const os = styleValue(s, "outline-style");
 				// (Dashed and dotted: their dashes, as a border's are: IgeUiBorderDash)
 				if (os === "dashed" || os === "dotted") {
 					const side = { w: ow, c: oc, style: os };
-					paintDashedBorder(this.items, ox, oy, owd, oh, [side, side, side, side], { ...base, radii: oradii });
-				} else this.items.push({ op: "box", ...base, x: ox, y: oy, w: owd, h: oh, color: oc, border: ow, radii: oradii });
+					paintDashedBorder(this.items, ox, oy, owd, oh, [side, side, side, side], { ...base, radii: oradii, radiiY: oradiiY });
+				} else this.items.push({ op: "box", ...base, x: ox, y: oy, w: owd, h: oh, color: oc, border: ow, radii: oradii, radiiY: oradiiY });
 			}
 		}
 		// Replaced content: a canvas's surface, an image; an SVG's lines
@@ -572,17 +617,40 @@ export class IgeUiPainter {
 	}
 
 	_radii (b: IgeUiBox): [number, number, number, number] {
-		const s = b.style;
-		const r = (p: string) => {
-			const v = styleValue(s, p).split(/\s+/)[0];
-			const pct = v.endsWith("%");
-			const n = resolveLength(v, lenCtx(s, Math.min(b.borderW, b.borderH)));
-			return Math.max(0, pct ? (parseFloat(v) / 100) * Math.min(b.borderW, b.borderH) : n ?? 0);
-		};
-		const out: [number, number, number, number] = [r("border-top-left-radius"), r("border-top-right-radius"), r("border-bottom-right-radius"), r("border-bottom-left-radius")];
+		return this._corners(b)[0];
+	}
+
+	/** The corners' vertical radii when any corner's elliptical (else undefined: as _radii). */
+	_radiiY (b: IgeUiBox): [number, number, number, number] | undefined {
+		const [x, y] = this._corners(b);
+		return x.some((v, i) => Math.abs(v - y[i]) > 1e-6) ? y : undefined;
+	}
+
+	/**
+	 * Each corner's horizontal and vertical radius (tl, tr, br, bl): a percentage of the box's width across and its
+	 * height down (50% on an oblong box: an ellipse), a second value its vertical one; all scaled down together so
+	 * neighbouring corners fit, as CSS has them.
+	 */
+	_corners (b: IgeUiBox): [[number, number, number, number], [number, number, number, number]] {
+		const s = b.style, W = b.borderW, H = b.borderH;
+		const len = (v: string, size: number) => Math.max(0, v.endsWith("%") ? (parseFloat(v) / 100) * size : resolveLength(v, lenCtx(s, size)) ?? 0);
+		const xs: [number, number, number, number] = [0, 0, 0, 0], ys: [number, number, number, number] = [0, 0, 0, 0];
+		["border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"].forEach((p, i) => {
+			const v = splitTop(styleValue(s, p).trim(), " ").filter(Boolean);
+			const rx = len(v[0] ?? "0", W), ry = len(v[1] ?? v[0] ?? "0", H);
+			// (Either one 0: a square corner)
+			if (rx > 0 && ry > 0) {
+				xs[i] = rx;
+				ys[i] = ry;
+			}
+		});
 		// Scaled down so neighbouring corners fit
-		const f = Math.min(1, b.borderW / Math.max(1e-6, out[0] + out[1]), b.borderW / Math.max(1e-6, out[3] + out[2]), b.borderH / Math.max(1e-6, out[0] + out[3]), b.borderH / Math.max(1e-6, out[1] + out[2]));
-		return f < 1 ? (out.map((v) => v * f) as [number, number, number, number]) : out;
+		const f = Math.min(1, W / Math.max(1e-6, xs[0] + xs[1]), W / Math.max(1e-6, xs[3] + xs[2]), H / Math.max(1e-6, ys[0] + ys[3]), H / Math.max(1e-6, ys[1] + ys[2]));
+		if (f < 1) for (let i = 0; i < 4; i++) {
+			xs[i] *= f;
+			ys[i] *= f;
+		}
+		return [xs, ys];
 	}
 
 	/** clip-path: polygon() as cut corners, when it's the chamfer shape (the panels' look). */
@@ -689,7 +757,7 @@ export class IgeUiPainter {
 		}
 		// Per side: strips (square ends), clipped by the box's own shape
 		const strip = (sx: number, sy: number, sw: number, sh: number, c: IgeCssColor) => {
-			if (sw > 0 && sh > 0 && c.a > 0) this.items.push({ op: "box", ...base, x: sx, y: sy, w: sw, h: sh, color: c, radii: [0, 0, 0, 0], chamfer: undefined });
+			if (sw > 0 && sh > 0 && c.a > 0) this.items.push({ op: "box", ...base, x: sx, y: sy, w: sw, h: sh, color: c, radii: [0, 0, 0, 0], radiiY: undefined, chamfer: undefined });
 		};
 		strip(x, y, w, t.w, t.c);
 		strip(x, y + h - bt.w, w, bt.w, bt.c);
@@ -746,13 +814,18 @@ export class IgeUiPainter {
 		let el = b.el;
 		for (let q = b.parent; !el && q; q = q.parent) el = q.el;
 		const item: IgeUiPaintText = { op: "text", text: r.text, x, y, w: r.w, font: r.font, letterSpacing: r.letterSpacing, color, opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el };
-		// Glows first (each its own pass), then the text
+		// Glows first (each its own pass), then underlines and overlines, the text, and line-throughs over it (IgeUiTextDecoration)
 		for (const sh of [...shadows].reverse()) {
 			if (sh.color.a <= 0) continue;
 			this.items.push({ ...item, shadow: { x: sh.x, y: sh.y, blur: sh.blur, color: sh.color } });
 		}
+		const decorations = textDecorations(r.el ?? el);
+		const dm = decorations.length ? this.decorationMetrics?.(r.font) : undefined;
+		const ascent = dm?.ascent ?? r.font.size * 0.9, grid = dm?.grid ?? 1;
+		if (decorations.length) paintTextDecorations(this.items, item, decorations, ascent, grid, "under");
 		if (textClip) paintTextInBackground(this.items, item, r.style, b.ax + ctx.dx, b.ay + ctx.dy, b.borderW, b.borderH);
 		else this.items.push(item);
+		if (decorations.length) paintTextDecorations(this.items, item, decorations, ascent, grid, "over");
 	}
 
 	// ---------------------------------------------------------------- SVG (IgeUiSvg) and range sliders

@@ -8,7 +8,7 @@
  * (nested scroll boxes don't split batches); a batch ends only where an
  * image's texture or the blend mode changes.
  */
-import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix } from "@/engine/ui2/css/IgeCssValues";
+import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix, multiply } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import { IgeUiDropShadowPass, type IgeUiShadowGroup } from "@/engine/ui2/render/IgeUiDropShadow";
 import type { IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
@@ -27,6 +27,8 @@ layout(location=8) in vec4 a_clip;
 layout(location=9) in vec4 a_m0;
 layout(location=10) in vec4 a_m1;
 layout(location=11) in vec4 a_grad;
+layout(location=12) in vec4 a_persp;
+layout(location=13) in vec4 a_radiiY;
 uniform vec2 u_resolution;
 uniform float u_scale;
 uniform vec2 u_offset;
@@ -42,15 +44,21 @@ flat out vec4 v_chamfer;
 flat out vec4 v_clip;
 flat out vec4 v_m1;
 flat out vec4 v_grad;
+flat out vec4 v_persp;
+flat out vec4 v_radiiY;
 void main() {
 	vec2 p = a_rect.xy + a_corner * a_rect.zw;
 	v_local = p;
 	vec2 t = vec2(a_m0.x * p.x + a_m0.z * p.y + a_m1.x, a_m0.y * p.x + a_m0.w * p.y + a_m1.y);
+	// (A plane seen in perspective: its point divided by w, and w handed to the GPU so what's across it is
+	// interpolated perspective-correctly; 1 for everything flat)
+	float w = a_persp.x * p.x + a_persp.y * p.y + a_persp.z;
+	t /= w;
 	v_screen = t;
 	v_tex = mix(a_uv.xy, a_uv.zw, a_corner);
-	v_shape = a_shape; v_radii = a_radii; v_color = a_color; v_params = a_params; v_uv = a_uv; v_chamfer = a_chamfer; v_clip = a_clip; v_m1 = a_m1; v_grad = a_grad;
+	v_shape = a_shape; v_radii = a_radii; v_color = a_color; v_params = a_params; v_uv = a_uv; v_chamfer = a_chamfer; v_clip = a_clip; v_m1 = a_m1; v_grad = a_grad; v_persp = a_persp; v_radiiY = a_radiiY;
 	vec2 d = t * u_scale + u_offset;
-	gl_Position = vec4(d.x / u_resolution.x * 2.0 - 1.0, 1.0 - d.y / u_resolution.y * 2.0, 0.0, 1.0);
+	gl_Position = vec4((d.x / u_resolution.x * 2.0 - 1.0) * w, (1.0 - d.y / u_resolution.y * 2.0) * w, 0.0, w);
 }`;
 
 const FS = `#version 300 es
@@ -68,7 +76,11 @@ flat in vec4 v_chamfer;
 flat in vec4 v_clip;
 flat in vec4 v_m1;
 flat in vec4 v_grad;
+flat in vec4 v_persp;
+flat in vec4 v_radiiY;
 uniform float u_scale;
+uniform vec2 u_resolution;
+uniform vec2 u_offset;
 uniform sampler2DArray u_atlas;
 uniform sampler2D u_ramp;
 uniform sampler2D u_image;
@@ -82,12 +94,26 @@ float sdRoundBox(vec2 p, vec2 b, vec4 r) {
 	return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r.x;
 }
 
-// A box (x, y, w, h) at point p: rounded corners (tl, tr, br, bl) and cut corners (the same order)
-float shape(vec2 p, vec4 box, vec4 radii, vec4 cut) {
+// A box with elliptical corners (horizontal radii rx, vertical ry: tl, tr, br, bl), y down: the distance to the corner's
+// ellipse to first order (exact on it, and for a circle)
+float sdEllipseBox(vec2 q, vec2 b, vec4 rx, vec4 ry) {
+	vec2 r = q.x > 0.0 ? (q.y > 0.0 ? vec2(rx.z, ry.z) : vec2(rx.y, ry.y)) : (q.y > 0.0 ? vec2(rx.w, ry.w) : vec2(rx.x, ry.x));
+	vec2 e = abs(q) - b;
+	vec2 k = e + r;
+	if (r.x > 0.0 && r.y > 0.0 && k.x > 0.0 && k.y > 0.0) {
+		float l = length(k / r);
+		return (l - 1.0) * l / max(length(k / (r * r)), 1e-9);
+	}
+	return min(max(e.x, e.y), 0.0) + length(max(e, 0.0));
+}
+
+// A box (x, y, w, h) at point p: rounded corners (tl, tr, br, bl; vertical radii ry, elliptical where they differ)
+// and cut corners (the same order)
+float shape(vec2 p, vec4 box, vec4 radii, vec4 ry, vec4 cut) {
 	vec2 c = box.xy + box.zw * 0.5;
 	vec2 b = box.zw * 0.5;
 	vec2 q = p - c;
-	float d = sdRoundBox(q, b, vec4(radii.z, radii.y, radii.w, radii.x));
+	float d = radii == ry ? sdRoundBox(q, b, vec4(radii.z, radii.y, radii.w, radii.x)) : sdEllipseBox(q, b, radii, ry);
 	const float k = 0.70710678;
 	if (cut.x > 0.0) d = max(d, (cut.x - ((q.x + b.x) + (q.y + b.y))) * k);
 	if (cut.y > 0.0) d = max(d, (cut.y - ((b.x - q.x) + (q.y + b.y))) * k);
@@ -171,23 +197,28 @@ vec4 fill(vec2 p) {
 }
 
 void main() {
-	if (v_screen.x < v_clip.x || v_screen.y < v_clip.y || v_screen.x > v_clip.z || v_screen.y > v_clip.w) discard;
+	// (In perspective: where it is on the screen from the fragment itself, as what's across the plane is interpolated
+	// perspective-correctly; and a pixel's size on the plane from how fast its own coordinates change)
+	bool proj = v_persp.w > 0.5;
+	// (Worked out before any discard: derivatives need the pixels round it)
+	float px = proj ? max(length(fwidth(v_local)) * 0.70710678, 1e-4) : 1.0 / u_scale;
+	vec2 scr = proj ? vec2((gl_FragCoord.x - u_offset.x) / u_scale, (u_resolution.y - gl_FragCoord.y - u_offset.y) / u_scale) : v_screen;
+	if (scr.x < v_clip.x || scr.y < v_clip.y || scr.x > v_clip.z || scr.y > v_clip.w) discard;
 	float kind = v_params.x;
 	float a = 0.0;
 	vec4 col = vec4(v_color.rgb * v_color.a, v_color.a);
-	float px = 1.0 / u_scale;
 	if (kind < 0.5) {
-		float d = shape(v_local, v_shape, v_radii, v_chamfer);
+		float d = shape(v_local, v_shape, v_radii, v_radiiY, v_chamfer);
 		a = clamp(0.5 - d / px, 0.0, 1.0);
 		col = fill(v_local);
 	} else if (kind < 1.5) {
 		// A border ring; cut corners clip it (clip-path: no border along the cut, as the page draws it)
 		float bw = v_params.y;
 		vec4 none = vec4(0.0);
-		float outer = shape(v_local, v_shape, v_radii, none);
+		float outer = shape(v_local, v_shape, v_radii, v_radiiY, none);
 		vec4 inner = vec4(v_shape.xy + bw, v_shape.zw - 2.0 * bw);
-		float d = max(outer, -shape(v_local, inner, max(v_radii - bw, vec4(0.0)), none));
-		d = max(d, shape(v_local, v_shape, v_radii, v_chamfer));
+		float d = max(outer, -shape(v_local, inner, max(v_radii - bw, vec4(0.0)), max(v_radiiY - bw, vec4(0.0)), none));
+		d = max(d, shape(v_local, v_shape, v_radii, v_radiiY, v_chamfer));
 		a = clamp(0.5 - d / px, 0.0, 1.0);
 	} else if (kind < 2.5) {
 		// A glow: the shadow's box blurred as a browser blurs it (a Gaussian of half the blur radius), so a small box's glow
@@ -197,18 +228,19 @@ void main() {
 			float r = max(max(v_radii.x, v_radii.y), max(v_radii.z, v_radii.w));
 			a = blurredBox(v_shape.xy, v_shape.xy + v_shape.zw, v_local, blur * 0.5, min(r, 0.5 * min(v_shape.z, v_shape.w)));
 		} else {
-			float d = shape(v_local, v_shape, v_radii, v_chamfer);
+			float d = shape(v_local, v_shape, v_radii, v_radiiY, v_chamfer);
 			a = 1.0 - smoothstep(-blur, blur, d);
 		}
 		// (Not under the box itself)
-		float own = shape(v_local, v_uv, max(v_radii - v_params.w, vec4(0.0)), v_chamfer);
+		float own = shape(v_local, v_uv, max(v_radii - v_params.w, vec4(0.0)), max(v_radiiY - v_params.w, vec4(0.0)), v_chamfer);
 		a *= clamp(own / px + 0.5, 0.0, 1.0);
 	} else if (kind < 3.5) {
 		float blur = max(v_params.z, px);
-		float outer = shape(v_local, v_shape, v_radii, v_chamfer);
+		float outer = shape(v_local, v_shape, v_radii, v_radiiY, v_chamfer);
 		vec4 inner = vec4(v_shape.xy + v_uv.xy + v_params.w, v_shape.zw - 2.0 * v_params.w);
-		float d = shape(v_local, inner, max(v_radii - v_params.w, vec4(0.0)), v_chamfer);
-		a = smoothstep(-blur, blur, d) * clamp(0.5 - outer / px, 0.0, 1.0);
+		float d = shape(v_local, inner, max(v_radii - v_params.w, vec4(0.0)), max(v_radiiY - v_params.w, vec4(0.0)), v_chamfer);
+		// (No blur: a crisp edge, smoothed over one pixel as any edge is)
+		a = (v_params.z > 0.0 ? smoothstep(-blur, blur, d) : clamp(d / px + 0.5, 0.0, 1.0)) * clamp(0.5 - outer / px, 0.0, 1.0);
 	} else if (kind < 5.5) {
 		float s = texture(u_atlas, vec3(v_tex, v_m1.w)).r;
 		// Distance from the glyph's edge, in UI px (outside positive)
@@ -235,7 +267,7 @@ void main() {
 	} else {
 		// An image (or a blurred backdrop: v_params.y set, the first pass, clears its shape for it), cut to its box's shape
 		col = v_params.y > 0.5 ? vec4(0.0, 0.0, 0.0, 1.0) : texture(u_image, v_tex);
-		a = clamp(0.5 - shape(v_local, v_shape, v_radii, v_chamfer) / px, 0.0, 1.0);
+		a = clamp(0.5 - shape(v_local, v_shape, v_radii, v_radiiY, v_chamfer) / px, 0.0, 1.0);
 		// (A backdrop's mask-image: its gradient's alpha)
 		if (v_grad.x >= 0.0) a *= maskAlpha(v_local);
 	}
@@ -244,18 +276,23 @@ void main() {
 	outColor = col * a;
 }`;
 
-/** A clip rectangle through a transform: the box round its corners. */
+/** A clip rectangle through a transform: the box round its corners (none when one's behind the eye, in perspective). */
 function clipThrough (c: readonly number[], m: IgeCssMatrix): number[] {
 	const xs: number[] = [], ys: number[] = [];
+	const p = m as number[];
 	for (const [x, y] of [[c[0], c[1]], [c[2], c[1]], [c[0], c[3]], [c[2], c[3]]]) {
-		xs.push(m[0] * x + m[2] * y + m[4]);
-		ys.push(m[1] * x + m[3] * y + m[5]);
+		const w = p.length > 6 ? p[6] * x + p[7] * y + p[8] : 1;
+		if (w <= 1e-6) return [-1e7, -1e7, 1e7, 1e7];
+		xs.push((m[0] * x + m[2] * y + m[4]) / w);
+		ys.push((m[1] * x + m[3] * y + m[5]) / w);
 	}
 	return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
 }
 
-/** Floats per instance: 11 vec4s. */
-const STRIDE = 44;
+/** Floats per instance: 13 vec4s. */
+const STRIDE = 52;
+/** Instanced attributes (a vec4 each). */
+const ATTRIBS = STRIDE / 4;
 
 interface Batch {
 	start: number;
@@ -386,7 +423,7 @@ export class IgeUiGlRenderer {
 		gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 		this._inst = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, this._inst);
-		for (let i = 0; i < 11; i++) {
+		for (let i = 0; i < ATTRIBS; i++) {
 			gl.enableVertexAttribArray(1 + i);
 			gl.vertexAttribPointer(1 + i, 4, gl.FLOAT, false, STRIDE * 4, i * 16);
 			gl.vertexAttribDivisor(1 + i, 1);
@@ -581,7 +618,7 @@ export class IgeUiGlRenderer {
 			return n++ * STRIDE;
 		};
 		const NONE: [number, number, number, number] = [-1e7, -1e7, 1e7, 1e7];
-		const write = (o: number, rect: number[], shape: number[], radii: number[], color: IgeCssColor | number[], params: number[], uv: number[], cut: number[], clip: number[], matrix: IgeCssMatrix | undefined, opacity: number, layer: number, grad: number[]) => {
+		const write = (o: number, rect: number[], shape: number[], radii: number[], color: IgeCssColor | number[], params: number[], uv: number[], cut: number[], clip: number[], matrix: IgeCssMatrix | undefined, opacity: number, layer: number, grad: number[], radiiY?: number[]) => {
 			const d = this._data;
 			d.set(rect, o);
 			d.set(shape, o + 4);
@@ -607,7 +644,13 @@ export class IgeUiGlRenderer {
 			d[o + 38] = opacity;
 			d[o + 39] = layer;
 			d.set(grad, o + 40);
+			// (A projective transform's third row, and that it is one: the shader divides by it)
+			const pm = m as number[];
+			if (pm.length > 6) d.set([pm[6], pm[7], pm[8], 1], o + 44);
+			else d.set(FLAT, o + 44);
+			d.set(radiiY ?? radii, o + 48);
 		};
+		const FLAT = [0, 0, 1, 0];
 		const Z4 = [0, 0, 0, 0];
 		const NOGRAD = [-1, 0, 0, 0];
 		const backdrops: { o: number; bd: { w: number; h: number; sigma: number } }[] = [];
@@ -689,7 +732,7 @@ export class IgeUiGlRenderer {
 				// SVG shape, a glow, or anything turned or scaled)
 				let rect = [it.x, it.y, it.w, it.h];
 				const m = it.matrix;
-				if (!it.exact && it.shadow !== "outer" && !it.backdrop && (!m || (m[0] === 1 && m[1] === 0 && m[2] === 0 && m[3] === 1))) {
+				if (!it.exact && it.shadow !== "outer" && !it.backdrop && (!m || (m.length === 6 && m[0] === 1 && m[1] === 0 && m[2] === 0 && m[3] === 1))) {
 					const sx = (v: number) => (Math.round(v * scale + offset[0]) - offset[0]) / scale;
 					const sy = (v: number) => (Math.round(v * scale + offset[1]) - offset[1]) / scale;
 					const x0 = sx(it.x), y0 = sy(it.y);
@@ -702,16 +745,16 @@ export class IgeUiGlRenderer {
 					// (The shadow's offset is in its rect; "own" is the element's own box: it isn't shaded under it)
 					// (The blur's Gaussian reaches three of its deviations, half the radius each, past the box)
 					const reach = blur * 1.5;
-					write(push(null, additive), [it.x - reach, it.y - reach, it.w + 2 * reach, it.h + 2 * reach], rect, it.radii, it.color!, [2, 0, blur, it.spread ?? 0], own, cut, clip, it.matrix, it.opacity, 0, NOGRAD);
+					write(push(null, additive), [it.x - reach, it.y - reach, it.w + 2 * reach, it.h + 2 * reach], rect, it.radii, it.color!, [2, 0, blur, it.spread ?? 0], own, cut, clip, it.matrix, it.opacity, 0, NOGRAD, it.radiiY);
 					continue;
 				}
 				if (it.shadow === "inset") {
 					const off = it as unknown as { insetX?: number; insetY?: number };
-					write(push(null, additive), rect, rect, it.radii, it.color!, [3, 0, it.blur ?? 0, it.spread ?? 0], [off.insetX ?? 0, off.insetY ?? 0, 0, 0], cut, clip, it.matrix, it.opacity, 0, NOGRAD);
+					write(push(null, additive), rect, rect, it.radii, it.color!, [3, 0, it.blur ?? 0, it.spread ?? 0], [off.insetX ?? 0, off.insetY ?? 0, 0, 0], cut, clip, it.matrix, it.opacity, 0, NOGRAD, it.radiiY);
 					continue;
 				}
 				if (it.border) {
-					write(push(null, additive), rect, rect, it.radii, it.color!, [1, it.border, 0, 0], Z4, cut, clip, it.matrix, it.opacity, 0, NOGRAD);
+					write(push(null, additive), rect, rect, it.radii, it.color!, [1, it.border, 0, 0], Z4, cut, clip, it.matrix, it.opacity, 0, NOGRAD, it.radiiY);
 					continue;
 				}
 				if (it.gradient) {
@@ -744,10 +787,10 @@ export class IgeUiGlRenderer {
 						grad = [this._rampRow(g, Math.max(rx, ry)), 1, cx, cy];
 						params = [0, repeatPeriod(g, Math.max(rx, ry)), rx, ry];
 					}
-					write(push(null, additive), rect, rect, it.radii, [0, 0, 0, 1], params, Z4, cut, clip, it.matrix, it.opacity, 0, grad);
+					write(push(null, additive), rect, rect, it.radii, [0, 0, 0, 1], params, Z4, cut, clip, it.matrix, it.opacity, 0, grad, it.radiiY);
 					continue;
 				}
-				if (it.color) write(push(null, additive), rect, rect, it.radii, it.color, [0, 0, 0, 0], Z4, cut, clip, it.matrix, it.opacity, 0, NOGRAD);
+				if (it.color) write(push(null, additive), rect, rect, it.radii, it.color, [0, 0, 0, 0], Z4, cut, clip, it.matrix, it.opacity, 0, NOGRAD, it.radiiY);
 				continue;
 			}
 			if (it.op === "text") {
@@ -825,7 +868,7 @@ export class IgeUiGlRenderer {
 					const [e1, r1] = open1 ? end(-2, 0, 0) : end(j, i, (j + 1) % n2);
 					// A segment: a box along it, turned about its start (and then the item's own transform)
 					const rot: IgeCssMatrix = [c, s, -s, c, x0 - c * x0 + s * y0, y0 - s * x0 - c * y0];
-					const m = it.matrix ? multiply2(it.matrix, rot) : rot;
+					const m = it.matrix ? multiply(it.matrix, rot) : rot;
 					const rect = [x0 - e0, y0 - w / 2, len + e0 + e1, w];
 					const ra = r0 ? w / 2 : 0, rb = r1 ? w / 2 : 0;
 					write(push(null, additive), rect, rect, [ra, rb, rb, ra], it.color, [0, 0, 0, 0], Z4, Z4, clip, m, it.opacity, 0, NOGRAD);
@@ -904,7 +947,7 @@ export class IgeUiGlRenderer {
 			gl.activeTexture(gl.TEXTURE2);
 			gl.bindTexture(gl.TEXTURE_2D, b.image);
 			// (WebGL 2 has no base instance: the instanced attributes start at the batch)
-			for (let i = 0; i < 11; i++) gl.vertexAttribPointer(1 + i, 4, gl.FLOAT, false, STRIDE * 4, b.start * STRIDE * 4 + i * 16);
+			for (let i = 0; i < ATTRIBS; i++) gl.vertexAttribPointer(1 + i, 4, gl.FLOAT, false, STRIDE * 4, b.start * STRIDE * 4 + i * 16);
 			gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, b.count);
 			calls++;
 		};
@@ -954,8 +997,10 @@ export class IgeUiGlRenderer {
 			const rx = d[o], ry = d[o + 1], rw = d[o + 2], rh = d[o + 3];
 			if (rw <= 0 || rh <= 0 || d[o + 38] <= 0) continue;
 			for (const [px, py] of [[rx, ry], [rx + rw, ry], [rx, ry + rh], [rx + rw, ry + rh]]) {
-				const sx = (d[o + 32] * px + d[o + 34] * py + d[o + 36]) * scale + offset[0];
-				const sy = (d[o + 33] * px + d[o + 35] * py + d[o + 37]) * scale + offset[1];
+				const w = d[o + 44] * px + d[o + 45] * py + d[o + 46];
+				if (w <= 1e-6) continue;
+				const sx = ((d[o + 32] * px + d[o + 34] * py + d[o + 36]) / w) * scale + offset[0];
+				const sy = ((d[o + 33] * px + d[o + 35] * py + d[o + 37]) / w) * scale + offset[1];
 				x0 = Math.min(x0, sx);
 				y0 = Math.min(y0, sy);
 				x1 = Math.max(x1, sx);
@@ -1048,6 +1093,3 @@ export class IgeUiGlRenderer {
 	}
 }
 
-function multiply2 (m: IgeCssMatrix, n: IgeCssMatrix): IgeCssMatrix {
-	return [m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1], m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3], m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]];
-}

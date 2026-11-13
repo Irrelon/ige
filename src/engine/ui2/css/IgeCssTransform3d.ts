@@ -8,11 +8,10 @@
  * they do in 3D, so a card's back (rotateY(180deg)) on a turned card
  * (rotateY(180deg)) faces the front again.
  *
- * What it doesn't do: perspective (a near edge drawn bigger), depth sorting
- * and preserve-3d between elements (each is flattened on its own), and
- * backface-visibility. A screen that needs a back face hidden hides it
- * itself (a card's faces swap halfway through the turn; a die hides the
- * faces turned away).
+ * This flat view is what layout and hit testing use. What's drawn, and
+ * getBoundingClientRect, are the real thing (render/IgeUiPerspective):
+ * perspective, preserve-3d and backface-visibility; and getComputedStyle
+ * gives a 3D transform's 4x4 (matrix3d), as Chrome does.
  *
  * skew(), skewX() and skewY() are exact.
  */

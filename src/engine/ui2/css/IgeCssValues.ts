@@ -521,12 +521,30 @@ export function parseShadows (value: string, ctx: IgeCssLengthContext, current?:
 
 // ---------------------------------------------------------------- transforms
 
-/** A 2D transform: [a, b, c, d, e, f] (x' = a x + c y + e, y' = b x + d y + f). */
-export type IgeCssMatrix = [number, number, number, number, number, number];
+/**
+ * A 2D transform: [a, b, c, d, e, f] (x' = a x + c y + e, y' = b x + d y + f). With three more, [g, h, i], a
+ * projective one: a plane turned in 3D and seen in perspective (IgeUiPerspective), its point (x' / w, y' / w) where
+ * w = g x + h y + i.
+ */
+export type IgeCssMatrix = IgeCssMatrix2d | [number, number, number, number, number, number, number, number, number];
+
+/** A 2D (affine) transform: [a, b, c, d, e, f]. */
+export type IgeCssMatrix2d = [number, number, number, number, number, number];
 
 export const IDENTITY: IgeCssMatrix = [1, 0, 0, 1, 0, 0];
 
 export function multiply (m: IgeCssMatrix, n: IgeCssMatrix): IgeCssMatrix {
+	if (m.length > 6 || n.length > 6) {
+		// Projective: as 3x3 matrices (rows [a c e], [b d f], [g h i])
+		const p = m as number[], q = n as number[];
+		const [a, b, c, d, e, f, g = 0, h = 0, i = 1] = p, [A, B, C, D, E, F, G = 0, H = 0, I = 1] = q;
+		return [
+			a * A + c * B + e * G, b * A + d * B + f * G,
+			a * C + c * D + e * H, b * C + d * D + f * H,
+			a * E + c * F + e * I, b * E + d * F + f * I,
+			g * A + h * B + i * G, g * C + h * D + i * H, g * E + h * F + i * I
+		];
+	}
 	return [
 		m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1],
 		m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3],
@@ -535,7 +553,7 @@ export function multiply (m: IgeCssMatrix, n: IgeCssMatrix): IgeCssMatrix {
 }
 
 /** A transform list on a box (percentages of its own size); undefined if there's none. */
-export function parseTransform (value: string, width: number, height: number, ctx: IgeCssLengthContext): IgeCssMatrix | undefined {
+export function parseTransform (value: string, width: number, height: number, ctx: IgeCssLengthContext): IgeCssMatrix2d | undefined {
 	const v = value.trim();
 	if (!v || v === "none") return undefined;
 	let m: IgeCssMatrix = [...IDENTITY];
@@ -575,5 +593,5 @@ export function parseTransform (value: string, width: number, height: number, ct
 		}
 		m = multiply(m, n);
 	}
-	return found ? m : undefined;
+	return found ? (m as IgeCssMatrix2d) : undefined;
 }

@@ -6,9 +6,11 @@
  * and the shapes as the painter's items:
  *
  * - strokes: lines with their caps and joins;
- * - fills: triangles (each subpath ear-clipped). An edge two triangles share
- *   inside one path is drawn sharp rather than smoothed, so a mesh of
- *   triangles fills without seams, as a browser fills a path as one shape;
+ * - fills: triangles (each simple subpath ear-clipped; a path that crosses
+ *   itself, or subpaths over each other, by its fill rule: IgeUiPathFill). An
+ *   edge two triangles share inside one path is drawn sharp rather than
+ *   smoothed, so a mesh of triangles fills without seams, as a browser fills
+ *   a path as one shape;
  * - circles and rectangles: the painter's boxes (smooth rings and corners);
  * - `fill="url(#id)"` with a `<pattern>`: its tile repeated over the shape;
  *   with a gradient: as a CSS gradient (IgeUiSvgGradient).
@@ -19,6 +21,7 @@
 import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix, IDENTITY, multiply, parseColor, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import type { IgeUiClip, IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
+import { type IgeUiFillRule, isSimplePolygon, windingFill } from "@/engine/ui2/render/IgeUiPathFill";
 import { paintGradientTriangles, svgGradient, svgGradientMiddle } from "@/engine/ui2/render/IgeUiSvgGradient";
 import { animated, unanimated } from "@/engine/ui2/render/IgeUiSvgSmil";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
@@ -543,8 +546,9 @@ export function triangulate (pts: number[]): number[] {
  * the shape's outline (bit 0: corner 0 to 1, bit 1: 1 to 2, bit 2: 2 to 0). An edge two of its triangles share is
  * inside the shape: drawn sharp, so neighbours meet without a seam.
  */
-export function fillTriangles (subpaths: IgeUiSvgSubpath[], m: IgeCssMatrix): { tris: number[]; edges: number[] } {
+export function fillTriangles (subpaths: IgeUiSvgSubpath[], m: IgeCssMatrix, rule: IgeUiFillRule = "nonzero"): { tris: number[]; edges: number[] } {
 	const tris: number[] = [];
+	const polys: number[][] = [];
 	for (const s of subpaths) {
 		let p = s.points;
 		// (The closing point repeated: dropped)
@@ -552,6 +556,24 @@ export function fillTriangles (subpaths: IgeUiSvgSubpath[], m: IgeCssMatrix): { 
 		if (p.length < 6) continue;
 		const ui: number[] = [];
 		for (let i = 0; i + 1 < p.length; i += 2) ui.push(...apply(m, p[i], p[i + 1]));
+		polys.push(ui);
+	}
+	// A subpath that crosses itself, or subpaths over each other (a hole, a crescent of two arcs): filled by the rule
+	// as one shape (IgeUiPathFill); else each its own simple polygon, ear-clipped
+	const box = (p: number[]) => {
+		let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+		for (let i = 0; i + 1 < p.length; i += 2) {
+			x0 = Math.min(x0, p[i]);
+			x1 = Math.max(x1, p[i]);
+			y0 = Math.min(y0, p[i + 1]);
+			y1 = Math.max(y1, p[i + 1]);
+		}
+		return [x0, y0, x1, y1];
+	};
+	const boxes = polys.map(box);
+	const overlap = boxes.some((a, i) => boxes.some((b, j) => j > i && a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]));
+	if (overlap || !polys.every(isSimplePolygon)) return windingFill(polys, rule);
+	for (const ui of polys) {
 		const t = triangulate(ui);
 		for (const k of t) tris.push(ui[k * 2], ui[k * 2 + 1]);
 	}
@@ -791,11 +813,12 @@ function shape (
 	if (!geometry?.length) return;
 	// (A line never fills; a polyline and an open path fill as if closed)
 	if (name !== "line") {
+		const rule = p["fill-rule"] === "evenodd" ? "evenodd" : "nonzero";
 		if (fill.color && fill.color.a > 0) {
-			const { tris, edges } = fillTriangles(geometry, m);
+			const { tris, edges } = fillTriangles(geometry, m, rule);
 			if (tris.length) items.push({ op: "fill", tris, edges, color: fill.color, opacity: opacity * fillOpacity, ...at });
 		} else if (fill.gradient) {
-			const { tris, edges } = fillTriangles(geometry, m);
+			const { tris, edges } = fillTriangles(geometry, m, rule);
 			if (tris.length) paintGradientTriangles(items, { op: "fill", tris, edges, opacity: opacity * fillOpacity, ...at }, fill.gradient);
 		} else if (fill.pattern) {
 			const b = svgShapeBounds(el);

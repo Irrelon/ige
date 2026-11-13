@@ -71,6 +71,42 @@ describe("ui2: SVG fills as triangles", () => {
 	});
 });
 
+describe("ui2: SVG fill rules", () => {
+	const area = (tris: number[]) => {
+		let a = 0;
+		for (let i = 0; i + 5 < tris.length; i += 6) a += Math.abs((tris[i + 2] - tris[i]) * (tris[i + 5] - tris[i + 1]) - (tris[i + 3] - tris[i + 1]) * (tris[i + 4] - tris[i])) / 2;
+		return a;
+	};
+	const filled = (d: string, rule?: "nonzero" | "evenodd") => area(fillTriangles(parsePathData(d), [1, 0, 0, 1, 0, 0], rule).tris);
+
+	it("a square inside another: nonzero fills it when they turn the same way, leaves a hole when they don't; evenodd always does", () => {
+		const outer = "M0 0H20V20H0Z";
+		expect(filled(`${outer}M5 5H15V15H5Z`)).toBeCloseTo(400);
+		expect(filled(`${outer}M5 5V15H15V5Z`)).toBeCloseTo(300);
+		expect(filled(`${outer}M5 5H15V15H5Z`, "evenodd")).toBeCloseTo(300);
+	});
+
+	it("a star drawn in one stroke: nonzero fills its middle, evenodd leaves it empty", () => {
+		// (A pentagram: the outline crosses itself five times)
+		const pts = [0, 1, 2, 3, 4].map((k) => {
+			const a = -Math.PI / 2 + (k * 4 * Math.PI) / 5;
+			return [50 + 40 * Math.cos(a), 50 + 40 * Math.sin(a)];
+		});
+		const d = `M${pts.map((p) => p.join(" ")).join("L")}Z`;
+		const nonzero = filled(d), evenodd = filled(d, "evenodd");
+		expect(nonzero).toBeGreaterThan(evenodd + 500);
+		// (The middle pentagon: what nonzero has more)
+		const inner = 40 * Math.sin(Math.PI / 10) / Math.sin((7 * Math.PI) / 10);
+		expect(nonzero - evenodd).toBeCloseTo((5 / 2) * inner * inner * Math.sin((2 * Math.PI) / 5), 0);
+	});
+
+	it("a crescent of two arcs that run back over each other (the slots' moon) fills nothing, as a browser shows it", () => {
+		expect(filled("M64 10 A40 40 0 1 0 64 90 A32 32 0 1 1 64 10 Z")).toBeLessThan(1);
+		// (A real crescent: the inner arc on the other side of the line between its ends)
+		expect(filled("M64 10 A40 40 0 1 0 64 90 A44 44 0 0 1 64 10 Z")).toBeGreaterThan(500);
+	});
+});
+
 describe("ui2: SVG in the document", () => {
 	it("a viewBox fitted by preserveAspectRatio (xMidYMid meet by default), none stretching it; shapes' client rects", () => {
 		const r = ui(".s { width: 200px; height: 100px; display: block; }");

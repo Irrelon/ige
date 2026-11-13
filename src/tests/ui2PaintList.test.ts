@@ -1,0 +1,122 @@
+import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
+import { describePaint, type IgeUiPaintBox, type IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
+import { backFacing, flatten, parseTransform3d, project } from "@/engine/ui2/render/IgeUiPerspective";
+import { IgeUiFixedFonts } from "@/engine/ui2/text/IgeUiFonts";
+
+function ui (css: string = "", w = 800, h = 600): IgeUiRoot {
+	const r = new IgeUiRoot({ fonts: new IgeUiFixedFonts(), width: w, height: h });
+	r.addStyleSheet(`body { margin: 0; font-family: sans-serif; font-size: 10px; line-height: 1; } ${css}`);
+	return r;
+}
+
+const ctx = { em: 16, rem: 16, vw: 0, vh: 0, cqw: 0, cqh: 0 };
+const round = (a: number[]) => a.map((v) => Math.round(v * 1000) / 1000 + 0);
+const boxesOf = (r: IgeUiRoot, el: unknown) => (r.painter.items as IgeUiPaintItem[]).filter((i): i is IgeUiPaintBox => i.op === "box" && i.el === el);
+
+describe("ui2: 3D transforms in perspective", () => {
+	it("a transform list as a 4x4 (as Chrome's matrix3d lists it); 2D lists aren't 3D", () => {
+		const m = parseTransform3d("rotateY(30deg)", 100, 100, ctx)!;
+		expect(round(m)).toEqual([0.866, 0, -0.5, 0, 0, 1, 0, 0, 0.5, 0, 0.866, 0, 0, 0, 0, 1]);
+		expect(parseTransform3d("rotate(30deg) translate(10px, 5px)", 100, 100, ctx)).toBeUndefined();
+		expect(parseTransform3d("translateZ(0)", 100, 100, ctx)).toBeUndefined();
+		expect(round(parseTransform3d("translate3d(50%, 0, 48px)", 100, 100, ctx)!.slice(12))).toEqual([50, 0, 48, 1]);
+	});
+
+	it("a back turned to the viewer: a half turn about y or x is, a mirror in 2D isn't", () => {
+		expect(backFacing(parseTransform3d("rotateY(180deg)", 10, 10, ctx)!)).toBe(true);
+		expect(backFacing(parseTransform3d("rotateX(120deg)", 10, 10, ctx)!)).toBe(true);
+		expect(backFacing(parseTransform3d("rotateY(60deg)", 10, 10, ctx)!)).toBe(false);
+		expect(backFacing(parseTransform3d("scaleZ(1) scaleX(-1) rotateY(10deg)", 10, 10, ctx)!)).toBe(false);
+	});
+
+	it("a plane in perspective: its near edge drawn bigger, its far edge smaller", () => {
+		// (perspective(500px) rotateY(60deg) about x = 0: the edge at x = 100 turns away)
+		const m = flatten(parseTransform3d("perspective(500px) rotateY(60deg)", 100, 100, ctx)!);
+		expect(m.length).toBe(9);
+		const top = project(m, 100, -50)!, bottom = project(m, 100, 50)!;
+		// (Half of it across, seen at a slant, and the far edge shorter than 100)
+		expect(bottom[1] - top[1]).toBeLessThan(100);
+		expect(top[0]).toBeLessThan(50);
+	});
+
+	it("a card turned over: its face hidden from behind (backface-visibility), its back shown; perspective from its parent", () => {
+		const r = ui(`.card { position: absolute; left: 100px; top: 100px; width: 70px; height: 98px; perspective: 700px; }
+			.inner { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(150deg); }
+			.front, .back { position: absolute; inset: 0; backface-visibility: hidden; }
+			.front { background: #fff; } .back { background: #800; transform: rotateY(180deg); }`);
+		r.document.body.innerHTML = `<div class="card"><div class="inner"><div class="front"></div><div class="back"></div></div></div>`;
+		r.update();
+		const [front, back] = [r.document.querySelector(".front"), r.document.querySelector(".back")];
+		expect(boxesOf(r, front)).toHaveLength(0);
+		const b = boxesOf(r, back);
+		expect(b).toHaveLength(1);
+		// (Drawn through a projective transform: in perspective)
+		expect((b[0].matrix as number[]).length).toBe(9);
+		// Its client rect: round the turned card as it's seen (narrower than it is, taller at its near edge)
+		const rect = back!.getBoundingClientRect();
+		expect(rect.width).toBeLessThan(70 * Math.cos(Math.PI / 6) + 1);
+		expect(rect.height).toBeGreaterThan(98);
+		expect(r.document.defaultView!.getComputedStyle(r.document.querySelector(".inner")!).transform.startsWith("matrix3d(")).toBe(true);
+	});
+
+	it("a die's faces round its middle (preserve-3d): the ones turned away hidden", () => {
+		const r = ui(`.dice { position: absolute; left: 100px; top: 100px; width: 96px; height: 96px; perspective: 800px; }
+			.die { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(-24deg) rotateY(-30deg); }
+			.face { position: absolute; inset: 0; background: #335; backface-visibility: hidden; }
+			.f1 { transform: translateZ(48px); } .f6 { transform: rotateY(180deg) translateZ(48px); }
+			.f3 { transform: rotateY(90deg) translateZ(48px); } .f4 { transform: rotateY(-90deg) translateZ(48px); }
+			.f5 { transform: rotateX(90deg) translateZ(48px); } .f2 { transform: rotateX(-90deg) translateZ(48px); }`);
+		r.document.body.innerHTML = `<div class="dice"><div class="die">${[1, 2, 3, 4, 5, 6].map((n) => `<div class="face f${n}"></div>`).join("")}</div></div>`;
+		r.update();
+		const shown = [1, 2, 3, 4, 5, 6].filter((n) => boxesOf(r, r.document.querySelector(`.f${n}`)).length);
+		// (Its top tipped towards the viewer and turned to show its right side: its front, its right side and its top)
+		expect(shown).toEqual([1, 3, 5]);
+	});
+});
+
+describe("ui2: elliptical corners", () => {
+	it("50% on an oblong box is an ellipse (its own vertical radii); on a square, a circle", () => {
+		const r = ui(".o { width: 44px; height: 16px; border-radius: 50%; background: red; } .s { width: 20px; height: 20px; border-radius: 50%; background: red; } .e { width: 100px; height: 50px; border-radius: 10px / 20px; background: red; }");
+		r.document.body.innerHTML = `<div class="o"></div><div class="s"></div><div class="e"></div>`;
+		r.update();
+		const [o, s, e] = [".o", ".s", ".e"].map((q) => boxesOf(r, r.document.querySelector(q))[0]);
+		expect(o.radii).toEqual([22, 22, 22, 22]);
+		expect(o.radiiY).toEqual([8, 8, 8, 8]);
+		expect(s.radii).toEqual([10, 10, 10, 10]);
+		expect(s.radiiY).toBeUndefined();
+		expect(e.radii).toEqual([10, 10, 10, 10]);
+		expect(e.radiiY).toEqual([20, 20, 20, 20]);
+	});
+});
+
+describe("ui2: inset shadows", () => {
+	it("are drawn inside the padding box (within the border), their corners its curves", () => {
+		const r = ui(".c { position: absolute; left: 10px; top: 10px; width: 60px; height: 80px; border: 2px solid #fff; border-radius: 6px; box-shadow: inset 0 0 0 4px #f2e4c4; }");
+		r.document.body.innerHTML = `<div class="c"></div>`;
+		r.update();
+		const inset = boxesOf(r, r.document.querySelector(".c")).find((i) => i.shadow === "inset")!;
+		expect([inset.x, inset.y, inset.w, inset.h]).toEqual([12, 12, 60, 80]);
+		expect(inset.radii).toEqual([4, 4, 4, 4]);
+	});
+});
+
+describe("ui2: text decorations", () => {
+	it("underlines under the text, line-throughs over it; carried into inline children; a thickness and colour of their own", () => {
+		const r = ui(".u { text-decoration: underline; } .s { text-decoration: line-through 2px rgb(255, 0, 0); } .ib { display: inline-block; }");
+		r.document.body.innerHTML = `<p><span class="u">Under <b>bold</b></span> <span class="s">struck</span> <span class="u"><i class="ib">block</i></span></p>`;
+		r.update();
+		const list = describePaint(r.painter.items);
+		const at = (t: string) => list.findIndex((l) => l.startsWith(`text "${t}`));
+		const lines = (r.painter.items as IgeUiPaintItem[]).map((it, i) => ({ it, i })).filter(({ it }) => it.op === "box" && it.h <= 3);
+		// "Under", "bold" each with an underline before them; "struck" with its line after; the inline-block's text none
+		const before = (t: string) => lines.some(({ i }) => i === at(t) - 1);
+		expect(before("Under")).toBe(true);
+		expect(before("bold")).toBe(true);
+		const strike = (r.painter.items as IgeUiPaintItem[])[at("struck") + 1] as IgeUiPaintBox;
+		expect(strike.op).toBe("box");
+		expect(strike.h).toBe(2);
+		expect(strike.color).toEqual({ r: 255, g: 0, b: 0, a: 1 });
+		expect(before("block")).toBe(false);
+		expect(r.document.defaultView!.getComputedStyle(r.document.querySelector(".s")!).textDecorationLine).toBe("line-through");
+	});
+});

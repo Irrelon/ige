@@ -29,7 +29,7 @@ export const INITIAL: Record<string, string> = {
 	"table-layout": "auto", "border-collapse": "separate", "border-spacing": "0px", "grid-template-columns": "none", "grid-template-rows": "none", "grid-column": "auto", "grid-row": "auto",
 	"grid-auto-flow": "row", "justify-items": "normal", "object-fit": "fill", "outline-width": "medium", "outline-style": "none", "outline-color": "currentcolor", "outline-offset": "0px",
 	content: "normal", transition: "none", animation: "none", cursor: "auto", "word-break": "normal", "overflow-wrap": "normal", "text-indent": "0px", "aspect-ratio": "auto",
-	filter: "none", "backdrop-filter": "none", "mix-blend-mode": "normal", "text-decoration-line": "none", "font-variant-numeric": "normal", "user-select": "auto", "container-type": "normal",
+	filter: "none", "backdrop-filter": "none", "mix-blend-mode": "normal", "text-decoration-line": "none", "text-decoration-color": "currentcolor", "text-decoration-style": "solid", "text-decoration-thickness": "auto", "font-variant-numeric": "normal", "user-select": "auto", "container-type": "normal",
 	"container-name": "none", "scrollbar-width": "auto", "scrollbar-gutter": "auto", "scrollbar-color": "auto", "overscroll-behavior": "auto", "list-style-type": "disc", float: "none", clear: "none", "image-rendering": "auto", "text-wrap": "wrap"
 };
 
@@ -96,9 +96,12 @@ export function expandShorthand (name: string, value: string): [string, string][
 			return out;
 		}
 		case "border-radius": {
-			const [h] = v.split("/");
+			// (After a "/": the vertical radii, each corner's then "horizontal vertical")
+			const [h, vr] = v.split("/");
 			const s = fourSides(h);
-			return [["border-top-left-radius", s[0]], ["border-top-right-radius", s[1]], ["border-bottom-right-radius", s[2]], ["border-bottom-left-radius", s[3]]];
+			const t = vr !== undefined ? fourSides(vr) : undefined;
+			const corner = (i: number) => (t && t[i] !== s[i] ? `${s[i]} ${t[i]}` : s[i]);
+			return [["border-top-left-radius", corner(0)], ["border-top-right-radius", corner(1)], ["border-bottom-right-radius", corner(2)], ["border-bottom-left-radius", corner(3)]];
 		}
 		case "outline": {
 			const p = borderParts(v);
@@ -155,7 +158,18 @@ export function expandShorthand (name: string, value: string): [string, string][
 			return [["background-color", color], ["background-image", images.every((x) => x === "none") ? "none" : images.join(", ")]];
 		}
 		case "font": return expandFont(v);
-		case "text-decoration": return [["text-decoration-line", v.split(/\s+/)[0] ?? "none"]];
+		case "text-decoration": {
+			// Its lines, style, thickness and colour, in any order
+			const lines: string[] = [];
+			let style = "solid", thickness = "auto", color = "currentcolor";
+			for (const t of splitTop(v.trim(), " ").map((x) => x.trim()).filter(Boolean)) {
+				if (/^(underline|overline|line-through|blink|none)$/.test(t)) lines.push(t);
+				else if (/^(solid|double|dotted|dashed|wavy)$/.test(t)) style = t;
+				else if (t === "auto" || t === "from-font" || /^-?[\d.]+(px|em|rem|%)$/.test(t) || t.startsWith("calc(")) thickness = t;
+				else color = t;
+			}
+			return [["text-decoration-line", lines.filter((l) => l !== "none").join(" ") || "none"], ["text-decoration-style", style], ["text-decoration-thickness", thickness], ["text-decoration-color", color]];
+		}
 		case "grid-area": return undefined;
 		case "grid-column": case "grid-row": return [[name, v]];
 		case "container": {

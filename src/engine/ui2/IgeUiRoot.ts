@@ -27,6 +27,7 @@ import { svgAnimating, svgClock } from "@/engine/ui2/render/IgeUiSvgSmil";
 import { IgeUiLayoutEngine } from "@/engine/ui2/layout/IgeUiLayout";
 import { IgeUiGlRenderer } from "@/engine/ui2/render/IgeUiGlRenderer";
 import { type IgeUiPaintItem, IgeUiPainter } from "@/engine/ui2/render/IgeUiPaint";
+import { projectedBox } from "@/engine/ui2/render/IgeUiPerspective";
 import { type IgeUiPress, pressChain, pressClicks, pressMoved, touchScroller } from "@/engine/ui2/input/IgeUiPointers";
 import { IgeUiAnimator, LAYOUT_PROPS } from "@/engine/ui2/style/IgeUiAnimator";
 import { cssNumber, serializeComputed } from "@/engine/ui2/style/IgeUiComputed";
@@ -209,6 +210,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this.layoutEngine.imageSizes = this.images.sizes;
 		this.layoutEngine.requestImage = (src) => this.images.request(src);
 		this.painter.imageSizes = this.images.sizes;
+		this.painter.decorationMetrics = (f) => ({ ascent: this.layoutEngine.metrics(f).ascent, grid: this.layoutEngine.pixelGrid > 0 ? this.layoutEngine.pixelGrid : 1 });
 		this.images.onLoad = (src, ok) => {
 			this._layoutDirty = true;
 			this._layoutAll = true;
@@ -636,9 +638,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			x = x0 + dx;
 			y = y0 + dy;
 		}
-		// Transforms on it and its ancestors (the box's corners through them)
-		const m = this._matrixOf(b);
-		if (m) {
+		// Transforms on it and its ancestors (the box's corners through them; in 3D, as they're seen: IgeUiPerspective)
+		const seen = projectedBox(b, x, y, w, h, (p) => this.painter._origin(p), (p) => ({ em: parseFloat(styleValue(p.style, "font-size")) || 16, rem: 16, vw: 0, vh: 0, cqw: 0, cqh: 0 }));
+		const m = seen ? undefined : this._matrixOf(b);
+		if (seen) [x, y, w, h] = seen;
+		else if (m) {
 			const pts = [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].map(([px, py]) => [m[0] * px + m[2] * py + m[4], m[1] * px + m[3] * py + m[5]]);
 			const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
 			x = Math.min(...xs);

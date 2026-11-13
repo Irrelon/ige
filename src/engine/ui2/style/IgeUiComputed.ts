@@ -10,6 +10,7 @@
 import { splitTop } from "@/engine/ui2/css/IgeCssParser";
 import { type IgeCssColor, type IgeCssLengthContext, parseColor, parseShadows, parseTransform, resolveLength, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiBox } from "@/engine/ui2/layout/IgeUiBox";
+import { parseTransform3d } from "@/engine/ui2/render/IgeUiPerspective";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 
 /** A number as CSS writes it: up to six significant digits, no trailing zeros. */
@@ -122,6 +123,9 @@ export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: Ig
 		}
 		case "transform": {
 			if (value === "none") return value;
+			// (One with 3D in it: its 4x4, as Chrome gives it)
+			const m4 = parseTransform3d(value, box?.borderW ?? 0, box?.borderH ?? 0, ctx);
+			if (m4) return `matrix3d(${m4.map(cssNumber).join(", ")})`;
 			const m = parseTransform(value, box?.borderW ?? 0, box?.borderH ?? 0, ctx);
 			return m ? `matrix(${m.map(cssNumber).join(", ")})` : "none";
 		}

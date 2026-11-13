@@ -30,11 +30,14 @@ describe("ui2: 3D and skew transforms, seen straight on", () => {
 		expect(round(parseTransform("skew(45deg, 0)", 100, 100, ctx))).toEqual([1, 0, 1, 1, 0, 0]);
 	});
 
-	it("a turned element's computed transform is its flat matrix (what the screens and the parity kit read)", () => {
+	it("a turned element's computed transform is its 4x4, as Chrome gives it (matrix3d); a 2D one stays matrix()", () => {
 		const r = new IgeUiRoot({ fonts: new IgeUiFixedFonts(), width: 400, height: 300 });
-		r.addStyleSheet("body { margin: 0; } .c { width: 100px; height: 140px; } .c.down { transform: rotateY(180deg); }");
-		r.document.body.innerHTML = `<div class="c down"></div>`;
-		const c = r.document.querySelector(".c")!;
-		expect(round(r.document.defaultView!.getComputedStyle(c).transform.match(/-?[\d.]+/g)!.map(Number)).slice(0, 4)).toEqual([-1, 0, 0, 1]);
+		r.addStyleSheet("body { margin: 0; } .c { width: 100px; height: 140px; } .c.down { transform: rotateY(180deg); } .c.flat { transform: translateZ(0) rotate(90deg); }");
+		r.document.body.innerHTML = `<div class="c down"></div><div class="c flat"></div>`;
+		const [down, flat] = [...r.document.querySelectorAll(".c")];
+		const cs = (e: typeof down) => r.document.defaultView!.getComputedStyle(e).transform;
+		expect(cs(down)).toBe("matrix3d(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)");
+		expect(cs(flat).startsWith("matrix(")).toBe(true);
+		expect(round(cs(flat).match(/-?[\d.]+/g)!.map(Number))).toEqual([0, 1, -1, 0, 0, 0]);
 	});
 });
