@@ -953,14 +953,28 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 
 	get offsetLeft (): number {
 		this.ownerDocument._flush();
-		const b = this._box, p = this.offsetParent?._box;
-		return b ? Math.round(b.x - (p ? p.x + p.borderLeft : 0)) : 0;
+		return this._offset("x");
 	}
 
 	get offsetTop (): number {
 		this.ownerDocument._flush();
-		const b = this._box, p = this.offsetParent?._box;
-		return b ? Math.round(b.y - (p ? p.y + p.borderTop : 0)) : 0;
+		return this._offset("y");
+	}
+
+	/**
+	 * From the offset parent's padding edge, as laid out (its scroll and transforms left out): a box's place is its
+	 * parent box's border box, so both are taken back to the root and the offset parent's border off.
+	 */
+	_offset (axis: "x" | "y"): number {
+		const b = this._box;
+		if (!b) return 0;
+		const at = (box: NonNullable<IgeUiElement["_box"]>) => {
+			let v = 0;
+			for (let n: typeof box | null = box; n; n = n.parent) v += axis === "x" ? n.x : n.y;
+			return v;
+		};
+		const p = this.offsetParent?._box;
+		return Math.round(at(b) - (p ? at(p) + (axis === "x" ? p.borderLeft : p.borderTop) : 0));
 	}
 
 	get offsetParent (): IgeUiElement | null {

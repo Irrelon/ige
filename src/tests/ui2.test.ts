@@ -172,6 +172,16 @@ describe("ui2: layout", () => {
 		expect(box(r.root.querySelector(".t")!)).toEqual([150, 270, 100, 20]);
 	});
 
+	it("offsetLeft and offsetTop are from the offset parent's padding edge, however far down the tree it is", () => {
+		const r = ui(`.row { display: flex; padding-left: 8px; } .strip { position: relative; display: flex; margin-left: 12px; border: 2px solid red; padding: 3px; } .strip b { width: 20px; height: 10px; display: block; }`, 400, 300);
+		r.root.innerHTML = `<div class="row"><i>‹</i><div class="strip"><b></b><b></b></div></div>`;
+		const strip = r.root.querySelector(".strip")!;
+		const [, second] = strip.querySelectorAll("b");
+		// (Inside the strip: its 3px padding, then the first 20px tab)
+		expect([second.offsetLeft, second.offsetTop]).toEqual([23, 3]);
+		expect(second.offsetParent).toBe(strip);
+	});
+
 	it("inline text: a nowrap element that doesn't fit goes to the next line at the space before it", () => {
 		const r = ui(`.w { width: 100px; } small { white-space: nowrap; }`, 400, 300);
 		r.root.innerHTML = `<div class="w"><s>3,600</s> <small>HIGH SECURITY PRICE</small></div>`;
