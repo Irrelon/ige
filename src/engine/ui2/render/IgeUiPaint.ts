@@ -646,7 +646,10 @@ export class IgeUiPainter {
 		if (color.a <= 0 && !textClip) return;
 		const shadows = parseShadows(styleValue(r.style, "text-shadow"), lenCtx(r.style), color);
 		const x = b.ax + ctx.dx + r.x, y = b.ay + ctx.dy + r.y;
-		const item: IgeUiPaintText = { op: "text", text: r.text, x, y, w: r.w, font: r.font, letterSpacing: r.letterSpacing, color, opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el: b.el };
+		// (Its element: the block's, or for an anonymous one (text straight in a flex item) the nearest element round it)
+		let el = b.el;
+		for (let q = b.parent; !el && q; q = q.parent) el = q.el;
+		const item: IgeUiPaintText = { op: "text", text: r.text, x, y, w: r.w, font: r.font, letterSpacing: r.letterSpacing, color, opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el };
 		// Glows first (each its own pass), then the text
 		for (const sh of [...shadows].reverse()) {
 			if (sh.color.a <= 0) continue;

@@ -76,4 +76,16 @@ describe("ui2: drag and drop", () => {
 		r._pointer("pointerup", pe(110, 210, 0));
 		expect(r.drag.withGhost(r.items)).toBe(r.items);
 	});
+
+	it("the copy has all of what's dragged, text straight in a flex item too (its text drawn for the element round it)", () => {
+		const r = new IgeUiRoot({ fonts: new IgeUiFixedFonts(), width: 400, height: 300 });
+		r.addStyleSheet("body { margin: 0; font-size: 10px; } .slot { display: flex; width: 120px; height: 30px; } .slot span { display: flex; }");
+		r.document.body.innerHTML = `<div class="slot" draggable="true"><span>MINING</span><b>Laser</b></div>`;
+		r.update();
+		r._pointer("pointerdown", pe(10, 10));
+		r._pointer("pointermove", pe(60, 60));
+		const copy = r.drag.withGhost(r.items).slice(r.items.length);
+		expect(copy.filter((i) => i.op === "text").map((i) => (i as { text: string }).text)).toEqual(["MINING", "Laser"]);
+		r._pointer("pointerup", pe(60, 60, 0));
+	});
 });
