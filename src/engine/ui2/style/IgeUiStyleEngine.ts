@@ -23,6 +23,13 @@ interface IndexedRule {
 	specificity: [number, number, number];
 }
 
+/** A compound selector's tag, classes and id as keys (".a", "#b", "td"), or "*" when it has none of those. */
+function addKeys (to: Set<string>, compound: string): void {
+	const found = compound.match(/[.#][\w-]+|^[a-zA-Z][\w-]*/g);
+	if (!found?.length) to.add("*");
+	else for (const k of found) to.add(k);
+}
+
 /** A property's computed value, or its initial one. */
 export function styleValue (cs: IgeUiComputedStyle | undefined, name: string): string {
 	return cs?.[name] ?? INITIAL[name] ?? "";
@@ -38,6 +45,20 @@ export class IgeUiStyleEngine {
 	/** Some rule looks at descendants or later siblings (:has(), + or ~): structural changes restyle more. */
 	usesHas = false;
 	usesSiblings = false;
+	/**
+	 * The rightmost keys (tag, .class, #id, *) of selectors that look elsewhere in the tree: :has() anywhere in them,
+	 * or siblings and places among siblings (+, ~, :nth-*, :first/last/only-*, :empty). An element innerHTML made just
+	 * like the one it replaced can't take that one's style over when it's the subject of one of those (IgeUiRoot).
+	 */
+	hasSubjects = new Set<string>();
+	siblingSubjects = new Set<string>();
+	/** Subjects of + and ~ selectors; whether one reaches past the sibling into what's in it (A + B .c). */
+	combinatorSubjects = new Set<string>();
+	siblingDeep = false;
+	/** The keys of the elements before a + or ~ (a change to one of those matters to its later siblings). */
+	combinatorAnchors = new Set<string>();
+	/** The keys of what :has() looks for. */
+	hasArguments = new Set<string>();
 	/** States some selector depends on (an element's style is looked at again when one of these changes on it or an ancestor). */
 	stateDependent = new Set<string>();
 	/** The size the UI's laid out at (vw, vh, and the @container ui queries). */
@@ -61,6 +82,21 @@ export class IgeUiStyleEngine {
 				if (selector.unsupported) continue;
 				if (/:has\(/.test(selector.text)) this.usesHas = true;
 				if (/[+~]/.test(selector.text.replace(/\([^)]*\)/g, ""))) this.usesSiblings = true;
+				const subject = selectorKey(selector);
+				this._subjectClasses.clear();
+				if (/:has\(/.test(selector.text)) this.hasSubjects.add(subject);
+				if (/[+~]|:(nth-|first-|last-|only-|empty)/.test(selector.text)) this.siblingSubjects.add(subject);
+				// + and ~: their subjects (the siblings after), and whether any reaches on into a sibling's descendants
+				const flat = selector.text.replace(/\([^)]*\)/g, "");
+				const at = flat.search(/[+~]/);
+				if (at >= 0) {
+					this.combinatorSubjects.add(subject);
+					if (/[\s>]/.test(flat.slice(at + 1).trim().replace(/^[^\s>]*/, ""))) this.siblingDeep = true;
+					// What a sibling before must be for it to matter (the compound before each + or ~)
+					for (const m of flat.matchAll(/([^\s>+~]*)\s*[+~]/g)) addKeys(this.combinatorAnchors, m[1]);
+				}
+				// What a :has() looks for (the element a change must be, or be in, to flip one)
+				for (const m of selector.text.matchAll(/:has\(([^)]*)\)/g)) addKeys(this.hasArguments, m[1].split(/[\s>+~]+/).filter(Boolean).pop() ?? "*");
 				for (const s of selector.states) this.stateDependent.add(s);
 				const entry: IndexedRule = { rule, selector, specificity: selector.specificity };
 				const key = selectorKey(selector);
@@ -75,6 +111,24 @@ export class IgeUiStyleEngine {
 		this.version++;
 		return sheet;
 	}
+
+	/** Whether an element could be the subject of one of `keys`' selectors. */
+	subjectOf (el: IgeUiElement, keys: Set<string>, also?: string): boolean {
+		if (!keys.size) return false;
+		if (also) for (const c of also.split(/\s+/)) if (c && keys.has(`.${c}`)) return true;
+		if (keys.has("*") || keys.has(el.localName) || (el.id && keys.has(`#${el.id}`))) return true;
+		// (Classes by themselves, without building ".name" strings for every element)
+		let classes = this._subjectClasses.get(keys);
+		if (!classes) {
+			classes = new Set([...keys].filter((k) => k.startsWith(".")).map((k) => k.slice(1)));
+			this._subjectClasses.set(keys, classes);
+		}
+		if (!classes.size) return false;
+		for (const c of el._classes) if (classes.has(c)) return true;
+		return false;
+	}
+
+	_subjectClasses = new Map<Set<string>, Set<string>>();
 
 	_containerHolds (el: IgeUiElement, conds: IgeCssContainerCondition[] | undefined): boolean {
 		if (!conds) return true;

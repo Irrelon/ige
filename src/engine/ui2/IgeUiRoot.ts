@@ -16,7 +16,7 @@
  * on its own with draw().
  */
 import { placeTextField, takeSelection, textFieldPaint, wireTextField } from "@/engine/ui2/dom/IgeUiTextField";
-import { IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
+import { type IgeUiAdoption, igeUiSameStart, IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
 import { type IgeUiBox, stickyShift } from "@/engine/ui2/layout/IgeUiBox";
 import { IgeUiDragDrop } from "@/engine/ui2/input/IgeUiDragDrop";
 import { IgeUiLayoutEngine } from "@/engine/ui2/layout/IgeUiLayout";
@@ -139,12 +139,16 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	hitList: HitEntry[] = [];
 	/** What's out of date. */
 	_styleRoots = new Set<IgeUiElement>();
+	/** Elements whose own style is looked at again (only): restyled with all under them if it turns out different. */
+	_styleSelf = new Set<IgeUiElement>();
 	_styleAll = true;
 	_layoutDirty = true;
 	/** Everything must be laid out again (the first time, a resize, new stylesheets, fonts); else only round `_relayout`. */
 	_layoutAll = true;
 	/** Elements changed or restyled since the last layout: what's laid out again is the positioned boxes round them. */
 	_relayout = new Set<IgeUiElement>();
+	/** Elements marked for layout (their boxes aren't kept). */
+	_layoutMarked = new Set<IgeUiElement>();
 	_paintDirty = true;
 	_observers = new Set<IgeUiMutationObserver>();
 	_mutationQueued = false;
@@ -166,7 +170,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	readonly drag: IgeUiDragDrop = new IgeUiDragDrop(this);
 	_textInput?: HTMLInputElement;
 	/** Time spent in each stage last frame (ms), and counts, for the stats overlay and tests. */
-	stats = { style: 0, layout: 0, paint: 0, draw: 0, elements: 0, items: 0, drawCalls: 0, partial: 0 };
+	stats = { style: 0, layout: 0, paint: 0, draw: 0, elements: 0, items: 0, drawCalls: 0, partial: 0, adopted: 0, kept: 0, partialPaint: 0 };
 	/** Events the game shouldn't see (the UI took them): set as each is handled. */
 	consumed = false;
 	_detach?: () => void;
@@ -290,17 +294,55 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	changed (el: IgeUiElement | null, change: IgeUiChange, attr?: string, tree?: IgeUiTreeChange): void {
 		if (!el) return;
 		this._queueMutation(el, change, attr, tree);
-		if (change !== "scroll" && change !== "paint" && change !== "state") this._relayout.add(el);
+		if (change === "tree" && tree?.morph) {
+			// innerHTML reconciled: what it made is styled, where it changed is laid out again
+			const m = tree.morph;
+			for (const r of m.roots) this._markStyle(r);
+			for (const p of m.parents) {
+				this._relayout.add(p);
+				this._markLayout(p);
+				// (Children came or went: :empty and its kind may see it)
+				if (this.styles.subjectOf(p, this.styles.siblingSubjects)) this._markStyle(p, true);
+			}
+			// (What :has() looks for, come or gone)
+			if (this.styles.usesHas && [...m.added, ...m.removed].some((n) => n.nodeType === 1 && this._holdsHasArgument(n as IgeUiElement))) this._markHas(el);
+			// (Children moving place: those :first-child, :nth-child and the like could be about, looked at again)
+			for (const p of m.siblingParents) {
+				for (const c of p.childNodes) if (c.nodeType === 1 && this.styles.subjectOf(c as IgeUiElement, this.styles.siblingSubjects)) this._markStyle(c as IgeUiElement, true);
+			}
+			// (An element made different, where a + or ~ looks: the siblings after it those could be about)
+			if (this.styles.usesSiblings) {
+				for (const [nn, o] of m.restarted) {
+					if (!this.styles.subjectOf(nn, this.styles.combinatorAnchors, o._attrs.get("class"))) continue;
+					for (let sib = nn.nextElementSibling; sib; sib = sib.nextElementSibling) if (this.styles.subjectOf(sib, this.styles.combinatorSubjects)) this._markStyle(sib, true);
+				}
+			}
+			this._layoutDirty = true;
+			this._paintDirty = true;
+			return;
+		}
+		if (change !== "scroll" && change !== "paint" && change !== "state") {
+			this._relayout.add(el);
+			this._markLayout(el);
+		}
 		switch (change) {
 			case "tree":
 				this._markStyle(el);
+				this._markHas(el);
 				this._layoutDirty = true;
 				break;
 			case "class":
 			case "attr":
-				// (A sibling's selectors can depend on it: the parent's subtree is looked at again)
-				this._markStyle(this.styles.usesSiblings && el.parentNode ? el.parentNode : el);
-				if (this.styles.usesHas) for (let p = el.parentNode; p; p = p.parentNode) this._markStyle(p, true);
+				this._markStyle(el);
+				// (A sibling's selectors can depend on it: the siblings after it that + and ~ could be about, each looked
+				// at by itself; all under its parent when one of those reaches into a sibling's contents)
+				// (Only when it is, or was, what a + or ~ looks at before them)
+				if (this.styles.usesSiblings && el.parentNode && this.styles.subjectOf(el, this.styles.combinatorAnchors, el._styledClass)) {
+					if (this.styles.siblingDeep) this._markStyle(el.parentNode);
+					else for (let sib = el.nextElementSibling; sib; sib = sib.nextElementSibling) if (this.styles.subjectOf(sib, this.styles.combinatorSubjects)) this._markStyle(sib, true);
+				}
+				// (Only when it is, or was, what a :has() looks for)
+				if (this.styles.subjectOf(el, this.styles.hasArguments, el._styledClass)) this._markHas(el);
 				this._layoutDirty = true;
 				break;
 			case "style":
@@ -311,21 +353,71 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				this._markStyle(el);
 				break;
 			case "text":
+				// (Text gone or come: :empty may see it)
+				if (this.styles.subjectOf(el, this.styles.siblingSubjects)) this._markStyle(el, true);
 				this._layoutDirty = true;
 				break;
 			case "scroll":
-			case "paint":
 				this._paintDirty = true;
+				break;
+			case "paint":
+				// (A canvas drawn on: its texture is uploaded again as it's drawn; its items are as they were)
 				break;
 		}
 	}
 
+	/** An element whose layout must be worked out again (and, so, each round it): the rest keep their boxes. */
+	_markLayout (el: IgeUiElement): void {
+		el._layoutDirty = true;
+		this._layoutMarked.add(el);
+		for (let p = el.parentNode; p && !p._childDirty; p = p.parentNode) p._childDirty = true;
+	}
+
+	/** The marks cleared once laid out. */
+	_clearLayoutMarks (): void {
+		// (Marks run unbroken from a marked element up to the root: _markLayout stops only at one already marked)
+		for (const el of this._layoutMarked) {
+			el._layoutDirty = false;
+			el._childDirty = false;
+			for (let p = el.parentNode; p && p._childDirty; p = p.parentNode) p._childDirty = false;
+		}
+		this._layoutMarked.clear();
+	}
+
 	_markStyle (el: IgeUiElement, selfOnly: boolean = false): void {
-		el._styleDirty = true;
-		if (!selfOnly) this._styleRoots.add(el);
-		else this._styleRoots.add(el);
+		if (selfOnly) this._styleSelf.add(el);
+		else {
+			el._styleDirty = true;
+			this._styleRoots.add(el);
+		}
 		this._paintDirty = true;
 	}
+
+	/**
+	 * A change in or under an element, when some selector uses :has(): what such a selector could be about (its
+	 * subjects, anywhere: the changed element's ancestors among them) is looked at again, each by itself; one whose
+	 * style turns out different is then restyled with all under it.
+	 */
+	_markHas (el: IgeUiElement): void {
+		const st = this.styles;
+		if (!st.usesHas) return;
+		if (st.hasSubjects.has("*")) {
+			for (let p = el.parentNode; p; p = p.parentNode) this._markStyle(p, true);
+			return;
+		}
+		this._hasPending = true;
+	}
+
+	/** Whether an element, or something in it, is what some :has() looks for. */
+	_holdsHasArgument (el: IgeUiElement): boolean {
+		const st = this.styles;
+		if (st.hasArguments.has("*") || st.subjectOf(el, st.hasArguments)) return true;
+		const sel = [...st.hasArguments].join(", ");
+		return !!sel && !!el.querySelector(sel);
+	}
+
+	/** The :has() subjects to look at again (see _markHas), found once a restyle. */
+	_hasPending = false;
 
 	removed (node: IgeUiNode): void {
 		if (node.nodeType !== 1) return;
@@ -496,11 +588,24 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		else if (this._resizeCheck) this._resized();
 		this._momentumStep();
 		this._tooltipStep(now);
+		if (!this._paintDirty && this._repaintEls.size) {
+			// Only animations moved on: their runs of items painted again (all of it, if that can't be done)
+			const t0 = perf();
+			if (this._repaintPart()) {
+				this._hitsDirty = true;
+				this.stats.paint = perf() - t0;
+				this.stats.items = this.items.length;
+				this.stats.partialPaint++;
+			} else this._paintDirty = true;
+			this._repaintEls.clear();
+		}
+		this._repaintEls.clear();
 		if (this._paintDirty) {
 			const t0 = perf();
 			this.painter._scroll = (el) => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
 			this.items = this.rootBox ? this.painter.paint(this.rootBox) : [];
-			this._hits();
+			// (What's under the pointer is worked out when it's asked: hitTest)
+			this._hitsDirty = true;
 			this._paintDirty = false;
 			// What's under a pointer that hasn't moved, when what's there changed (a list redrawn under it), as a browser does after layout
 			if (this._pointerAt && (laidOut || this._hoverStale)) this._setHover(this.hitTest(this._pointerAt.clientX, this._pointerAt.clientY), this._pointerAt);
@@ -518,6 +623,35 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._paintDirty = true;
 	}
 
+	/** Animated elements whose look changed (only): see _repaintPart. */
+	_repaintEls = new Set<IgeUiElement>();
+	/** The hit list is out of date (rebuilt when a hit test asks). */
+	_hitsDirty = true;
+
+	/**
+	 * Paints again just the runs of items (IgeUiPainter.groups) that animated elements are in; false when that can't
+	 * be done (an element not in a run, or one that's a run itself and has become a stacking context or stopped being one).
+	 */
+	_repaintPart (): boolean {
+		const p = this.painter;
+		const runs = new Set<IgeUiBox>();
+		for (const el of this._repaintEls) {
+			const b = el._box;
+			if (!b || !el.isConnected) continue;
+			let g: IgeUiBox | null = b;
+			while (g && !p.groups.has(g)) g = g.parent;
+			if (!g) return false;
+			if (g === b && p.groups.get(b)!.stacking !== p._isStacking(b)) return false;
+			runs.add(g);
+		}
+		const inside = (g: IgeUiBox) => {
+			for (let q = g.parent; q; q = q.parent) if (runs.has(q)) return true;
+			return false;
+		};
+		for (const g of [...runs].filter((r) => !inside(r))) if (!p.repaintGroup(g)) return false;
+		return true;
+	}
+
 	_animate (now: number): void {
 		if (!this.animator.active.size) return;
 		let layout = false;
@@ -531,6 +665,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 					if (prev[k] !== cur[k]) {
 						layout = true;
 						this._relayout.add(el);
+						this._markLayout(el);
 						break;
 					}
 				}
@@ -538,33 +673,80 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			el._computed = cur;
 			if (el._box) el._box.style = cur;
 		}
-		this._paintDirty = true;
-		if (layout) this._layoutDirty = true;
-		else if (this.rootBox) {
-			// Paint-only changes: the boxes keep their places, transforms are worked out again (those that just stopped too)
+		if (layout) {
+			this._layoutDirty = true;
+			this._paintDirty = true;
+		} else if (this.rootBox) {
+			// Paint-only changes: the boxes keep their places, transforms are worked out again (those that just stopped too),
+			// and only the runs of items they're painted in are painted again
 			for (const el of moving) {
 				const b = el._box;
 				if (!b) continue;
 				const tf = styleValue(b.style, "transform");
 				b.transform = tf === "none" ? undefined : this.layoutEngine.layoutBoxTransform(b);
+				this._repaintEls.add(el);
 			}
-		}
+		} else this._paintDirty = true;
 	}
 
 	_restyle (): void {
+		if (this._hasPending && !this._styleAll) {
+			// Every element a :has() selector could be about, each looked at by itself
+			this._hasPending = false;
+			const keys = [...this.styles.hasSubjects].filter((k) => k !== "*");
+			if (keys.length) for (const e of this.document.querySelectorAll(keys.join(", "))) this._styleSelf.add(e);
+		}
+		this._hasPending = false;
+		if (this._styleSelf.size && !this._styleAll) {
+			for (const e of this._styleSelf) {
+				if (!e.isConnected || e._styleDirty || !e._computed) continue;
+				const parent = e.parentNode?._computed;
+				const was = this.animator._base.get(e) ?? e._computed;
+				const pseudo = e._pseudo;
+				const next = this.styles.compute(e, parent);
+				if (!sameStyle(was, next) || !samePseudo(pseudo, e._pseudo)) {
+					e._styleDirty = true;
+					this._styleRoots.add(e);
+				} else e._pseudo = pseudo;
+			}
+		}
+		this._styleSelf.clear();
 		if (!this._styleAll && !this._styleRoots.size) return;
 		const t0 = perf();
-		let count = 0;
+		let count = 0, adopted = 0;
 		const now = this._now;
 		const visit = (el: IgeUiElement, parent: IgeUiComputedStyle | undefined, force: boolean) => {
 			if (force || el._styleDirty || !el._computed) {
 				const prev = el._computed;
-				const next = this.styles.compute(el, parent);
+				const a = el._adopt;
+				el._adopt = undefined;
+				let next: IgeUiComputedStyle;
+				if (a && !this._styleAll && this._canAdopt(a, parent, el)) {
+					// Made by innerHTML just like the element it replaced: that one's style, as it was worked out (and
+					// its box, if all in it is taken over too: IgeUiLayoutEngine._reusable)
+					next = this.animator._base.get(a.from) ?? a.from._computed!;
+					el._pseudo = a.from._pseudo;
+					// (Its box too, if all in it is just as it was, text and all)
+					if (a.subtreeSame) el._reuseFrom = a.from;
+					adopted++;
+				} else {
+					next = this.styles.compute(el, parent);
+					// (The same as before, or as the element it replaced: the same object kept, so what's under it can be
+					// seen not to need working out)
+					const was = this.animator._base.get(el) ?? prev ?? (a?.from._computed ? this.animator._base.get(a.from) ?? a.from._computed : undefined);
+					if (was && sameStyle(was, next)) next = was;
+					else {
+						this._markLayout(el);
+						this._relayout.add(el);
+					}
+				}
+				el._styledParent = parent;
+				el._styledVersion = this.styles.version;
+				el._styledClass = el._attrs.get("class");
 				el._computed = this.animator.restyled(el, prev, next, now);
 				el._styleDirty = false;
 				count++;
 				force = true;
-				this._relayout.add(el);
 			}
 			const cs = this.animator._base.get(el) ?? el._computed;
 			for (const c of el.childNodes) if (c.nodeType === 1) visit(c as IgeUiElement, el._computed ?? cs, force);
@@ -575,7 +757,12 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		else {
 			// Each dirty root under its (up to date) parent; ones inside another dirty root come with it
-			const roots = [...this._styleRoots].filter((r) => r.isConnected && ![...this._styleRoots].some((o) => o !== r && o.contains(r)));
+			const set = this._styleRoots;
+			const within = (r: IgeUiElement) => {
+				for (let p = r.parentNode; p; p = p.parentNode) if (set.has(p)) return true;
+				return false;
+			};
+			const roots = [...set].filter((r) => r.isConnected && !within(r));
 			for (const r of roots) visit(r, r.parentNode?._computed, true);
 		}
 		this._styleAll = false;
@@ -584,6 +771,23 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._paintDirty = true;
 		this.stats.style = perf() - t0;
 		this.stats.elements = count;
+		this.stats.adopted = adopted;
+	}
+
+	/**
+	 * Whether an element innerHTML made in place of one just like it can take that one's style: worked out under
+	 * the same parent style and stylesheets, not hanging on a state (hover, focus), and its siblings alike enough
+	 * for what the stylesheets' sibling and :has() selectors could see.
+	 */
+	_canAdopt (a: IgeUiAdoption, parent: IgeUiComputedStyle | undefined, el: IgeUiElement): boolean {
+		const o = a.from;
+		if (!o._computed || a.stateful || o._styledParent !== parent || o._styledVersion !== this.styles.version) return false;
+		// (Still just like it: a script may have changed it since innerHTML made it)
+		if (!igeUiSameStart(o, el)) return false;
+		// (Selectors that look at siblings, or into the tree with :has(), and could be about this element)
+		if (this.styles.subjectOf(el, this.styles.siblingSubjects) && !(a.prefixSame && a.countSame)) return false;
+		if (this.styles.subjectOf(el, this.styles.hasSubjects)) return false;
+		return true;
 	}
 
 	_layout (): void {
@@ -592,11 +796,16 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this.layoutEngine.viewport = v;
 		this.layoutEngine.pixelGrid = this.scale * this.dpr;
 		this.document._pixelGrid = this.scale * this.dpr;
+		// (Boxes that still stand are kept, unless everything must be laid out afresh)
+		this.layoutEngine.reuse = !this._layoutAll && !!this.rootBox;
+		this.layoutEngine.kept = 0;
 		const partial = !this._layoutAll && this.rootBox ? this._layoutPart() : undefined;
 		if (!partial) this.rootBox = this.layoutEngine.layout(this.document.documentElement, v.w, v.h);
 		this._layoutAll = false;
 		this._relayout.clear();
+		this._clearLayoutMarks();
 		this.stats.partial = partial ? partial.length : 0;
+		this.stats.kept = this.layoutEngine.kept;
 		// Containers' sizes for @container (the next restyle)
 		this._layoutDirty = false;
 		this._paintDirty = true;
@@ -736,6 +945,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** The element under a point (client CSS px), honouring pointer-events and clipping; null over nothing. */
 	hitTest (clientX: number, clientY: number): IgeUiElement | null {
 		this.update(this._now || undefined);
+		if (this._hitsDirty) {
+			this._hits();
+			this._hitsDirty = false;
+		}
 		const ux = (clientX - this.pageOffset.x - this.safe.x) / this.scale, uy = (clientY - this.pageOffset.y - this.safe.y) / this.scale;
 		for (let i = this.hitList.length - 1; i >= 0; i--) {
 			const h = this.hitList[i];
@@ -1152,6 +1365,25 @@ function zOf (b: IgeUiBox): number {
 
 function mul (m: [number, number, number, number, number, number], n: [number, number, number, number, number, number]): [number, number, number, number, number, number] {
 	return [m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1], m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3], m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]];
+}
+
+/** Whether an element's ::before, ::after and ::placeholder styles say the same. */
+function samePseudo (a: IgeUiElement["_pseudo"], b: IgeUiElement["_pseudo"]): boolean {
+	if (a === b) return true;
+	return sameStyle(a?.before, b?.before) && sameStyle(a?.after, b?.after) && sameStyle(a?.placeholder, b?.placeholder);
+}
+
+/** Whether two computed styles say the same (every property and custom property). */
+function sameStyle (a: IgeUiComputedStyle | undefined, b: IgeUiComputedStyle | undefined): boolean {
+	if (a === b) return true;
+	if (!a || !b) return false;
+	let n = 0;
+	for (const k in a) {
+		if (a[k] !== b[k]) return false;
+		n++;
+	}
+	for (const _k in b) n--;
+	return n === 0;
 }
 
 function invert (m: [number, number, number, number, number, number]): [number, number, number, number, number, number] | undefined {

@@ -461,6 +461,23 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	_box?: IgeUiBox;
 	/** Style caches (IgeUiStyleEngine). */
 	_computed?: Record<string, string>;
+	/** The parent style its style was worked out under, and the stylesheets' version then (for adopting it). */
+	_styledParent?: Record<string, string>;
+	_styledVersion?: number;
+	/** Its class attribute when its style was last worked out (what it was, for selectors that cared). */
+	_styledClass?: string;
+	/**
+	 * Made by innerHTML in place of an element just like it (the same tag, attributes and inline style, in the same
+	 * place): the old one's worked-out style can be taken over instead of being worked out again (IgeUiRoot._restyle).
+	 */
+	_adopt?: IgeUiAdoption;
+	/** Its style was taken over from this element (its box can be too, laid out as it was). */
+	_reuseFrom?: IgeUiElement;
+	/** It changed since the last layout; something in it did. */
+	_layoutDirty?: boolean;
+	_childDirty?: boolean;
+	/** Had a scrollbar (overflow: auto) in the last layout. */
+	_scrollbarY?: boolean;
 	_pseudo?: { before?: Record<string, string>; after?: Record<string, string>; placeholder?: Record<string, string> };
 	_styleDirty = true;
 	/** Scrolled by. */
@@ -835,15 +852,19 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		return this.childNodes.map(serialize).join("");
 	}
 
+	/**
+	 * Sets the contents from markup, reconciling: what's already there and just as the markup says is kept (a
+	 * screen drawn again with a few numbers changed keeps all but those), the rest made anew. An element is kept
+	 * only when nothing a script did to it could show (no listeners on it, not focused, not scrolled, no value typed,
+	 * not a canvas, every attribute and class as the markup has them); text in a kept element is changed in place.
+	 * Observers are told of every top-level node as added, as they would be in a browser, so what fills nodes in as
+	 * they arrive (glyphs, say) fills them in again.
+	 */
 	set innerHTML (html: string) {
-		const removed = [...this.childNodes];
-		for (const n of removed) this._detach(n);
-		for (const n of parseHtml(String(html ?? ""))) {
-			const node = build(this.ownerDocument, n);
-			node.parentNode = this;
-			this.childNodes.push(node);
-		}
-		this.ownerDocument._changed(this, "tree", undefined, { added: [...this.childNodes], removed });
+		const out: MorphOut = { added: [], removed: [], parents: new Set(), roots: [], siblingParents: new Set(), restarted: [], text: false };
+		morphChildren(this, parseHtml(String(html ?? "")), out);
+		if (!out.added.length && !out.removed.length && !out.text) return;
+		this.ownerDocument._changed(this, "tree", undefined, { added: [...this.childNodes], removed: out.removed, morph: out });
 	}
 
 	get outerHTML (): string {
@@ -1173,6 +1194,150 @@ function build (doc: IgeUiDocument, n: IgeHtmlNode): IgeUiNode {
 	return el;
 }
 
+/** What innerHTML did: nodes it made and dropped, the elements whose children it changed, the new elements (to style). */
+export interface MorphOut {
+	added: IgeUiNode[];
+	removed: IgeUiNode[];
+	parents: Set<IgeUiElement>;
+	roots: IgeUiElement[];
+	/** Parents whose children moved place (more or fewer of them): :first-child, :nth-child and the like may see it. */
+	siblingParents: Set<IgeUiElement>;
+	/** Elements made in place of ones not like them (new, old): + and ~ after them may see it. */
+	restarted: [IgeUiElement, IgeUiElement][];
+	/** Some text was changed in place (observers are told, as they would be of new nodes). */
+	text: boolean;
+}
+
+/** Whether an element can stay for markup that says the same (see innerHTML). */
+function keepable (o: IgeUiElement, p: IgeHtmlNode): boolean {
+	if (p.type !== "element" || o.localName !== p.tag.toLowerCase() || o.localName === "canvas") return false;
+	if (o._scrollTop || o._scrollLeft || o._value !== undefined || o._checked !== undefined || o === o.ownerDocument.activeElement) return false;
+	if (o._listeners) for (const list of o._listeners.values()) if (list.length) return false;
+	let n = 0;
+	for (const [k0, v] of p.attrs) {
+		const k = k0.toLowerCase();
+		n++;
+		if (k === "class") {
+			const want = v.split(/\s+/).filter(Boolean);
+			if (new Set(want).size !== o._classes.size || want.some((c) => !o._classes.has(c))) return false;
+			continue;
+		}
+		if (o._attrs.get(k) !== v) return false;
+	}
+	return n === o._attrs.size;
+}
+
+/** Brings an element's children in line with parsed markup (see innerHTML). */
+function morphChildren (parent: IgeUiElement, parsed: IgeHtmlNode[], out: MorphOut): void {
+	const doc = parent.ownerDocument;
+	const old = parent.childNodes;
+	const next: IgeUiNode[] = [];
+	const replaced: [IgeUiNode, IgeUiNode][] = [];
+	let changed = false;
+	for (let i = 0; i < parsed.length; i++) {
+		const p = parsed[i], o = old[i] as IgeUiNode | undefined;
+		if (o && p.type === "text" && o.nodeType === 3) {
+			const t = o as IgeUiText;
+			if (t.data !== p.text) {
+				t.data = p.text;
+				out.text = true;
+			}
+			next.push(t);
+			continue;
+		}
+		if (o && o.nodeType === 1 && keepable(o as IgeUiElement, p)) {
+			morphChildren(o as IgeUiElement, (p as Extract<IgeHtmlNode, { type: "element" }>).children, out);
+			next.push(o);
+			continue;
+		}
+		const nn = build(doc, p);
+		nn.parentNode = parent;
+		next.push(nn);
+		out.added.push(nn);
+		if (nn.nodeType === 1) out.roots.push(nn as IgeUiElement);
+		if (o) replaced.push([o, nn]);
+		changed = true;
+	}
+	const kept = new Set(next);
+	for (const o of old) {
+		if (kept.has(o)) continue;
+		o.parentNode = null;
+		doc._removed(o);
+		out.removed.push(o);
+		changed = true;
+	}
+	if (!changed) return;
+	parent.childNodes = next;
+	out.parents.add(parent);
+	if (old.length !== next.length) out.siblingParents.add(parent);
+	for (const [o, nn] of replaced) if (o.nodeType === 1 && nn.nodeType === 1 && !sameStart(o as IgeUiElement, nn as IgeUiElement)) out.restarted.push([nn as IgeUiElement, o as IgeUiElement]);
+	// New elements just like the ones they replaced take their styles (and boxes) over: see pairNodes
+	const countSame = old.length === next.length;
+	for (const [o, nn] of replaced) {
+		const i = next.indexOf(nn);
+		pairNodes([o], [nn], false, countSame && next.slice(0, i).every((x) => kept.has(x) || x.nodeType === 3));
+	}
+}
+
+/** What innerHTML knows of an element it made in place of one just like it (see IgeUiElement._adopt). */
+export interface IgeUiAdoption {
+	from: IgeUiElement;
+	/** It, or one round it in what was replaced, was hovered, focused or pressed (its style may hang on that). */
+	stateful: boolean;
+	/** The siblings before it are like the old ones; as many siblings as before; all of them alike. */
+	prefixSame: boolean;
+	countSame: boolean;
+	levelSame: boolean;
+	/** Everything in it is like what was in the old one. */
+	subtreeSame: boolean;
+}
+
+/** Whether two elements have the same tag, attributes and inline style. */
+export function igeUiSameStart (o: IgeUiElement, e: IgeUiElement): boolean {
+	return sameStart(o, e);
+}
+
+function sameStart (o: IgeUiElement, e: IgeUiElement): boolean {
+	if (o.localName !== e.localName || o._attrs.size !== e._attrs.size) return false;
+	for (const [k, v] of o._attrs) if (k !== "style" && e._attrs.get(k) !== v) return false;
+	return o._inline.cssText === e._inline.cssText;
+}
+
+/** Pairs the nodes innerHTML replaced with those it made, place by place; whether they're all alike. */
+function pairNodes (oldList: IgeUiNode[], newList: IgeUiNode[], stateful: boolean, placeSame?: boolean): boolean {
+	// (placeSame: one pair, its place among siblings the same as it was, or not)
+	const countSame = placeSame ?? oldList.length === newList.length;
+	// same: everything alike, text too; alike: the elements alike (what sibling selectors look at)
+	let same = countSame, prefix = placeSame ?? true, alike = countSame;
+	const adoptions: IgeUiAdoption[] = [];
+	const n = Math.min(oldList.length, newList.length);
+	for (let i = 0; i < n; i++) {
+		const o = oldList[i], e = newList[i];
+		if (o.nodeType !== e.nodeType) {
+			same = prefix = alike = false;
+			continue;
+		}
+		if (o.nodeType === 3) {
+			if ((o as IgeUiText).data !== (e as IgeUiText).data) same = false;
+			continue;
+		}
+		if (o.nodeType !== 1) continue;
+		const oe = o as IgeUiElement, ee = e as IgeUiElement;
+		if (!sameStart(oe, ee)) {
+			same = prefix = alike = false;
+			continue;
+		}
+		const st = stateful || oe._states.size > 0;
+		const a: IgeUiAdoption = { from: oe, stateful: st, prefixSame: prefix, countSame, levelSame: false, subtreeSame: false };
+		a.subtreeSame = pairNodes(oe.childNodes, ee.childNodes, st);
+		if (!a.subtreeSame) same = false;
+		ee._adopt = a;
+		adoptions.push(a);
+	}
+	for (const a of adoptions) a.levelSame = alike;
+	return same;
+}
+
 function serialize (n: IgeUiNode): string {
 	if (n.nodeType === 3) return escapeText((n as IgeUiText).data);
 	if (n.nodeType !== 1) return "";
@@ -1190,6 +1355,8 @@ export type IgeUiChange = "tree" | "class" | "attr" | "style" | "text" | "state"
 export interface IgeUiTreeChange {
 	added: IgeUiNode[];
 	removed: IgeUiNode[];
+	/** innerHTML reconciled: only what it made needs styling, only where it changed laying out. */
+	morph?: MorphOut;
 }
 
 /** The hooks a document's owner (IgeUiRoot) gives it. */

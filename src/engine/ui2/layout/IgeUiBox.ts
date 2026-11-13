@@ -96,6 +96,32 @@ export interface IgeUiBox {
 	 */
 	collapsed?: [number, number, number, number];
 	/**
+	 * Its last layout, kept for the next: the inputs it was laid out for (containing block, sizes asked for), whether
+	 * that layout stands (nothing in it has changed since), its height as laid out (before a parent stretched it) and
+	 * how far a parent moved its contents since (a cell's vertical-align). A box laid out again for the same inputs
+	 * is left as it is.
+	 */
+	cacheKey?: string;
+	layoutOk?: boolean;
+	layoutH?: number;
+	extShift?: number;
+	/** Absolutely positioned boxes in it whose containing block is outside it (it can't be kept: they'd not be placed). */
+	escapingKids?: boolean;
+	/** A table row's layout kept: the columns it was laid out for, its height then. */
+	rowKey?: string;
+	rowH?: number;
+	/** A cell's own border widths (on these device pixels), kept while it stands. */
+	ownBorders?: [number, number, number, number];
+	ownBordersGrid?: number;
+	/** Kept, not laid out again, in the layout with this stamp (its contents' places stand too). */
+	keptStamp?: number;
+	/** It or something in it is sticky (held in a scroller's view: worked out again every time). */
+	hasSticky?: boolean;
+	/** Its height as laid out for each set of inputs it was laid out for (measuring without laying out again). */
+	measures?: Map<string, number>;
+	/** Its min- and max-content widths, kept while it stands. */
+	intr?: { min: number; max: number };
+	/**
 	 * Where it and everything in it is drawn (absolute, unscrolled: x0, y0, x1, y1; with a margin for glows), for
 	 * skipping what's scrolled or clipped out of sight. Undefined: can't be told (a transform, sticky, fixed).
 	 */

@@ -135,8 +135,56 @@ export class IgeUiPainter {
 
 	paint (root: IgeUiBox): IgeUiPaintItem[] {
 		this.items = [];
+		this.groups = new Map();
 		this._context(root, { clip: null, dx: 0, dy: 0, opacity: 1 });
 		return this.items;
+	}
+
+	/**
+	 * Each box painted whole in one run of items (the root, positioned boxes, stacking contexts): where its items are,
+	 * what it was painted in, and whether it was a stacking context. An animation that only changes how one looks
+	 * repaints just its run (repaintGroup).
+	 */
+	groups = new Map<IgeUiBox, { start: number; end: number; ctx: Ctx; stacking: boolean }>();
+
+	/** Paints one box's run again in place (its look changed, nothing moved); false when it has no run to replace. */
+	repaintGroup (b: IgeUiBox): boolean {
+		const g = this.groups.get(b);
+		if (!g) return false;
+		// (Which runs are in it and round it, by the boxes, not the item counts: a run can be empty)
+		const under = (k: IgeUiBox, a: IgeUiBox) => {
+			for (let q = k.parent; q; q = q.parent) if (q === a) return true;
+			return false;
+		};
+		// (Runs inside it are recorded again as it's painted)
+		for (const k of [...this.groups.keys()]) if (k !== b && under(k, b)) this.groups.delete(k);
+		const all = this.items;
+		this.items = [];
+		const before = new Set(this.groups.keys());
+		this._context(b, g.ctx);
+		const fresh = this.items;
+		this.items = all;
+		const delta = fresh.length - (g.end - g.start);
+		all.splice(g.start, g.end - g.start, ...fresh);
+		for (const [k, o] of this.groups) {
+			if (before.has(k) && k !== b) {
+				if (under(b, k)) o.end += delta;
+				else if (o.start >= g.end) {
+					o.start += delta;
+					o.end += delta;
+				}
+			} else {
+				// (Recorded just now, from 0 in the fresh run)
+				o.start += g.start;
+				o.end += g.start;
+			}
+		}
+		const now = this.groups.get(b);
+		if (!now) {
+			// (Not drawn at all now: an empty run)
+			this.groups.set(b, { ...g, end: g.start });
+		}
+		return true;
 	}
 
 	_isStacking (b: IgeUiBox): boolean {
@@ -156,6 +204,12 @@ export class IgeUiPainter {
 	}
 
 	_context (b: IgeUiBox, ctx: Ctx): void {
+		const start = this.items.length, entry = ctx;
+		this._contextInner(b, ctx);
+		this.groups.set(b, { start, end: this.items.length, ctx: entry, stacking: this._isStacking(b) });
+	}
+
+	_contextInner (b: IgeUiBox, ctx: Ctx): void {
 		if (this._unseen(b, ctx)) return;
 		if (b.sticky) {
 			// Held in its scroller's view
@@ -177,6 +231,8 @@ export class IgeUiPainter {
 			this._inlineContent(b.layerBlock, c, b);
 		}
 		const inner = this._innerCtx(b, own.ctx);
+		// (Where its own background ends: what's under its content goes here)
+		const afterOwn = this.items.length;
 		const positioned: { box: IgeUiBox; ctx: Ctx; z: number; order: number }[] = [];
 		let order = 0;
 		const collect = (box: IgeUiBox, c: Ctx) => {
@@ -205,11 +261,13 @@ export class IgeUiPainter {
 		const neg = positioned.filter((p) => p.z < 0);
 		const rest = positioned.filter((p) => p.z >= 0);
 		if (neg.length) {
-			// (Drawn under the content: put them before it)
-			const content = this.items.splice(0);
+			// (Drawn under the content, over its own background: put them before the content)
+			const content = this.items.splice(afterOwn);
 			for (const p of neg) this._context(p.box, p.ctx);
-			const under = this.items.splice(0);
-			this.items.push(...content.slice(0, 0), ...under, ...content);
+			const under = this.items.splice(afterOwn);
+			this.items.push(...under, ...content);
+			// (The runs inside have moved: forgotten, so they're never repainted on their own)
+			for (const [k, o] of this.groups) if (o.start >= afterOwn) this.groups.delete(k);
 		}
 		for (const p of rest) this._context(p.box, p.ctx);
 		void own;

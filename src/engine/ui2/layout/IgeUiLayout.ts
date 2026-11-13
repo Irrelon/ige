@@ -60,11 +60,23 @@ interface PlacedItem {
 }
 
 export class IgeUiLayoutEngine {
+	/** (Debugging: every box laid out every time) */
+	static noCache = false;
+	/** Which layout this is (memos that hold for one layout: a table's columns and collapsed borders). */
+	_stamp = 0;
+	_memo = new WeakMap<IgeUiBox, { stamp: number; outer?: [number, number, number, number]; cols?: ReturnType<IgeUiLayoutEngine["_tableColumns"]> }>();
 	fonts: IgeUiFontProvider;
 	viewport = { w: 1280, h: 720 };
 	rootFontSize = 16;
 	_positioned: { box: IgeUiBox; cb: IgeUiBox | null }[] = [];
 	_intrinsic = new Map<IgeUiBox, Size>();
+	/**
+	 * Whether boxes laid out before are kept where nothing in them changed (IgeUiRoot turns it off when everything
+	 * must be laid out afresh: a resize, fonts, stylesheets).
+	 */
+	reuse = false;
+	/** Boxes kept (not laid out again) in the last layout, for the stats. */
+	kept = 0;
 	/** Natural sizes of images by src (filled in as they load). */
 	imageSizes = new Map<string, { w: number; h: number }>();
 	/**
@@ -110,6 +122,7 @@ export class IgeUiLayoutEngine {
 	layout (root: IgeUiElement, w: number, h: number): IgeUiBox {
 		this.viewport = { w, h };
 		this._positioned = [];
+		this._stamp++;
 		this._intrinsic.clear();
 		this._resetCaches();
 		this.rootFontSize = parseFloat(styleValue(root._computed, "font-size")) || 16;
@@ -138,6 +151,7 @@ export class IgeUiLayoutEngine {
 		const position = styleValue(cs, "position");
 		if (styleValue(cs, "display") === "none" || (position !== "absolute" && position !== "fixed")) return undefined;
 		this._positioned = [];
+		this._stamp++;
 		this._intrinsic.clear();
 		this._resetCaches();
 		const nb = this.build(el, parent);
@@ -159,6 +173,12 @@ export class IgeUiLayoutEngine {
 		if (display === "none") {
 			this._clear(el);
 			return null;
+		}
+		const kept = this.reuse ? this._reusable(el) : undefined;
+		el._reuseFrom = undefined;
+		if (kept) {
+			kept.parent = parent;
+			return kept;
 		}
 		const box = newBox(el, cs, display === "list-item" ? "block" : display, parent);
 		el._box = box;
@@ -188,6 +208,8 @@ export class IgeUiLayoutEngine {
 			}
 		}
 		if (el._pseudo?.after) this._pseudoBox(el, "after", box);
+		box.escapingKids = box.children.some((c) => c.position === "absolute" || c.position === "fixed" || (!!c.escapingKids && c.position === "static" && styleValue(c.style, "transform") === "none"));
+		box.hasSticky = box.position === "sticky" || box.children.some((c) => !!c.hasSticky);
 		// An input or textarea's value (or placeholder) as its text
 		if (el.localName === "input" || el.localName === "textarea") {
 			const type = el.getAttribute("type") ?? "text";
@@ -200,6 +222,53 @@ export class IgeUiLayoutEngine {
 			}
 		}
 		return box;
+	}
+
+	/**
+	 * A box from the last layout that still stands for an element: its own, when nothing in it has changed; or,
+	 * for an element innerHTML made just like one it replaced (its style taken over, ui2 IgeUiRoot), the old one's,
+	 * handed over to the new elements.
+	 */
+	_reusable (el: IgeUiElement): IgeUiBox | undefined {
+		const b = el._box;
+		if (b && b.el === el && !b.pseudo && b.layoutOk && !el._layoutDirty && !el._childDirty && b.style === el._computed) return b;
+		const from = el._reuseFrom;
+		if (!from) return undefined;
+		const ob = from._box;
+		if (!ob || ob.el !== from || ob.pseudo || !ob.layoutOk) return undefined;
+		return this._rebind(ob, el) ? ob : undefined;
+	}
+
+	/** Hands an old element's boxes (all of them) to the new elements made just like them; false if they don't line up. */
+	_rebind (box: IgeUiBox, el: IgeUiElement): boolean {
+		const map = new Map<IgeUiElement, IgeUiElement>();
+		const collect = (e: IgeUiElement): boolean => {
+			const from = e._reuseFrom;
+			if (!from) return false;
+			map.set(from, e);
+			for (const c of e.childNodes) if (c.nodeType === 1 && !collect(c as IgeUiElement)) return false;
+			return true;
+		};
+		if (!collect(el)) return false;
+		const pairs: [IgeUiBox, IgeUiElement][] = [];
+		const check = (b: IgeUiBox): boolean => {
+			if (b.el) {
+				const ne = map.get(b.el);
+				if (!ne) return false;
+				const want = b.pseudo ? ne._pseudo?.[b.pseudo as "before" | "after"] : ne._computed;
+				if (b.display !== "text" && b.style !== want) return false;
+				pairs.push([b, ne]);
+			}
+			for (const c of b.children) if (!check(c)) return false;
+			return true;
+		};
+		if (!check(box)) return false;
+		for (const [b, ne] of pairs) {
+			b.el = ne;
+			if (!b.pseudo) ne._box = b;
+		}
+		for (const e of map.values()) e._reuseFrom = undefined;
+		return true;
 	}
 
 	_clear (el: IgeUiElement): void {
@@ -273,7 +342,7 @@ export class IgeUiLayoutEngine {
 		b.borderLeft = bw("left");
 		// A collapsed table's own border: half of its outer lines (the other half is outside it)
 		if ((b.display === "table" || b.display === "inline-table") && styleValue(s, "border-collapse") === "collapse") {
-			const outer = this._collapseBorders(this._tableRows(b), b);
+			const outer = this._collapsedOuter(b);
 			b.borderTop = outer[0] / 2;
 			b.borderRight = outer[1] / 2;
 			b.borderBottom = outer[2] / 2;
@@ -314,14 +383,13 @@ export class IgeUiLayoutEngine {
 				col += span;
 			}
 		});
-		const own = new Map<IgeUiBox, [number, number, number, number]>();
+		// (Each cell's own borders, kept on its box while it stands)
+		const g = this.pixelGrid;
 		const w = (c: IgeUiBox) => {
-			let o = own.get(c);
-			if (!o) {
-				o = [this._borderWidth(c.style, "top"), this._borderWidth(c.style, "right"), this._borderWidth(c.style, "bottom"), this._borderWidth(c.style, "left")];
-				own.set(c, o);
-			}
-			return o;
+			if (c.ownBorders && c.ownBordersGrid === g) return c.ownBorders;
+			c.ownBorders = [this._borderWidth(c.style, "top"), this._borderWidth(c.style, "right"), this._borderWidth(c.style, "bottom"), this._borderWidth(c.style, "left")];
+			c.ownBordersGrid = g;
+			return c.ownBorders;
 		};
 		const t: [number, number, number, number] = table ? [this._borderWidth(table.style, "top"), this._borderWidth(table.style, "right"), this._borderWidth(table.style, "bottom"), this._borderWidth(table.style, "left")] : [0, 0, 0, 0];
 		const outer: [number, number, number, number] = [...t];
@@ -466,7 +534,7 @@ export class IgeUiLayoutEngine {
 
 	/** Min- and max-content border-box widths. */
 	intrinsic (b: IgeUiBox): Size {
-		const cached = this._intrinsic.get(b);
+		const cached = b.intr ?? this._intrinsic.get(b);
 		if (cached) return cached;
 		this._edges(b, 0);
 		const edges = this._hEdges(b);
@@ -503,6 +571,7 @@ export class IgeUiLayoutEngine {
 		if (minW !== undefined) s = { min: Math.max(s.min, minW), max: Math.max(s.max, minW) };
 		s.max = Math.max(s.max, s.min);
 		this._intrinsic.set(b, s);
+		b.intr = s;
 		return s;
 	}
 
@@ -662,6 +731,58 @@ export class IgeUiLayoutEngine {
 	 * width or (block-level) all there is, or (`shrink`) shrink-to-fit. Its x, y are its parent's to set.
 	 */
 	layoutBox (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number } = {}): void {
+		// Laid out before for the same inputs, and nothing in it changed since: as it was
+		const key = `${cbW}|${cbH}|${opts.width}|${opts.height}|${opts.shrink ? 1 : 0}|${opts.stretchH}|${b.collapsed ?? ""}`;
+		if (IgeUiLayoutEngine.noCache !== true && b.layoutOk && !b.escapingKids) {
+			if (b.cacheKey === key) {
+				if (b.extShift) this._shiftContent(b, -b.extShift);
+				b.extShift = 0;
+				b.borderH = b.layoutH ?? b.borderH;
+				this.kept++;
+				if (!b.hasSticky) b.keptStamp = this._stamp;
+				return;
+			}
+			// Asked again at a set height (a row's, a stretched item's), laid out as it was otherwise, and nothing in it
+			// minds its height: made that tall, the layout kept as it is
+			// (Measured first with no containing block height, a flex column's item: the same, unless its own sizes are
+			// percentages of that height)
+			const free = (h: string) => `${cbW}|${h}|${opts.width}|undefined|${opts.shrink ? 1 : 0}|${opts.stretchH}|${b.collapsed ?? ""}`;
+			const ownPct = /%/.test(styleValue(b.style, "height") + styleValue(b.style, "min-height") + styleValue(b.style, "max-height"));
+			if (opts.height !== undefined && (b.cacheKey === free(String(cbH)) || (!ownPct && b.cacheKey === free("undefined"))) && (this._heightFree(b, b.display === "table-cell") || this._scrollerKeeps(b, opts.height))) {
+				if (b.extShift) this._shiftContent(b, -b.extShift);
+				b.extShift = 0;
+				b.borderH = Math.max(0, opts.height);
+				this.kept++;
+				return;
+			}
+		}
+		b.layoutOk = false;
+		this._layoutBox(b, cbW, cbH, opts);
+		b.cacheKey = key;
+		b.layoutOk = true;
+		b.layoutH = b.borderH;
+		b.extShift = 0;
+		(b.measures ??= new Map()).set(key, b.borderH);
+	}
+
+	/**
+	 * A box's height for these inputs, without laying it out again when it was laid out for them before (and nothing in
+	 * it has changed): a flex column measuring its items, then laying them out at their sizes, every time.
+	 */
+	measureH (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number } = {}): number {
+		const key = `${cbW}|${cbH}|${opts.width}|${opts.height}|${opts.shrink ? 1 : 0}|${opts.stretchH}|${b.collapsed ?? ""}`;
+		if (IgeUiLayoutEngine.noCache !== true && b.layoutOk && !b.escapingKids) {
+			const h = b.measures?.get(key);
+			if (h !== undefined) {
+				this.kept++;
+				return h;
+			}
+		}
+		this.layoutBox(b, cbW, cbH, opts);
+		return b.borderH;
+	}
+
+	_layoutBox (b: IgeUiBox, cbW: number, cbH: number | undefined, opts: { width?: number; height?: number; shrink?: boolean; stretchH?: number }): void {
 		this._edges(b, cbW);
 		const s = b.style;
 		// The width
@@ -691,7 +812,10 @@ export class IgeUiLayoutEngine {
 		const bar = ox !== "visible" || oy !== "visible" ? this._scrollbarSize(s) : 0;
 		const stable = styleValue(s, "scrollbar-gutter").startsWith("stable");
 		b.scrollbarX = ox === "scroll" ? bar : 0;
-		b.scrollbarY = oy === "scroll" || (stable && (oy === "auto" || oy === "hidden")) ? bar : 0;
+		// (A scroller that had a scrollbar last time starts with it, as a browser's does: its contents aren't laid out at
+		// one width, then another, every time)
+		const hadBar = oy === "auto" && !!b.el?._scrollbarY;
+		b.scrollbarY = oy === "scroll" || hadBar || (stable && (oy === "auto" || oy === "hidden")) ? bar : 0;
 		let cw = contentWidth(b);
 		// Height known up front (used by flex columns, percentages inside)
 		let fixedH = opts.height;
@@ -735,8 +859,16 @@ export class IgeUiLayoutEngine {
 		// Overflow's reach; a scrollbar if it's needed (and the contents again, in what room's left)
 		if (ox !== "visible" || oy !== "visible") {
 			this._scrollExtent(b);
-			if (bar && oy === "auto" && !b.scrollbarY && b.scrollH! > b.borderH - b.borderTop - b.borderBottom - b.scrollbarX! + 0.5) {
+			const overflows = () => b.scrollH! > b.borderH - b.borderTop - b.borderBottom - b.scrollbarX! + 0.5;
+			if (bar && oy === "auto" && !b.scrollbarY && overflows()) {
 				b.scrollbarY = bar;
+				cw = contentWidth(b);
+				contentH = contents();
+				b.borderH = height();
+				this._scrollExtent(b);
+			} else if (hadBar && b.scrollbarY && !stable && (fixedH !== undefined || opts.stretchH !== undefined) && !overflows()) {
+				// (Kept from last time, but it all fits now: without it)
+				b.scrollbarY = 0;
 				cw = contentWidth(b);
 				contentH = contents();
 				b.borderH = height();
@@ -748,6 +880,7 @@ export class IgeUiLayoutEngine {
 				this._scrollExtent(b);
 			}
 		}
+		if (b.el && !b.pseudo && oy === "auto") b.el._scrollbarY = b.scrollbarY! > 0;
 		// Relative offsets are applied by the parent (after it places it); transforms recorded
 		const tf = styleValue(s, "transform");
 		b.transform = tf !== "none" ? parseTransform(tf, b.borderW, b.borderH, this._ctx(s)) : undefined;
@@ -804,7 +937,9 @@ export class IgeUiLayoutEngine {
 		const d = b.display;
 		if (cell ? d !== "table-cell" : d !== "block" && d !== "inline-block" && d !== "flow-root" && d !== "list-item") return false;
 		if (b.el.localName === "button" || REPLACED.has(b.el.localName)) return false;
-		if (styleValue(b.style, "overflow-x") !== "visible" || styleValue(b.style, "overflow-y") !== "visible") return false;
+		// (A scroller's scrollbar comes and goes with its height; a box that clips doesn't mind it)
+		const ox = styleValue(b.style, "overflow-x"), oy = styleValue(b.style, "overflow-y");
+		if (ox === "auto" || ox === "scroll" || oy === "auto" || oy === "scroll") return false;
 		if (styleValue(b.style, "transform").includes("%")) return false;
 		for (const c of b.children) {
 			if (c.display === "text") continue;
@@ -814,6 +949,30 @@ export class IgeUiLayoutEngine {
 		return true;
 	}
 
+	/**
+	 * Whether a scroller (block flow, overflow-y auto or scroll) laid out at its content's height can be made `h` tall
+	 * as it is: its contents are laid out the same, as long as its scrollbar stays as it was (it overflowed and had one,
+	 * or fits and hadn't).
+	 */
+	_scrollerKeeps (b: IgeUiBox, h: number): boolean {
+		if (!b.el || b.pseudo) return false;
+		const d = b.display;
+		if (d !== "block" && d !== "inline-block" && d !== "flow-root") return false;
+		if (b.el.localName === "button" || REPLACED.has(b.el.localName)) return false;
+		const oy = styleValue(b.style, "overflow-y");
+		if (oy !== "auto" && oy !== "scroll") return false;
+		if (styleValue(b.style, "transform").includes("%")) return false;
+		for (const c of b.children) {
+			if (c.display === "text") continue;
+			const ch = styleValue(c.style, "height"), mh = styleValue(c.style, "min-height"), xh = styleValue(c.style, "max-height");
+			if (ch.includes("%") || mh.includes("%") || xh.includes("%")) return false;
+		}
+		if (oy === "scroll") return true;
+		const inner = h - b.borderTop - b.borderBottom - (b.scrollbarX ?? 0);
+		const overflows = (b.scrollH ?? 0) > inner + 0.5;
+		return overflows === (b.scrollbarY ?? 0) > 0;
+	}
+
 	/** A laid out box made taller or shorter without laying its contents out again (see _heightFree). */
 	_resize (b: IgeUiBox, h: number): void {
 		b.borderH = Math.max(0, h);
@@ -821,7 +980,8 @@ export class IgeUiLayoutEngine {
 
 	/** Moves a box's in-flow contents down (vertical alignment in a cell or a button). */
 	_shiftContent (b: IgeUiBox, dy: number): void {
-		for (const c of b.children) if (!this._outOfFlow(c) && c.display !== "text") c.y += dy;
+		// (Inline elements' places are their fragments', moved below with the lines)
+		for (const c of b.children) if (!this._outOfFlow(c) && c.display !== "text" && c.display !== "inline") c.y += dy;
 		for (const r of b.runs ?? []) r.y += dy;
 		for (const f of b.fragments ?? []) f.y += dy;
 		for (const l of b.lines ?? []) l.y += dy;
@@ -877,8 +1037,9 @@ export class IgeUiLayoutEngine {
 			return [rw, rh];
 		};
 		for (const c of b.children) {
-			// (Text boxes hold no place of their own: their lines and runs are the block's)
-			if (c.position === "fixed" || c.display === "text") continue;
+			// (Text boxes hold no place of their own: their lines and runs are the block's; positioned boxes are added
+			// once they're placed: _placePositioned)
+			if (c.position === "fixed" || c.position === "absolute" || c.display === "text" || c.display === "inline") continue;
 			w = Math.max(w, c.x + c.borderW + Math.max(0, c.marginRight) - left);
 			h = Math.max(h, c.y + c.borderH + Math.max(0, c.marginBottom) - top);
 			// (What overflows a child counts as it is, with no end padding after it, as a browser counts it)
@@ -1493,10 +1654,7 @@ export class IgeUiLayoutEngine {
 			let contentH: number | undefined;
 			if (base === undefined) {
 				if (row) base = this.intrinsic(it).max;
-				else {
-					this.layoutBox(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s) });
-					base = contentH = it.borderH;
-				}
+				else base = contentH = this.measureH(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s) });
 			}
 			const ov = styleValue(it.style, row ? "overflow-x" : "overflow-y");
 			// The automatic minimum: its min-content (unless it scrolls or clips): in a column, its content's height
@@ -1508,10 +1666,7 @@ export class IgeUiLayoutEngine {
 						const spec = this._specW(it, cw);
 						min = Math.min(this.intrinsic(it).min, spec ?? Infinity, transferred ?? Infinity);
 					} else {
-						if (contentH === undefined) {
-							this.layoutBox(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s) });
-							contentH = it.borderH;
-						}
+						if (contentH === undefined) contentH = this.measureH(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s) });
 						const spec = this._specH(it, innerH);
 						min = Math.min(contentH, spec ?? Infinity);
 					}
@@ -2068,11 +2223,33 @@ export class IgeUiLayoutEngine {
 		return this.len(b.style, "border-spacing") ?? 0;
 	}
 
-	_tableColumns (b: IgeUiBox): { min: number[]; max: number[]; fixed: (number | undefined)[]; percent: (number | undefined)[] } {
+	/** A table's collapsed borders worked out once a layout (its cells' edges, its outer lines). */
+	_collapsedOuter (b: IgeUiBox): [number, number, number, number] {
+		let m = this._memo.get(b);
+		if (!m || m.stamp !== this._stamp) {
+			m = { stamp: this._stamp };
+			this._memo.set(b, m);
+		}
+		m.outer ??= this._collapseBorders(this._tableRows(b), b);
+		return m.outer;
+	}
+
+	/** A table's columns' widths (min, max, set, percentages), worked out once a layout. */
+	_tableColumns (b: IgeUiBox): ReturnType<IgeUiLayoutEngine["_tableColumnsNow"]> {
+		let m = this._memo.get(b);
+		if (!m || m.stamp !== this._stamp) {
+			m = { stamp: this._stamp };
+			this._memo.set(b, m);
+		}
+		m.cols ??= this._tableColumnsNow(b);
+		return m.cols;
+	}
+
+	_tableColumnsNow (b: IgeUiBox): { min: number[]; max: number[]; fixed: (number | undefined)[]; percent: (number | undefined)[] } {
 		const rows = this._tableRows(b);
 		const min: number[] = [], max: number[] = [], fixed: (number | undefined)[] = [], percent: (number | undefined)[] = [];
 		const spanned: { col: number; span: number; s: { min: number; max: number } }[] = [];
-		if (styleValue(b.style, "border-collapse") === "collapse") this._collapseBorders(rows);
+		if (styleValue(b.style, "border-collapse") === "collapse") this._collapsedOuter(b);
 		else for (const row of rows) for (const cell of this._cells(row)) cell.collapsed = undefined;
 		for (const row of rows) {
 			let col = 0;
@@ -2169,10 +2346,22 @@ export class IgeUiLayoutEngine {
 		const groupOf = new Map<IgeUiBox, IgeUiBox>();
 		for (const g of b.children) for (const r of g.children) if (r.display === "table-row") groupOf.set(r, g);
 		const groupStart = new Map<IgeUiBox, number>();
+		// (A row kept from the last layout, laid out then for these same columns: as it was, its cells untouched)
+		const rowKey = `${colX.join(",")}|${widths.join(",")}|${innerH}|${tableW}`;
 		for (const row of rows) {
-			this._edges(row, cw);
 			const group = groupOf.get(row);
 			if (group && !groupStart.has(group)) groupStart.set(group, y);
+			if (row.rowKey === rowKey && row.rowH !== undefined && !IgeUiLayoutEngine.noCache) {
+				row.x = 0;
+				row.y = y - (group ? groupStart.get(group)! : 0);
+				row.borderW = tableW;
+				row.borderH = row.rowH;
+				if (!row.hasSticky) row.keptStamp = this._stamp;
+				this.kept++;
+				y += row.rowH + spacing;
+				continue;
+			}
+			this._edges(row, cw);
 			let col = 0;
 			let rowH = this._specH(row, innerH) ?? 0;
 			const placed: { cell: IgeUiBox; col: number; span: number }[] = [];
@@ -2195,7 +2384,11 @@ export class IgeUiLayoutEngine {
 					if (this._heightFree(cell, true)) this._resize(cell, rowH);
 					else this.layoutBox(cell, w, innerH, { width: w, height: rowH });
 					const dy = va === "middle" ? (rowH - contentH) / 2 : va === "bottom" ? rowH - contentH : 0;
-					if (dy) this._shiftContent(cell, dy);
+					if (dy) {
+						this._shiftContent(cell, dy);
+						// (Undone if the cell's kept next time: its own layout didn't do it)
+						cell.extShift = (cell.extShift ?? 0) + dy;
+					}
 				}
 				cell.x = colX[p.col] - (group ? 0 : 0);
 				cell.y = 0;
@@ -2205,6 +2398,8 @@ export class IgeUiLayoutEngine {
 			row.borderW = tableW;
 			row.borderH = rowH;
 			for (const p of placed) p.cell.x = colX[p.col];
+			row.rowKey = rowKey;
+			row.rowH = rowH;
 			y += rowH + spacing;
 		}
 		for (const g of b.children) {
@@ -2266,14 +2461,13 @@ export class IgeUiLayoutEngine {
 			if (height === undefined && top !== undefined && bottom !== undefined) height = cbH - top - bottom - box.marginTop - box.marginBottom;
 			if (width !== undefined) width = this._clampW(box, width, cbW);
 			if (height !== undefined) height = this._clampH(box, height, cbH);
-			// Shrink-to-fit in the room it has
+			// Shrink-to-fit in the room it has (worked out from what's in it, then laid out once at that width)
 			const room = cbW - (left ?? 0) - (right ?? 0);
-			this.layoutBox(box, cbW, cbH, { width, height, shrink: width === undefined ? true : undefined });
 			if (width === undefined) {
 				const i = this.intrinsic(box);
-				const w = this._clampW(box, Math.min(i.max, Math.max(i.min, room - box.marginLeft - box.marginRight)), cbW);
-				if (Math.abs(w - box.borderW) > 0.01) this.layoutBox(box, cbW, cbH, { width: w, height });
+				width = this._clampW(box, Math.min(i.max, Math.max(i.min, room - box.marginLeft - box.marginRight)), cbW);
 			}
+			this.layoutBox(box, cbW, cbH, { width, height });
 			// Where: from its offsets, else its static position
 			const parentAbs = box.parent ? this._abs(box.parent) : { x: 0, y: 0 };
 			let ax: number, ay: number;
@@ -2289,11 +2483,18 @@ export class IgeUiLayoutEngine {
 			else ay = parentAbs.y + this._staticAt(box, "y") + box.marginTop;
 			box.x = ax - parentAbs.x;
 			box.y = ay - parentAbs.y;
+			// What a scroller (or a box that clips) holds reaches as far as this does
+			if (cb && box.position === "absolute" && (styleValue(cb.style, "overflow-x") !== "visible" || styleValue(cb.style, "overflow-y") !== "visible")) {
+				cb.scrollW = Math.max(cb.scrollW ?? 0, ax + box.borderW + Math.max(0, box.marginRight) - (cbAbs.x + cb.borderLeft));
+				cb.scrollH = Math.max(cb.scrollH ?? 0, ay + box.borderH + Math.max(0, box.marginBottom) - (cbAbs.y + cb.borderTop));
+			}
 			void root;
 		}
 	}
 
 	_absolute (b: IgeUiBox, px: number, py: number): void {
+		// (Kept as it was in this layout, and where it was: what's in it is where it was too)
+		if (b.keptStamp === this._stamp && b.ax === px + b.x && b.ay === py + b.y && !b.sticky && !IgeUiLayoutEngine.noCache) return;
 		b.ax = px + b.x;
 		b.ay = py + b.y;
 		b.sticky = b.position === "sticky" ? this._stickyOf(b) : undefined;

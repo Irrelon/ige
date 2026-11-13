@@ -173,6 +173,12 @@ export class IgeUiAnimator {
 
 	/** A new base style for an element: starts transitions from what it showed, and animations it now names. Returns its style as shown now. */
 	restyled (el: IgeUiElement, prev: IgeUiComputedStyle | undefined, next: IgeUiComputedStyle, now: number): IgeUiComputedStyle {
+		// (Nothing moving on it, nothing to start: its style as it is)
+		const tv = next.transition, av = next.animation;
+		if ((!prev || tv === undefined || tv === "none") && (av === undefined || av === "none") && !this.active.has(el) && !this._animations.has(el) && !this._transitions.has(el)) {
+			this._base.delete(el);
+			return next;
+		}
 		this._base.set(el, next);
 		if (!this.reduced && prev) this._startTransitions(el, prev, next, now);
 		this._syncAnimations(el, next, now);
