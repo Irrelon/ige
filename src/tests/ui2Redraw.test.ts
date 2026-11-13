@@ -314,3 +314,35 @@ describe("ui2: a text field's selection set by code", () => {
 		expect(r.items.filter((i) => i.el === input && i.op === "box" && (i as { w: number }).w === 1).length).toBe(1);
 	});
 });
+
+describe("ui2: moving an element where it's drawn (placeAt)", () => {
+	it("moves it, its hits and its rect with no restyle or layout after the first time, as a transform would", () => {
+		const r = ui(`.l { position: absolute; left: 0; top: 0; width: 40px; height: 10px; background: #f00; transform: translateX(-50%); } .q { width: 30px; height: 30px; background: #00f; }`, 400, 300);
+		r.root.innerHTML = `<div class="q"></div><div class="l">x</div>`;
+		const l = r.root.querySelector(".l")!;
+		r.update(0);
+		r.placeAt(l, 100, 50);
+		r.update(16);
+		expect(l.getBoundingClientRect().left).toBe(80);
+		const compute = r.styles.compute.bind(r.styles);
+		let computed = 0;
+		r.styles.compute = (...a: Parameters<typeof compute>) => {
+			computed++;
+			return compute(...a);
+		};
+		const painted = r.stats.partialPaint;
+		r.placeAt(l, 200, 120);
+		r.update(32);
+		expect(computed).toBe(0);
+		expect(r.stats.partialPaint).toBe(painted + 1);
+		expect(l.getBoundingClientRect().left).toBe(180);
+		expect(l.getBoundingClientRect().top).toBe(120);
+		expect(r.hitTest(190, 125)).toBe(l);
+		r.styles.compute = compute;
+		const now = snapshot(r);
+		expect(fresh(r, 48)).toEqual(now);
+		r.placeAt(l, null);
+		r.update(64);
+		expect(l.getBoundingClientRect().left).toBe(-20);
+	});
+});

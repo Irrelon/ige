@@ -246,6 +246,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				const pos = styleValue(cs, "position");
 				if (/^inline/.test(d) && (/(^|-)(flex|grid)$/.test(pd) || pos === "absolute" || pos === "fixed")) return BLOCKIFIED[d] ?? "block";
 			}
+			// (Moved where it's drawn, placeAt: as the transform that would have moved it)
+			if (name === "transform" && el._place && b && b.el === el) {
+				const m = this.layoutEngine.layoutBoxTransform(b)!;
+				return `matrix(${m.map(cssNumber).join(", ")})`;
+			}
 			// (An SVG element's transform attribute is its transform when CSS gives it none)
 			if (name === "transform" && styleValue(cs, "transform") === "none" && el.closest("svg")) {
 				const m = svgTransform(el.getAttribute("transform"));
@@ -494,6 +499,33 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			if (!opts?.preventScroll) this.scrollIntoView(el, "nearest");
 		}
 		this._syncTextInput();
+	}
+
+	/**
+	 * Moves an element where it's drawn (and hit, and measured) by x, y CSS px, before its own transform, without
+	 * restyling or laying anything out: only its run of items is painted again. For what moves every frame (labels
+	 * kept over world points: IgeUiWorldAnchors) in place of an inline transform. null: back where it was.
+	 */
+	placeAt (el: IgeUiElement, x: number | null, y: number = 0): void {
+		const had = el._place;
+		if (x === null) {
+			if (!had) return;
+			el._place = undefined;
+		} else {
+			if (had && had[0] === x && had[1] === y) return;
+			el._place = [x, y];
+		}
+		const b = el._box;
+		if (!b || b.el !== el || !had !== !el._place) {
+			// (Moved for the first time, or no longer: laid out again, so it's known to move: what's out of sight)
+			this._relayout.add(el);
+			this._markLayout(el);
+			this._layoutDirty = true;
+			this._paintDirty = true;
+			return;
+		}
+		b.transform = this.layoutEngine.layoutBoxTransform(b);
+		this._repaintEls.add(el);
 	}
 
 	/** A text field's selection set by code (select(), setSelectionRange()): drawn, and given to the hidden input if it's focused. */

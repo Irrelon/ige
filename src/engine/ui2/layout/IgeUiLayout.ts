@@ -920,8 +920,7 @@ export class IgeUiLayoutEngine {
 		}
 		if (b.el && !b.pseudo && oy === "auto") b.el._scrollbarY = b.scrollbarY! > 0;
 		// Relative offsets are applied by the parent (after it places it); transforms recorded
-		const tf = styleValue(s, "transform");
-		b.transform = tf !== "none" ? parseTransform(tf, b.borderW, b.borderH, this._ctx(s)) : undefined;
+		b.transform = this.layoutBoxTransform(b);
 		if (b.baseline === undefined) b.baseline = this._firstBaseline(b);
 	}
 
@@ -1026,9 +1025,15 @@ export class IgeUiLayoutEngine {
 	}
 
 	/** A box's transform from its style at its size (an animation moved it). */
+	/** A box's transform: its style's, after the move its element was placed by (IgeUiRoot.placeAt), if any. */
 	layoutBoxTransform (b: IgeUiBox): IgeUiBox["transform"] {
 		const tf = styleValue(b.style, "transform");
-		return tf === "none" ? undefined : parseTransform(tf, b.borderW, b.borderH, this._ctx(b.style));
+		const m = tf === "none" ? undefined : parseTransform(tf, b.borderW, b.borderH, this._ctx(b.style));
+		const place = !b.pseudo ? b.el?._place : undefined;
+		if (!place) return m;
+		// (A move before the transform: whatever its origin, only the translation changes)
+		const [a, bb, c, d, e, f] = m ?? [1, 0, 0, 1, 0, 0];
+		return [a, bb, c, d, e + place[0], f + place[1]];
 	}
 
 	_layoutHidden (b: IgeUiBox): void {

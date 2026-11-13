@@ -147,6 +147,8 @@ describe("ui2: nodes anchored to the world", () => {
 			// expected without a context
 		}
 		expect(placed).toBe(1);
-		expect(el.style.transform).toBe("translate(200px, 150px)");
+		// (An engine element is moved where it's drawn, not by its style: IgeUiRoot.placeAt)
+		expect(el._place).toEqual([200, 150]);
+		expect(el.style.transform).toBe("");
 	});
 });

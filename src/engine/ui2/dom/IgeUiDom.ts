@@ -478,6 +478,8 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	_childDirty?: boolean;
 	/** Had a scrollbar (overflow: auto) in the last layout. */
 	_scrollbarY?: boolean;
+	/** Moved by this much where it's drawn, before its transform, with no restyle or layout (IgeUiRoot.placeAt). */
+	_place?: [number, number];
 	_pseudo?: { before?: Record<string, string>; after?: Record<string, string>; placeholder?: Record<string, string> };
 	_styleDirty = true;
 	/** Scrolled by. */

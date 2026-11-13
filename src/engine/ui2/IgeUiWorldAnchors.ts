@@ -310,10 +310,20 @@ export class IgeUiWorldAnchors<V = unknown> {
 		if (!at) return;
 		a.screen = at;
 		const align = o.align ?? "translate(-50%, -50%)";
-		const transform = `translate(${round(at.x, o.snap)}px, ${round(at.y, o.snap)}px)${align ? ` ${align}` : ""}`;
-		if (a._lastTransform !== transform) {
-			a._lastTransform = transform;
-			a.el.style.setProperty("transform", transform);
+		// An engine element: moved where it's drawn (no restyle or layout), its alignment its own transform
+		const host = (a.el.ownerDocument as { host?: { placeAt? (el: unknown, x: number, y: number): void } } | null)?.host;
+		if (host?.placeAt) {
+			if (a._lastTransform !== align) {
+				a._lastTransform = align;
+				a.el.style.setProperty("transform", align || null);
+			}
+			host.placeAt(a.el, Number(round(at.x, o.snap)), Number(round(at.y, o.snap)));
+		} else {
+			const transform = `translate(${round(at.x, o.snap)}px, ${round(at.y, o.snap)}px)${align ? ` ${align}` : ""}`;
+			if (a._lastTransform !== transform) {
+				a._lastTransform = transform;
+				a.el.style.setProperty("transform", transform);
+			}
 		}
 		o.update?.(a.el, at);
 	}
