@@ -1228,7 +1228,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	 * screenshots read back from the canvas.
 	 */
 	drawOnCanvas (canvas: HTMLCanvasElement, opts: { loop?: boolean; preserve?: boolean } = {}): { draw (): void; stop (): void } {
-		const gl = canvas.getContext("webgl2", { alpha: true, premultipliedAlpha: true, antialias: false, preserveDrawingBuffer: !!opts.preserve });
+		// (A stencil for clips of any shape: IgeUiStencilClip)
+		const gl = canvas.getContext("webgl2", { alpha: true, premultipliedAlpha: true, antialias: false, stencil: true, preserveDrawingBuffer: !!opts.preserve });
 		if (!gl) throw new Error("IgeUiRoot: no WebGL 2 for the canvas");
 		let frame = 0;
 		const draw = () => {

@@ -14,6 +14,7 @@ import { IgeUiDropShadowPass, type IgeUiShadowGroup } from "@/engine/ui2/render/
 import { IgeUiFilterPass, type IgeUiFilterLayer, layerRegion } from "@/engine/ui2/render/IgeUiFilters";
 import { glowKey, glowRegion, type IgeUiTextGlow, IgeUiTextGlowCache } from "@/engine/ui2/render/IgeUiTextGlow";
 import type { IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
+import { IgeUiStencilClip, type IgeUiStencilStep, stencilTriangles } from "@/engine/ui2/render/IgeUiStencilClip";
 import { type IgeUiSdfAtlas, PAGE, SDF_EDGE, SDF_RADIUS, SDF_SIZE } from "@/engine/ui2/text/IgeUiSdfAtlas";
 
 const VS = `#version 300 es
@@ -305,6 +306,8 @@ interface Batch {
 	count: number;
 	image: WebGLTexture | null;
 	additive: boolean;
+	/** A clip of any shape opening or closing (IgeUiStencilClip): no instances, its shape marked in the stencil as it's reached. */
+	stencil?: IgeUiStencilStep;
 	/** Before it's drawn: what's on the target so far, this rectangle of it (device px, top-down), blurred into its image. */
 	backdrop?: { x: number; y: number; w: number; h: number; sigma: number; ops?: number[][] };
 	/**
@@ -410,6 +413,8 @@ export class IgeUiGlRenderer {
 	_blurA: { tex: WebGLTexture; w: number; h: number } | null = null;
 	_blurB: { tex: WebGLTexture; w: number; h: number } | null = null;
 	_blurFbo: WebGLFramebuffer | null = null;
+	/** Clips of any shape, by the stencil (IgeUiStencilClip). */
+	_stencil = new IgeUiStencilClip();
 	/** Drop shadows' textures (filter: drop-shadow(): IgeUiDropShadow). */
 	_shadows = new IgeUiDropShadowPass();
 	/** Filters' layers (filter: grayscale(), blur(), hue-rotate()...: IgeUiFilters). */
@@ -493,6 +498,7 @@ export class IgeUiGlRenderer {
 		if (this._atlasTex) gl.deleteTexture(this._atlasTex);
 		for (const i of this._images.values()) gl.deleteTexture(i.tex);
 		this._images.clear();
+		this._stencil.destroy();
 	}
 
 	// ---------------------------------------------------------------- gradients
@@ -729,6 +735,12 @@ export class IgeUiGlRenderer {
 			const clip = it.clip ? (it.matrix ? clipThrough(it.clip, it.matrix) : it.clip) : NONE;
 			const additive = !!it.additive;
 			if (it.op === "group") {
+				// A clip of any shape (IgeUiStencilClip): a step of its own between the batches, its shape marked in the stencil
+				if (it.mask) {
+					batches.push({ start: n, count: 0, image: null, additive: false, stencil: { open: it.open, tris: stencilTriangles(it.mask, it.matrix) } });
+					batch = undefined;
+					continue;
+				}
 				// A filter's layer (IgeUiFilters): what's in it drawn into it alone, its filters run, the result composited here
 				if (it.open) openKinds.push(it.filters?.length && this._blurProgram ? "layer" : "shadow");
 				if ((it.open ? openKinds[openKinds.length - 1] : openKinds.pop()) === "layer") {
@@ -1084,8 +1096,11 @@ export class IgeUiGlRenderer {
 		const target = batches.some((b) => b.backdrop || b.shadow || b.layer || b.glow) ? (gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null) : null;
 		let calls = 0;
 		let blurred: WebGLTexture | null = null;
+		this._stencil.begin();
 		/** One batch drawn (a drop shadow's silhouette draws what it's of with this too). */
 		const drawBatch = (b: Batch) => {
+			// (A clip's step has no instances: nothing to draw)
+			if (!b.count) return;
 			if (b.blend === "erase") gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
 			else gl.blendFunc(gl.ONE, b.additive || b.blend === "add" ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
 			gl.activeTexture(gl.TEXTURE2);
@@ -1096,6 +1111,14 @@ export class IgeUiGlRenderer {
 			calls++;
 		};
 		for (const b of batches) {
+			if (b.stencil) {
+				// A clip of any shape opening or closing: its shape marked in the stencil (or taken back), then on as before
+				this._stencil.apply(gl, b.stencil, width, height, scale, offset);
+				gl.useProgram(this._program);
+				gl.bindVertexArray(this._vao);
+				gl.bindBuffer(gl.ARRAY_BUFFER, this._inst);
+				continue;
+			}
 			// (Drawn into its filter's layer instead; a layer made as its composite's drawn; a glow's silhouette only into it)
 			if (b.owner || b.hidden) continue;
 			if (b.glow) {
@@ -1134,6 +1157,7 @@ export class IgeUiGlRenderer {
 			if (b.blend === "add") b.image = blurred;
 			drawBatch(b);
 		}
+		this._stencil.end(gl);
 		gl.bindVertexArray(null);
 		gl.depthMask(true);
 		this.drawCalls = calls;

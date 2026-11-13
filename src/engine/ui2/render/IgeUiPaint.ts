@@ -138,6 +138,11 @@ export interface IgeUiPaintFill extends IgeUiPaintBase {
 export interface IgeUiPaintGroup extends IgeUiPaintBase {
 	op: "group";
 	open: boolean;
+	/**
+	 * A clip of any shape (a 2D canvas's clip() to a circle): its triangles (x, y three times each, through its
+	 * matrix), on the opening and the closing both; what's between is kept inside it (IgeUiStencilClip).
+	 */
+	mask?: number[];
 	shadows?: IgeUiDropShadow[];
 	filters?: IgeUiFilterOp[];
 	opacity: number;

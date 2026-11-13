@@ -8,7 +8,7 @@
  *
  * What's there:
  * - paths: moveTo, lineTo, arc, ellipse, quadratic and cubic curves, rect,
- *   closePath; fill (each subpath ear-clipped, as the SVG shapes are) and
+ *   closePath; fill (nonzero or evenodd, as the SVG shapes are) and
  *   stroke (width, caps, joins, miter limit, dashes and their offset);
  * - a path that's only whole circles is drawn as the painter's round boxes
  *   (smooth edges, a ring for a stroke), as the SVG shapes are;
@@ -23,7 +23,9 @@
  *   resetTransform, getTransform), save and restore;
  * - globalAlpha, globalCompositeOperation "lighter" (added light),
  *   shadows (a drop shadow round what's drawn; a text shadow on text);
- * - clip: to the bounding box of the path (a rectangle exactly);
+ * - clip: to the path (a rectangle as the painter's own clip; any other
+ *   shape, a circle, as a mask the renderer keeps in its stencil, with a
+ *   sharp edge), clips in clips keeping to both;
  * - drawImage of an engine canvas or image, or a page canvas or image (the
  *   whole picture, or the whole of it named as the source rectangle).
  *
@@ -32,7 +34,7 @@
  *   canvas was cleared (getImageData reads that layer, not what's drawn as
  *   shapes).
  *
- * Not there: patterns, filters, a clip that isn't a rectangle, isPointInPath.
+ * Not there: patterns, filters, isPointInPath, Path2D.
  */
 import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix, IDENTITY, multiply, parseColor } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
@@ -88,6 +90,8 @@ interface State {
 	shadowX: number;
 	shadowY: number;
 	clip: IgeUiClip;
+	/** Clips of any shape open (their triangles, in pixels), the innermost last: closed as the state they're in is restored. */
+	masks: number[][];
 	smoothing: boolean;
 }
 
@@ -194,7 +198,7 @@ export class IgeUiCanvas2d {
 		return {
 			m: [1, 0, 0, 1, 0, 0], fill: "#000", stroke: "#000", lineWidth: 1, lineCap: "butt", lineJoin: "miter", miterLimit: 10, dash: [], dashOffset: 0,
 			alpha: 1, composite: "source-over", font: "10px sans-serif", textAlign: "start", textBaseline: "alphabetic", shadowBlur: 0, shadowColor: "rgba(0, 0, 0, 0)",
-			shadowX: 0, shadowY: 0, clip: null, smoothing: true
+			shadowX: 0, shadowY: 0, clip: null, masks: [], smoothing: true
 		};
 	}
 
@@ -266,12 +270,16 @@ export class IgeUiCanvas2d {
 	filter = "none";
 
 	save (): void {
-		this._stack.push({ ...this._state, m: [...this._state.m] as M, dash: [...this._state.dash] });
+		this._stack.push({ ...this._state, m: [...this._state.m] as M, dash: [...this._state.dash], masks: [...this._state.masks] });
 	}
 
 	restore (): void {
 		const s = this._stack.pop();
-		if (s) this._state = s;
+		if (!s) return;
+		// (The clips of any shape made since it was saved: closed, the innermost first)
+		const masks = this._state.masks;
+		for (let i = masks.length - 1; i >= s.masks.length; i--) this._push({ op: "group", open: false, mask: masks[i], opacity: 1, clip: null });
+		this._state = s;
 	}
 
 	setLineDash (dash: number[]): void {
@@ -494,21 +502,21 @@ export class IgeUiCanvas2d {
 		else this._push({ ...base, gradient });
 	}
 
-	/** (The fill rule's taken; the SVG triangulation it uses fills each subpath on its own, nonzero as it is) */
+	/** Filled by the rule: nonzero (the default) or evenodd, subpaths over each other or crossing themselves filled as one shape. */
 	fill (rule: "nonzero" | "evenodd" | unknown = "nonzero"): void {
 		const subs = this._subs.filter((s) => s.pts.length >= 4);
 		if (!subs.length) return;
 		const style = this._state.fill;
 		this._shadowed(() => {
-			if (subs.every((s) => s.circle)) {
+			// (Whole circles as round boxes; not by the evenodd rule, where one inside another is a hole)
+			if (subs.every((s) => s.circle) && (rule !== "evenodd" || subs.length === 1)) {
 				for (const s of subs) {
 					const [cx, cy, r] = s.circle!;
 					this._box(cx - r, cy - r, 2 * r, 2 * r, r, style);
 				}
 				return;
 			}
-			if (rule === "evenodd") this._unsupported("the evenodd fill rule (filled nonzero)");
-			const { tris, edges } = fillTriangles(subs.map((s) => ({ points: s.pts, closed: true })), IDENTITY);
+			const { tris, edges } = fillTriangles(subs.map((s) => ({ points: s.pts, closed: true })), IDENTITY, rule === "evenodd" ? "evenodd" : "nonzero");
 			if (!tris.length) return;
 			const s = this._state;
 			const base = { op: "fill" as const, tris, edges, opacity: s.alpha, clip: s.clip, additive: s.composite === "lighter" || undefined };
@@ -630,7 +638,8 @@ export class IgeUiCanvas2d {
 		const x0 = Math.min(ax, bx), y0 = Math.min(ay, by), x1 = Math.max(ax, bx), y1 = Math.max(ay, by);
 		this._pixels?.getContext("2d")!.clearRect(x0, y0, x1 - x0, y1 - y0);
 		if (x0 <= 0 && y0 <= 0 && x1 >= cw && y1 >= ch) {
-			this._drawn = [];
+			// (The clips of any shape open now stay open for what's drawn next)
+			this._drawn = this._state.masks.map((mask) => ({ item: { op: "group", open: true, mask, opacity: 1, clip: null } }));
 			this._pixelsDrawn = false;
 		} else {
 			// (What's drawn wholly inside it goes; what's partly in it stays: the engine's canvas keeps shapes, not pixels)
@@ -644,7 +653,12 @@ export class IgeUiCanvas2d {
 
 	// ------------------------------------------------------------ clip
 
-	clip (): void {
+	/**
+	 * What's drawn after it (until the state's restored) kept inside the path: to its bounding box as the painter's
+	 * own rectangular clip, and when the path isn't a rectangle on the axes (a circle, a turned square), to its shape
+	 * too, filled by the rule (a mask the renderer keeps in the stencil: IgeUiStencilClip). A clip in a clip keeps to both.
+	 */
+	clip (rule: "nonzero" | "evenodd" | unknown = "nonzero"): void {
 		const subs = this._subs.filter((s) => s.pts.length >= 4);
 		let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
 		for (const s of subs) {
@@ -656,10 +670,17 @@ export class IgeUiCanvas2d {
 			}
 		}
 		if (!subs.length) x0 = y0 = x1 = y1 = 0;
-		const rect = subs.length === 1 && subs[0].pts.length === 8 && subs[0].closed;
-		if (!rect) this._unsupported("a clip that isn't a rectangle (its bounding box is used)");
 		const c = this._state.clip;
 		this._state.clip = c ? [Math.max(c[0], x0), Math.max(c[1], y0), Math.min(c[2], x1), Math.min(c[3], y1)] : [x0, y0, x1, y1];
+		if (!subs.length || (subs.length === 1 && axisRect(subs[0].pts))) return;
+		const { tris } = fillTriangles(subs.map((s) => ({ points: s.pts, closed: true })), IDENTITY, rule === "evenodd" ? "evenodd" : "nonzero");
+		// (Nothing inside it: nothing drawn, the bounding box's corner)
+		if (!tris.length) {
+			this._state.clip = [x0, y0, x0, y0];
+			return;
+		}
+		this._push({ op: "group", open: true, mask: tris, opacity: 1, clip: null });
+		this._state.masks = [...this._state.masks, tris];
 	}
 
 	// ------------------------------------------------------------ text
@@ -795,6 +816,8 @@ export class IgeUiCanvas2d {
 		};
 		const X = (v: number) => v * sx + x, Y = (v: number) => v * sy + y;
 		const xy = (p: number[]) => p.map((v, i) => (i % 2 ? Y(v) : X(v)));
+		/** Clips of any shape open (their triangles where they're shown): any left open at the end closed there. */
+		const masks: number[][] = [];
 		for (const { item, own } of this._drawn) {
 			if (own) {
 				items.push({ ...item, opacity: item.opacity * opacity, matrix: multiply(matrix ?? IDENTITY, multiply(map, item.matrix ?? IDENTITY)), clip: null } as IgeUiPaintItem);
@@ -818,12 +841,33 @@ export class IgeUiCanvas2d {
 				case "image":
 					items.push({ ...item, ...base, x: X(item.x), y: Y(item.y), w: item.w * sx, h: item.h * sy });
 					break;
-				case "group":
-					items.push({ ...item, ...base, shadows: item.shadows?.map((s) => ({ ...s, x: s.x * k, y: s.y * k, blur: s.blur * k })) });
+				case "group": {
+					const mask = item.mask && (item.open ? xy(item.mask) : masks.pop() ?? xy(item.mask));
+					if (mask && item.open) masks.push(mask);
+					items.push({ ...item, ...base, shadows: item.shadows?.map((s) => ({ ...s, x: s.x * k, y: s.y * k, blur: s.blur * k })), mask });
 					break;
+				}
 			}
 		}
+		for (let i = masks.length - 1; i >= 0; i--) items.push({ op: "group", open: false, mask: masks[i], opacity: 1, clip: null, matrix });
 	}
+}
+
+/** A path of four corners that's a rectangle on the axes (pixels). */
+function axisRect (p: number[]): boolean {
+	if (p.length !== 8) return false;
+	const near = (a: number, b: number) => Math.abs(a - b) < 1e-6;
+	const xs: number[] = [], ys: number[] = [];
+	for (let i = 0; i < 8; i += 2) {
+		if (!xs.some((x) => near(x, p[i]))) xs.push(p[i]);
+		if (!ys.some((y) => near(y, p[i + 1]))) ys.push(p[i + 1]);
+	}
+	// (Each side along an axis: neighbouring corners share an x or a y)
+	for (let i = 0; i < 8; i += 2) {
+		const j = (i + 2) % 8;
+		if (!near(p[i], p[j]) && !near(p[i + 1], p[j + 1])) return false;
+	}
+	return xs.length <= 2 && ys.length <= 2;
 }
 
 /** The intersection of two clips (null is no clip). */
