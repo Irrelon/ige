@@ -33,6 +33,8 @@ function anonStyle (parent: IgeUiComputedStyle): IgeUiComputedStyle {
 }
 
 const REPLACED = new Set(["img", "canvas", "input", "svg", "video", "select", "textarea"]);
+/** Form controls on a line by their own baseline (their first), whatever's in them. */
+const FIRST_BASELINE = new Set(["input", "select", "textarea"]);
 /** Where a line may break inside a word: after a hyphen that follows something and comes before a letter (not "2-3"). */
 const HYPHEN_BREAK = /(?<=[^\s-]-)(?=\p{L})/u;
 /** Replaced elements with a natural proportion (kept as their min- and max- sizes bound them). */
@@ -1249,6 +1251,23 @@ export class IgeUiLayoutEngine {
 		b.borderH = 0;
 	}
 
+	/** Its last line's baseline (an inline-block's, on its line): the last in-flow line in it, however deep. */
+	_lastBaseline (b: IgeUiBox): number | undefined {
+		if (b.lines?.length) {
+			const l = b.lines[b.lines.length - 1];
+			return l.y + l.baseline;
+		}
+		// (A flex, grid or table container in it: its own baseline)
+		if (/flex|grid|table/.test(b.display)) return b.baseline ?? this._firstBaseline(b);
+		for (let i = b.children.length - 1; i >= 0; i--) {
+			const c = b.children[i];
+			if (this._outOfFlow(c) || c.display === "text") continue;
+			const cb = this._lastBaseline(c);
+			if (cb !== undefined) return c.y + cb;
+		}
+		return undefined;
+	}
+
 	_firstBaseline (b: IgeUiBox): number | undefined {
 		if (b.lines?.length) return b.lines[0].y + b.lines[0].baseline;
 		for (const c of b.children) {
@@ -1741,7 +1760,11 @@ export class IgeUiLayoutEngine {
 				const mw = a.borderW + a.marginLeft + a.marginRight;
 				if (line.length && wrapOK && x + mw > cw + 0.01) finishLine(false);
 				const v = vfor(a.style);
-				const baseline = a.baseline !== undefined && styleValue(a.style, "overflow-x") === "visible" ? a.baseline : a.borderH;
+				// (An inline-block's baseline is its last line's, as CSS 2.1 and Chrome have it, a button's too (the same as its
+				// first when it has one line); a form control's, an inline flex, grid or table's, its first; one that clips, its
+				// bottom edge)
+				const own = a.display === "inline-block" && !(a.el && !a.pseudo && FIRST_BASELINE.has(a.el.localName)) ? this._lastBaseline(a) : a.baseline;
+				const baseline = own !== undefined && styleValue(a.style, "overflow-x") === "visible" ? own : a.borderH;
 				let above = baseline + a.marginTop, below = a.borderH - baseline + a.marginBottom;
 				if (v.valign === "middle") {
 					const xh = this.metrics(this.font(style)).xHeight;

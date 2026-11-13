@@ -222,6 +222,16 @@ describe("ui2: layout at a phone's sizes, as Chrome's", () => {
 		expect([top(".l"), top(".v"), top(".d"), heights(r, ".g")[0]]).toEqual([0, 3, 16, 23]);
 	});
 
+	it("an inline-block of two lines sits on its last line's baseline, as Chrome has it (an inline flex column on its first)", () => {
+		// (Its last baseline 21px down, past the line's strut (13): its top is the line's top. On its first (9px down) it
+		// sat 4px lower: the casino's table limits, wrapped under the h1, 5.5px lower at a UI scale of 2. A button the same;
+		// an inline flex column on its first item's, 4px down, as in Chrome)
+		const r = ui(`.p { font: 10px sans-serif; line-height: 20px; } .ib { display: inline-block; width: 30px; line-height: 12px; } .fx { display: inline-flex; flex-direction: column; line-height: 12px; }`,
+			`<div class="p"><div class="ib">aaaa aaaa</div></div><div class="p"><button class="ib">aaaa aaaa</button></div><div class="p"><div class="fx"><i>aaaa</i><i>aaaa</i></div></div>`);
+		const tops = r.root.querySelectorAll(".ib, .fx").map((e) => e.getBoundingClientRect().y - e.parentElement!.getBoundingClientRect().y);
+		expect(tops).toEqual([0, 0, 4]);
+	});
+
 	it("aspect-ratio on an absolutely placed ::before gives it its height", () => {
 		const r = ui(`.p { position: relative; width: 400px; height: 300px; } .p::before { content: ""; position: absolute; width: 50%; aspect-ratio: 2; }`, `<div class="p"></div>`);
 		const pb = r.root.querySelector(".p")!._box!.children.find((c) => c.pseudo === "before")!;
