@@ -21,7 +21,7 @@ export const INITIAL: Record<string, string> = {
 	"margin-top": "0px", "margin-right": "0px", "margin-bottom": "0px", "margin-left": "0px", "padding-top": "0px", "padding-right": "0px", "padding-bottom": "0px", "padding-left": "0px",
 	width: "auto", height: "auto", "min-width": "auto", "min-height": "auto", "max-width": "none", "max-height": "none", top: "auto", right: "auto", bottom: "auto", left: "auto",
 	"z-index": "auto", overflow: "visible", "overflow-x": "visible", "overflow-y": "visible", "flex-direction": "row", "flex-wrap": "nowrap", "justify-content": "normal", "align-items": "normal",
-	"align-self": "auto", "align-content": "normal", "flex-grow": "0", "flex-shrink": "1", "flex-basis": "auto", order: "0", "row-gap": "normal", "column-gap": "normal",
+	"align-self": "auto", "justify-self": "auto", "align-content": "normal", "flex-grow": "0", "flex-shrink": "1", "flex-basis": "auto", order: "0", "row-gap": "normal", "column-gap": "normal",
 	transform: "none", "transform-origin": "50% 50%", "box-shadow": "none", "text-shadow": "none", "clip-path": "none", "text-overflow": "clip", "vertical-align": "baseline",
 	"table-layout": "auto", "border-collapse": "separate", "border-spacing": "0px", "grid-template-columns": "none", "grid-template-rows": "none", "grid-column": "auto", "grid-row": "auto",
 	"grid-auto-flow": "row", "justify-items": "normal", "object-fit": "fill", "outline-width": "medium", "outline-style": "none", "outline-color": "currentcolor", "outline-offset": "0px",

@@ -2259,6 +2259,15 @@ export class IgeUiLayoutEngine {
 			rowY.push(yy);
 			yy += rowH[k] + (k < rows - 1 ? rowGap : 0);
 		}
+		// align-content in a grid of known height with room to spare: the rows moved along, or spread out between
+		const alignContent = styleValue(s, "align-content");
+		const spare = innerH !== undefined ? innerH - yy : 0;
+		if (spare > 0.01 && rows && /^(center|end|flex-end|space-between|space-around|space-evenly)$/.test(alignContent)) {
+			const between = alignContent === "space-between" ? (rows > 1 ? spare / (rows - 1) : 0) : alignContent === "space-around" ? spare / rows : alignContent === "space-evenly" ? spare / (rows + 1) : 0;
+			const first = alignContent === "center" ? spare / 2 : alignContent === "end" || alignContent === "flex-end" ? spare : alignContent === "space-around" ? between / 2 : alignContent === "space-evenly" ? between : 0;
+			for (let k = 0; k < rows; k++) rowY[k] += first + between * k;
+			yy += spare;
+		}
 		const alignItems = styleValue(s, "align-items");
 		for (const cell of cells) {
 			const it = cell.box;
