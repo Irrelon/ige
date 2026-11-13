@@ -49,6 +49,8 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 
 		// Set the canvas element id
 		tempCanvas.id = "igeFrontBuffer";
+		// (One of the engine's own on the page: a game watching the page tells it from its own by data-ige)
+		tempCanvas.setAttribute("data-ige", "front-buffer");
 
 		this.canvasElement(tempCanvas, autoSize);
 		document.body.appendChild(tempCanvas);

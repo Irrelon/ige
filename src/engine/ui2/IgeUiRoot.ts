@@ -1554,6 +1554,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		if (!this._textInput) {
 			const input = document.createElement("input");
 			input.setAttribute("aria-hidden", "true");
+			// (The engine's own on the page, marked so a game watching the page can tell: data-ige)
+			input.setAttribute("data-ige", "text-input");
 			input.style.cssText = "position:fixed;left:-1000px;top:0;width:200px;height:20px;opacity:0;pointer-events:none;";
 			document.body.appendChild(input);
 			input.addEventListener("input", () => {

@@ -508,6 +508,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// Create a new canvas element
 		const tempCanvas = document.createElement("canvas");
 		tempCanvas.id = "igeFrontBuffer";
+		// (One of the engine's own on the page: a game watching the page tells it from its own by data-ige)
+		tempCanvas.setAttribute("data-ige", "front-buffer");
 
 		this.canvasElement(tempCanvas, autoSize);
 		document.body.appendChild(tempCanvas);
