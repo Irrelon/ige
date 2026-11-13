@@ -23,9 +23,10 @@
  *   resetTransform, getTransform), save and restore;
  * - globalAlpha, globalCompositeOperation "lighter" (added light),
  *   shadows (a drop shadow round what's drawn; a text shadow on text);
- * - clip: to the path (a rectangle as the painter's own clip; any other
- *   shape, a circle, as a mask the renderer keeps in its stencil, with a
- *   sharp edge), clips in clips keeping to both;
+ * - clip: to the path (a rectangle as the painter's own clip; a circle or
+ *   an ellipse on the axes as a rounded one, smooth, IgeUiRoundClip; any
+ *   other shape as a mask the renderer keeps in its stencil, with a sharp
+ *   edge), clips in clips keeping to both;
  * - drawImage of an engine canvas or image, or a page canvas or image, the
  *   whole picture or part of it (another canvas the engine draws: what's
  *   put on it with putImageData);
@@ -46,6 +47,7 @@ import { gradientColorAt } from "@/engine/ui2/render/IgeUiTextClip";
 import { fontWeight, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 import type { IgeUiHost, IgeUiHostSurface, IgeUiSurface } from "@/engine/ui2/IgeUiHost";
 import { type IgeUiImageData, IgeUiPixelSurface } from "@/engine/ui2/render/IgeUiPixelSurface";
+import { combineRounds, intersectClips, roundThrough, withRound } from "@/engine/ui2/render/IgeUiRoundClip";
 
 type M = [number, number, number, number, number, number];
 type Cap = "butt" | "round" | "square";
@@ -102,6 +104,8 @@ interface Sub {
 	closed: boolean;
 	/** The whole subpath is one full circle (centre and radius in pixels). */
 	circle?: [number, number, number];
+	/** The whole subpath is one full ellipse on the axes, a circle too (centre and radii in pixels): a clip to it is a rounded one. */
+	oval?: [number, number, number, number];
 }
 
 /** A drawn item, in the canvas's pixels; `own` items keep their coordinates in the space their matrix maps from. */
@@ -339,6 +343,7 @@ export class IgeUiCanvas2d {
 		if (!s || s.closed) return this.moveTo(x, y);
 		s.pts.push(...apply(this._state.m, x, y));
 		s.circle = undefined;
+		s.oval = undefined;
 	}
 
 	closePath (): void {
@@ -393,6 +398,10 @@ export class IgeUiCanvas2d {
 		for (let i = 1; i <= n; i++) s.pts.push(...at(start + (sweep * i) / n));
 		// A whole circle on its own (a uniform scale): drawn as a round box
 		s.circle = fresh && full && rx === ry && similar(m) ? [...apply(m, x, y), rx * scaleOf(m)] as [number, number, number] : undefined;
+		// (An ellipse on the axes: a circle, or one turned a quarter at a time under a transform that only moves and scales)
+		const quarter = Math.abs(Math.round(rot / (Math.PI / 2)) * (Math.PI / 2) - rot) < 1e-9, across = Math.round(rot / (Math.PI / 2)) % 2 !== 0;
+		const [ex, ey] = across ? [ry, rx] : [rx, ry];
+		s.oval = !(fresh && full) ? undefined : s.circle ? [s.circle[0], s.circle[1], s.circle[2], s.circle[2]] : quarter && Math.abs(m[1]) < 1e-9 && Math.abs(m[2]) < 1e-9 ? [...apply(m, x, y), ex * Math.abs(m[0]), ey * Math.abs(m[3])] as [number, number, number, number] : undefined;
 	}
 
 	quadraticCurveTo (cx: number, cy: number, x: number, y: number): void {
@@ -656,8 +665,9 @@ export class IgeUiCanvas2d {
 
 	/**
 	 * What's drawn after it (until the state's restored) kept inside the path: to its bounding box as the painter's
-	 * own rectangular clip, and when the path isn't a rectangle on the axes (a circle, a turned square), to its shape
-	 * too, filled by the rule (a mask the renderer keeps in the stencil: IgeUiStencilClip). A clip in a clip keeps to both.
+	 * own rectangular clip; a circle or an ellipse on the axes as a rounded clip too (smooth: IgeUiRoundClip); any other
+	 * shape (a turned square, a star) filled by the rule as a mask the renderer keeps in the stencil (IgeUiStencilClip).
+	 * A clip in a clip keeps to both.
 	 */
 	clip (rule: "nonzero" | "evenodd" | unknown = "nonzero"): void {
 		const subs = this._subs.filter((s) => s.pts.length >= 4);
@@ -672,7 +682,19 @@ export class IgeUiCanvas2d {
 		}
 		if (!subs.length) x0 = y0 = x1 = y1 = 0;
 		const c = this._state.clip;
-		this._state.clip = c ? [Math.max(c[0], x0), Math.max(c[1], y0), Math.min(c[2], x1), Math.min(c[3], y1)] : [x0, y0, x1, y1];
+		const rect: [number, number, number, number] = c ? [Math.max(c[0], x0), Math.max(c[1], y0), Math.min(c[2], x1), Math.min(c[3], y1)] : [x0, y0, x1, y1];
+		// A circle or an ellipse on the axes: a rounded clip, drawn analytically (smooth, as Chrome's: IgeUiRoundClip),
+		// unless it can't be one with a rounded clip already open
+		const oval = subs.length === 1 ? subs[0].oval : undefined;
+		if (oval) {
+			const [cx, cy, rx, ry] = oval;
+			const both = combineRounds(c?.round, { box: [cx - rx, cy - ry, cx + rx, cy + ry], rx: [rx, rx, rx, rx], ry: [ry, ry, ry, ry] });
+			if (both.exact) {
+				this._state.clip = withRound(rect, both.round);
+				return;
+			}
+		}
+		this._state.clip = withRound(rect, c?.round);
 		if (!subs.length || (subs.length === 1 && axisRect(subs[0].pts))) return;
 		const { tris } = fillTriangles(subs.map((s) => ({ points: s.pts, closed: true })), IDENTITY, rule === "evenodd" ? "evenodd" : "nonzero");
 		// (Nothing inside it: nothing drawn, the bounding box's corner)
@@ -710,7 +732,7 @@ export class IgeUiCanvas2d {
 		const shadow = this._shadow();
 		const at = own ? [lx, by] : apply(s.m, lx, by);
 		this._push({
-			op: "text", text, x: at[0], y: at[1], w: w * k, font: { ...font, size: font.size * k }, letterSpacing: 0, color, opacity: s.alpha, clip: own ? null : s.clip,
+			op: "text", text, x: at[0], y: at[1], w: w * k, font: { ...font, size: font.size * k }, letterSpacing: 0, color, opacity: s.alpha, clip: s.clip,
 			shadow: halo !== undefined ? { x: 0, y: 0, blur: halo * k, color } : shadow && { x: shadow.x, y: shadow.y, blur: shadow.blur, color: shadow.color },
 			matrix: own ? [...s.m] : undefined, additive: s.composite === "lighter" || undefined
 		}, own);
@@ -747,7 +769,7 @@ export class IgeUiCanvas2d {
 		const [ax, ay] = own ? [dx, dy] : apply(s.m, dx, dy);
 		const k = own ? [1, 1] : [s.m[0], s.m[3]];
 		this._shadowed(() => this._push({
-			op: "image", x: ax, y: ay, w: dw * k[0], h: dh * k[1], source: src.el, opacity: s.alpha, clip: own ? null : s.clip, pixelated: !s.smoothing,
+			op: "image", x: ax, y: ay, w: dw * k[0], h: dh * k[1], source: src.el, opacity: s.alpha, clip: s.clip, pixelated: !s.smoothing,
 			matrix: own ? [...s.m] : undefined, additive: s.composite === "lighter" || undefined, uv
 		}, own));
 	}
@@ -815,7 +837,7 @@ export class IgeUiCanvas2d {
 		const map: M = [sx, 0, 0, sy, x, y];
 		const bounds: IgeUiClip = [x, y, x + w, y + h];
 		const within = (c: IgeUiClip): IgeUiClip => {
-			const own: IgeUiClip = c ? [c[0] * sx + x, c[1] * sy + y, c[2] * sx + x, c[3] * sy + y] : bounds;
+			const own: IgeUiClip = c ? withRound([c[0] * sx + x, c[1] * sy + y, c[2] * sx + x, c[3] * sy + y], roundThrough(c.round, map)) : bounds;
 			return meet(meet(own, bounds), clip);
 		};
 		const X = (v: number) => v * sx + x, Y = (v: number) => v * sy + y;
@@ -824,7 +846,11 @@ export class IgeUiCanvas2d {
 		const masks: number[][] = [];
 		for (const { item, own } of this._drawn) {
 			if (own) {
-				items.push({ ...item, opacity: item.opacity * opacity, matrix: multiply(matrix ?? IDENTITY, multiply(map, item.matrix ?? IDENTITY)), clip: null } as IgeUiPaintItem);
+				// (Its clip, the canvas's and the element's, in the element's pixels: taken to the screen by the element's matrix,
+				// not its own turned one)
+				const c = within(item.clip);
+				if (c) c.space = matrix ?? IDENTITY;
+				items.push({ ...item, opacity: item.opacity * opacity, matrix: multiply(matrix ?? IDENTITY, multiply(map, item.matrix ?? IDENTITY)), clip: c } as IgeUiPaintItem);
 				continue;
 			}
 			const base = { opacity: item.opacity * opacity, matrix, clip: within(item.clip) };
@@ -876,9 +902,7 @@ function axisRect (p: number[]): boolean {
 
 /** The intersection of two clips (null is no clip). */
 function meet (a: IgeUiClip, b: IgeUiClip): IgeUiClip {
-	if (!a) return b;
-	if (!b) return a;
-	return [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.min(a[2], b[2]), Math.min(a[3], b[3])];
+	return intersectClips(a, b);
 }
 
 /** An item's bounds (pixels), for clearRect; undefined when it hasn't simple ones. */

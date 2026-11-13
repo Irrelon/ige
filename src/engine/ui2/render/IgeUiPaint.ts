@@ -23,8 +23,10 @@ import { enter3d, invert3, needs3d, perspectiveOf, planeDepth, project } from "@
 import { fillTriangles, paintSvg } from "@/engine/ui2/render/IgeUiSvg";
 import { paintTextDecorations, textDecorations } from "@/engine/ui2/render/IgeUiTextDecoration";
 import { clipsToText, paintTextInBackground } from "@/engine/ui2/render/IgeUiTextClip";
+import { type IgeUiClipRect, intersectClips, roundThrough, withRound } from "@/engine/ui2/render/IgeUiRoundClip";
 
-export type IgeUiClip = [number, number, number, number] | null;
+/** A clip rectangle (x0, y0, x1, y1), with its rounded corners when it has them (IgeUiRoundClip), or none. */
+export type IgeUiClip = IgeUiClipRect | null;
 
 export interface IgeUiPaintBase {
 	/** The clip rectangle it's drawn in (x0, y0, x1, y1, UI px), or none. */
@@ -188,10 +190,9 @@ function objectPosition (v: string, roomX: number, roomY: number, ctx: ReturnTyp
 	return [one(parts[0], roomX), one(parts[1], roomY)];
 }
 
+/** What's inside both clips (their rounded corners combined: IgeUiRoundClip). */
 function intersect (a: IgeUiClip, b: IgeUiClip): IgeUiClip {
-	if (!a) return b;
-	if (!b) return a;
-	return [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.min(a[2], b[2]), Math.min(a[3], b[3])];
+	return intersectClips(a, b);
 }
 
 /** Turns a box tree into a display list. */
@@ -462,7 +463,10 @@ export class IgeUiPainter {
 						return [(local[3] * px - local[2] * py) / det, (-local[1] * px + local[0] * py) / det];
 					};
 					const [x0, y0] = inv(ctx.clip[0], ctx.clip[1]), [x1, y1] = inv(ctx.clip[2], ctx.clip[3]);
-					return { ctx: { clip: [Math.min(x0, x1), Math.min(y0, y1), Math.max(x0, x1), Math.max(y0, y1)], dx: ctx.dx, dy: ctx.dy, opacity: ctx.opacity * op, matrix, persp } };
+					// (Its rounded corners too, through a move or a scale; a turn keeps the rectangle round them only)
+					const round = roundThrough(ctx.clip.round, [1 / local[0], 0, 0, 1 / local[3], -local[4] / local[0], -local[5] / local[3]]);
+					const clip = withRound([Math.min(x0, x1), Math.min(y0, y1), Math.max(x0, x1), Math.max(y0, y1)], Math.abs(local[1]) < 1e-9 && Math.abs(local[2]) < 1e-9 ? round : undefined);
+					return { ctx: { clip, dx: ctx.dx, dy: ctx.dy, opacity: ctx.opacity * op, matrix, persp } };
 				}
 			}
 		}
@@ -543,6 +547,14 @@ export class IgeUiPainter {
 			// (Its scrollbars aren't under what's in it: the content's cut at them, as a browser's is)
 			const sw = b.scrollbarY ?? 0, sh = b.scrollbarX ?? 0;
 			const c: IgeUiClip = [ox !== "visible" ? x : -1e6, oy !== "visible" ? y : -1e6, ox !== "visible" ? x + w - sw : 1e6, oy !== "visible" ? y + h - sh : 1e6];
+			// Rounded (border-radius): the padding box's corners, its radii less the borders, what's in it cut to that shape
+			// as well as to the rectangle short of the scrollbars (Chrome draws them inside the curve)
+			if (ox !== "visible" && oy !== "visible") {
+				const [rx, ry] = this._corners(b);
+				const bx = [b.borderLeft, b.borderRight, b.borderRight, b.borderLeft], by = [b.borderTop, b.borderTop, b.borderBottom, b.borderBottom];
+				const irx = rx.map((v, i) => Math.max(0, v - bx[i])) as [number, number, number, number], iry = ry.map((v, i) => Math.max(0, v - by[i])) as [number, number, number, number];
+				withRound(c, { box: [x, y, x + w, y + h], rx: irx, ry: iry });
+			}
 			clip = intersect(clip, c);
 			if (b.el && !b.pseudo) {
 				const [sl, st] = this._scroll(b.el);

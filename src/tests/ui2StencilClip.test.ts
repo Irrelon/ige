@@ -31,12 +31,21 @@ function fakeGl () {
 	return { gl: gl as unknown as WebGL2RenderingContext, calls };
 }
 
+/** A diamond round (x, y), `r` to each point: a shape that's no rectangle or ellipse, so a clip to it is a mask. */
+function diamond (c: IgeUiCanvas2d, x: number, y: number, r: number): void {
+	c.moveTo(x - r, y);
+	c.lineTo(x, y - r);
+	c.lineTo(x + r, y);
+	c.lineTo(x, y + r);
+	c.closePath();
+}
+
 describe("ui2: clips of any shape", () => {
-	it("a 2D canvas's clip to a circle: its shape as a mask round what's drawn until it's restored, the bounding box the rectangle clip", () => {
+	it("a 2D canvas's clip to a shape: a mask round what's drawn until it's restored, the bounding box the rectangle clip", () => {
 		const { c, paint } = canvas();
 		c.save();
 		c.beginPath();
-		c.arc(50, 50, 40, 0, Math.PI * 2);
+		diamond(c, 50, 50, 40);
 		c.clip();
 		c.fillStyle = "#f00";
 		c.fillRect(0, 0, 100, 100);
@@ -45,13 +54,13 @@ describe("ui2: clips of any shape", () => {
 		const items = paint(200, 200);
 		expect(items.map((i) => (i.op === "group" ? `${i.open ? "open" : "close"} ${i.mask ? "mask" : ""}` : i.op))).toEqual(["open mask", "box", "close mask", "box"]);
 		const open = items[0] as Group;
-		// (Shown at twice the size: its triangles inside the circle there, round its middle)
+		// (Shown at twice the size: its triangles inside the diamond there, all of it)
 		const tris = open.mask!;
 		expect(tris.length % 6).toBe(0);
-		for (let i = 0; i < tris.length; i += 2) expect(Math.hypot(tris[i] - 100, tris[i + 1] - 100)).toBeLessThan(80.01);
+		for (let i = 0; i < tris.length; i += 2) expect(Math.abs(tris[i] - 100) + Math.abs(tris[i + 1] - 100)).toBeLessThan(80.01);
 		let area = 0;
 		for (let i = 0; i < tris.length; i += 6) area += Math.abs((tris[i + 2] - tris[i]) * (tris[i + 5] - tris[i + 1]) - (tris[i + 4] - tris[i]) * (tris[i + 3] - tris[i + 1])) / 2;
-		expect(area).toBeGreaterThan(Math.PI * 80 * 80 * 0.99);
+		expect(area).toBeCloseTo(2 * 80 * 80);
 		expect((items[2] as Group).mask).toEqual(tris);
 		expect(items[1].clip).toEqual([20, 20, 180, 180]);
 		expect(items[3].clip).toEqual([0, 0, 200, 200]);
@@ -77,10 +86,10 @@ describe("ui2: clips of any shape", () => {
 	it("clips in clips close innermost first as their state's restored; one left open is closed at the end, and kept open over a clear", () => {
 		const { c, paint } = canvas();
 		c.save();
-		c.arc(50, 50, 40, 0, Math.PI * 2);
+		diamond(c, 50, 50, 40);
 		c.clip();
 		c.beginPath();
-		c.arc(60, 50, 30, 0, Math.PI * 2);
+		diamond(c, 60, 50, 30);
 		c.clip();
 		c.fillRect(0, 0, 100, 100);
 		c.restore();
@@ -92,13 +101,26 @@ describe("ui2: clips of any shape", () => {
 		expect(inner[3].mask).toEqual(inner[0].mask);
 		// (Not restored: closed at the end of what's painted, and still open after the canvas is cleared)
 		const k = canvas();
-		k.c.arc(50, 50, 40, 0, Math.PI * 2);
+		diamond(k.c, 50, 50, 40);
 		k.c.clip();
 		k.c.fillRect(0, 0, 100, 100);
 		expect(k.paint().map((i) => (i.op === "group" ? (i.open ? "+" : "-") : i.op))).toEqual(["+", "box", "-"]);
 		k.c.clearRect(0, 0, 100, 100);
 		k.c.fillRect(0, 0, 100, 100);
 		expect(k.paint().map((i) => (i.op === "group" ? (i.open ? "+" : "-") : i.op))).toEqual(["+", "box", "-"]);
+	});
+
+	it("a circle in a circle that can't be one rounded clip with it is a mask (the first stays rounded)", () => {
+		const { c, paint } = canvas();
+		c.arc(50, 50, 40, 0, Math.PI * 2);
+		c.clip();
+		c.beginPath();
+		c.arc(70, 50, 30, 0, Math.PI * 2);
+		c.clip();
+		c.fillRect(0, 0, 100, 100);
+		const items = paint();
+		expect(items.map((i) => (i.op === "group" ? (i.open ? "+" : "-") : i.op))).toEqual(["+", "box", "-"]);
+		expect(items[1].clip!.round!.box).toEqual([10, 10, 90, 90]);
 	});
 
 	it("fills by the evenodd rule: a ring of two circles is empty in the middle", () => {

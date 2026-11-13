@@ -15,6 +15,7 @@ import { IgeUiFilterPass, type IgeUiFilterLayer, layerRegion } from "@/engine/ui
 import { glowKey, glowRegion, type IgeUiTextGlow, IgeUiTextGlowCache } from "@/engine/ui2/render/IgeUiTextGlow";
 import type { IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 import { IgeUiStencilClip, type IgeUiStencilStep, stencilTriangles } from "@/engine/ui2/render/IgeUiStencilClip";
+import { NO_ROUND, packRound, roundThrough } from "@/engine/ui2/render/IgeUiRoundClip";
 import { type IgeUiSdfAtlas, PAGE, SDF_EDGE, SDF_RADIUS, SDF_SIZE } from "@/engine/ui2/text/IgeUiSdfAtlas";
 
 const VS = `#version 300 es
@@ -32,6 +33,8 @@ layout(location=10) in vec4 a_m1;
 layout(location=11) in vec4 a_grad;
 layout(location=12) in vec4 a_persp;
 layout(location=13) in vec4 a_radiiY;
+layout(location=14) in vec4 a_rclip;
+layout(location=15) in vec4 a_rradii;
 uniform vec2 u_resolution;
 uniform float u_scale;
 uniform vec2 u_offset;
@@ -49,6 +52,8 @@ flat out vec4 v_m1;
 flat out vec4 v_grad;
 flat out vec4 v_persp;
 flat out vec4 v_radiiY;
+flat out vec4 v_rclip;
+flat out vec4 v_rradii;
 void main() {
 	vec2 p = a_rect.xy + a_corner * a_rect.zw;
 	v_local = p;
@@ -60,6 +65,7 @@ void main() {
 	v_screen = t;
 	v_tex = mix(a_uv.xy, a_uv.zw, a_corner);
 	v_shape = a_shape; v_radii = a_radii; v_color = a_color; v_params = a_params; v_uv = a_uv; v_chamfer = a_chamfer; v_clip = a_clip; v_m1 = a_m1; v_grad = a_grad; v_persp = a_persp; v_radiiY = a_radiiY;
+	v_rclip = a_rclip; v_rradii = a_rradii;
 	vec2 d = t * u_scale + u_offset;
 	gl_Position = vec4((d.x / u_resolution.x * 2.0 - 1.0) * w, (1.0 - d.y / u_resolution.y * 2.0) * w, 0.0, w);
 }`;
@@ -81,6 +87,10 @@ flat in vec4 v_m1;
 flat in vec4 v_grad;
 flat in vec4 v_persp;
 flat in vec4 v_radiiY;
+/** A clip's rounded corners (IgeUiRoundClip): its box on the screen (x0, y0, x1, y1, UI px; none when x1 < x0) and each
+ * corner's radii, 12 bits across and 12 down, parts of the box's width and height. */
+flat in vec4 v_rclip;
+flat in vec4 v_rradii;
 uniform float u_scale;
 uniform vec2 u_resolution;
 uniform vec2 u_offset;
@@ -286,6 +296,15 @@ void main() {
 		// (A backdrop's mask-image: its gradient's alpha)
 		if (v_grad.x >= 0.0) a *= maskAlpha(v_local);
 	}
+	// Inside a rounded clip: faded over a pixel at its curve, as Chrome smooths it (IgeUiRoundClip)
+	if (v_rclip.z >= v_rclip.x) {
+		vec2 size = v_rclip.zw - v_rclip.xy;
+		vec4 ry = floor(v_rradii / 4096.0);
+		vec4 rx = (v_rradii - ry * 4096.0) / 4095.0 * size.x;
+		ry = ry / 4095.0 * size.y;
+		float d = shape(scr, vec4(v_rclip.xy, size), rx, ry, vec4(0.0));
+		a *= clamp(0.5 - d * u_scale, 0.0, 1.0);
+	}
 	a *= v_m1.z;
 	if (a <= 0.002) discard;
 	outColor = col * a;
@@ -304,8 +323,11 @@ function clipThrough (c: readonly number[], m: IgeCssMatrix): number[] {
 	return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
 }
 
-/** Floats per instance: 13 vec4s. */
-const STRIDE = 52;
+/**
+ * Floats per instance: 15 vec4s, the last two a rounded clip's (IgeUiRoundClip: offsets 52 to 59). With the quad's
+ * corner that's 16 attributes, WebGL 2's least: anything more must be packed into these.
+ */
+const STRIDE = 60;
 /** Instanced attributes (a vec4 each). */
 const ATTRIBS = STRIDE / 4;
 
@@ -734,6 +756,8 @@ export class IgeUiGlRenderer {
 			return n++ * STRIDE;
 		};
 		const NONE: [number, number, number, number] = [-1e7, -1e7, 1e7, 1e7];
+		/** The item being written's rounded clip (IgeUiRoundClip), as instance data. */
+		let rnd: number[] = NO_ROUND;
 		const write = (o: number, rect: number[], shape: number[], radii: number[], color: IgeCssColor | number[], params: number[], uv: number[], cut: number[], clip: number[], matrix: IgeCssMatrix | undefined, opacity: number, layer: number, grad: number[], radiiY?: number[]) => {
 			const d = this._data;
 			d.set(rect, o);
@@ -765,6 +789,8 @@ export class IgeUiGlRenderer {
 			if (pm.length > 6) d.set([pm[6], pm[7], pm[8], 1], o + 44);
 			else d.set(FLAT, o + 44);
 			d.set(radiiY ?? radii, o + 48);
+			// (The item's rounded clip, or none)
+			d.set(rnd, o + 52);
 		};
 		const FLAT = [0, 0, 1, 0];
 		const Z4 = [0, 0, 0, 0];
@@ -775,7 +801,11 @@ export class IgeUiGlRenderer {
 		const layers: IgeUiFilterLayer[] = [], openLayers: IgeUiFilterLayer[] = [], openKinds: ("layer" | "shadow")[] = [];
 		for (const it of items) {
 			// (The painter's clips are in the item's own pixels: through its transform to the screen's, as a box)
-			const clip = it.clip ? (it.matrix ? clipThrough(it.clip, it.matrix) : it.clip) : NONE;
+			// (Or in the pixels its `space` takes to the screen: an item turned in an engine canvas, IgeUiRoundClip)
+			const cm = it.clip?.space ?? it.matrix;
+			const clip = it.clip ? (cm ? clipThrough(it.clip, cm) : it.clip) : NONE;
+			// (Its rounded corners on the screen likewise, through a move or a scale; turned, the box round them only)
+			rnd = it.clip?.round ? packRound(roundThrough(it.clip.round, cm)) : NO_ROUND;
 			const additive = !!it.additive;
 			if (it.op === "group") {
 				// A clip of any shape (IgeUiStencilClip): a step of its own between the batches, its shape marked in the stencil
@@ -1285,7 +1315,9 @@ export class IgeUiGlRenderer {
 		}
 		for (const b of batches) {
 			if (b.stencil) {
-				// A clip of any shape opening or closing: its shape marked in the stencil (or taken back), then on as before
+				// A clip of any shape opening or closing: its shape marked in the stencil (or taken back), then on as before;
+				// not the target's when it's in a layer
+				if (b.owner) continue;
 				this._stencil.apply(gl, b.stencil, width, height, scale, offset);
 				gl.useProgram(this._program);
 				gl.bindVertexArray(this._vao);
