@@ -30,6 +30,7 @@ import { IgeUiGlRenderer } from "@/engine/ui2/render/IgeUiGlRenderer";
 import { type IgeUiPaintItem, IgeUiPainter } from "@/engine/ui2/render/IgeUiPaint";
 import { projectedBox } from "@/engine/ui2/render/IgeUiPerspective";
 import { type IgeUiPress, pressChain, pressClicks, pressMoved, touchScroller } from "@/engine/ui2/input/IgeUiPointers";
+import { adjustTap, IgeUiRangeInput, touchRadius } from "@/engine/ui2/input/IgeUiTap";
 import { IgeUiAnimator, LAYOUT_PROPS } from "@/engine/ui2/style/IgeUiAnimator";
 import { cssNumber, serializeComputed } from "@/engine/ui2/style/IgeUiComputed";
 import { INHERITED } from "@/engine/ui2/style/IgeUiProperties";
@@ -192,6 +193,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_keyboardModality: boolean | undefined = undefined;
 	/** HTML drag and drop from the pointer (draggable="true"). */
 	readonly drag: IgeUiDragDrop = new IgeUiDragDrop(this);
+	/** Range inputs taking the pointer and the arrow keys (input/IgeUiTap.ts). */
+	readonly range = new IgeUiRangeInput();
 	/** Time spent in each stage last frame (ms), and counts, for the stats overlay and tests. */
 	stats = { style: 0, layout: 0, paint: 0, draw: 0, elements: 0, items: 0, drawCalls: 0, partial: 0, adopted: 0, kept: 0, partialPaint: 0 };
 	/** Events the game shouldn't see (the UI took them): set as each is handled. */
@@ -1455,8 +1458,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				this._setHover(t, e);
 			}
 			if (d) pressMoved(d, e.clientX, e.clientY);
-			// (A mouse held down in a field's text: the selection follows it)
+			// (A mouse held down in a field's text: the selection follows it; a range input's value, the pointer)
 			if (d && this._caretDrag?.id === id) this._dragCaret(e);
+			if (d) this.range.move(id, e.clientX);
 			if (d?.pointerType === "touch" && d.scroller) {
 				// A touch drag scrolls the box it started in
 				const dy = e.clientY - (d.lastY ?? d.y);
@@ -1502,7 +1506,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			d.compat = primary && !ev.defaultPrevented;
 			const md = d.compat && !touch ? this._event("mousedown", e) : undefined;
 			if (md) t.dispatchEvent(md);
-			if (!ev.defaultPrevented) this.drag.down(t, e);
+			if (!ev.defaultPrevented) {
+				this.drag.down(t, e);
+				// (A range input takes the pointer: input/IgeUiTap.ts)
+				this.range.down(t, e);
+			}
 			if (md && !md.defaultPrevented) {
 				this._pressFocus(t);
 				this._pressCaret(t, e, id);
@@ -1516,6 +1524,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			const d = this._presses.get(id);
 			this._presses.delete(id);
 			if (this._caretDrag?.id === id) this._caretDrag = undefined;
+			this.range.up(id);
 			this._unpress(d);
 			if (d?.dragging && d.scroller) {
 				// Momentum
@@ -1527,25 +1536,32 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			if (!target) return;
 			target.dispatchEvent(this._event(type, e));
 			const tap = type === "pointerup" && !!d && !!t && primary && pressClicks(d);
+			// A finger's tap off anything that takes one goes to the nearest thing that does within its reach, as a
+			// browser adjusts a tap (its mouse events, focus and click; the pointer events stay where the finger was)
+			const adj = touch && tap ? adjustTap(this, t, e.clientX, e.clientY, touchRadius(e)) : undefined;
+			const at = adj ? { clientX: adj.x, clientY: adj.y } : {};
 			if (touch) {
 				// A finger's tap: the mouse's own press and lift now, and the focus a press gives
 				if (tap && d!.compat) {
-					const md = this._event("mousedown", e);
-					t!.dispatchEvent(md);
+					const tt = adj?.el ?? t!;
+					const md = this._event("mousedown", e, at);
+					tt.dispatchEvent(md);
 					if (!md.defaultPrevented) {
-						this._pressFocus(t!);
-						this._pressCaret(t!, e);
+						this._pressFocus(tt);
+						this._pressCaret(tt, e);
+						// (A range input beside the finger: its value where the tap was moved to)
+						if (adj) this.range.tap(adj.el, adj.x);
 					}
-					t!.dispatchEvent(this._event("mouseup", e));
+					tt.dispatchEvent(this._event("mouseup", e, at));
 				}
 			} else if (primary && (d ? d.compat : true)) target.dispatchEvent(this._event("mouseup", e));
 			if (tap && d && t) {
-				// A click on what was pressed and released (their nearest common ancestor)
-				let common: IgeUiElement | null = t;
-				while (common && !common.contains(d.el)) common = common.parentNode;
+				// A click on what was pressed and released (their nearest common ancestor); an adjusted tap's, where it went
+				let common: IgeUiElement | null = adj?.el ?? t;
+				while (!adj && common && !common.contains(d.el)) common = common.parentNode;
 				if (common && !(e.button === 2)) {
 					const disabled = common.closest("button:disabled, input:disabled");
-					if (!disabled) common.dispatchEvent(this._event("click", e, { detail: 1 }));
+					if (!disabled) common.dispatchEvent(this._event("click", e, { detail: 1, ...at }));
 				}
 				// (A field tapped: its hidden input focused again as the finger lifts, where a phone shows its keyboard for
 				// a focus that comes with the tap (iOS doesn't for one made as it's pressed))
@@ -1677,8 +1693,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		if (!a) return;
 		const ev = new IgeUiEvent(type, { bubbles: true, cancelable: true, key: e.key, code: e.code, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey, repeat: e.repeat });
 		a.dispatchEvent(ev);
-		// (What the focused element took (its handler cancelled it) is cancelled)
+		// (What the focused element took (its handler cancelled it) is cancelled; else a range input's keys step it)
 		if (ev.defaultPrevented) e.preventDefault();
+		else if (type === "keydown" && this.range.key(a, e.key)) e.preventDefault();
 		// A text field's keys aren't kept from the page: they reach the window's listeners as a browser's do, aimed at
 		// the field (the host's text input stands in for it: IgeUiWebHost), and a game's own handlers leave keys aimed
 		// at a field alone. Another form control's (a slider, a checkbox) are: nothing on the page stands in for it, so
