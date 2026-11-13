@@ -575,7 +575,10 @@ export class IgeUiLayoutEngine {
 		if (specW !== undefined) s = { min: specW, max: specW };
 		else if (b.el && REPLACED.has(b.el.localName) && !b.pseudo) {
 			const w = this._replacedSize(b).w + edges;
-			s = { min: w, max: w };
+			// (A percentage width or max-width: it can shrink to nothing, so its min-content is none (CSS Sizing 5.2.2): a
+			// canvas at width: 100% doesn't hold its box open to the canvas's own width)
+			const pct = styleValue(b.style, "width").includes("%") || styleValue(b.style, "max-width").includes("%");
+			s = { min: pct ? edges : w, max: w };
 		} else if (b.display === "text") {
 			s = this._inlineIntrinsic([b], b.parent?.style ?? b.style);
 		} else {
@@ -1177,7 +1180,7 @@ export class IgeUiLayoutEngine {
 		// child's top margin and its last child's bottom margin collapse with its own, as a browser's do
 		const through = this._collapsesThrough(b);
 		const topOpen = through && b.borderTop === 0 && b.paddingTop === 0;
-		const bottomOpen = through && b.borderBottom === 0 && b.paddingBottom === 0 && innerH === undefined && !(this.len(b.style, "min-height") ?? 0);
+		const bottomOpen = through && b.borderBottom === 0 && b.paddingBottom === 0 && innerH === undefined;
 		let first = true;
 		let lastBlock = false;
 		for (const c of groups) {
@@ -1224,7 +1227,9 @@ export class IgeUiLayoutEngine {
 			this._applyRelative(c, cw, innerH);
 		}
 		// (The last child's bottom margin likewise: this box ends at its border)
-		if (bottomOpen && lastBlock && prevMB !== undefined) {
+		// (Unless a min-height holds it taller than what's in it, as Chrome has it)
+		const minH = (this.len(b.style, "min-height") ?? 0) - (this._borderBox(b) ? this._vEdges(b) : 0);
+		if (bottomOpen && lastBlock && prevMB !== undefined && minH <= y - contentTop(b) + 0.01) {
 			b.marginBottom = collapse(b.marginBottom, prevMB);
 			return y - contentTop(b);
 		}

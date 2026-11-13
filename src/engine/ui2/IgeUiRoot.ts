@@ -170,8 +170,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_now = 0;
 	/**
 	 * The last thing the user did: a key (true), a press of the pointer (false), or nothing yet (undefined). Focus moved
-	 * by a script shows its ring after a key, or before anything's been done while the page has the system's focus, as
-	 * Chrome's does (an unfocused window shows no focus at all).
+	 * by a script shows its ring after a key or before anything's been done, as Chrome's does.
 	 */
 	_keyboardModality: boolean | undefined = undefined;
 	/** HTML drag and drop from the pointer (draggable="true"). */
@@ -496,17 +495,42 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		this.document.activeElement = el;
 		if (el) {
-			el._states.add("focus");
-			// (Ring or not: as asked; else a browser's way: after a key, or for a field you type in)
+			// (Ring or not: as asked; else a browser's way: after a key or before anything's been done, or for a field you type in)
 			const typing = (el.localName === "input" && !["button", "submit", "reset", "checkbox", "radio", "range", "color", "file", "image"].includes(el.getAttribute("type") ?? "text")) || el.localName === "textarea";
-			const keyboard = this._keyboardModality ?? (typeof document !== "undefined" && typeof document.hasFocus === "function" && document.hasFocus());
-			if (opts?.focusVisible ?? (keyboard || typing)) el._states.add("focus-visible");
+			this._focusRing = opts?.focusVisible ?? ((this._keyboardModality ?? true) || typing);
+			// (Shown while the page has the system's focus: a browser's window without it shows no focus at all)
+			this._pageFocused = pageHasFocus();
+			if (this._pageFocused) {
+				el._states.add("focus");
+				if (this._focusRing) el._states.add("focus-visible");
+			}
 			this.changed(el, "state");
 			el.dispatchEvent(new IgeUiEvent("focus"));
 			el.dispatchEvent(new IgeUiEvent("focusin", { bubbles: true }));
 			if (!opts?.preventScroll) this.scrollIntoView(el, "nearest");
 		}
 		this._syncTextInput();
+	}
+
+	/** Whether the focused element's ring shows (while the page has the system's focus), and whether the page had it. */
+	_focusRing = false;
+	_pageFocused = true;
+
+	/** The page gained or lost the system's focus: the focused element's :focus (and ring) shown or taken away, as a browser's are. */
+	_pageFocus (): void {
+		const now = pageHasFocus();
+		if (now === this._pageFocused) return;
+		this._pageFocused = now;
+		const a = this.document.activeElement;
+		if (!a) return;
+		if (now) {
+			a._states.add("focus");
+			if (this._focusRing) a._states.add("focus-visible");
+		} else {
+			a._states.delete("focus");
+			a._states.delete("focus-visible");
+		}
+		this.changed(a, "state");
 	}
 
 	/**
@@ -658,6 +682,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** The frame's work: animations, styles, layout, the display list. */
 	update (now: number = typeof performance !== "undefined" ? performance.now() : Date.now()): void {
 		this._now = now;
+		this._pageFocus();
 		this._animate(now);
 		this._restyle();
 		const laidOut = this._layoutDirty;
@@ -1515,6 +1540,11 @@ function sameStyle (a: IgeUiComputedStyle | undefined, b: IgeUiComputedStyle | u
 	}
 	for (const _k in b) n--;
 	return n === 0;
+}
+
+/** Whether the page has the system's focus (always, with no page: tests). */
+function pageHasFocus (): boolean {
+	return typeof document === "undefined" || typeof document.hasFocus !== "function" || document.hasFocus();
 }
 
 /** Inline-level displays and what they become for a flex or grid item, or a box out of the flow. */

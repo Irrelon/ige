@@ -392,3 +392,39 @@ describe("ui2: settling after a redraw under the pointer", () => {
 		expect(r.document.defaultView!.getComputedStyle(r.root.querySelector(".b")!).backgroundColor).toBe("rgb(255, 0, 0)");
 	});
 });
+
+describe("ui2: focus while the page hasn't the system's focus", () => {
+	it("shows none (as a browser's unfocused window), and comes back with its ring when the page is focused", () => {
+		let focused = false;
+		const g = globalThis as unknown as { document?: unknown };
+		g.document = { hasFocus: () => focused };
+		try {
+			const r = ui(`button:focus { color: red; } button:focus-visible { outline: 2px solid; }`, 400, 300);
+			r.root.innerHTML = `<button>a</button>`;
+			const b = r.root.querySelector("button")!;
+			r.update(0);
+			r.focus(b);
+			r.update(16);
+			expect(r.document.activeElement).toBe(b);
+			expect([b.matches(":focus"), b._computed!.color === "red"]).toEqual([false, false]);
+			focused = true;
+			r.update(32);
+			r.update(48);
+			expect([b.matches(":focus"), b.matches(":focus-visible"), b._computed!.color]).toEqual([true, true, "red"]);
+		} finally {
+			delete g.document;
+		}
+	});
+});
+
+describe("ui2: content sizes of replaced elements and margins through a min-height", () => {
+	it("a canvas at width: 100% doesn't hold a flex item open to its own width; a last child's margin collapses through a min-height that doesn't hold", () => {
+		const r = ui(`.row { display: flex; } .chart { flex: 0 0 216px; height: 216px; } canvas { display: block; width: 100%; height: 100%; } .body { min-height: 20px; } .body p { margin: 0 0 6px; height: 30px; } .next { margin-top: 8px; height: 5px; }`, 800, 600);
+		r.root.innerHTML = `<div class="row"><div class="chart"><canvas width="360" height="360"></canvas></div><div>text</div></div><div class="body"><p></p><p></p></div><div class="next"></div>`;
+		r.update(0);
+		expect(r.root.querySelector(".chart")!.getBoundingClientRect().width).toBe(216);
+		const body = r.root.querySelector(".body")!.getBoundingClientRect();
+		expect(body.height).toBe(66);
+		expect(r.root.querySelector(".next")!.getBoundingClientRect().top).toBe(body.top + 66 + 8);
+	});
+});
