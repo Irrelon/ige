@@ -1473,8 +1473,10 @@ export class IgeUiLayoutEngine {
 					let target: number;
 					if (growing) target = f.base + (sumGrow > 0 ? (free * f.grow) / sumGrow : 0);
 					else {
-						const scaled = unfrozen.reduce((a, g) => a + g.shrink * g.base, 0);
-						target = f.base + (scaled > 0 ? (free * f.shrink * f.base) / scaled : 0);
+						// (Shrinking is shared by the items' inner sizes, their padding and borders left out: CSS Flexbox 9.7)
+						const inner = (g: F) => Math.max(0, g.base - (row ? this._hEdges(g.box) : this._vEdges(g.box)));
+						const scaled = unfrozen.reduce((a, g) => a + g.shrink * inner(g), 0);
+						target = f.base + (scaled > 0 ? (free * f.shrink * inner(f)) / scaled : 0);
 					}
 					const clamped = Math.max(f.min, Math.min(f.max, target));
 					violation += clamped - target;

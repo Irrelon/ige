@@ -121,6 +121,14 @@ describe("ui2: layout", () => {
 		expect(c[2]).toBe(200);
 	});
 
+	it("flex: items shrink in proportion to their inner sizes (padding and borders don't count)", () => {
+		const r = ui(`.f { display: flex; width: 300px; } .f > div { min-width: 0; } .a { width: 300px; } .b { width: 100px; padding: 0 50px; box-sizing: border-box; }`, 400, 300);
+		r.root.innerHTML = `<div class="f"><div class="a"></div><div class="b"></div></div>`;
+		const [a, b] = r.root.querySelector(".f")!.children.map((e) => box(e)[2]);
+		// (400 to fit into 300: the inner sizes are 300 and 0, so the padded one doesn't shrink)
+		expect([a, b]).toEqual([200, 100]);
+	});
+
 	it("inline text: a nowrap element that doesn't fit goes to the next line at the space before it", () => {
 		const r = ui(`.w { width: 100px; } small { white-space: nowrap; }`, 400, 300);
 		r.root.innerHTML = `<div class="w"><s>3,600</s> <small>HIGH SECURITY PRICE</small></div>`;
