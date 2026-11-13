@@ -27,6 +27,18 @@ export const MESH_ATTRIBUTES: Readonly<Record<string, number>> = {
 	a_instanceMaterial: 13
 };
 
+/** Where the effect shaders' vertex inputs are (particles and decals: the shared quad, then an instance's). */
+export const EFFECT_ATTRIBUTES: Readonly<Record<string, number>> = {
+	a_position: 0,
+	a_uv: 2,
+	a_color: 3,
+	a_particle: 7,
+	a_particleColor: 8,
+	a_decal: 7,
+	a_decalColor: 8,
+	a_decalShape: 9
+};
+
 /** The instance buffer's layout: a world matrix's columns, colour, emissive, material (28 floats an instance). */
 export const INSTANCE_LAYOUT: IgeGpuVertexBufferLayout = {
 	arrayStride: 112,
@@ -67,13 +79,13 @@ export class IgeGpuMeshPrograms {
 		this.device = device;
 	}
 
-	/** The shader library's program `id` as a module (compiled as first asked for). */
-	module (id: string): IgeGpuShaderModule {
+	/** The shader library's program `id` as a module, its inputs at `attributes`' locations (compiled as first asked for). */
+	module (id: string, attributes: Readonly<Record<string, number>> = MESH_ATTRIBUTES): IgeGpuShaderModule {
 		let m = this._modules.get(id);
 		if (m) return m;
 		const src = IgeShaderLibrary.get(id);
 		if (!src) throw new Error(`IgeGpuMeshPrograms: no shader "${id}" in the library`);
-		m = this.device.createShaderModule({ vertex: src.vertex, fragment: src.fragment, attributes: { ...MESH_ATTRIBUTES }, label: id });
+		m = this.device.createShaderModule({ vertex: src.vertex, fragment: src.fragment, attributes: { ...attributes }, label: id });
 		this._modules.set(id, m);
 		return m;
 	}

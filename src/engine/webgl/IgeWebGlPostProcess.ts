@@ -416,6 +416,11 @@ export class IgeWebGlPostProcess {
 		this._perspective = perspective;
 	}
 
+	/** The offscreen target's framebuffer while a frame's drawn into it (null: none, the canvas). */
+	targetFramebuffer (): WebGLFramebuffer | null {
+		return this._active ? this._msaaFbo : null;
+	}
+
 	/** Re-bind the offscreen target (passes such as shadow maps bind their own and then the canvas). */
 	bindTarget (): void {
 		if (this._active) this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._msaaFbo);

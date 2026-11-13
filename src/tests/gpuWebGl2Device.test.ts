@@ -3,7 +3,7 @@
  * instanced draw's attributes pointed again only when its first instance moves, uniforms sent as they change, a
  * render target's framebuffer made once, a cleared rectangle scissored, a streamed buffer given new storage.
  */
-import { IgeWebGl2GpuDevice } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import { IgeWebGl2GpuDevice, webGl2ExternalTexture } from "@/engine/gpu/IgeWebGl2GpuDevice";
 
 /** A WebGL2 context that records each call (name and arguments); its constants are distinct numbers. */
 function fakeGl (): { gl: WebGL2RenderingContext; calls: [string, unknown[]][]; take: () => string[] } {
@@ -269,6 +269,40 @@ describe("IgeGpuDevice: WebGL2", () => {
 		const sent = take();
 		expect(sent.filter((c) => c === "bindAttribLocation").length).toBe(2);
 		expect(sent.indexOf("bindAttribLocation")).toBeLessThan(sent.indexOf("linkProgram"));
+	});
+
+	it("sets a picture's premultiplying and flipping either way as it's copied in (GL code may have left them on)", () => {
+		const { d, calls, take } = setUp();
+		const tex = d.createTexture({ width: 0, height: 0, format: "rgba8unorm" });
+		take();
+		d.copyImageToTexture({ width: 4, height: 4 }, tex);
+		const stores = calls.filter(([k]) => k === "pixelStorei").map(([, a]) => a[1]);
+		expect(stores).toEqual([false, false]);
+		expect(calls.findIndex(([k]) => k === "texImage2D")).toBeGreaterThan(calls.findIndex(([k]) => k === "pixelStorei"));
+	});
+
+	it("draws with a GL texture made outside it, never making it again or deleting it", () => {
+		const { d, calls, take, quad, inst, pipeline } = setUp();
+		const glTex = { made: "outside" } as unknown as WebGLTexture;
+		const ext = webGl2ExternalTexture(d, glTex);
+		expect(webGl2ExternalTexture(d, glTex)).toBe(ext);
+		const draw = () => {
+			const pass = d.beginRenderPass({ color: { target: d.surface() } });
+			pass.setPipeline(pipeline);
+			pass.setVertexBuffer(0, quad);
+			pass.setVertexBuffer(1, inst);
+			pass.setTexture(0, ext);
+			pass.draw(4, 1);
+		};
+		draw();
+		expect(calls.find(([k, a]) => k === "bindTexture" && a[1] === glTex)).toBeTruthy();
+		take();
+		d.lost = true;
+		d.restore();
+		draw();
+		expect(take()).not.toContain("createTexture");
+		d.destroyTexture(ext);
+		expect(take()).not.toContain("deleteTexture");
 	});
 
 	it("after a lost context, makes each resource again as it's next used: its program and uniforms, vertex array, buffers and textures", () => {

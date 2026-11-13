@@ -36,9 +36,9 @@ import {
 	type IgeWebGlRenderItem
 } from "@/engine/webgl/IgeWebGlInstancing";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
-import type { IgeGpuBuffer, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuUniform } from "@/engine/gpu/IgeGpuDevice";
-import { type IgeWebGl2GpuDevice, webGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
-import { IgeGpuMeshPrograms, INSTANCE_LAYOUT, meshLayout, meshTopology } from "@/engine/webgl/IgeGpuMeshPrograms";
+import type { IgeGpuBlendState, IgeGpuBuffer, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuTexture, IgeGpuUniform, IgeGpuVertexBufferLayout } from "@/engine/gpu/IgeGpuDevice";
+import { type IgeWebGl2GpuDevice, webGl2ExternalTexture, webGl2GpuDevice, webGl2Surface, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import { EFFECT_ATTRIBUTES, IgeGpuMeshPrograms, INSTANCE_LAYOUT, meshLayout, meshTopology } from "@/engine/webgl/IgeGpuMeshPrograms";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import type { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
@@ -81,6 +81,31 @@ function depthUniforms (skinned: boolean, instanced: boolean): IgeGpuUniform[] {
 	}
 	return u;
 }
+
+/** The effect passes' (particles', decals') uniform block: the camera, fog, how a decal's blended and its atlas. */
+const EFFECT_UNIFORMS: IgeGpuUniform[] = [
+	{ name: "u_viewMatrix", type: "mat4" },
+	{ name: "u_projectionMatrix", type: "mat4" },
+	{ name: "u_cameraPosition", type: "vec3" },
+	{ name: "u_fogMode", type: "i32" },
+	{ name: "u_fogNear", type: "f32" },
+	{ name: "u_fogFar", type: "f32" },
+	{ name: "u_fogDensity", type: "f32" },
+	{ name: "u_multiply", type: "i32" },
+	{ name: "u_atlasGrid", type: "f32" }
+];
+
+/** A particle's instance (position and size, colour), a decal's (position and size, colour, shape), a projected decal's vertex. */
+const PARTICLE_LAYOUT: IgeGpuVertexBufferLayout = { arrayStride: 32, stepMode: "instance", attributes: [{ shaderLocation: 7, format: "float32x4", offset: 0 }, { shaderLocation: 8, format: "float32x4", offset: 16 }] };
+const DECAL_LAYOUT: IgeGpuVertexBufferLayout = { arrayStride: 48, stepMode: "instance", attributes: [{ shaderLocation: 7, format: "float32x4", offset: 0 }, { shaderLocation: 8, format: "float32x4", offset: 16 }, { shaderLocation: 9, format: "float32x4", offset: 32 }] };
+const DECAL_MESH_LAYOUT: IgeGpuVertexBufferLayout = { arrayStride: 36, attributes: [{ shaderLocation: 0, format: "float32x3", offset: 0 }, { shaderLocation: 2, format: "float32x2", offset: 12 }, { shaderLocation: 3, format: "float32x4", offset: 20 }] };
+
+/** The effects' blends: over (alpha), added (glows, sparks), multiplied (decals darkening what's under them). */
+const EFFECT_BLENDS: Record<"normal" | "additive" | "multiply", IgeGpuBlendState> = {
+	normal: { color: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" }, alpha: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" } },
+	additive: { color: { srcFactor: "src-alpha", dstFactor: "one" }, alpha: { srcFactor: "src-alpha", dstFactor: "one" } },
+	multiply: { color: { srcFactor: "dst", dstFactor: "zero" }, alpha: { srcFactor: "dst", dstFactor: "zero" } }
+};
 
 const IDENTITY_MATRIX = new Float32Array([
 	1, 0, 0, 0,
@@ -404,12 +429,16 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _shadowShareThreshold: number = 0.35;
 	protected _sharedShadowFrame: number = -1;
 	protected _pendingBlobTextures: Set<string> = new Set();
-	protected _particleBuffers: Map<IgeWebGlInstanceSource, { buffer: WebGLBuffer | null; version: number; lastFrame: number }> = new Map();
-	protected _decalMeshBuffers: Map<IgeDecalSystem3d, { buffer: WebGLBuffer | null; version: number; lastFrame: number }> = new Map();
+	/** Each particle and decal system's instances, and each decal system's projected triangles, on the device. */
+	protected _particleBuffers: Map<IgeWebGlInstanceSource, { buffer: IgeGpuBuffer; version: number; lastFrame: number }> = new Map();
+	protected _decalMeshBuffers: Map<IgeDecalSystem3d, { buffer: IgeGpuBuffer; version: number; lastFrame: number }> = new Map();
+	/** The view being drawn, in device px from the canvas's bottom-left, and whether it's scissored to it (the effect passes draw into it). */
+	protected _view = { x: 0, y: 0, w: 0, h: 0, clip: false };
+	protected _effectBlock?: Float32Array;
 	/** Passed to entity preTick behaviours, which expect a Canvas 2D context. */
 	protected _tickContext = new IgeDummyContext();
-	protected _defaultParticleTexture: WebGLTexture | null = null;
-	protected _defaultDecalTexture: WebGLTexture | null = null;
+	protected _defaultParticleTexture: IgeGpuTexture | null = null;
+	protected _defaultDecalTexture: IgeGpuTexture | null = null;
 	protected _lightFrustum: IgeFrustum = new IgeFrustum();
 	// Point light shadow casters in range of the current light, with the
 	// LOD key and geometry chosen for it (reused across lights and frames)
@@ -1734,6 +1763,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				data.ui.length = 0;
 				data.uiSettings.length = 0;
 				this._collectRenderables(scene, data);
+				if (data.particles.length || data.decals.length) this._gpuBegin();
 				for (let p = 0; p < data.particles.length; p++) {
 					this._uploadInstanceData(data.particles[p], PARTICLE_FLOATS);
 				}
@@ -2542,6 +2572,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// other; drawing itself is already confined by gl.viewport.
 		this._stateManager.setScissorTest(true);
 		this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
+		this._view.x = vpX;
+		this._view.y = vpY;
+		this._view.w = vpWidth;
+		this._view.h = vpHeight;
+		this._view.clip = !!viewport._clipping;
 
 		const cc = this._clearColor;
 		gl.clearColor(cc.r, cc.g, cc.b, cc.a);
@@ -3409,20 +3444,19 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * that haven't been seen for a while are deleted.
 	 */
 	protected _uploadInstanceData(system: IgeWebGlInstanceSource, floatsPerInstance: number): void {
-		const gl = this._canvasContext;
-		if (!gl || !this._instanceBuffer) return;
+		const device = this._device;
+		if (!device) return;
 
 		let entry = this._particleBuffers.get(system);
 		if (!entry) {
-			entry = { buffer: gl.createBuffer(), version: -1, lastFrame: 0 };
+			entry = { buffer: device.createBuffer({ size: 0, usage: "vertex", stream: true, label: "effect instances" }), version: -1, lastFrame: 0 };
 			this._particleBuffers.set(system, entry);
 		}
 		entry.lastFrame = this._frameId;
 
 		const { data, count } = system.renderData();
 		if (count > 0 && entry.version !== system._renderVersion) {
-			gl.bindBuffer(gl.ARRAY_BUFFER, entry.buffer);
-			gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, count * floatsPerInstance), gl.STREAM_DRAW);
+			device.writeBuffer(entry.buffer, 0, data.subarray(0, count * floatsPerInstance));
 			entry.version = system._renderVersion;
 		}
 
@@ -3430,7 +3464,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if ((this._frameId & 127) === 0) {
 			this._particleBuffers.forEach((value, key) => {
 				if (this._frameId - value.lastFrame > 120) {
-					if (value.buffer) gl.deleteBuffer(value.buffer);
+					device.destroyBuffer(value.buffer);
 					this._particleBuffers.delete(key);
 				}
 			});
@@ -3440,8 +3474,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/**
 	 * A soft round white dot, used by particle systems without a texture.
 	 */
-	protected _getDefaultParticleTexture(): WebGLTexture | null {
-		if (this._defaultParticleTexture || !this._canvasContext) {
+	protected _getDefaultParticleTexture(): IgeGpuTexture | null {
+		if (this._defaultParticleTexture || !this._device) {
 			return this._defaultParticleTexture;
 		}
 
@@ -3459,17 +3493,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		ctx.fillStyle = gradient;
 		ctx.fillRect(0, 0, size, size);
 
-		const gl = this._canvasContext;
-		const texture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		this._stateManager?.invalidateTextureBindings();
+		const device = this._device;
+		const texture = device.createTexture({
+			width: size, height: size, format: "rgba8unorm", label: "default particle",
+			sampler: { minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }
+		});
+		device.copyImageToTexture(canvas, texture, { premultiply: false, flipY: false });
 
 		this._defaultParticleTexture = texture;
 		return texture;
@@ -3480,8 +3509,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * shape) for IgeDecalSystem3d without a texture of its own. Generated
 	 * from a fixed seed so every run looks the same.
 	 */
-	protected _getDefaultDecalTexture(): WebGLTexture | null {
-		if (this._defaultDecalTexture || !this._canvasContext) {
+	protected _getDefaultDecalTexture(): IgeGpuTexture | null {
+		if (this._defaultDecalTexture || !this._device) {
 			return this._defaultDecalTexture;
 		}
 
@@ -3532,336 +3561,250 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			}
 		}
 
-		const gl = this._canvasContext;
-		const texture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
-		gl.generateMipmap(gl.TEXTURE_2D);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		this._stateManager?.invalidateTextureBindings();
+		const device = this._device;
+		const texture = device.createTexture({
+			width: cell * 2, height: cell * 2, format: "rgba8unorm", mipmaps: true, label: "default decals",
+			sampler: { minFilter: "linear", mipmapFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }
+		});
+		device.copyImageToTexture(canvas, texture, { premultiply: false, flipY: false });
+		device.generateMipmaps(texture);
 
 		this._defaultDecalTexture = texture;
 		return texture;
 	}
 
 	/**
-	 * Draw decal systems as quads lying on the ground: one instanced call
-	 * per system (WebGL 2) or one call per decal (WebGL 1). Drawn after the
-	 * opaque pass with depth testing, no depth writes and a polygon offset
-	 * so they never fight with the ground they lie on.
+	 * An effect's pipeline (particles, decal quads, projected decals) as it's blended: depth tested less-or-equal,
+	 * not written; decals pulled towards the camera (a polygon offset) so they never fight the surface they lie on.
+	 */
+	protected _effectPipeline(kind: "particle" | "decal" | "decal_mesh", blend: "normal" | "additive" | "multiply"): IgeGpuRenderPipeline {
+		const programs = this._gpuPrograms!;
+		const id = kind === "decal_mesh" ? kind : `${kind}_instanced`;
+		return programs.pipeline(`effect|${id}|${blend}`, () => {
+			const quad = meshLayout(this._geometryManager!.getSharedQuadGeometry()!).layout;
+			return {
+				module: programs.module(id, EFFECT_ATTRIBUTES),
+				vertex: { buffers: kind === "particle" ? [quad, PARTICLE_LAYOUT] : kind === "decal" ? [quad, DECAL_LAYOUT] : [DECAL_MESH_LAYOUT] },
+				primitive: { topology: "triangle-list", cullMode: "none" },
+				blend: EFFECT_BLENDS[blend],
+				depth: { compare: "less-equal", write: false, bias: kind === "particle" ? undefined : { constant: -4, slopeScale: -1 } },
+				uniforms: EFFECT_UNIFORMS,
+				textures: [{ name: "u_texture" }],
+				label: `${id} ${blend}`
+			};
+		});
+	}
+
+	/** The effect passes' uniform block, the camera's and the fog's set (the per-system members are set as each draws). */
+	protected _effectUniforms(pipeline: IgeGpuRenderPipeline, matrices: IgeCameraMatrices): Float32Array {
+		if (!this._effectBlock || this._effectBlock.length !== pipeline.uniformSize) this._effectBlock = new Float32Array(pipeline.uniformSize);
+		const block = this._effectBlock, at = pipeline.uniformOffsets;
+		block.set(matrices.view.matrix, at.u_viewMatrix);
+		block.set(matrices.projection.matrix, at.u_projectionMatrix);
+		const cam = matrices.cameraPosition;
+		block[at.u_cameraPosition] = cam.x;
+		block[at.u_cameraPosition + 1] = cam.y;
+		block[at.u_cameraPosition + 2] = cam.z;
+		const fog = this._fog;
+		block[at.u_fogMode] = fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0;
+		block[at.u_fogNear] = fog.near;
+		block[at.u_fogFar] = fog.far;
+		block[at.u_fogDensity] = fog.density;
+		return block;
+	}
+
+	/**
+	 * A pass on the device into the view being drawn (the canvas, or the post-processing's offscreen target), loaded,
+	 * with its viewport and, when it clips, its scissor. Inside a device stretch (_gpuBegin()).
+	 */
+	protected _effectPass(): IgeGpuRenderPass {
+		const device = this._device!;
+		const canvas = this._canvasElement!;
+		const fbo = this._postProcess?.targetFramebuffer() ?? null;
+		const target = fbo ? webGl2Surface(device, fbo, canvas.width, canvas.height, true) : device.surface();
+		const pass = device.beginRenderPass({ color: { target } });
+		const v = this._view;
+		pass.setViewport(v.x, v.y, v.w, v.h);
+		pass.setScissorRect(v.clip ? [v.x, v.y, v.w, v.h] : null);
+		return pass;
+	}
+
+	/**
+	 * GL handed back to the main pass after an effect pass, as its own effect drawing left it: blended over, depth
+	 * tested less-or-equal and written, no polygon offset, no culling, the view's scissor if it clips (its viewport and
+	 * scissor box are the view's still), unit 0 active; the state manager's cache forgotten.
+	 */
+	protected _effectEnd(pass: IgeGpuRenderPass): void {
+		const gl = this._canvasContext as WebGL2RenderingContext;
+		pass.end();
+		this._device!.release();
+		if (this._view.clip) gl.enable(gl.SCISSOR_TEST);
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		gl.enable(gl.DEPTH_TEST);
+		gl.depthFunc(gl.LEQUAL);
+		gl.depthMask(true);
+		gl.disable(gl.POLYGON_OFFSET_FILL);
+		gl.disable(gl.CULL_FACE);
+		gl.colorMask(true, true, true, true);
+		gl.activeTexture(gl.TEXTURE0);
+		this._stateManager?.reset();
+	}
+
+	/** A system's texture (its own, from the texture manager; made, if it must be, before the device stretch starts). */
+	protected _effectTexture(texture: IgeTexture | undefined): WebGLTexture | null {
+		if (!texture || !this._textureManager) return null;
+		return this._textureManager.getTextureForIgeTexture(texture) || this._textureManager.getDefaultWhiteTexture();
+	}
+
+	/**
+	 * Draw decal systems as quads lying on the ground, one instanced call per system, then their projected decals:
+	 * drawn after the opaque pass with depth testing, no depth writes and a polygon offset so they never fight with
+	 * the ground they lie on.
 	 */
 	protected _renderDecalSystems(systems: IgeDecalSystem3d[], matrices: IgeCameraMatrices): void {
-		if (systems.length === 0 || !this._shaderManager || !this._geometryManager || !this._stateManager || !this._textureManager) {
+		if (systems.length === 0 || !this._device || !this._geometryManager || !this._textureManager) {
 			return;
 		}
 
-		const gl = this._canvasContext!;
-		const instanced = !!this._instanceBuffer;
-		const program = this._shaderManager.getProgram(instanced ? "decal_instanced" : "decal");
-		const quad = this._geometryManager.getSharedQuadGeometry();
-		if (!program || !quad) return;
-
-		let programReady = false;
-		const stride = DECAL_INSTANCE_FLOATS * 4;
-
+		// What's drawn, and with what (textures made first, with GL of the texture manager's own)
+		const quads: { system: IgeDecalSystem3d; count: number; texture: WebGLTexture | null }[] = [];
 		for (let s = 0; s < systems.length; s++) {
 			const system = systems[s];
-			const { data, count } = system.renderData();
+			const { count } = system.renderData();
 			if (count === 0) continue;
-
 			const c = system._boundsCenter;
 			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius)) continue;
 			system._lastRenderedFrame = this._frameId;
+			quads.push({ system, count, texture: this._effectTexture(system._options.texture) });
+		}
+		const meshes: { system: IgeDecalSystem3d; texture: WebGLTexture | null }[] = [];
+		for (let s = 0; s < systems.length; s++) {
+			const system = systems[s];
+			if (system.meshRenderData().vertexCount === 0) continue;
+			const c = system._meshBoundsCenter;
+			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._meshBoundsRadius)) continue;
+			meshes.push({ system, texture: this._effectTexture(system._options.texture) });
+		}
+		if (!quads.length && !meshes.length) {
+			this._freeDecalMeshBuffers();
+			return;
+		}
 
-			if (!programReady) {
-				program.use();
-				program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
-				program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
-				program.setUniform1i("u_texture", 0);
-				const cam = matrices.cameraPosition;
-				program.setUniform3f("u_cameraPosition", cam.x, cam.y, cam.z);
-				const fog = this._fog;
-				const fogMode = fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0;
-				program.setUniform1i("u_fogMode", fogMode);
-				program.setUniform1f("u_fogNear", fog.near);
-				program.setUniform1f("u_fogFar", fog.far);
-				program.setUniform1f("u_fogDensity", fog.density);
-
-				this._geometryManager.bindGeometry(quad, program);
-				this._stateManager.setDepthTest(true);
-				this._stateManager.setDepthWrite(false);
-				this._stateManager.setBlend(true);
-				gl.enable(gl.POLYGON_OFFSET_FILL);
-				gl.polygonOffset(-1, -4);
-				programReady = true;
-			}
-
-			const multiply = system._options.blending !== "normal";
-			program.setUniform1i("u_multiply", multiply ? 1 : 0);
-			if (multiply) {
-				this._stateManager.setBlendFunc(gl.DST_COLOR, gl.ZERO);
-			} else {
-				this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-			}
-			program.setUniform1f("u_atlasGrid", system.atlasGrid());
-
-			const texture = system._options.texture
-				? this._textureManager.getTextureForIgeTexture(system._options.texture)
-				: this._getDefaultDecalTexture();
-			this._stateManager.invalidateTextureBindings();
-			this._stateManager.bindTexture(texture || this._textureManager.getDefaultWhiteTexture(), 0);
-
-			if (instanced) {
+		const device = this._gpuBegin();
+		const quad = this._geometryManager.getSharedQuadGeometry()!;
+		const pass = this._effectPass();
+		try {
+			for (const { system, count, texture } of quads) {
 				const entry = this._particleBuffers.get(system);
-				if (!entry || !entry.buffer) continue;
-
-				const gl2 = gl as WebGL2RenderingContext;
-				const locations = [
-					program.getAttributeLocation("a_decal"),
-					program.getAttributeLocation("a_decalColor"),
-					program.getAttributeLocation("a_decalShape")
-				];
-				gl2.bindBuffer(gl2.ARRAY_BUFFER, entry.buffer);
-				for (let a = 0; a < locations.length; a++) {
-					if (locations[a] < 0) continue;
-					gl2.enableVertexAttribArray(locations[a]);
-					gl2.vertexAttribPointer(locations[a], 4, gl2.FLOAT, false, stride, a * 16);
-					gl2.vertexAttribDivisor(locations[a], 1);
-				}
-
-				gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, quad.indexType, 0, count);
-
-				for (const location of locations) {
-					if (location < 0) continue;
-					gl2.vertexAttribDivisor(location, 0);
-					gl2.disableVertexAttribArray(location);
-				}
+				if (!entry) continue;
+				const multiply = system._options.blending !== "normal";
+				const pipeline = this._effectPipeline("decal", multiply ? "multiply" : "normal");
+				const block = this._effectUniforms(pipeline, matrices);
+				const at = pipeline.uniformOffsets;
+				block[at.u_multiply] = multiply ? 1 : 0;
+				block[at.u_atlasGrid] = system.atlasGrid();
+				pass.setPipeline(pipeline);
+				pass.setVertexBuffer(0, quad.gpuVertex!);
+				pass.setVertexBuffer(1, entry.buffer);
+				pass.setIndexBuffer(quad.gpuIndex!, "uint16");
+				pass.setTexture(0, texture ? webGl2ExternalTexture(device, texture) : this._getDefaultDecalTexture());
+				pass.setUniforms(block);
+				pass.drawIndexed(quad.indexCount, count);
 				this._stats.instancedDrawCalls++;
 				this._stats.instances += count;
-			} else {
-				for (let i = 0; i < count; i++) {
-					const o = i * DECAL_INSTANCE_FLOATS;
-					program.setUniform4f("u_decal", data[o], data[o + 1], data[o + 2], data[o + 3]);
-					program.setUniform4f("u_decalColor", data[o + 4], data[o + 5], data[o + 6], data[o + 7]);
-					program.setUniform4f("u_decalShape", data[o + 8], data[o + 9], 0, 0);
-					this._geometryManager.drawGeometry(quad);
-					this._stats.drawCalls++;
-				}
 			}
+			this._renderProjectedDecals(pass, meshes, matrices);
+		} finally {
+			this._effectEnd(pass);
 		}
-
-		if (programReady) {
-			gl.disable(gl.POLYGON_OFFSET_FILL);
-			this._geometryManager.unbindGeometry(quad, program);
-			this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-			this._stateManager.setDepthWrite(true);
-		}
-
-		this._renderProjectedDecals(systems, matrices);
+		this._freeDecalMeshBuffers();
 	}
 
 	/**
 	 * Draw projected decals (IgeDecalSystem3d.project()): each system's
 	 * decal triangles are one world-space vertex buffer and one draw call.
 	 */
-	protected _renderProjectedDecals(systems: IgeDecalSystem3d[], matrices: IgeCameraMatrices): void {
-		const gl = this._canvasContext!;
-		const program = this._shaderManager!.getProgram("decal_mesh");
-		if (!program) return;
-
-		let programReady = false;
-		const stride = DECAL_MESH_VERTEX_FLOATS * 4;
-		const locations = [
-			program.getAttributeLocation("a_position"),
-			program.getAttributeLocation("a_uv"),
-			program.getAttributeLocation("a_color")
-		];
-		const sizes = [3, 2, 4];
-		const offsets = [0, 12, 20];
-
-		for (let s = 0; s < systems.length; s++) {
-			const system = systems[s];
+	protected _renderProjectedDecals(pass: IgeGpuRenderPass, meshes: { system: IgeDecalSystem3d; texture: WebGLTexture | null }[], matrices: IgeCameraMatrices): void {
+		const device = this._device!;
+		for (const { system, texture } of meshes) {
 			const { data, vertexCount } = system.meshRenderData();
-			if (vertexCount === 0) continue;
-
-			const c = system._meshBoundsCenter;
-			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._meshBoundsRadius)) continue;
-
 			let entry = this._decalMeshBuffers.get(system);
 			if (!entry) {
-				entry = { buffer: gl.createBuffer(), version: -1, lastFrame: 0 };
+				entry = { buffer: device.createBuffer({ size: 0, usage: "vertex", stream: true, label: "projected decals" }), version: -1, lastFrame: 0 };
 				this._decalMeshBuffers.set(system, entry);
 			}
 			entry.lastFrame = this._frameId;
-
-			if (!programReady) {
-				program.use();
-				program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
-				program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
-				program.setUniform1i("u_texture", 0);
-				const cam = matrices.cameraPosition;
-				program.setUniform3f("u_cameraPosition", cam.x, cam.y, cam.z);
-				const fog = this._fog;
-				program.setUniform1i("u_fogMode", fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0);
-				program.setUniform1f("u_fogNear", fog.near);
-				program.setUniform1f("u_fogFar", fog.far);
-				program.setUniform1f("u_fogDensity", fog.density);
-
-				this._stateManager!.setDepthTest(true);
-				this._stateManager!.setDepthWrite(false);
-				this._stateManager!.setBlend(true);
-				gl.enable(gl.POLYGON_OFFSET_FILL);
-				gl.polygonOffset(-1, -4);
-				programReady = true;
-			}
-
-			// Raw buffer binding (the geometry manager doesn't own this buffer)
-			gl.bindBuffer(gl.ARRAY_BUFFER, entry.buffer);
 			if (entry.version !== system._meshRenderVersion) {
-				gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, vertexCount * DECAL_MESH_VERTEX_FLOATS), gl.DYNAMIC_DRAW);
+				device.writeBuffer(entry.buffer, 0, data.subarray(0, vertexCount * DECAL_MESH_VERTEX_FLOATS));
 				entry.version = system._meshRenderVersion;
-			}
-			for (let a = 0; a < locations.length; a++) {
-				if (locations[a] < 0) continue;
-				gl.enableVertexAttribArray(locations[a]);
-				gl.vertexAttribPointer(locations[a], sizes[a], gl.FLOAT, false, stride, offsets[a]);
 			}
 
 			const multiply = system._options.blending !== "normal";
-			program.setUniform1i("u_multiply", multiply ? 1 : 0);
-			if (multiply) {
-				this._stateManager!.setBlendFunc(gl.DST_COLOR, gl.ZERO);
-			} else {
-				this._stateManager!.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-			}
-
-			const texture = system._options.texture
-				? this._textureManager!.getTextureForIgeTexture(system._options.texture)
-				: this._getDefaultDecalTexture();
-			this._stateManager!.invalidateTextureBindings();
-			this._stateManager!.bindTexture(texture || this._textureManager!.getDefaultWhiteTexture(), 0);
-
-			gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+			const pipeline = this._effectPipeline("decal_mesh", multiply ? "multiply" : "normal");
+			const block = this._effectUniforms(pipeline, matrices);
+			block[pipeline.uniformOffsets.u_multiply] = multiply ? 1 : 0;
+			pass.setPipeline(pipeline);
+			pass.setVertexBuffer(0, entry.buffer);
+			pass.setTexture(0, texture ? webGl2ExternalTexture(device, texture) : this._getDefaultDecalTexture());
+			pass.setUniforms(block);
+			pass.draw(vertexCount);
 			this._stats.drawCalls++;
-
-			for (const location of locations) {
-				if (location >= 0) gl.disableVertexAttribArray(location);
-			}
-		}
-
-		if (programReady) {
-			gl.bindBuffer(gl.ARRAY_BUFFER, null);
-			gl.disable(gl.POLYGON_OFFSET_FILL);
-			this._stateManager!.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-			this._stateManager!.setDepthWrite(true);
-		}
-
-		// Free buffers of systems no longer drawn
-		if ((this._frameId & 127) === 0) {
-			this._decalMeshBuffers.forEach((value, key) => {
-				if (this._frameId - value.lastFrame > 120) {
-					if (value.buffer) gl.deleteBuffer(value.buffer);
-					this._decalMeshBuffers.delete(key);
-				}
-			});
 		}
 	}
 
+	/** The projected decals' buffers of systems no longer drawn, freed now and then. */
+	protected _freeDecalMeshBuffers(): void {
+		if ((this._frameId & 127) !== 0 || !this._device) return;
+		this._decalMeshBuffers.forEach((value, key) => {
+			if (this._frameId - value.lastFrame > 120) {
+				this._device!.destroyBuffer(value.buffer);
+				this._decalMeshBuffers.delete(key);
+			}
+		});
+	}
+
 	/**
-	 * Draw particle systems as camera-facing quads: one instanced call per
-	 * system (WebGL 2) or one call per particle (WebGL 1). Drawn after the
-	 * transparent pass with depth testing but no depth writes.
+	 * Draw particle systems as camera-facing quads, one instanced call per system. Drawn after the transparent pass
+	 * with depth testing but no depth writes.
 	 */
 	protected _renderParticleSystems(systems: IgeParticleSystem3d[], matrices: IgeCameraMatrices): void {
-		if (systems.length === 0 || !this._shaderManager || !this._geometryManager || !this._stateManager || !this._textureManager) {
+		if (systems.length === 0 || !this._device || !this._geometryManager || !this._textureManager) {
 			return;
 		}
 
-		const gl = this._canvasContext!;
-		const instanced = !!this._instanceBuffer;
-		const program = this._shaderManager.getProgram(instanced ? "particle_instanced" : "particle");
-		const quad = this._geometryManager.getSharedQuadGeometry();
-		if (!program || !quad) return;
-
-		let programReady = false;
-		let additive: boolean | undefined;
-
+		const drawn: { system: IgeParticleSystem3d; count: number; texture: WebGLTexture | null }[] = [];
 		for (let s = 0; s < systems.length; s++) {
 			const system = systems[s];
-			const { data, count } = system.renderData();
+			const { count } = system.renderData();
 			if (count === 0) continue;
-
 			const c = system._boundsCenter;
 			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius)) continue;
 			system._lastRenderedFrame = this._frameId;
+			drawn.push({ system, count, texture: this._effectTexture(system._options.texture) });
+		}
+		if (!drawn.length) return;
 
-			if (!programReady) {
-				program.use();
-				program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
-				program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
-				program.setUniform1i("u_texture", 0);
-				this._geometryManager.bindGeometry(quad, program);
-				this._stateManager.setDepthTest(true);
-				this._stateManager.setDepthWrite(false);
-				this._stateManager.setBlend(true);
-				programReady = true;
-			}
-
-			const wantAdditive = system._options.blending !== "normal";
-			if (wantAdditive !== additive) {
-				this._stateManager.setBlendFunc(gl.SRC_ALPHA, wantAdditive ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
-				additive = wantAdditive;
-			}
-
-			const texture = system._options.texture
-				? this._textureManager.getTextureForIgeTexture(system._options.texture)
-				: this._getDefaultParticleTexture();
-			this._stateManager.invalidateTextureBindings();
-			this._stateManager.bindTexture(texture || this._textureManager.getDefaultWhiteTexture(), 0);
-
-			if (instanced) {
+		const device = this._gpuBegin();
+		const quad = this._geometryManager.getSharedQuadGeometry()!;
+		const pass = this._effectPass();
+		try {
+			for (const { system, count, texture } of drawn) {
 				const entry = this._particleBuffers.get(system);
-				if (!entry || !entry.buffer) continue;
-
-				const gl2 = gl as WebGL2RenderingContext;
-				const particleLoc = program.getAttributeLocation("a_particle");
-				const colorLoc = program.getAttributeLocation("a_particleColor");
-				gl2.bindBuffer(gl2.ARRAY_BUFFER, entry.buffer);
-				gl2.enableVertexAttribArray(particleLoc);
-				gl2.vertexAttribPointer(particleLoc, 4, gl2.FLOAT, false, PARTICLE_FLOATS * 4, 0);
-				gl2.vertexAttribDivisor(particleLoc, 1);
-				gl2.enableVertexAttribArray(colorLoc);
-				gl2.vertexAttribPointer(colorLoc, 4, gl2.FLOAT, false, PARTICLE_FLOATS * 4, 16);
-				gl2.vertexAttribDivisor(colorLoc, 1);
-
-				gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, quad.indexType, 0, count);
-
-				gl2.vertexAttribDivisor(particleLoc, 0);
-				gl2.vertexAttribDivisor(colorLoc, 0);
-				gl2.disableVertexAttribArray(particleLoc);
-				gl2.disableVertexAttribArray(colorLoc);
+				if (!entry) continue;
+				const pipeline = this._effectPipeline("particle", system._options.blending !== "normal" ? "additive" : "normal");
+				pass.setPipeline(pipeline);
+				pass.setVertexBuffer(0, quad.gpuVertex!);
+				pass.setVertexBuffer(1, entry.buffer);
+				pass.setIndexBuffer(quad.gpuIndex!, "uint16");
+				pass.setTexture(0, texture ? webGl2ExternalTexture(device, texture) : this._getDefaultParticleTexture());
+				pass.setUniforms(this._effectUniforms(pipeline, matrices));
+				pass.drawIndexed(quad.indexCount, count);
 				this._stats.instancedDrawCalls++;
 				this._stats.instances += count;
-			} else {
-				for (let i = 0; i < count; i++) {
-					const o = i * PARTICLE_FLOATS;
-					program.setUniform4f("u_particle", data[o], data[o + 1], data[o + 2], data[o + 3]);
-					program.setUniform4f("u_particleColor", data[o + 4], data[o + 5], data[o + 6], data[o + 7]);
-					this._geometryManager.drawGeometry(quad);
-					this._stats.drawCalls++;
-				}
 			}
-		}
-
-		if (programReady) {
-			this._geometryManager.unbindGeometry(quad, program);
-			this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-			this._stateManager.setDepthWrite(true);
+		} finally {
+			this._effectEnd(pass);
 		}
 	}
 
@@ -4200,11 +4143,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		// Clean up managers
-		this._particleBuffers.forEach((entry) => {
-			if (entry.buffer) this._canvasContext?.deleteBuffer(entry.buffer);
-		});
+		this._particleBuffers.forEach((entry) => this._device?.destroyBuffer(entry.buffer));
 		this._particleBuffers.clear();
-		if (this._defaultParticleTexture) this._canvasContext?.deleteTexture(this._defaultParticleTexture);
+		this._decalMeshBuffers.forEach((entry) => this._device?.destroyBuffer(entry.buffer));
+		this._decalMeshBuffers.clear();
+		if (this._defaultParticleTexture) this._device?.destroyTexture(this._defaultParticleTexture);
+		if (this._defaultDecalTexture) this._device?.destroyTexture(this._defaultDecalTexture);
 		this._instanceBuffer?.destroy();
 		this._bonePalette?.destroy();
 		if (this._gpuInstances) this._device?.destroyBuffer(this._gpuInstances);

@@ -33,6 +33,8 @@ interface GlTexture extends IgeGpuTexture {
 	_fbos?: Map<GlTexture | null, WebGLFramebuffer>;
 	/** A depth texture: the colour textures whose framebuffers have it attached. */
 	_users?: Set<GlTexture>;
+	/** A GL texture that GL code not on the device made and owns (webGl2ExternalTexture): never made or deleted here. */
+	_external?: boolean;
 	/** The device's generation it was made in (older: made again as it's next used, after a lost context). */
 	_gen: number;
 }
@@ -217,6 +219,25 @@ export function webGl2Texture (device: IgeWebGl2GpuDevice, texture: IgeGpuTextur
 	return t._tex;
 }
 
+const externals = new WeakMap<WebGLTexture, GlTexture>();
+
+/**
+ * A GL texture GL code not yet on the device made (the 3D renderer's texture manager, while it moves on), to draw
+ * with through the device: sampled as its own parameters say; never made again or deleted by the device (its owner
+ * does both). Goes when nothing makes textures with GL of its own.
+ */
+export function webGl2ExternalTexture (device: IgeWebGl2GpuDevice, tex: WebGLTexture): IgeGpuTexture {
+	let t = externals.get(tex);
+	if (!t) {
+		t = {
+			kind: "texture", width: 0, height: 0, layers: 1, format: "rgba8unorm", mipmaps: false, sampleCount: 1,
+			_tex: tex, _rb: null, _target: device.gl.TEXTURE_2D, _sampler: {}, _gen: device._gen, _external: true
+		};
+		externals.set(tex, t);
+	}
+	return t;
+}
+
 /** A device buffer's GL buffer, for GL code not yet drawing through the device (as webGl2Texture). */
 export function webGl2Buffer (device: IgeWebGl2GpuDevice, buffer: IgeGpuBuffer): WebGLBuffer {
 	const b = buffer as GlBuffer;
@@ -382,6 +403,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		if (t._gen === this._gen) return;
 		const gl = this.gl;
 		t._gen = this._gen;
+		if (t._external) return;
 		t._fbos = undefined;
 		t._users = undefined;
 		if (t._rb) t._rb = gl.createRenderbuffer()!;
@@ -431,8 +453,9 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		const gl = this.gl, t = texture as GlTexture;
 		const f = FORMATS[t.format];
 		this._bindScratch(t);
-		if (opts?.premultiply) gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-		if (opts?.flipY) gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+		// (Both set either way: GL code sharing the context may have left them on)
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, !!opts?.premultiply);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, !!opts?.flipY);
 		gl.texImage2D(gl.TEXTURE_2D, 0, f.internal, f.format, f.type, source as TexImageSource);
 		if (opts?.flipY) gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 		if (opts?.premultiply) gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
@@ -461,6 +484,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 
 	destroyTexture (texture: IgeGpuTexture): void {
 		const gl = this.gl, t = texture as GlTexture;
+		if (t._external) return;
 		if (t._gen === this._gen) {
 			if (t._tex) gl.deleteTexture(t._tex);
 			if (t._rb) gl.deleteRenderbuffer(t._rb);
