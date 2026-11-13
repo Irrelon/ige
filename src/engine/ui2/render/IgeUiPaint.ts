@@ -17,6 +17,7 @@ import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiSty
 import type { IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 import { hasDashedSide, paintDashedBorder } from "@/engine/ui2/render/IgeUiBorderDash";
 import { paintSvg } from "@/engine/ui2/render/IgeUiSvg";
+import { clipsToText, paintTextInBackground } from "@/engine/ui2/render/IgeUiTextClip";
 
 export type IgeUiClip = [number, number, number, number] | null;
 
@@ -419,9 +420,11 @@ export class IgeUiPainter {
 		const bg = parseColor(styleValue(s, "background-color"), current);
 		// (A range slider is drawn as its track and thumb (below), not its field's colour, as a browser's is)
 		const slider = el.localName === "input" && el.getAttribute("type") === "range" && !b.pseudo;
-		if (bg && bg.a > 0 && !slider) this.items.push({ op: "box", ...base, x, y, w, h, color: bg });
+		// (background-clip: text: its background is drawn in its text instead, IgeUiTextClip)
+		const textClip = clipsToText(s);
+		if (bg && bg.a > 0 && !slider && !textClip) this.items.push({ op: "box", ...base, x, y, w, h, color: bg });
 		const img = styleValue(s, "background-image");
-		if (img !== "none") {
+		if (img !== "none" && !textClip) {
 			const layers = splitTop(img, ",").map((l) => l.trim()).reverse();
 			for (const l of layers) {
 				const g = parseGradient(l, current);
@@ -611,7 +614,8 @@ export class IgeUiPainter {
 	_text (b: IgeUiBox, r: IgeUiTextRun, ctx: Ctx): void {
 		if (styleValue(r.style, "visibility") === "hidden") return;
 		const color = parseColor(styleValue(r.style, "color")) ?? { r: 0, g: 0, b: 0, a: 1 };
-		if (color.a <= 0) return;
+		const textClip = clipsToText(r.style);
+		if (color.a <= 0 && !textClip) return;
 		const shadows = parseShadows(styleValue(r.style, "text-shadow"), lenCtx(r.style), color);
 		const x = b.ax + ctx.dx + r.x, y = b.ay + ctx.dy + r.y;
 		const item: IgeUiPaintText = { op: "text", text: r.text, x, y, w: r.w, font: r.font, letterSpacing: r.letterSpacing, color, opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el: b.el };
@@ -620,7 +624,8 @@ export class IgeUiPainter {
 			if (sh.color.a <= 0) continue;
 			this.items.push({ ...item, shadow: { x: sh.x, y: sh.y, blur: sh.blur, color: sh.color } });
 		}
-		this.items.push(item);
+		if (textClip) paintTextInBackground(this.items, item, r.style, b.ax + ctx.dx, b.ay + ctx.dy, b.borderW, b.borderH);
+		else this.items.push(item);
 	}
 
 	// ---------------------------------------------------------------- SVG (IgeUiSvg) and range sliders
