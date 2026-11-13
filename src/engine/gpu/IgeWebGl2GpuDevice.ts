@@ -238,6 +238,14 @@ export function webGl2ExternalTexture (device: IgeWebGl2GpuDevice, tex: WebGLTex
 	return t;
 }
 
+/**
+ * The GL framebuffer the device draws into a colour texture (or a depth texture alone) with, made if it must be, for
+ * GL code not yet drawing through the device to draw there too (as webGl2Texture).
+ */
+export function webGl2Framebuffer (device: IgeWebGl2GpuDevice, color: IgeGpuTexture | undefined, depth?: IgeGpuTexture): WebGLFramebuffer | null {
+	return device._framebuffer(color, depth as GlTexture | undefined);
+}
+
 /** A device buffer's GL buffer, for GL code not yet drawing through the device (as webGl2Texture). */
 export function webGl2Buffer (device: IgeWebGl2GpuDevice, buffer: IgeGpuBuffer): WebGLBuffer {
 	const b = buffer as GlBuffer;

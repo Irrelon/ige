@@ -1,5 +1,7 @@
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
+import type { IgeGpuBuffer, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
+import type { IgeWebGl2GpuDevice } from "@/engine/gpu/IgeWebGl2GpuDevice";
 import { IgeWebGlOutlinePass, OUTLINE_MAX_RADIUS, outlineFragment, outlineGroups, outlineOf, outlineRect } from "@/engine/webgl/IgeWebGlOutlinePass";
 
 /** Column-major 4×4: a camera at z = `back` looking down -z, through a perspective or an orthographic lens. */
@@ -114,15 +116,15 @@ describe("outlines", () => {
 		expect(r._outlinePass).toBeUndefined();
 	});
 
-	it("a lost context: its handles forgotten (no calls on the dead context), made again on next use", () => {
-		const dead = new Proxy({}, { get: () => { throw new Error("touched the lost context"); } }) as unknown as WebGLRenderingContext;
+	it("a lost context: its resources forgotten (nothing asked of the device), made again on next use", () => {
+		const dead = new Proxy({}, { get: () => { throw new Error("touched the lost device"); } }) as unknown as IgeWebGl2GpuDevice;
 		const pass = new IgeWebGlOutlinePass(dead);
-		pass._texture = {} as WebGLTexture;
-		pass._framebuffer = {} as WebGLFramebuffer;
+		pass._texture = {} as IgeGpuTexture;
+		pass._buffer = {} as IgeGpuBuffer;
 		pass._width = 800;
 		pass.contextLost();
-		expect(pass._framebuffer).toBeNull();
 		expect(pass._texture).toBeNull();
+		expect(pass._buffer).toBeNull();
 		expect(pass._width).toBe(0);
 	});
 });

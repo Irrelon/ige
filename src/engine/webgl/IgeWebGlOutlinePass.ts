@@ -13,10 +13,14 @@
  * is outlined, through whatever stands in front of it) and works for
  * whatever the renderer can draw: instanced, skinned, levels of detail.
  *
- * Nothing outlined, nothing done: the target is made on first use. WebGL
- * 1 and 2 (GLSL ES 1.00, an RGBA8 colour target). After a lost context
- * the renderer forgets this pass (contextLost) and a new one is made.
+ * Nothing outlined, nothing done: the target is made on first use. On the
+ * GPU device (an RGBA8 colour texture; the line drawn by a pipeline of the
+ * device's, its shader GLSL ES 1.00). After a lost context the renderer
+ * forgets this pass (contextLost) and a new one is made.
  */
+import type { IgeGpuBuffer, IgeGpuRenderPipeline, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
+import { type IgeWebGl2GpuDevice, webGl2Framebuffer, webGl2Surface } from "@/engine/gpu/IgeWebGl2GpuDevice";
+
 
 /** The widest outline drawn (device pixels): wider ones are drawn this wide. */
 export const OUTLINE_MAX_RADIUS = 12;
@@ -137,47 +141,47 @@ export function outlineGroups<T extends { outline?: IgeOutline | null }> (items:
 	return out;
 }
 
-type Gl = WebGLRenderingContext | WebGL2RenderingContext;
-
-interface OutlineProgram {
-	program: WebGLProgram;
-	position: number;
-	mask: WebGLUniformLocation | null;
-	size: WebGLUniformLocation | null;
-	rect: WebGLUniformLocation | null;
-	color: WebGLUniformLocation | null;
-	radius: WebGLUniformLocation | null;
-}
+/** The outline pass's uniform block: the mask's size, the rectangle drawn in, the line's colour and width. */
+const OUTLINE_UNIFORMS = [
+	{ name: "u_size", type: "vec2" as const },
+	{ name: "u_rect", type: "vec4" as const },
+	{ name: "u_color", type: "vec4" as const },
+	{ name: "u_radius", type: "f32" as const }
+];
 
 export class IgeWebGlOutlinePass {
-	_gl: Gl;
-	_texture: WebGLTexture | null = null;
-	_framebuffer: WebGLFramebuffer | null = null;
-	_buffer: WebGLBuffer | null = null;
+	_device: IgeWebGl2GpuDevice;
+	_texture: IgeGpuTexture | null = null;
+	_buffer: IgeGpuBuffer | null = null;
 	_width = 0;
 	_height = 0;
-	_programs = new Map<number, OutlineProgram | null>();
+	_pipelines = new Map<number, IgeGpuRenderPipeline>();
+	_block = new Float32Array(11);
 
-	constructor (gl: Gl) {
-		this._gl = gl;
+	constructor (device: IgeWebGl2GpuDevice) {
+		this._device = device;
 	}
 
 	/**
 	 * Binds the mask target (made, or remade at `width` × `height`, the
 	 * drawing buffer's size) with the scissor on `rect`, cleared there.
 	 * The caller then draws the outlined items flat (alpha 1) in the same
-	 * viewport it draws the frame in. False if no target could be made.
-	 * `clear` is the clear colour to leave set after (the renderer's: never
-	 * read back from GL, a query that waits for the GPU).
+	 * viewport it draws the frame in, with GL of its own. False if no target
+	 * could be made. `clear` is the clear colour to leave set after (the
+	 * renderer's: never read back from GL, a query that waits for the GPU).
 	 */
 	beginMask (width: number, height: number, rect: IgeOutlineRect, clear: { r: number; g: number; b: number; a: number } = { r: 0, g: 0, b: 0, a: 0 }): boolean {
-		const gl = this._gl;
 		if (!this._target(width, height)) return false;
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
+		const d = this._device, gl = d.gl;
+		d.invalidate();
+		const pass = d.beginRenderPass({ color: { target: this._texture! } });
+		pass.clear([0, 0, 0, 0], [rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0]);
+		pass.end();
+		d.release();
+		// (GL as the caller draws: the mask bound, scissored to the rectangle, its clear colour put back)
+		gl.bindFramebuffer(gl.FRAMEBUFFER, webGl2Framebuffer(d, this._texture!));
 		gl.enable(gl.SCISSOR_TEST);
 		gl.scissor(rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0);
-		gl.clearColor(0, 0, 0, 0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.clearColor(clear.r, clear.g, clear.b, clear.a);
 		return true;
 	}
@@ -185,127 +189,92 @@ export class IgeWebGlOutlinePass {
 	/**
 	 * Draws the outline round the mask into `target` (the frame's
 	 * framebuffer: null for the canvas), inside `rect` only, in `color`
-	 * (0 to 1, alpha blended), `radius` device pixels wide.
+	 * (0 to 1, alpha blended), `radius` device pixels wide. Leaves GL as the
+	 * caller's GL code expects it after: the target bound, scissored to
+	 * `rect`, blended, no depth test.
 	 */
 	composite (target: WebGLFramebuffer | null, rect: IgeOutlineRect, color: { r: number; g: number; b: number; a: number }, radius: number): void {
-		const gl = this._gl;
+		const d = this._device, gl = d.gl;
 		const r = Math.max(1, Math.min(OUTLINE_MAX_RADIUS, Math.round(radius)));
-		const prog = this._program(r);
-		gl.bindFramebuffer(gl.FRAMEBUFFER, target);
-		if (!prog) return;
-		gl.viewport(0, 0, this._width, this._height);
+		d.invalidate();
+		const surface = target === null ? d.surface() : webGl2Surface(d, target, this._width, this._height);
+		const pass = d.beginRenderPass({ color: { target: surface } });
+		const pipeline = this._pipeline(r);
+		const b = this._block, at = pipeline.uniformOffsets;
+		b[at.u_size] = this._width;
+		b[at.u_size + 1] = this._height;
+		b[at.u_rect] = rect.x0;
+		b[at.u_rect + 1] = rect.y0;
+		b[at.u_rect + 2] = rect.x1;
+		b[at.u_rect + 3] = rect.y1;
+		b[at.u_color] = color.r;
+		b[at.u_color + 1] = color.g;
+		b[at.u_color + 2] = color.b;
+		b[at.u_color + 3] = color.a;
+		b[at.u_radius] = r;
+		pass.setViewport(0, 0, this._width, this._height);
+		pass.setScissorRect([rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0]);
+		pass.setPipeline(pipeline);
+		pass.setVertexBuffer(0, this._buffer!);
+		pass.setTexture(0, this._texture);
+		pass.setUniforms(b);
+		pass.draw(3);
+		pass.end();
+		d.release();
+		// (The scissor on as the old pass left it: its rectangle's still set)
 		gl.enable(gl.SCISSOR_TEST);
-		gl.scissor(rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0);
-		gl.disable(gl.DEPTH_TEST);
-		gl.depthMask(false);
-		gl.disable(gl.CULL_FACE);
-		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		bindNoVertexArray(gl);
-		gl.useProgram(prog.program);
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, this._texture);
-		gl.uniform1i(prog.mask, 0);
-		gl.uniform2f(prog.size, this._width, this._height);
-		gl.uniform4f(prog.rect, rect.x0, rect.y0, rect.x1, rect.y1);
-		gl.uniform4f(prog.color, color.r, color.g, color.b, color.a);
-		gl.uniform1f(prog.radius, r);
-		gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-		gl.enableVertexAttribArray(prog.position);
-		gl.vertexAttribPointer(prog.position, 2, gl.FLOAT, false, 0, 0);
-		gl.drawArrays(gl.TRIANGLES, 0, 3);
-		gl.disableVertexAttribArray(prog.position);
-		gl.depthMask(true);
 	}
 
-	/** The context was lost: its handles are dead (forgotten, not deleted). */
+	/** The context was lost: its resources are forgotten (made again on the device as it's next used). */
 	contextLost (): void {
 		this._texture = null;
-		this._framebuffer = null;
 		this._buffer = null;
 		this._width = this._height = 0;
-		this._programs.clear();
+		this._pipelines.clear();
 	}
 
 	/** Frees what it made. */
 	destroy (): void {
-		const gl = this._gl;
-		if (this._framebuffer) gl.deleteFramebuffer(this._framebuffer);
-		if (this._texture) gl.deleteTexture(this._texture);
-		if (this._buffer) gl.deleteBuffer(this._buffer);
-		for (const p of this._programs.values()) if (p) gl.deleteProgram(p.program);
+		if (this._texture) this._device.destroyTexture(this._texture);
+		if (this._buffer) this._device.destroyBuffer(this._buffer);
 		this.contextLost();
 	}
 
 	_target (width: number, height: number): boolean {
-		const gl = this._gl;
-		if (this._framebuffer && this._width === width && this._height === height) return true;
+		const d = this._device;
+		if (this._texture && this._width === width && this._height === height) return true;
 		if (width <= 0 || height <= 0) return false;
-		if (!this._texture) this._texture = gl.createTexture();
-		if (!this._framebuffer) this._framebuffer = gl.createFramebuffer();
-		if (!this._texture || !this._framebuffer) return false;
-		gl.bindTexture(gl.TEXTURE_2D, this._texture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		const previous = gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this._texture, 0);
-		const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
-		gl.bindFramebuffer(gl.FRAMEBUFFER, previous);
-		if (!ok) return false;
+		d.invalidate();
+		const sampler = { minFilter: "nearest", magFilter: "nearest", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" } as const;
+		if (!this._texture) this._texture = d.createTexture({ width, height, format: "rgba8unorm", sampler, label: "outline mask" });
+		else d.resizeTexture(this._texture, width, height);
 		this._width = width;
 		this._height = height;
 		if (!this._buffer) {
 			// One triangle over the whole target (the scissor keeps it to the outline's rectangle)
-			this._buffer = gl.createBuffer();
-			gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+			const tri = new Float32Array([-1, -1, 3, -1, -1, 3]);
+			this._buffer = d.createBuffer({ size: tri.byteLength, usage: "vertex", label: "outline triangle" });
+			d.writeBuffer(this._buffer, 0, tri);
 		}
 		return true;
 	}
 
-	_program (radius: number): OutlineProgram | null {
-		if (this._programs.has(radius)) return this._programs.get(radius)!;
-		const gl = this._gl;
-		const vs = compile(gl, gl.VERTEX_SHADER, VERTEX), fs = compile(gl, gl.FRAGMENT_SHADER, outlineFragment(radius));
-		let made: OutlineProgram | null = null;
-		const program = vs && fs ? gl.createProgram() : null;
-		if (program && vs && fs) {
-			gl.attachShader(program, vs);
-			gl.attachShader(program, fs);
-			gl.linkProgram(program);
-			if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
-				made = {
-					program, position: gl.getAttribLocation(program, "a_position"),
-					mask: gl.getUniformLocation(program, "u_mask"), size: gl.getUniformLocation(program, "u_size"), rect: gl.getUniformLocation(program, "u_rect"),
-					color: gl.getUniformLocation(program, "u_color"), radius: gl.getUniformLocation(program, "u_radius")
-				};
-			} else gl.deleteProgram(program);
-		}
-		if (vs) gl.deleteShader(vs);
-		if (fs) gl.deleteShader(fs);
-		this._programs.set(radius, made);
-		return made;
+	/** The line's pipeline for a width (its shader searches exactly that far): blended over, no depth test. */
+	_pipeline (radius: number): IgeGpuRenderPipeline {
+		let p = this._pipelines.get(radius);
+		if (p) return p;
+		const d = this._device;
+		const module = d.createShaderModule({ vertex: VERTEX, fragment: outlineFragment(radius), attributes: { a_position: 0 }, label: `outline ${radius}` });
+		p = d.createRenderPipeline({
+			module,
+			vertex: { buffers: [{ arrayStride: 8, attributes: [{ shaderLocation: 0, format: "float32x2", offset: 0 }] }] },
+			primitive: { topology: "triangle-list", cullMode: "none" },
+			blend: { color: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" }, alpha: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" } },
+			uniforms: OUTLINE_UNIFORMS,
+			textures: [{ name: "u_mask" }],
+			label: `outline ${radius}`
+		});
+		this._pipelines.set(radius, p);
+		return p;
 	}
-}
-
-function compile (gl: Gl, type: number, source: string): WebGLShader | null {
-	const shader = gl.createShader(type);
-	if (!shader) return null;
-	gl.shaderSource(shader, source);
-	gl.compileShader(shader);
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		gl.deleteShader(shader);
-		return null;
-	}
-	return shader;
-}
-
-/** The attributes set here mustn't land in another draw's vertex array object. */
-function bindNoVertexArray (gl: Gl): void {
-	if ("bindVertexArray" in gl) (gl as WebGL2RenderingContext).bindVertexArray(null);
-	else gl.getExtension("OES_vertex_array_object")?.bindVertexArrayOES(null);
 }

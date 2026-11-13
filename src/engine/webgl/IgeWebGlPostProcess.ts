@@ -26,8 +26,13 @@
  * The picture effects work with it off too: while any is set, the frame goes
  * offscreen for them alone (no bloom, tone mapping or grading), at the cost of
  * that offscreen target, a resolve and one full-screen pass.
- * It runs once over the whole canvas, after every viewport has drawn.
+ * It runs once over the whole canvas, after every viewport has drawn, on the
+ * GPU device (IgeGpuDevice): its targets are device textures, its passes the
+ * device's (the multisampled frame resolved with resolveTexture).
  */
+
+import type { IgeGpuRenderPipeline, IgeGpuTexture, IgeGpuTextureFormat, IgeGpuUniform } from "@/engine/gpu/IgeGpuDevice";
+import { type IgeWebGl2GpuDevice, webGl2Framebuffer } from "@/engine/gpu/IgeWebGl2GpuDevice";
 
 export type IgePostToneMapping = "none" | "aces" | "reinhard";
 
@@ -333,17 +338,6 @@ void main() {
 	o = vec4(clamp(c, 0.0, 1.0), 1.0);
 }`;
 
-interface Target {
-	fbo: WebGLFramebuffer;
-	tex: WebGLTexture;
-	w: number;
-	h: number;
-}
-
-interface Program {
-	program: WebGLProgram;
-	uniforms: Map<string, WebGLUniformLocation | null>;
-}
 
 /** The picture effects of some settings (what's kept when post-processing is off and only they're on). */
 function pictureOf (s: IgePostProcessSettings): Partial<IgePostProcessSettings> {
@@ -351,35 +345,69 @@ function pictureOf (s: IgePostProcessSettings): Partial<IgePostProcessSettings> 
 	return { offsetX, offsetY, rotation, zoom, blur, ghost, ghostX, ghostY, ghostColor, samples };
 }
 
+/** The depth-of-field passes' focus uniforms. */
+const FOCUS: IgeGpuUniform[] = [
+	{ name: "u_depthRange", type: "vec2" }, { name: "u_perspective", type: "i32" }, { name: "u_focus", type: "f32" },
+	{ name: "u_focusUv", type: "vec2" }, { name: "u_range", type: "f32" }
+];
+
+/** Each pass's fragment shader, uniform block and textures (in their slots' order). */
+const PASSES = {
+	bright: { fragment: BRIGHT, uniforms: [{ name: "u_texel", type: "vec2" }, { name: "u_threshold", type: "f32" }, { name: "u_knee", type: "f32" }, { name: "u_applyThreshold", type: "i32" }], textures: ["u_src"] },
+	blur: { fragment: BLUR, uniforms: [{ name: "u_dir", type: "vec2" }], textures: ["u_src"] },
+	dofBlur: { fragment: DOF_BLUR, uniforms: [{ name: "u_radius", type: "vec2" }, ...FOCUS], textures: ["u_src", "u_depth"] },
+	dofCombine: { fragment: DOF_COMBINE, uniforms: FOCUS, textures: ["u_src", "u_blurred", "u_depth"] },
+	composite: {
+		fragment: COMPOSITE,
+		uniforms: [
+			{ name: "u_bloom", type: "f32" }, { name: "u_exposure", type: "f32" }, { name: "u_tone", type: "i32" }, { name: "u_contrast", type: "f32" },
+			{ name: "u_saturation", type: "f32" }, { name: "u_temperature", type: "f32" }, { name: "u_vignette", type: "f32" }, { name: "u_vignetteSoftness", type: "f32" },
+			{ name: "u_resolution", type: "vec2" }, { name: "u_offset", type: "vec2" }, { name: "u_rotation", type: "f32" }, { name: "u_zoom", type: "f32" },
+			{ name: "u_blur", type: "f32" }, { name: "u_ghost", type: "f32" }, { name: "u_ghostShift", type: "vec2" }, { name: "u_ghostColor", type: "vec3" }
+		],
+		textures: ["u_scene", "u_bloom0", "u_bloom1"]
+	}
+} satisfies Record<string, { fragment: string; uniforms: IgeGpuUniform[]; textures: string[] }>;
+
+type PassName = keyof typeof PASSES;
+
+interface Pass {
+	pipeline: IgeGpuRenderPipeline;
+	block: Float32Array;
+}
+
+/** Sampled linear, clamped (the targets); nearest (the depth). */
+const LINEAR = { minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" } as const;
+const NEAREST = { minFilter: "nearest", magFilter: "nearest", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" } as const;
+
 export class IgeWebGlPostProcess {
 	settings: IgePostProcessSettings;
 
-	protected _gl: WebGL2RenderingContext;
+	protected _device: IgeWebGl2GpuDevice;
 	protected _w = 0;
 	protected _h = 0;
 	protected _samples = 0;
 	protected _half = false;
-	protected _msaaFbo: WebGLFramebuffer | null = null;
-	protected _msaaColor: WebGLRenderbuffer | null = null;
-	protected _msaaDepth: WebGLRenderbuffer | null = null;
-	protected _scene: Target | null = null;
+	/** The frame drawn offscreen: its colour (multisampled, unless samples are off) and depth-stencil. */
+	protected _msaaColor: IgeGpuTexture | null = null;
+	protected _msaaDepth: IgeGpuTexture | null = null;
+	protected _scene: IgeGpuTexture | null = null;
 	/** Bloom levels: [half A, half B, quarter A, quarter B]. */
-	protected _bloom: Target[] = [];
+	protected _bloom: IgeGpuTexture[] = [];
 	/** Depth of field (made when first used): the resolved depth, the half-size blur and the full-size result. */
-	protected _dofDepth: { fbo: WebGLFramebuffer; tex: WebGLTexture } | null = null;
-	protected _dofHalf: Target | null = null;
-	protected _dofOut: Target | null = null;
+	protected _dofDepth: IgeGpuTexture | null = null;
+	protected _dofHalf: IgeGpuTexture | null = null;
+	protected _dofOut: IgeGpuTexture | null = null;
 	/** The main camera's near and far planes and projection, for turning depth into distance. */
 	protected _near = 0.1;
 	protected _far = 1000;
 	protected _perspective = true;
-	protected _programs: { bright: Program; blur: Program; composite: Program; dofBlur: Program; dofCombine: Program } | null = null;
-	protected _vao: WebGLVertexArrayObject | null = null;
+	protected _passes: Record<PassName, Pass> | null = null;
 	protected _active = false;
 	protected _failed = false;
 
-	constructor (gl: WebGL2RenderingContext, settings: Partial<IgePostProcessSettings> = {}) {
-		this._gl = gl;
+	constructor (device: IgeWebGl2GpuDevice, settings: Partial<IgePostProcessSettings> = {}) {
+		this._device = device;
 		this.settings = { ...IGE_POST_PROCESS_DEFAULTS, ...settings };
 	}
 
@@ -404,8 +432,8 @@ export class IgeWebGlPostProcess {
 			this.dispose();
 			return false;
 		}
-		this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._msaaFbo);
 		this._active = true;
+		this.bindTarget();
 		return true;
 	}
 
@@ -416,129 +444,117 @@ export class IgeWebGlPostProcess {
 		this._perspective = perspective;
 	}
 
-	/** The offscreen target's framebuffer while a frame's drawn into it (null: none, the canvas). */
+	/** The offscreen target while a frame's drawn into it, for passes on the device (null: none, the canvas). */
+	target (): { color: IgeGpuTexture; depth: IgeGpuTexture } | null {
+		return this._active ? { color: this._msaaColor!, depth: this._msaaDepth! } : null;
+	}
+
+	/** The offscreen target's GL framebuffer while a frame's drawn into it (null: none, the canvas), for GL code not on the device yet. */
 	targetFramebuffer (): WebGLFramebuffer | null {
-		return this._active ? this._msaaFbo : null;
+		return this._active ? webGl2Framebuffer(this._device, this._msaaColor!, this._msaaDepth!) : null;
 	}
 
 	/** Re-bind the offscreen target (passes such as shadow maps bind their own and then the canvas). */
 	bindTarget (): void {
-		if (this._active) this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._msaaFbo);
+		if (!this._active) return;
+		const gl = this._device.gl;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFramebuffer());
 	}
 
-	/** Finish the frame: resolve, bloom and composite to the canvas. Leaves GL state for the caller to reset. */
+	/**
+	 * Finish the frame: resolve, bloom and composite to the canvas, on the
+	 * device. Leaves GL as the old passes did (the canvas bound, depth tested
+	 * and written, units 0 to 3 empty, no program) for the caller to reset.
+	 */
 	end (): void {
 		if (!this._active) return;
 		this._active = false;
-		const gl = this._gl;
+		const d = this._device;
 		// (On only for the picture effects: none of the rest)
 		const s = this.settings.enabled ? this.settings : { ...IGE_POST_PROCESS_DEFAULTS, ...pictureOf(this.settings), enabled: false };
 		const scene = this._scene!;
-		const programs = this._programs!;
+		d.invalidate();
 
-		gl.disable(gl.SCISSOR_TEST);
-		gl.disable(gl.DEPTH_TEST);
-		gl.disable(gl.STENCIL_TEST);
-		gl.disable(gl.BLEND);
-		gl.disable(gl.CULL_FACE);
-		gl.depthMask(false);
-		gl.colorMask(true, true, true, true);
+		// Resolve the frame into a texture
+		d.resolveTexture(this._msaaColor!, scene);
 
-		// Resolve the multisampled frame into a texture
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this._msaaFbo);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, scene.fbo);
-		gl.blitFramebuffer(0, 0, this._w, this._h, 0, 0, this._w, this._h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-
-		gl.bindVertexArray(this._vao);
 		// Depth of field first, from the sharp frame and its depth; the composite then reads the result
-		const sceneTex = s.dof > 0 ? this._depthOfField(scene) : scene.tex;
+		const sceneTex = s.dof > 0 ? this._depthOfField(scene) : scene;
 		const bloomOn = s.bloom > 0;
 		if (bloomOn) {
 			const [a0, b0, a1, b1] = this._bloom;
 			// Bright pass at half resolution
-			this._pass(programs.bright, a0, (u) => {
-				this._texture(0, scene.tex);
-				gl.uniform1i(u("u_src"), 0);
-				gl.uniform2f(u("u_texel"), 1 / scene.w, 1 / scene.h);
-				gl.uniform1f(u("u_threshold"), s.bloomThreshold);
-				gl.uniform1f(u("u_knee"), Math.max(1e-3, s.bloomKnee));
-				gl.uniform1i(u("u_applyThreshold"), 1);
+			this._pass("bright", a0, [scene], (b, at) => {
+				b[at.u_texel] = 1 / scene.width;
+				b[at.u_texel + 1] = 1 / scene.height;
+				b[at.u_threshold] = s.bloomThreshold;
+				b[at.u_knee] = Math.max(1e-3, s.bloomKnee);
+				b[at.u_applyThreshold] = 1;
 			});
 			this._blur(a0, b0, s.bloomRadius);
 			// Quarter resolution for a wider halo
-			this._pass(programs.bright, a1, (u) => {
-				this._texture(0, a0.tex);
-				gl.uniform1i(u("u_src"), 0);
-				gl.uniform2f(u("u_texel"), 1 / a0.w, 1 / a0.h);
-				gl.uniform1i(u("u_applyThreshold"), 0);
+			this._pass("bright", a1, [a0], (b, at) => {
+				b[at.u_texel] = 1 / a0.width;
+				b[at.u_texel + 1] = 1 / a0.height;
+				b[at.u_applyThreshold] = 0;
 			});
 			this._blur(a1, b1, s.bloomRadius * 1.5);
 		}
 
 		// Composite to the canvas
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.viewport(0, 0, this._w, this._h);
-		const comp = programs.composite;
-		gl.useProgram(comp.program);
-		const u = (name: string) => this._uniform(comp, name);
-		this._texture(0, sceneTex);
-		gl.uniform1i(u("u_scene"), 0);
-		this._texture(1, bloomOn ? this._bloom[0].tex : scene.tex);
-		gl.uniform1i(u("u_bloom0"), 1);
-		this._texture(2, bloomOn ? this._bloom[2].tex : scene.tex);
-		gl.uniform1i(u("u_bloom1"), 2);
-		gl.uniform1f(u("u_bloom"), bloomOn ? s.bloom : 0);
-		gl.uniform1f(u("u_exposure"), s.exposure);
-		gl.uniform1i(u("u_tone"), s.toneMapping === "aces" ? 1 : s.toneMapping === "reinhard" ? 2 : 0);
-		gl.uniform1f(u("u_contrast"), s.contrast);
-		gl.uniform1f(u("u_saturation"), s.saturation);
-		gl.uniform1f(u("u_temperature"), s.temperature);
-		gl.uniform1f(u("u_vignette"), s.vignette);
-		gl.uniform1f(u("u_vignetteSoftness"), s.vignetteSoftness);
-		gl.uniform2f(u("u_resolution"), this._w, this._h);
-		// (Screen terms to the shader's: y up, so a clockwise turn is negative)
-		gl.uniform2f(u("u_offset"), s.offsetX, -s.offsetY);
-		gl.uniform1f(u("u_rotation"), -s.rotation);
-		gl.uniform1f(u("u_zoom"), Math.max(0.01, s.zoom));
-		gl.uniform1f(u("u_blur"), Math.max(0, s.blur));
-		gl.uniform1f(u("u_ghost"), Math.max(0, Math.min(1, s.ghost)));
-		gl.uniform2f(u("u_ghostShift"), s.ghostX, -s.ghostY);
-		gl.uniform3f(u("u_ghostColor"), s.ghostColor.r, s.ghostColor.g, s.ghostColor.b);
-		gl.drawArrays(gl.TRIANGLES, 0, 3);
+		this._pass("composite", d.surface(), [sceneTex, bloomOn ? this._bloom[0] : scene, bloomOn ? this._bloom[2] : scene], (b, at) => {
+			b[at.u_bloom] = bloomOn ? s.bloom : 0;
+			b[at.u_exposure] = s.exposure;
+			b[at.u_tone] = s.toneMapping === "aces" ? 1 : s.toneMapping === "reinhard" ? 2 : 0;
+			b[at.u_contrast] = s.contrast;
+			b[at.u_saturation] = s.saturation;
+			b[at.u_temperature] = s.temperature;
+			b[at.u_vignette] = s.vignette;
+			b[at.u_vignetteSoftness] = s.vignetteSoftness;
+			b[at.u_resolution] = this._w;
+			b[at.u_resolution + 1] = this._h;
+			// (Screen terms to the shader's: y up, so a clockwise turn is negative)
+			b[at.u_offset] = s.offsetX;
+			b[at.u_offset + 1] = -s.offsetY;
+			b[at.u_rotation] = -s.rotation;
+			b[at.u_zoom] = Math.max(0.01, s.zoom);
+			b[at.u_blur] = Math.max(0, s.blur);
+			b[at.u_ghost] = Math.max(0, Math.min(1, s.ghost));
+			b[at.u_ghostShift] = s.ghostX;
+			b[at.u_ghostShift + 1] = -s.ghostY;
+			b[at.u_ghostColor] = s.ghostColor.r;
+			b[at.u_ghostColor + 1] = s.ghostColor.g;
+			b[at.u_ghostColor + 2] = s.ghostColor.b;
+		});
 
-		gl.bindVertexArray(null);
+		// GL as the old passes left it
+		const gl = d.gl;
+		d.release();
 		for (let unit = 0; unit < 4; unit++) {
 			gl.activeTexture(gl.TEXTURE0 + unit);
 			gl.bindTexture(gl.TEXTURE_2D, null);
 		}
 		gl.activeTexture(gl.TEXTURE0);
 		gl.useProgram(null);
-		gl.depthMask(true);
 		gl.enable(gl.DEPTH_TEST);
 	}
 
 	/** Free every GPU resource (the next begin() recreates what it needs). */
 	dispose (): void {
-		const gl = this._gl;
 		this._freeTargets();
-		if (this._programs) {
-			for (const p of Object.values(this._programs)) gl.deleteProgram(p.program);
-			this._programs = null;
+		if (this._passes) {
+			for (const p of new Set(Object.values(this._passes).map((x) => (x.pipeline as unknown as { _module: never })._module))) this._device.destroyShaderModule(p);
+			this._passes = null;
 		}
-		if (this._vao) gl.deleteVertexArray(this._vao);
-		this._vao = null;
 	}
 
 	/** Forget GPU resources without deleting them (after the context was lost). */
 	contextLost (): void {
-		this._msaaFbo = this._msaaColor = this._msaaDepth = null;
+		this._msaaColor = this._msaaDepth = null;
 		this._scene = null;
 		this._bloom = [];
 		this._dofDepth = this._dofHalf = this._dofOut = null;
-		this._programs = null;
-		this._vao = null;
+		this._passes = null;
 		this._w = this._h = 0;
 		this._active = false;
 	}
@@ -546,205 +562,105 @@ export class IgeWebGlPostProcess {
 	// ------------------------------------------------------------------
 
 	protected _ensure (width: number, height: number): void {
-		const gl = this._gl;
-		if (!this._programs) {
-			this._programs = {
-				bright: this._compile(BRIGHT),
-				blur: this._compile(BLUR),
-				composite: this._compile(COMPOSITE),
-				dofBlur: this._compile(DOF_BLUR),
-				dofCombine: this._compile(DOF_COMBINE)
-			};
-			this._vao = gl.createVertexArray();
+		const d = this._device;
+		if (!this._passes) {
+			const passes = {} as Record<PassName, Pass>;
+			for (const name of Object.keys(PASSES) as PassName[]) {
+				const def = PASSES[name];
+				const module = d.createShaderModule({ vertex: VERT, fragment: def.fragment, label: `post ${name}` });
+				const pipeline = d.createRenderPipeline({
+					module, vertex: { buffers: [] }, primitive: { topology: "triangle-list" },
+					uniforms: def.uniforms, textures: def.textures.map((t) => ({ name: t })), label: `post ${name}`
+				});
+				passes[name] = { pipeline, block: new Float32Array(pipeline.uniformSize) };
+			}
+			this._passes = passes;
 		}
 		// (On for the picture effects alone, nothing's tone mapped: plain 8-bit colour, half the memory to move)
-		const half = this.settings.hdr && this.settings.enabled && !!gl.getExtension("EXT_color_buffer_float");
-		const samples = Math.max(0, Math.min(this.settings.samples, gl.getParameter(gl.MAX_SAMPLES) as number));
-		if (width === this._w && height === this._h && half === this._half && samples === this._samples && this._msaaFbo) return;
+		const half = this.settings.hdr && this.settings.enabled && d.limits.floatTargets;
+		const samples = Math.max(0, Math.min(this.settings.samples, d.limits.maxSamples));
+		if (width === this._w && height === this._h && half === this._half && samples === this._samples && this._msaaColor) return;
 		this._freeTargets();
 		this._w = width;
 		this._h = height;
 		this._half = half;
 		this._samples = samples;
-		const colorFormat = half ? gl.RGBA16F : gl.RGBA8;
+		const format: IgeGpuTextureFormat = half ? "rgba16float" : "rgba8unorm";
 
-		this._msaaFbo = gl.createFramebuffer();
-		this._msaaColor = gl.createRenderbuffer();
-		this._msaaDepth = gl.createRenderbuffer();
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this._msaaFbo);
-		gl.bindRenderbuffer(gl.RENDERBUFFER, this._msaaColor);
-		gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, colorFormat, width, height);
-		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, this._msaaColor);
-		gl.bindRenderbuffer(gl.RENDERBUFFER, this._msaaDepth);
-		gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH24_STENCIL8, width, height);
-		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, this._msaaDepth);
-		const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-		gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		if (status !== gl.FRAMEBUFFER_COMPLETE) throw new Error(`offscreen target incomplete (0x${status.toString(16)})`);
+		this._msaaColor = d.createTexture({ width, height, format, sampleCount: samples, sampler: LINEAR, label: "post frame" });
+		this._msaaDepth = d.createTexture({ width, height, format: "depth24plus-stencil8", sampleCount: samples, sampler: NEAREST, label: "post frame depth" });
 
-		this._scene = this._target(width, height, half);
+		this._scene = this._target(width, height);
 		const hw = Math.max(1, width >> 1), hh = Math.max(1, height >> 1);
 		const qw = Math.max(1, width >> 2), qh = Math.max(1, height >> 2);
-		this._bloom = [this._target(hw, hh, half), this._target(hw, hh, half), this._target(qw, qh, half), this._target(qw, qh, half)];
+		this._bloom = [this._target(hw, hh), this._target(hw, hh), this._target(qw, qh), this._target(qw, qh)];
 	}
 
-	protected _target (w: number, h: number, half: boolean): Target {
-		const gl = this._gl;
-		const tex = gl.createTexture()!;
-		gl.bindTexture(gl.TEXTURE_2D, tex);
-		gl.texImage2D(gl.TEXTURE_2D, 0, half ? gl.RGBA16F : gl.RGBA8, w, h, 0, gl.RGBA, half ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE, null);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-		const fbo = gl.createFramebuffer()!;
-		gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-		const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		if (status !== gl.FRAMEBUFFER_COMPLETE) throw new Error(`post target incomplete (0x${status.toString(16)})`);
-		return { fbo, tex, w, h };
+	protected _target (w: number, h: number): IgeGpuTexture {
+		return this._device.createTexture({ width: w, height: h, format: this._half ? "rgba16float" : "rgba8unorm", sampler: LINEAR, label: "post target" });
 	}
 
 	/** Depth of field: resolve the depth, blur at half size by how out of focus each sample is, then blend by depth. Returns the texture to composite. */
-	protected _depthOfField (scene: Target): WebGLTexture {
-		const gl = this._gl, s = this.settings;
-		const programs = this._programs!;
+	protected _depthOfField (scene: IgeGpuTexture): IgeGpuTexture {
+		const d = this._device, s = this.settings;
 		if (!this._dofDepth) {
-			const tex = gl.createTexture()!;
-			gl.bindTexture(gl.TEXTURE_2D, tex);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH24_STENCIL8, this._w, this._h, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, null);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.bindTexture(gl.TEXTURE_2D, null);
-			const fbo = gl.createFramebuffer()!;
-			gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, tex, 0);
-			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-			this._dofDepth = { fbo, tex };
-			this._dofHalf = this._target(Math.max(1, this._w >> 1), Math.max(1, this._h >> 1), this._half);
-			this._dofOut = this._target(this._w, this._h, this._half);
+			this._dofDepth = d.createTexture({ width: this._w, height: this._h, format: "depth24plus-stencil8", sampler: NEAREST, label: "post depth" });
+			this._dofHalf = this._target(Math.max(1, this._w >> 1), Math.max(1, this._h >> 1));
+			this._dofOut = this._target(this._w, this._h);
 		}
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this._msaaFbo);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this._dofDepth.fbo);
-		gl.blitFramebuffer(0, 0, this._w, this._h, 0, 0, this._w, this._h, gl.DEPTH_BUFFER_BIT, gl.NEAREST);
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-		const focus = (u: (name: string) => WebGLUniformLocation | null) => {
-			this._texture(3, this._dofDepth!.tex);
-			gl.uniform1i(u("u_depth"), 3);
-			gl.uniform2f(u("u_depthRange"), this._near, this._far);
-			gl.uniform1i(u("u_perspective"), this._perspective ? 1 : 0);
-			gl.uniform1f(u("u_focus"), s.dofFocus);
-			gl.uniform2f(u("u_focusUv"), s.dofFocusX, s.dofFocusY);
-			gl.uniform1f(u("u_range"), Math.max(0.01, s.dofRange));
+		d.resolveTexture(this._msaaDepth!, this._dofDepth);
+		const focus = (b: Float32Array, at: Readonly<Record<string, number>>) => {
+			b[at.u_depthRange] = this._near;
+			b[at.u_depthRange + 1] = this._far;
+			b[at.u_perspective] = this._perspective ? 1 : 0;
+			b[at.u_focus] = s.dofFocus;
+			b[at.u_focusUv] = s.dofFocusX;
+			b[at.u_focusUv + 1] = s.dofFocusY;
+			b[at.u_range] = Math.max(0.01, s.dofRange);
 		};
 		const radius = 0.02 * Math.min(2, s.dof);
-		this._pass(programs.dofBlur, this._dofHalf!, (u) => {
-			this._texture(0, scene.tex);
-			gl.uniform1i(u("u_src"), 0);
-			gl.uniform2f(u("u_radius"), radius * (this._h / Math.max(1, this._w)), radius);
-			focus(u);
+		this._pass("dofBlur", this._dofHalf!, [scene, this._dofDepth], (b, at) => {
+			b[at.u_radius] = radius * (this._h / Math.max(1, this._w));
+			b[at.u_radius + 1] = radius;
+			focus(b, at);
 		});
-		this._pass(programs.dofCombine, this._dofOut!, (u) => {
-			this._texture(0, scene.tex);
-			gl.uniform1i(u("u_src"), 0);
-			this._texture(1, this._dofHalf!.tex);
-			gl.uniform1i(u("u_blurred"), 1);
-			focus(u);
-		});
-		return this._dofOut!.tex;
+		this._pass("dofCombine", this._dofOut!, [scene, this._dofHalf!, this._dofDepth], focus);
+		return this._dofOut!;
 	}
 
 	protected _freeTargets (): void {
-		const gl = this._gl;
-		if (this._dofDepth) {
-			gl.deleteFramebuffer(this._dofDepth.fbo);
-			gl.deleteTexture(this._dofDepth.tex);
-			this._dofDepth = null;
+		const d = this._device;
+		for (const t of [this._dofDepth, this._dofHalf, this._dofOut, this._msaaColor, this._msaaDepth, this._scene, ...this._bloom]) {
+			if (t) d.destroyTexture(t);
 		}
-		for (const t of [this._dofHalf, this._dofOut]) {
-			if (!t) continue;
-			gl.deleteFramebuffer(t.fbo);
-			gl.deleteTexture(t.tex);
-		}
-		this._dofHalf = this._dofOut = null;
-		if (this._msaaFbo) gl.deleteFramebuffer(this._msaaFbo);
-		if (this._msaaColor) gl.deleteRenderbuffer(this._msaaColor);
-		if (this._msaaDepth) gl.deleteRenderbuffer(this._msaaDepth);
-		this._msaaFbo = this._msaaColor = this._msaaDepth = null;
-		for (const t of [this._scene, ...this._bloom]) {
-			if (!t) continue;
-			gl.deleteFramebuffer(t.fbo);
-			gl.deleteTexture(t.tex);
-		}
+		this._dofDepth = this._dofHalf = this._dofOut = null;
+		this._msaaColor = this._msaaDepth = null;
 		this._scene = null;
 		this._bloom = [];
 		this._w = this._h = 0;
 	}
 
-	protected _compile (fragment: string): Program {
-		const gl = this._gl;
-		const shader = (type: number, src: string) => {
-			const sh = gl.createShader(type)!;
-			gl.shaderSource(sh, src);
-			gl.compileShader(sh);
-			if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh) ?? "shader failed to compile");
-			return sh;
-		};
-		const vs = shader(gl.VERTEX_SHADER, VERT);
-		const fs = shader(gl.FRAGMENT_SHADER, fragment);
-		const program = gl.createProgram()!;
-		gl.attachShader(program, vs);
-		gl.attachShader(program, fs);
-		gl.linkProgram(program);
-		gl.deleteShader(vs);
-		gl.deleteShader(fs);
-		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program) ?? "program failed to link");
-		return { program, uniforms: new Map() };
-	}
-
-	protected _uniform (p: Program, name: string): WebGLUniformLocation | null {
-		let loc = p.uniforms.get(name);
-		if (loc === undefined) {
-			loc = this._gl.getUniformLocation(p.program, name);
-			p.uniforms.set(name, loc);
-		}
-		return loc;
-	}
-
-	protected _texture (unit: number, tex: WebGLTexture): void {
-		const gl = this._gl;
-		gl.activeTexture(gl.TEXTURE0 + unit);
-		gl.bindTexture(gl.TEXTURE_2D, tex);
-	}
-
-	protected _pass (p: Program, target: Target, setup: (u: (name: string) => WebGLUniformLocation | null) => void): void {
-		const gl = this._gl;
-		gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
-		gl.viewport(0, 0, target.w, target.h);
-		gl.useProgram(p.program);
-		setup((name) => this._uniform(p, name));
-		gl.drawArrays(gl.TRIANGLES, 0, 3);
+	/** One full-screen triangle into `target` (a texture, or the canvas: its whole), reading `textures` in their slots. */
+	protected _pass (name: PassName, target: IgeGpuTexture | ReturnType<IgeWebGl2GpuDevice["surface"]>, textures: IgeGpuTexture[], set: (block: Float32Array, at: Readonly<Record<string, number>>) => void): void {
+		const { pipeline, block } = this._passes![name];
+		set(block, pipeline.uniformOffsets);
+		const pass = this._device.beginRenderPass({ color: { target } });
+		pass.setPipeline(pipeline);
+		for (let i = 0; i < textures.length; i++) pass.setTexture(i, textures[i]);
+		pass.setUniforms(block);
+		pass.draw(3);
+		pass.end();
 	}
 
 	/** Separable blur: a -> b horizontally, b -> a vertically. */
-	protected _blur (a: Target, b: Target, radius: number): void {
-		const gl = this._gl;
-		const blur = this._programs!.blur;
-		this._pass(blur, b, (u) => {
-			this._texture(0, a.tex);
-			gl.uniform1i(u("u_src"), 0);
-			gl.uniform2f(u("u_dir"), radius / a.w, 0);
+	protected _blur (a: IgeGpuTexture, b: IgeGpuTexture, radius: number): void {
+		this._pass("blur", b, [a], (block, at) => {
+			block[at.u_dir] = radius / a.width;
+			block[at.u_dir + 1] = 0;
 		});
-		this._pass(blur, a, (u) => {
-			this._texture(0, b.tex);
-			gl.uniform1i(u("u_src"), 0);
-			gl.uniform2f(u("u_dir"), 0, radius / b.h);
+		this._pass("blur", a, [b], (block, at) => {
+			block[at.u_dir] = 0;
+			block[at.u_dir + 1] = radius / b.height;
 		});
 	}
 }

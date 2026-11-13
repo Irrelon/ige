@@ -1,6 +1,10 @@
 import { IGE_POST_PROCESS_DEFAULTS, igePictureEffectsOn, IgeWebGlPostProcess } from "@/engine/webgl/IgeWebGlPostProcess";
+import { IgeWebGl2GpuDevice } from "@/engine/gpu/IgeWebGl2GpuDevice";
 
-/** A stand-in WebGL 2 context that records the uniforms set (by name). */
+/** Numbers as the GPU keeps them (32-bit floats: the device sends uniforms from a Float32Array). */
+const f32 = (v: number[]) => v.map(Math.fround);
+
+/** The device on a stand-in WebGL 2 context that records the uniforms set (by name). */
 function recordingGl () {
 	let n = 0;
 	const uniforms = new Map<string, number[]>();
@@ -17,7 +21,7 @@ function recordingGl () {
 			return () => undefined;
 		}
 	}) as unknown as WebGL2RenderingContext;
-	return { gl, uniforms };
+	return { gl: new IgeWebGl2GpuDevice(gl), uniforms };
 }
 
 describe("post-processing: the picture moved, turned, zoomed, softened and doubled", () => {
@@ -35,16 +39,16 @@ describe("post-processing: the picture moved, turned, zoomed, softened and doubl
 		post.settings = { ...post.settings, offsetX: 0.01, offsetY: 0.02, rotation: 0.03, zoom: 1.05, blur: 0.002 };
 		expect(post.begin(1280, 720)).toBe(true);
 		post.end();
-		expect(uniforms.get("u_bloom")).toEqual([0]);
-		expect(uniforms.get("u_exposure")).toEqual([1]);
-		expect(uniforms.get("u_tone")).toEqual([0]);
-		expect(uniforms.get("u_saturation")).toEqual([1]);
-		expect(uniforms.get("u_vignette")).toEqual([0]);
+		expect(uniforms.get("u_bloom")).toEqual(f32([0]));
+		expect(uniforms.get("u_exposure")).toEqual(f32([1]));
+		expect(uniforms.get("u_tone")).toEqual(f32([0]));
+		expect(uniforms.get("u_saturation")).toEqual(f32([1]));
+		expect(uniforms.get("u_vignette")).toEqual(f32([0]));
 		// Screen terms (y down, clockwise) to the shader's (y up)
-		expect(uniforms.get("u_offset")).toEqual([0.01, -0.02]);
-		expect(uniforms.get("u_rotation")).toEqual([-0.03]);
-		expect(uniforms.get("u_zoom")).toEqual([1.05]);
-		expect(uniforms.get("u_blur")).toEqual([0.002]);
+		expect(uniforms.get("u_offset")).toEqual(f32([0.01, -0.02]));
+		expect(uniforms.get("u_rotation")).toEqual(f32([-0.03]));
+		expect(uniforms.get("u_zoom")).toEqual(f32([1.05]));
+		expect(uniforms.get("u_blur")).toEqual(f32([0.002]));
 	});
 
 	it("with post-processing on, adds the picture's effects to the rest; set back to none, the picture's still", () => {
@@ -52,16 +56,16 @@ describe("post-processing: the picture moved, turned, zoomed, softened and doubl
 		const post = new IgeWebGlPostProcess(gl, { enabled: true, exposure: 1.2, ghost: 0.4, ghostX: 0.004, ghostY: 0, ghostColor: { r: 1, g: 0.85, b: 0.8 } });
 		expect(post.begin(800, 600)).toBe(true);
 		post.end();
-		expect(uniforms.get("u_exposure")).toEqual([1.2]);
-		expect(uniforms.get("u_ghost")).toEqual([0.4]);
-		expect(uniforms.get("u_ghostShift")).toEqual([0.004, -0]);
-		expect(uniforms.get("u_ghostColor")).toEqual([1, 0.85, 0.8]);
+		expect(uniforms.get("u_exposure")).toEqual(f32([1.2]));
+		expect(uniforms.get("u_ghost")).toEqual(f32([0.4]));
+		expect(uniforms.get("u_ghostShift")).toEqual(f32([0.004, -0]));
+		expect(uniforms.get("u_ghostColor")).toEqual(f32([1, 0.85, 0.8]));
 		post.settings = { ...post.settings, ghost: 0 };
 		expect(post.begin(800, 600)).toBe(true);
 		post.end();
-		expect(uniforms.get("u_offset")).toEqual([0, -0]);
-		expect(uniforms.get("u_rotation")).toEqual([-0]);
-		expect(uniforms.get("u_zoom")).toEqual([1]);
-		expect(uniforms.get("u_ghost")).toEqual([0]);
+		expect(uniforms.get("u_offset")).toEqual(f32([0, -0]));
+		expect(uniforms.get("u_rotation")).toEqual(f32([-0]));
+		expect(uniforms.get("u_zoom")).toEqual(f32([1]));
+		expect(uniforms.get("u_ghost")).toEqual(f32([0]));
 	});
 });

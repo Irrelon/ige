@@ -37,7 +37,7 @@ import {
 } from "@/engine/webgl/IgeWebGlInstancing";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeGpuBlendState, IgeGpuBuffer, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuTexture, IgeGpuUniform, IgeGpuVertexBufferLayout } from "@/engine/gpu/IgeGpuDevice";
-import { type IgeWebGl2GpuDevice, webGl2ExternalTexture, webGl2GpuDevice, webGl2Surface, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import { type IgeWebGl2GpuDevice, webGl2ExternalTexture, webGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
 import { EFFECT_ATTRIBUTES, IgeGpuMeshPrograms, INSTANCE_LAYOUT, meshLayout, meshTopology } from "@/engine/webgl/IgeGpuMeshPrograms";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
@@ -879,7 +879,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _postProcessor(): IgeWebGlPostProcess | null {
 		if ((!this._postSettings.enabled && !igePictureEffectsOn(this._postSettings)) || this._webglVersion !== 2 || !this._canvasContext) return null;
 		if (!this._postProcess) {
-			this._postProcess = new IgeWebGlPostProcess(this._canvasContext as WebGL2RenderingContext, this._postSettings);
+			this._postProcess = new IgeWebGlPostProcess(this._device!, this._postSettings);
 		}
 		this._postProcess.settings = this._postSettings;
 		return this._postProcess;
@@ -3274,7 +3274,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			jobs.length = 0;
 			return;
 		}
-		this._outlinePass ??= new IgeWebGlOutlinePass(gl);
+		this._outlinePass ??= new IgeWebGlOutlinePass(this._device!);
 		const pass = this._outlinePass;
 		const target = gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
 		const width = gl.drawingBufferWidth, height = gl.drawingBufferHeight;
@@ -3619,10 +3619,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 */
 	protected _effectPass(): IgeGpuRenderPass {
 		const device = this._device!;
-		const canvas = this._canvasElement!;
-		const fbo = this._postProcess?.targetFramebuffer() ?? null;
-		const target = fbo ? webGl2Surface(device, fbo, canvas.width, canvas.height, true) : device.surface();
-		const pass = device.beginRenderPass({ color: { target } });
+		const post = this._postProcess?.target();
+		const pass = device.beginRenderPass(post ? { color: { target: post.color }, depthStencil: { target: post.depth } } : { color: { target: device.surface() } });
 		const v = this._view;
 		pass.setViewport(v.x, v.y, v.w, v.h);
 		pass.setScissorRect(v.clip ? [v.x, v.y, v.w, v.h] : null);
