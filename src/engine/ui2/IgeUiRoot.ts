@@ -165,8 +165,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_momentum?: { el: IgeUiElement; vx: number; vy: number };
 	_tooltip?: { el: IgeUiElement; at: number; x: number; y: number; shown?: IgeUiElement };
 	_now = 0;
-	/** The last thing the user did was a key (not the pointer): focus moved by a script then shows its ring, as a browser's does. */
-	_keyboardModality = false;
+	/**
+	 * The last thing the user did wasn't a press of the pointer (a key, or nothing yet): focus moved by a script then
+	 * shows its ring, as a browser's does.
+	 */
+	_keyboardModality = true;
 	/** HTML drag and drop from the pointer (draggable="true"). */
 	readonly drag: IgeUiDragDrop = new IgeUiDragDrop(this);
 	_textInput?: HTMLInputElement;
@@ -890,6 +893,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		};
 		for (const b of partial ?? (this.rootBox ? [this.rootBox] : [])) clamp(b);
 		this.stats.layout = perf() - t0;
+		// (What's under a pointer that hasn't moved is looked at again after the paint, whoever asked for this layout)
+		this._hoverStale = true;
 		this._focusFixup();
 		if (this._resizeObservers.size) this._resized();
 	}

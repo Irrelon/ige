@@ -33,6 +33,31 @@ function anonStyle (parent: IgeUiComputedStyle): IgeUiComputedStyle {
 
 const REPLACED = new Set(["img", "canvas", "input", "svg", "video", "select", "textarea"]);
 
+/**
+ * The translate, rotate and scale properties as transform functions, in the order they apply before `transform`
+ * (CSS Transforms 2): "" when none is set. A rotation about an axis other than z isn't drawn.
+ */
+function individualTransforms (s: IgeUiComputedStyle): string {
+	let out = "";
+	const t = styleValue(s, "translate");
+	if (t && t !== "none") {
+		const [x, y] = splitTop(t.trim(), " ").filter(Boolean);
+		out += `translate(${x}, ${y ?? "0px"}) `;
+	}
+	const r = styleValue(s, "rotate");
+	if (r && r !== "none") {
+		const parts = splitTop(r.trim(), " ").filter(Boolean);
+		const angle = parts[parts.length - 1];
+		if (parts.length === 1 || (parts.length === 2 && parts[0] === "z") || (parts.length === 4 && parseFloat(parts[0]) === 0 && parseFloat(parts[1]) === 0)) out += `rotate(${angle}) `;
+	}
+	const sc = styleValue(s, "scale");
+	if (sc && sc !== "none") {
+		const n = splitTop(sc.trim(), " ").filter(Boolean).map((v) => (v.endsWith("%") ? parseFloat(v) / 100 : parseFloat(v)));
+		if (n.length && n.every(Number.isFinite)) out += `scale(${n[0]}, ${n[1] ?? n[0]}) `;
+	}
+	return out;
+}
+
 type Size = { min: number; max: number };
 
 interface InlineItem {
@@ -1027,8 +1052,8 @@ export class IgeUiLayoutEngine {
 	/** A box's transform from its style at its size (an animation moved it). */
 	/** A box's transform: its style's, after the move its element was placed by (IgeUiRoot.placeAt), if any. */
 	layoutBoxTransform (b: IgeUiBox): IgeUiBox["transform"] {
-		const tf = styleValue(b.style, "transform");
-		const m = tf === "none" ? undefined : parseTransform(tf, b.borderW, b.borderH, this._ctx(b.style));
+		const tf = individualTransforms(b.style) + (styleValue(b.style, "transform") === "none" ? "" : styleValue(b.style, "transform"));
+		const m = !tf ? undefined : parseTransform(tf, b.borderW, b.borderH, this._ctx(b.style));
 		const place = !b.pseudo ? b.el?._place : undefined;
 		if (!place) return m;
 		// (A move before the transform: whatever its origin, only the translation changes)

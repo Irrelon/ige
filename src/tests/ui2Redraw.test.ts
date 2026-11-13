@@ -346,3 +346,33 @@ describe("ui2: moving an element where it's drawn (placeAt)", () => {
 		expect(l.getBoundingClientRect().left).toBe(-20);
 	});
 });
+
+describe("ui2: the translate, rotate and scale properties", () => {
+	it("apply before the transform, about its origin", () => {
+		const r = ui(`.a, .b { position: absolute; left: 0; top: 0; width: 20px; height: 10px; } .a { translate: 10px 50%; scale: 2; } .b { transform: translate(10px, 50%) scale(2); } .c { position: absolute; left: 0; top: 50px; width: 20px; height: 20px; rotate: 90deg; translate: 5px; }`, 400, 300);
+		r.root.innerHTML = `<div class="a"></div><div class="b"></div><div class="c"></div>`;
+		r.update(0);
+		expect(r.root.querySelector(".a")!.getBoundingClientRect()).toEqual(r.root.querySelector(".b")!.getBoundingClientRect());
+		const c = r.root.querySelector(".c")!.getBoundingClientRect();
+		expect([Math.round(c.left), Math.round(c.top)]).toEqual([5, 50]);
+	});
+});
+
+describe("ui2: hover after a redraw", () => {
+	it("what's under a pointer that hasn't moved is hovered, also when the layout was done by a measurement first", () => {
+		const r = ui(`button { display: block; width: 80px; height: 20px; } button:hover { color: red; }`, 400, 300);
+		r.root.innerHTML = `<div class="list"><button class="a">A</button></div>`;
+		r.update(0);
+		const pt = { clientX: 10, clientY: 10, button: 0, buttons: 0, pointerType: "mouse", pointerId: 1, timeStamp: 0, stopImmediatePropagation () {}, preventDefault () {} };
+		r._pointer("pointermove", pt as never);
+		r.update(16);
+		// (A new button above the hovered one, which is kept: it moves down, the new one's under the pointer)
+		r.root.querySelector(".list")!.insertAdjacentHTML("afterbegin", `<button class="b">B</button>`);
+		void r.root.querySelector(".b")!.getBoundingClientRect();
+		r.update(32);
+		r.update(48);
+		expect(r.root.querySelector("button.b")!._states.has("hover")).toBe(true);
+		expect(r.root.querySelector("button.b")!._computed!.color).toBe("red");
+		expect(r.root.querySelector("button.a")!._computed!.color).not.toBe("red");
+	});
+});
