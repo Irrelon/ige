@@ -176,6 +176,11 @@ None outstanding; everything above is done. Completed on 2026-11-09:
 - **`position: fixed` inside a transformed ancestor** is placed against the viewport; Chrome places it against the
   ancestor (its containing block).
 - **Hit testing** doesn't round inline boxes, and doesn't clip by a rounded parent.
+- **`grid-template-areas`** isn't supported (Starflight's station directory used flex instead).
+- **A grid item stretched to its column ignores its `max-width`** (Starflight's Wildcard screen works round it with
+  `justify-self`).
+- **The individual transform properties** (`translate`, `scale`, `rotate`) don't animate in keyframes; only
+  `transform` does (Starflight's Wildcard animations use `transform`).
 
 ## Physics engine options
 
