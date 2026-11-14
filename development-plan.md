@@ -163,6 +163,20 @@ None outstanding; everything above is done. Completed on 2026-11-09:
 - A triangle BVH for raycasts and decal projection against large meshes.
 - Animation update rates: profiled, not needed (see Measured).
 
+### Engine UI (ui2): to do
+
+- **Tabular figures** (`font-variant-numeric: tabular-nums`, `font-feature-settings: "tnum"`). ui2 parses the
+  property but draws every digit at its own width. A number that changes every second (a clock, a distance) then
+  changes its line's width, and a centred line shifts a pixel or two each tick. When it's set, draw the digits at one
+  advance: the font's `tnum` glyphs where it has them, otherwise each digit given the widest digit's advance and
+  centred in it. Rob (2026-11-14): the engine UI may differ from Chrome here, so equal-width digits made up for a
+  font without `tnum` are fine, and the parity kit should accept that difference. Then Starflight's counting
+  numbers (the deep-space line, Starflight 37e9d9b, which used the HUD's monospace font as a stopgap) go back to
+  their own font with tabular figures.
+- **`position: fixed` inside a transformed ancestor** is placed against the viewport; Chrome places it against the
+  ancestor (its containing block).
+- **Hit testing** doesn't round inline boxes, and doesn't clip by a rounded parent.
+
 ## Physics engine options
 
 Researched on 2026-11-08 (maintenance data from GitHub and npm on that date).
