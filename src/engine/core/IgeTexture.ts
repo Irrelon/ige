@@ -14,6 +14,9 @@ import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeTextureCellArray } from "@/types/IgeTextureCellArray";
 
+/** A texture's URL as log messages show it: a data URL is "(data URL)", not the whole file in base64. */
+const urlForLog = (url?: string): string => (url?.startsWith("data:") ? "(data URL)" : String(url));
+
 /**
  * Creates a new texture.
  */
@@ -159,14 +162,14 @@ export class IgeTexture extends IgeAsset {
 					image._loaded = true;
 
 					// Log success
-					this.log("Texture image (" + imageUrl + ") loaded successfully");
+					this.log("Texture image (" + urlForLog(imageUrl) + ") loaded successfully");
 
 					/*if (image.width % 2) {
-                            self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
+                            self.log('The texture ' + urlForLog(imageUrl) + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
                         }
 
                         if (image.height % 2) {
-                            self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
+                            self.log('The texture ' + urlForLog(imageUrl) + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
                         }*/
 
 					// Loop textures that are using this image
@@ -189,7 +192,7 @@ export class IgeTexture extends IgeAsset {
 				})
 				.catch((err: unknown) => {
 					const error = err instanceof Error ? err : new Error(String(err));
-					this.log(`Texture image (${imageUrl}) failed to load: ${error.message}`, "error");
+					this.log(`Texture image (${urlForLog(imageUrl)}) failed to load: ${error.message}`, "error");
 					this._assetFailed(error);
 				});
 		} else {
@@ -210,7 +213,7 @@ export class IgeTexture extends IgeAsset {
 				if (image.width % 2) {
 					this.log(
 						"This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-						this._url,
+						urlForLog(this._url),
 						"warning"
 					);
 				}
@@ -218,7 +221,7 @@ export class IgeTexture extends IgeAsset {
 				if (image.height % 2) {
 					this.log(
 						"This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-						this._url,
+						urlForLog(this._url),
 						"warning"
 					);
 				}
@@ -366,7 +369,7 @@ export class IgeTexture extends IgeAsset {
 
 		if (!this._loaded) {
 			this.log(
-				`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`,
+				`Cannot resize texture because the texture image (${urlForLog(this._url)}) has not loaded into memory yet!`,
 				"error"
 			);
 			return;
@@ -429,7 +432,7 @@ export class IgeTexture extends IgeAsset {
 
 		if (!this._loaded) {
 			this.log(
-				`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`,
+				`Cannot resize texture because the texture image (${urlForLog(this._url)}) has not loaded into memory yet!`,
 				"error"
 			);
 		}
