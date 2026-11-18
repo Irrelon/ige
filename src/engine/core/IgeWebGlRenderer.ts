@@ -161,7 +161,7 @@ const LINE_LAYOUT: IgeGpuVertexBufferLayout = { arrayStride: 28, attributes: [{ 
  * culled, or not), transparent (not written), flat (an outline's mask: no depth test, no blending), or a silhouette's
  * two halves (its own pixels marked in the stencil, invisibly; then drawn where something's in front, off the mark).
  */
-const enum LitState { Opaque, OpaqueCulled, Transparent, Flat, MarkOccluded, Occluded }
+const enum LitState { Opaque, OpaqueCulled, Transparent, Flat, MarkOccluded, Occluded, DepthOnly }
 
 const NORMAL_BLEND: IgeGpuBlendState = { color: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" }, alpha: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" } };
 
@@ -171,6 +171,7 @@ function litState (state: LitState): Pick<IgeGpuRenderPipelineDesc, "blend" | "d
 		case LitState.OpaqueCulled: return { blend: NORMAL_BLEND, depth: { compare: "less-equal", write: true }, primitive: { cullMode: "back" } };
 		case LitState.Transparent: return { blend: NORMAL_BLEND, depth: { compare: "less-equal", write: false } };
 		case LitState.Flat: return {};
+		case LitState.DepthOnly: return { writeColor: false, depth: { compare: "less-equal", write: true } };
 		case LitState.MarkOccluded: return {
 			blend: NORMAL_BLEND, writeColor: false, depth: { compare: "less-equal", write: false, bias: { constant: -4, slopeScale: -1 } },
 			stencil: { compare: "always", passOp: "replace" }
@@ -2204,6 +2205,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		item.transparent = mat.opacity < 1 || mat.a < 1 || !!materialData?.transparent || !!overrideData?.transparent ||
 			!!(item.texture && (item.texture as any)._hasAlpha);
 		item.doubleSided = !!(overrideData?.doubleSided ?? materialData?.doubleSided);
+		item.depthPrepass = item.transparent && !!(overrideData?.depthPrepass ?? materialData?.depthPrepass);
 		item.castShadow = !entity._noShadowCast && !item.transparent;
 		item.shadowOnly = entity._shadowOnly;
 
@@ -2953,9 +2955,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _drawLitItems(pass: IgeGpuRenderPass, items: IgeWebGlRenderItem[], state: LitState): void {
 		for (let i = 0; i < items.length; i++) {
 			const item = items[i];
+			if (state === LitState.Transparent && item.depthPrepass) this._drawLitItem(pass, item, LitState.DepthOnly);
+			this._drawLitItem(pass, item, state);
+		}
+	}
+
+	/** One lit item drawn in a state. */
+	protected _drawLitItem(pass: IgeGpuRenderPass, item: IgeWebGlRenderItem, state: LitState): void {
+		{
 			const skinned = !!item.skeleton;
 			const geometry = item.drawGeometry;
-			if (!geometry.gpuVertex) continue;
+			if (!geometry.gpuVertex) return;
 			const pipeline = this._litPipeline(skinned, false, geometry, state);
 			const block = this._litBlock(skinned, false);
 			const { data, at } = block;

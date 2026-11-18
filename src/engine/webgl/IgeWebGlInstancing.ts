@@ -65,6 +65,8 @@ export interface IgeWebGlRenderItem {
 	transparent: boolean;
 	/** Never back-face culled (material doubleSided). */
 	doubleSided: boolean;
+	/** A transparent item draws its depth first, so only its nearest surface blends (material depthPrepass). */
+	depthPrepass?: boolean;
 	castShadow: boolean;
 	/** Drawn in shadow passes only (IgeObject._shadowOnly). */
 	shadowOnly: boolean;

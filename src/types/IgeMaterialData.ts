@@ -35,6 +35,12 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	 * cloth or single-sided planes. Set from glTF's doubleSided flag.
 	 */
 	doubleSided?: boolean;
+	/**
+	 * For a transparent item: draw its depth first (no colour), then its colour where that depth matches, so only the
+	 * nearest surface of the mesh blends over the scene and its own inner and back faces don't show through it.
+	 * Off by default.
+	 */
+	depthPrepass?: boolean;
 
 	// PBR properties
 	/** Metallic factor (0 = dielectric, 1 = metal) */
