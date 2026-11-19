@@ -47,7 +47,8 @@ function toneUrl (freq: number, seconds: number, decay: boolean, volume = 0.5): 
  * drag the bar to scrub; the picture at a time is the same however you get there.
  * The panel has a recorder look (IgeRecorderEffect, guides/recorder-effect.md): P cycles the presets (site recorder,
  * warship camera, precursor memory, none). Its grain, flicker and random dropouts come from the timeline's time, so a
- * paused frame holds still and scrubbing back gives the same picture; the scene spikes a dropout at 3.2s.
+ * paused frame holds still and scrubbing back gives the same picture; the scene spikes a dropout at 3.2s, where the picture freezes on its last good frame (the sparks stay stuck in the air)
+ * while the tearing and grain go on over it; scrub into it and you get the same frozen frame.
  * ?t=4.6 starts at a time, ?paused=1 starts paused, ?preset=warshipCamera starts on a preset.
  */
 export class Client extends IgeBaseClass implements IgeCanInit {
@@ -209,10 +210,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 					.at(6, { quaternion: { x: Math.sin(Math.PI / 3) * 0.7, y: 0.4, z: 0, w: Math.cos(Math.PI / 3) } }, "smooth")
 					.at(10, { quaternion: { x: 0, y: 0, z: 0, w: 1 } })
 			)
-			// The recorder look's dropout, spiked by the scene when the hatch blows at 3.2s (and a small one at the last cut)
+			// The recorder look's dropout, spiked by the scene when the hatch blows at 3.2s (and a small one at the last cut). Above the
+			// preset's freeze level (0.5) the picture holds the last good frame, the one just before it crossed the level (about 3.15s)
 			.track("panel", (t) =>
 				t
 					.at(0, { effect: { dropout: 0 } })
+					.at(3.1, { effect: { dropout: 0 } })
 					.at(3.2, { effect: { dropout: 1 } }, "smooth")
 					.at(3.55, { effect: { dropout: 0.55 } }, "smooth")
 					.at(3.9, { effect: { dropout: 0 } }, "step")

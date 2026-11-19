@@ -1198,6 +1198,69 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		return this._panels;
 	}
 
+	/** The panel's rectangle on the canvas in device pixels (from the bottom-left). */
+	protected _panelFrame(panel: IgePanelViewport, dpr: number): { x: number; y: number; width: number; height: number } {
+		const vp = panel.viewport;
+		return {
+			x: Math.floor((vp._translate?.x || 0) * dpr),
+			y: Math.floor((vp._translate?.y || 0) * dpr),
+			width: Math.floor(vp._bounds2d.x * dpr),
+			height: Math.floor(vp._bounds2d.y * dpr)
+		};
+	}
+
+	/**
+	 * For each shown panel whose effect asks for its history to hold another moment (a recorder freeze, started when
+	 * the picture was last good): the effect's scene is set to that moment, drawn into the panel's target and copied into
+	 * the history, and set back; then the shown panels' scenes are collected again at the time the frame is for. This
+	 * happens when a freeze starts (play or seek), not each frame.
+	 */
+	protected _renderPanelHistories(targets: IgePanelTargets, dpr: number): void {
+		let redo = false;
+		for (const panel of this._visiblePanels) {
+			const effect = panel.effect;
+			if (!effect?.history?.() || !effect.historyRequest) continue;
+			const frame = this._panelFrame(panel, dpr);
+			if (frame.width < 1 || frame.height < 1) continue;
+			const target = targets.ensure(panel, frame.width, frame.height, !!effect.depth, panel.samples, true);
+			const request = effect.historyRequest(target);
+			if (!request) continue;
+			redo = true;
+			request.renderAt(() => {
+				this._itemCount = 0;
+				this._skeletonRows.clear();
+				this._bonePalette?.begin();
+				this._forgetCollected(panel.viewport._scene);
+				this._collectScene(panel.viewport._scene);
+				this._uploadBonePalette();
+				this._lightManager = panel.lights;
+				this._shadowCastingLight = panel._shadowLight;
+				this._shadowLightId = panel.shadowId;
+				this._shadowCastingPointLights = [];
+				this._fog = panel.fog() ?? { ...this._fog, mode: "none" };
+				this._panelTarget = target;
+				try {
+					this._renderViewport(panel.viewport);
+				} finally {
+					this._panelTarget = null;
+				}
+				targets.resolve(target);
+				target.captureHistory();
+				target.historyKey = request.key;
+			});
+		}
+		if (!redo) return;
+		// The scenes are back at this frame's time: collect them again for the panels' own draws
+		this._itemCount = 0;
+		this._skeletonRows.clear();
+		this._bonePalette?.begin();
+		for (const panel of this._visiblePanels) {
+			this._forgetCollected(panel.viewport._scene);
+			this._collectScene(panel.viewport._scene);
+		}
+		this._uploadBonePalette();
+	}
+
 	/**
 	 * Draw the shown panels (prepared and collected by renderSceneGraph), each into an offscreen target of its own
 	 * sized to its rectangle, then composite it onto the canvas (through the panel's effect, or a plain copy), after
@@ -1221,6 +1284,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._inPanel = true;
 		this._sharedShadowFrame = -1;
 		try {
+			// Panels whose effect holds a history frame from another moment (a freeze): that moment is drawn first
+			if (targets) this._renderPanelHistories(targets, dpr);
 			for (const panel of this._visiblePanels) {
 				this._lightManager = panel.lights;
 				this._shadowCastingLight = panel._shadowLight;
@@ -1234,7 +1299,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					width: Math.floor(vp._bounds2d.x * dpr),
 					height: Math.floor(vp._bounds2d.y * dpr)
 				};
-				const target = targets && frame.width >= 1 && frame.height >= 1 ? targets.ensure(panel, frame.width, frame.height, !!panel.effect?.depth, panel.samples) : null;
+				const target = targets && frame.width >= 1 && frame.height >= 1 ? targets.ensure(panel, frame.width, frame.height, !!panel.effect?.depth, panel.samples, !!panel.effect?.history?.()) : null;
 				this._panelTarget = target;
 				try {
 					this._renderViewport(vp);
@@ -1939,14 +2004,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// Upload the bone palette once; every viewport and shadow pass reads it (the passes not yet on the device on
 		// BONE_TEXTURE_UNIT, left bound there for the frame)
-		if (this._bonePalette && this._skeletonRows.size > 0) {
-			const device = this._gpuBegin();
-			this._bonePalette.upload();
-			const gl2 = gl as WebGL2RenderingContext;
-			gl2.activeTexture(gl2.TEXTURE0 + BONE_TEXTURE_UNIT);
-			gl2.bindTexture(gl2.TEXTURE_2D, webGl2Texture(device, this._bonePalette.texture));
-			this._stateManager.invalidateTextureBindings();
-		}
+		this._uploadBonePalette();
 
 		// Point light shadow maps don't depend on the camera: render them once
 		if (this._shadowCastingPointLights.length > 0 && this._shadowManager) {
@@ -1987,6 +2045,23 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._debugLineVertices = 0;
 
 		return true;
+	}
+
+	/** Make the next _collectScene of a scene walk it again this frame (its entities changed since it was collected). */
+	protected _forgetCollected(scene: IgeObject | undefined): void {
+		const data = scene ? this._sceneData.get(scene) : undefined;
+		if (data) data.frameId = -1;
+	}
+
+	/** Upload the frame's bone palette (skinned items collected so far) and leave it bound on its unit. */
+	protected _uploadBonePalette(): void {
+		if (!this._bonePalette || this._skeletonRows.size === 0) return;
+		const gl = this._canvasContext as WebGL2RenderingContext;
+		const device = this._gpuBegin();
+		this._bonePalette.upload();
+		gl.activeTexture(gl.TEXTURE0 + BONE_TEXTURE_UNIT);
+		gl.bindTexture(gl.TEXTURE_2D, webGl2Texture(device, this._bonePalette.texture));
+		this._stateManager!.invalidateTextureBindings();
 	}
 
 	/** Collect a scene's renderables for this frame (once per scene, however many views draw it). */

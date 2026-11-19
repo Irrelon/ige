@@ -58,6 +58,13 @@ export interface IgeRecorderSettings {
 	shimmer: number;
 	/** How fast the shimmer moves (1 normal). */
 	shimmerSpeed: number;
+	/**
+	 * Freeze: above this dropout level (0 off, else 0.05 to 1) the picture sticks on the last good frame (a history
+	 * texture the panel keeps) instead of holding in coarse blocks. Only effects with freeze above 0 pay for the history.
+	 */
+	freeze: number;
+	/** Overscan to fill, 0 to 1: how much the picture is enlarged so the warp leaves no black corners (1 fills the rectangle exactly). */
+	overscan: number;
 }
 
 export type IgeRecorderSettingName = keyof IgeRecorderSettings;
@@ -66,7 +73,7 @@ export type IgeRecorderSettingName = keyof IgeRecorderSettings;
 export const IGE_RECORDER_DEFAULTS: Readonly<IgeRecorderSettings> = {
 	fps: 24, seed: 0, grain: 0, flicker: 0, scanlines: 0, scanlineSize: 3,
 	tintR: 1, tintG: 1, tintB: 1, tint: 0, desaturate: 0, contrast: 1, crush: 0, brightness: 1,
-	vignette: 0, fringe: 0, blur: 0, sharpen: 0, warp: 0, dropout: 0, dropoutRandom: 0, shimmer: 0, shimmerSpeed: 1
+	vignette: 0, fringe: 0, blur: 0, sharpen: 0, warp: 0, dropout: 0, dropoutRandom: 0, shimmer: 0, shimmerSpeed: 1, freeze: 0, overscan: 0
 };
 
 /** The named looks. Add your own with `igeRecorderPreset(name, settings)` (settings are merged over the defaults). */
@@ -74,12 +81,12 @@ export const IGE_RECORDER_PRESETS: Record<string, Partial<IgeRecorderSettings>> 
 	/** A construction site's recorder: grainy, rough, greenish colour, soft and a little warped, now and then losing the picture. */
 	siteRecorder: {
 		grain: 0.4, flicker: 0.5, scanlines: 0.14, scanlineSize: 3, tintR: 0.82, tintG: 1, tintB: 0.74, tint: 0.55,
-		desaturate: 0.4, contrast: 1.25, crush: 0.07, vignette: 0.55, fringe: 1.6, blur: 0.35, warp: 0.05, dropoutRandom: 0.3
+		desaturate: 0.4, contrast: 1.25, crush: 0.07, vignette: 0.55, fringe: 1.6, blur: 0.35, warp: 0.05, dropoutRandom: 0.3, freeze: 0.5, overscan: 1
 	},
 	/** A warship's pod bay camera: sharp, blue-grey, with clear scanlines and little noise. */
 	warshipCamera: {
 		grain: 0.07, flicker: 0.08, scanlines: 0.35, scanlineSize: 2, tintR: 0.68, tintG: 0.84, tintB: 1, tint: 0.65,
-		desaturate: 0.5, contrast: 1.15, crush: 0.03, vignette: 0.3, fringe: 0.6, sharpen: 0.7, warp: 0.025, dropoutRandom: 0.06
+		desaturate: 0.5, contrast: 1.15, crush: 0.03, vignette: 0.3, fringe: 0.6, sharpen: 0.7, warp: 0.025, dropoutRandom: 0.06, freeze: 0.5, overscan: 1
 	},
 	/** A precursor machine's memory: shimmering gold, no scanlines and no grain. */
 	precursorMemory: {
@@ -156,6 +163,57 @@ export function igeRecorderState (settings: IgeRecorderSettings, time: number): 
 	};
 }
 
+/** The scale (0 to 1) the picture is sampled at so a warp of this strength leaves no black corner: the picture's corner lands exactly on the rectangle's. `amount` 0 none, 1 exact. */
+export function igeRecorderOverscan (warp: number, amount: number = 1): number {
+	const w = Math.max(warp, 0);
+	const k = Math.min(Math.max(amount, 0), 1);
+	if (w <= 0 || k <= 0) return 1;
+	// The corner (1, 1) of the rectangle samples the picture at s * (1 + 2 w s^2) (see the shader); find s where that is 1
+	let lo = 0.05;
+	let hi = 1;
+	for (let i = 0; i < 40; i++) {
+		const mid = (lo + hi) / 2;
+		if (mid * (1 + 2 * w * mid * mid) > 1) hi = mid;
+		else lo = mid;
+	}
+	return 1 + (lo - 1) * k;
+}
+
+/** The glitch level at a time, from the scripted dropout (given) and the random ones: what the picture's tearing is drawn from. */
+export function igeRecorderGlitchAt (settings: IgeRecorderSettings, time: number, scripted: number = settings.dropout): number {
+	return Math.min(1, Math.max(Math.max(scripted, 0), igeRecorderRandomDropout(time, settings.dropoutRandom, settings.seed)));
+}
+
+/** The longest freeze looked back over, in noise frames (about 50 s at 24 fps): a freeze that long is held from here. */
+export const IGE_RECORDER_FREEZE_SCAN = 1200;
+
+/**
+ * The freeze rule. A picture is frozen in a noise frame when the glitch level in that frame (taken at the frame's
+ * start time) is at or above `settings.freeze`. The frozen picture is the panel's picture at the start time of the
+ * last noise frame before the stretch where the level was under the threshold (the last good frame), so it's a pure
+ * function of the settings and the glitch curve (`dropoutAt(t)`: the scripted dropout level at a time): the same
+ * whether playback ran into the freeze or a seek landed in it. Returns that time in seconds, or null when the
+ * picture is not frozen at `time` (or freeze is off).
+ */
+export function igeRecorderFreezeStart (settings: IgeRecorderSettings, time: number, dropoutAt: (t: number) => number = () => settings.dropout): number | null {
+	if (!(settings.freeze > 0)) return null;
+	const fps = Math.max(settings.fps, 1);
+	const bad = (n: number) => igeRecorderGlitchAt(settings, n / fps, dropoutAt(n / fps)) >= settings.freeze;
+	const frame = igeRecorderFrame(time, fps);
+	if (!bad(frame)) return null;
+	let n = frame;
+	for (let i = 0; n > 0 && bad(n) && i < IGE_RECORDER_FREEZE_SCAN; i++) n--;
+	return n / fps;
+}
+
+/** The scene's side of the effect's freeze: what the timeline offers so a frozen picture can be made at its start time. */
+export interface IgeRecorderTimeSource {
+	/** The value of a scripted setting at a time (undefined if nothing scripts it). */
+	sample (name: string, time: number): number | undefined;
+	/** Set the scene to its state at `time`, call `draw()`, and set it back (nothing is emitted). */
+	renderAt (time: number, draw: () => void): void;
+}
+
 // ----- the shader
 
 const FRAG = `#version 300 es
@@ -169,7 +227,7 @@ uniform vec4 u_c;   // tint rgb, tint amount
 uniform vec4 u_d;   // desaturate, contrast, crush, brightness
 uniform vec4 u_e;   // vignette, fringe, blur, sharpen
 uniform vec4 u_f;   // warp, glitch, roll, shimmer
-uniform vec4 u_g;   // seed, band, 0, 0
+uniform vec4 u_g;   // seed, band, overscan scale, frozen (1: the picture is the held frame, no blocky hold)
 
 float hash(vec2 p, float f) {
 	vec3 q = fract(vec3(p, f) * vec3(0.1031, 0.1030, 0.0973));
@@ -188,7 +246,8 @@ void main() {
 	vec2 uv = v_uv;
 	vec2 c = uv * 2.0 - 1.0;
 
-	// Barrel warp: the picture is bulged inside its rectangle, the corners fall away to black
+	// Barrel warp: the picture is bulged inside its rectangle (enlarged first by the overscan, so no corner falls away to black)
+	c *= u_g.z;
 	float bulge = 1.0 + u_f.x * dot(c, c);
 	c *= bulge;
 	uv = c * 0.5 + 0.5;
@@ -205,13 +264,14 @@ void main() {
 		if (hash(vec2(fine, 3.0), frame) < glitch * 0.12) uv.x += (hash(vec2(fine, 4.0), frame) - 0.5) * 0.12;
 		uv.y = fract(uv.y + u_f.z);
 		// Blocky freeze: the picture holds in coarse blocks
-		if (glitch > 0.5) {
+		if (glitch > 0.5 && u_g.w < 0.5) {
 			vec2 b = vec2(48.0, 27.0) * (1.4 - glitch);
 			uv = (floor(uv * b) + 0.5) / b;
 		}
 	}
 
-	bool outside = uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0;
+	float e = 0.002;
+	bool outside = uv.x < -e || uv.x > 1.0 + e || uv.y < -e || uv.y > 1.0 + e;
 	vec2 px = 1.0 / res;
 	vec2 d = normalize(c + 1e-5) * px * u_e.y * (0.4 + length(c));
 	vec3 col = vec3(tex(uv + d).r, tex(uv).g, tex(uv - d).b);
@@ -271,6 +331,8 @@ export class IgeRecorderEffect implements IgePanelEffect {
 	protected _time = 0;
 	protected _pipeline?: IgeGpuRenderPipeline;
 	protected _block?: Float32Array;
+	/** What lets the scene draw itself at another time (a timeline bound to the panel sets it): without one the held frame is the last good one drawn. */
+	source?: IgeRecorderTimeSource;
 
 	/** A preset by name (see IGE_RECORDER_PRESETS), or settings merged over the defaults; none for a plain copy. */
 	constructor (preset?: string | Partial<IgeRecorderSettings>) {
@@ -316,6 +378,40 @@ export class IgeRecorderEffect implements IgePanelEffect {
 		return this;
 	}
 
+	/** True when this effect wants the panel to keep a history frame (freeze is on). Effects that don't cost nothing extra. */
+	history (): boolean {
+		return this.settings.freeze > 0;
+	}
+
+	/**
+	 * Is the picture frozen now, and which moment's picture is held (null when the scene can't say: no time source, so
+	 * it's the last good frame drawn). See igeRecorderFreezeStart for the rule.
+	 */
+	freezeState (): { frozen: boolean; start: number | null } {
+		const s = this.settings;
+		if (!(s.freeze > 0)) return { frozen: false, start: null };
+		const src = this.source;
+		if (!src) {
+			const t = igeRecorderFrame(this._time, s.fps) / Math.max(s.fps, 1);
+			return { frozen: igeRecorderGlitchAt(s, t) >= s.freeze, start: null };
+		}
+		const start = igeRecorderFreezeStart(s, this._time, (t) => src.sample("dropout", t) ?? s.dropout);
+		return { frozen: start !== null, start };
+	}
+
+	/**
+	 * Asked by the renderer before it draws the panel: if the picture is frozen and the history doesn't hold the frame
+	 * the freeze started on, the moment to draw it at and how (the scene is set to that time, drawn, set back). Null
+	 * when there's nothing to do. The renderer stores `key` on the target once it has copied the picture into the history.
+	 */
+	historyRequest (source: IgePanelSource): { time: number; key: number; renderAt: (draw: () => void) => void } | null {
+		const src = this.source;
+		if (!src || !source.history) return null;
+		const { start } = this.freezeState();
+		if (start === null || source.historyKey === start) return null;
+		return { time: start, key: start, renderAt: (draw) => src.renderAt(start, draw) };
+	}
+
 	/** What the shader is given now. */
 	state (): IgeRecorderFrameState {
 		return igeRecorderState(this.settings, this._time);
@@ -347,15 +443,23 @@ export class IgeRecorderEffect implements IgePanelEffect {
 		put("u_d", s.desaturate, s.contrast, Math.min(s.crush, 0.9), s.brightness);
 		put("u_e", s.vignette, s.fringe, s.blur, s.sharpen);
 		put("u_f", s.warp, st.glitch, st.roll, s.shimmer);
-		put("u_g", s.seed % 64, st.band, 0, 0);
+		const fs = this.freezeState();
+		// The held frame: the history, once it holds the frame this freeze started on (or, with no time source, any good frame drawn)
+		const held = fs.frozen && !!source.history && (fs.start !== null ? source.historyKey === fs.start : source.historyKey !== null);
+		put("u_g", s.seed % 64, st.band, igeRecorderOverscan(s.warp, s.overscan), fs.frozen ? 1 : 0);
 
 		const pass = device.beginRenderPass({ color: { target: device.surface() } });
 		pass.setViewport(frame.x, frame.y, frame.width, frame.height);
 		pass.setScissorRect([frame.x, frame.y, frame.width, frame.height]);
 		pass.setPipeline(this._pipeline);
 		pass.setUniforms(b);
-		pass.setTexture(0, source.color);
+		pass.setTexture(0, held ? source.history! : source.color);
 		pass.draw(3);
 		pass.end();
+		// No time source: keep the picture while it's good, to hold when it isn't (a copy of the panel's colour)
+		if (!this.source && source.history && !fs.frozen) {
+			source.captureHistory();
+			source.historyKey = -1;
+		}
 	}
 }

@@ -34,6 +34,12 @@ export interface IgePanelSource {
 	depth: IgeGpuTexture | null;
 	width: number;
 	height: number;
+	/** A frame held over from earlier (an effect that asked for history, `history()` true), the panel's size; null for effects that didn't. */
+	history: IgeGpuTexture | null;
+	/** What the history holds, as the effect labels it (null: nothing yet). The effect and renderer set it; a new target starts at null. */
+	historyKey: number | null;
+	/** Copy the panel's resolved colour into the history (a texture copy). */
+	captureHistory(): void;
 }
 
 /** A panel's offscreen target. */
@@ -79,9 +85,10 @@ export class IgePanelTargets {
 	/**
 	 * The panel's target at this size in device pixels: made the first time, made again when the size changes, kept
 	 * otherwise. `wantDepth`: its depth readable too (resolved after the pass). `samples`: the multisampling asked
-	 * for, capped to what the GPU allows (under 2 means none); it's made again when this changes.
+	 * for, capped to what the GPU allows (under 2 means none); it's made again when this changes. `wantHistory`: a
+	 * history texture of the panel's size too (see IgePanelSource.history), freed again when it's no longer wanted.
 	 */
-	ensure (panel: object, width: number, height: number, wantDepth: boolean, samples: number = IGE_PANEL_DEFAULT_SAMPLES): IgePanelTarget {
+	ensure (panel: object, width: number, height: number, wantDepth: boolean, samples: number = IGE_PANEL_DEFAULT_SAMPLES, wantHistory: boolean = false): IgePanelTarget {
 		const d = this._device;
 		const effective = igePanelSamples(samples, d.limits.maxSamples);
 		let t = this._targets.get(panel);
@@ -97,8 +104,24 @@ export class IgePanelTargets {
 			const color = d.createTexture({ width, height, format: "rgba8unorm", sampler: linear, label: "panel" });
 			const renderColor = multisampled ? d.createTexture({ width, height, format: "rgba8unorm", sampleCount: samples, sampler: linear, label: "panel frame" }) : color;
 			const renderDepth = d.createTexture({ width, height, format: "depth24plus-stencil8", sampleCount: multisampled ? samples : undefined, sampler: nearest, label: "panel depth" });
-			t = { color, depth: null, width, height, renderColor, renderDepth, multisampled, samples: multisampled ? samples : 0 };
+			const made: IgePanelTarget = {
+				color, depth: null, width, height, renderColor, renderDepth, multisampled, samples: multisampled ? samples : 0,
+				history: null, historyKey: null,
+				captureHistory: () => {
+					if (made.history) d.copyTextureToTexture(made.color, made.history);
+				}
+			};
+			t = made;
 			this._targets.set(panel, t);
+		}
+		// The history frame: made when an effect wants it, freed when none does
+		if (wantHistory && !t.history) {
+			t.history = d.createTexture({ width, height, format: "rgba8unorm", sampler: { minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }, label: "panel history" });
+			t.historyKey = null;
+		} else if (!wantHistory && t.history) {
+			d.destroyTexture(t.history);
+			t.history = null;
+			t.historyKey = null;
 		}
 		if (wantDepth && !t.depth) {
 			// Single-sampled: the depth drawn is already readable
@@ -159,6 +182,7 @@ export class IgePanelTargets {
 		const d = this._device;
 		const all = new Set<IgeGpuTexture>([t.color, t.renderColor, t.renderDepth]);
 		if (t.depth) all.add(t.depth);
+		if (t.history) all.add(t.history);
 		for (const tex of all) d.destroyTexture(tex);
 	}
 }

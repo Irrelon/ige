@@ -4,10 +4,11 @@ import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgeAudioControl } from "@/engine/components/audio/IgeAudioControl";
 import { ige } from "@/engine/instance";
 import { IgeTimeline, igeTimelineEngineAudio, igeTimelineSample, type IgeTimelineAudio } from "@/engine/timeline/IgeTimeline";
+import { IgePanelTargets } from "@/engine/webgl/IgePanelTarget";
 import { timeline } from "@/engine/timeline/IgeTimelineBuilder";
 import {
 	IGE_RECORDER_DEFAULTS, IGE_RECORDER_PRESETS, IgeRecorderEffect, igeRecorderFrame, igeRecorderHash, igeRecorderPreset,
-	igeRecorderRandomDropout, igeRecorderState
+	igeRecorderRandomDropout, igeRecorderState, igeRecorderOverscan, igeRecorderFreezeStart, igeRecorderGlitchAt, IGE_RECORDER_FREEZE_SCAN
 } from "@/engine/webgl/IgeRecorderEffect";
 
 const engine = new IgeEntity() as any;
@@ -213,5 +214,243 @@ describe("audio rate", () => {
 		handle.setRate!(2);
 		expect(calls).toEqual([["create", "x", 1.25], ["rate", 2]]);
 		delete (ige as any).audio;
+	});
+});
+
+describe("overscan", () => {
+	it("is no change without warp or with overscan off", () => {
+		expect(igeRecorderOverscan(0, 1)).toBe(1);
+		expect(igeRecorderOverscan(0.1, 0)).toBe(1);
+	});
+
+	it("scales the picture so the warped corner lands exactly on the rectangle's corner", () => {
+		for (const warp of [0.025, 0.05, 0.1, 0.2]) {
+			const s = igeRecorderOverscan(warp, 1);
+			expect(s).toBeLessThan(1);
+			// The shader: c *= s; c *= 1 + warp * dot(c, c); sampled at the corner (1, 1)
+			const cx = s;
+			const bulge = 1 + warp * (cx * cx * 2);
+			expect(cx * bulge).toBeCloseTo(1, 6);
+			// Nothing else in the rectangle samples outside the picture: check the edge and a diagonal
+			for (let i = 0; i <= 20; i++) {
+				const x = i / 10 - 1;
+				for (const y of [-1, -0.5, 0, 0.5, 1]) {
+					const px = x * s * (1 + warp * s * s * (x * x + y * y));
+					expect(Math.abs(px)).toBeLessThanOrEqual(1 + 1e-9);
+				}
+			}
+		}
+	});
+
+	it("goes part of the way for an amount between 0 and 1, and the warping presets have it on", () => {
+		const full = igeRecorderOverscan(0.1, 1);
+		expect(igeRecorderOverscan(0.1, 0.5)).toBeCloseTo((1 + full) / 2, 9);
+		for (const name of Object.keys(IGE_RECORDER_PRESETS)) {
+			const p = IGE_RECORDER_PRESETS[name];
+			if ((p.warp ?? 0) > 0) expect(p.overscan).toBe(1);
+		}
+	});
+});
+
+describe("freeze rule", () => {
+	const settings = (extra: Record<string, number> = {}) => ({ ...IGE_RECORDER_DEFAULTS, freeze: 0.5, ...extra });
+	// A dropout that ramps from 0 at 3.1 s to 1 at 3.2 s, falls to 0.55 at 3.55 and to 0 at 3.9
+	const dropoutAt = (t: number) => (t < 3.1 ? 0 : t < 3.2 ? (t - 3.1) / 0.1 : t < 3.55 ? 1 - ((t - 3.2) / 0.35) * 0.45 : t < 3.9 ? 0.55 : 0);
+
+	it("is off with freeze 0 and not frozen below the threshold", () => {
+		expect(igeRecorderFreezeStart(settings({ freeze: 0 }), 3.3, dropoutAt)).toBeNull();
+		expect(igeRecorderFreezeStart(settings(), 3.0, dropoutAt)).toBeNull();
+		expect(igeRecorderFreezeStart(settings(), 4.0, dropoutAt)).toBeNull();
+	});
+
+	it("holds the last good noise frame before the dropout crossed the threshold, the same all through the freeze", () => {
+		const s = settings();
+		const start = igeRecorderFreezeStart(s, 3.3, dropoutAt)!;
+		expect(start).not.toBeNull();
+		// The frame at `start` was good, the next was frozen
+		expect(dropoutAt(start)).toBeLessThan(0.5);
+		expect(dropoutAt(start + 1 / 24)).toBeGreaterThanOrEqual(0.5);
+		for (let t = 3.2; t < 3.9; t += 0.013) expect(igeRecorderFreezeStart(s, t, dropoutAt)).toBe(start);
+		// Quantised to noise frames
+		expect(igeRecorderFrame(start, 24) / 24).toBeCloseTo(start, 9);
+	});
+
+	it("looks back no further than the scan limit and holds frame 0 when frozen from the start", () => {
+		expect(igeRecorderFreezeStart(settings(), 2, () => 1)).toBe(0);
+		const far = igeRecorderFreezeStart(settings(), 100, () => 1)!;
+		expect(far).toBeCloseTo((100 * 24 - IGE_RECORDER_FREEZE_SCAN) / 24, 6);
+	});
+
+	it("counts the random dropouts too, at their level", () => {
+		const s = settings({ freeze: 0.3, dropoutRandom: 1, seed: 3 });
+		let found = 0;
+		for (let t = 0; t < 30; t += 1 / 24) {
+			const frozen = igeRecorderFreezeStart(s, t) !== null;
+			expect(frozen).toBe(igeRecorderGlitchAt(s, igeRecorderFrame(t, 24) / 24) >= 0.3);
+			if (frozen) found++;
+		}
+		expect(found).toBeGreaterThan(0);
+	});
+});
+
+describe("freeze through a timeline: playing into it and seeking into it hold the same frame", () => {
+	function scene () {
+		const ring = new IgeEntity();
+		const panel = new IgePanelViewport({ left: 0, top: 0, width: 100, height: 100 });
+		const effect = new IgeRecorderEffect({ freeze: 0.5 });
+		panel.effect = effect;
+		const data = timeline({ duration: 8 })
+			.track("ring", (t) => t.at(0, { position: { x: 0, y: 0, z: 0 } }).at(8, { position: { x: 800, y: 0, z: 0 } }))
+			.track("panel", (t) =>
+				t.at(0, { effect: { dropout: 0 } }).at(3.1, { effect: { dropout: 0 } }).at(3.2, { effect: { dropout: 1 } }).at(4.2, { effect: { dropout: 0 } }))
+			.build();
+		const tl = new IgeTimeline(data).setAudio({ start: () => null }).bind({ ring, panel });
+		return { ring, panel, effect, tl };
+	}
+	const source = (effect: IgeRecorderEffect) => ({ history: {}, historyKey: null as number | null, color: {}, width: 1, height: 1, depth: null, captureHistory: () => undefined }) as any;
+
+	it("asks to draw the scene at the same moment, and draws it with the scene at that moment, either way", () => {
+		// Played into the freeze, a frame at a time
+		const a = scene();
+		a.tl.play();
+		let t = 0;
+		while (t < 3.4) {
+			a.tl.update(1000 / 60);
+			t += 1 / 60;
+		}
+		const srcA = source(a.effect);
+		const reqA = a.effect.historyRequest(srcA)!;
+		expect(reqA).not.toBeNull();
+		let seenA = -1;
+		const timeBefore = a.tl.time();
+		reqA.renderAt(() => (seenA = a.ring._translate.x));
+		expect(a.ring._translate.x).toBeCloseTo((timeBefore / 8) * 800, 6); // set back afterwards
+		expect(a.tl.time()).toBe(timeBefore);
+
+		// Seeked straight in, at another time inside the freeze
+		const b = scene();
+		b.tl.seek(3.6);
+		const srcB = source(b.effect);
+		const reqB = b.effect.historyRequest(srcB)!;
+		let seenB = -1;
+		reqB.renderAt(() => (seenB = b.ring._translate.x));
+
+		expect(reqB.time).toBe(reqA.time);
+		expect(reqB.key).toBe(reqA.key);
+		expect(seenB).toBe(seenA);
+		expect(seenA).toBeCloseTo((reqA.time / 8) * 800, 6);
+		// The hold is the moment the dropout crossed the threshold (about 3.15 s), not the moment of the seek
+		expect(reqA.time).toBeGreaterThan(3.0);
+		expect(reqA.time).toBeLessThan(3.2);
+	});
+
+	it("asks once: when the history holds that frame there is nothing more to do, and not at all before or after the freeze", () => {
+		const { effect, tl } = scene();
+		tl.seek(3.6);
+		const src = source(effect);
+		const req = effect.historyRequest(src)!;
+		src.historyKey = req.key;
+		expect(effect.historyRequest(src)).toBeNull();
+		tl.seek(3.8);
+		expect(effect.historyRequest(src)).toBeNull();
+		tl.seek(5);
+		expect(effect.freezeState().frozen).toBe(false);
+		expect(effect.historyRequest(src)).toBeNull();
+		// A second freeze somewhere else would need its own frame
+		src.historyKey = 0.5;
+		tl.seek(3.6);
+		expect(effect.historyRequest(src)).not.toBeNull();
+	});
+
+	it("does not set the scene's captions or events off when it draws another moment", () => {
+		const { tl, effect } = scene();
+		const seen: unknown[] = [];
+		tl.on("captions", (c: unknown) => void seen.push(c));
+		tl.seek(3.6);
+		const n = seen.length;
+		effect.historyRequest(source(effect))!.renderAt(() => undefined);
+		expect(seen.length).toBe(n);
+	});
+
+	it("needs no history and no request when freeze is off", () => {
+		const { effect, tl } = scene();
+		effect.set({ freeze: 0 });
+		tl.seek(3.6);
+		expect(effect.history()).toBe(false);
+		expect(effect.historyRequest(source(effect))).toBeNull();
+	});
+});
+
+describe("history frame lifecycle", () => {
+	function device () {
+		let made = 0;
+		let freed = 0;
+		const d: any = {
+			limits: { maxSamples: 4 }, copies: 0,
+			live: () => made - freed,
+			createTexture: (desc: any) => (made++, { kind: "texture", ...desc }),
+			destroyTexture: () => void freed++,
+			copyTextureToTexture: () => void d.copies++,
+			resolveTexture: () => undefined
+		};
+		return d;
+	}
+
+	it("makes no extra texture unless an effect wants history, frees it when it stops and with the target", () => {
+		const d = device();
+		const targets = new IgePanelTargets(d);
+		const panel = {};
+		const plain = targets.ensure(panel, 64, 36, false, 4, false);
+		const base = d.live();
+		expect(plain.history).toBeNull();
+		const withHistory = targets.ensure(panel, 64, 36, false, 4, true);
+		expect(withHistory).toBe(plain);
+		expect(withHistory.history).not.toBeNull();
+		expect(d.live()).toBe(base + 1);
+		withHistory.historyKey = 3;
+		targets.ensure(panel, 64, 36, false, 4, false);
+		expect(plain.history).toBeNull();
+		expect(d.live()).toBe(base);
+		targets.ensure(panel, 64, 36, false, 4, true);
+		targets.free(panel);
+		expect(d.live()).toBe(0);
+	});
+
+	it("rebuilds it, empty, when the panel resizes, and after context loss", () => {
+		const d = device();
+		const targets = new IgePanelTargets(d);
+		const panel = {};
+		const a = targets.ensure(panel, 64, 36, false, 4, true);
+		a.historyKey = 1.5;
+		const b = targets.ensure(panel, 128, 72, false, 4, true);
+		expect(b).not.toBe(a);
+		expect(b.history!.width).toBe(128);
+		expect(b.historyKey).toBeNull();
+		expect(d.live()).toBe(b.multisampled ? 4 : 3);
+		targets.contextLost();
+		const c = targets.ensure(panel, 128, 72, false, 4, true);
+		expect(c.historyKey).toBeNull();
+		expect(c.history).not.toBe(b.history);
+	});
+
+	it("copies the resolved colour into the history on capture, only when there is one", () => {
+		const d = device();
+		const targets = new IgePanelTargets(d);
+		const t = targets.ensure({}, 32, 32, false, 4, false);
+		t.captureHistory();
+		expect(d.copies).toBe(0);
+		const u = targets.ensure({}, 32, 32, false, 4, true);
+		u.captureHistory();
+		expect(d.copies).toBe(1);
+	});
+
+	it("with no timeline, keeps the picture while it's good (the live fallback) and holds it when it isn't", () => {
+		const effect = new IgeRecorderEffect({ freeze: 0.5 });
+		expect(effect.source).toBeUndefined();
+		const src: any = { history: {}, historyKey: null, color: {}, captureHistory: () => undefined, width: 2, height: 2, depth: null };
+		expect(effect.historyRequest(src)).toBeNull();
+		expect(effect.freezeState()).toEqual({ frozen: false, start: null });
+		effect.set({ dropout: 0.9 });
+		expect(effect.freezeState()).toEqual({ frozen: true, start: null });
 	});
 });

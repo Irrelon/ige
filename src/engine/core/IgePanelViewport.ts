@@ -55,6 +55,15 @@ export interface IgePanelFrame {
 export interface IgePanelEffect {
 	/** The panel's depth is wanted in `source.depth` (resolved after the pass; it costs a resolve, so off by default). */
 	depth?: boolean;
+	/** The effect wants a history frame kept (`source.history`): the panel makes one more texture of its size for it, and only then. */
+	history?(): boolean;
+	/**
+	 * Asked before the panel is drawn each frame: if the history must hold the picture of another moment (a freeze at
+	 * the moment the picture was last good), the renderer calls `renderAt(draw)`, which sets the scene to that moment,
+	 * runs `draw()` (which draws the panel and copies it into the history) and sets the scene back, then stores `key`
+	 * as `source.historyKey`. Null when the history is right.
+	 */
+	historyRequest?(source: IgePanelSource): { time: number; key: number; renderAt: (draw: () => void) => void } | null;
 	apply(device: IgeGpuDevice, frame: IgePanelFrame, source: IgePanelSource): void;
 }
 

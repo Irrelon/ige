@@ -372,6 +372,54 @@ describe("IgeTimeline: cues", () => {
 		expect(log).toEqual(["stop ambience"]);
 	});
 
+	it("is silent running backwards: live sounds stop, none start, and they come back at the right offset going forwards", () => {
+		const { audio, log } = fakeAudio({ ambience: 4 });
+		const tl = new IgeTimeline({
+			duration: 20,
+			sounds: [
+				{ start: 2, source: "ambience", loop: true },
+				{ start: 5, source: "voice", track: true, end: 9 },
+				{ start: 6, source: "ping" }
+			]
+		}).setAudio(audio);
+		tl.seek(7);
+		tl.play();
+		expect(log).toEqual(["start ambience@1.00 loop", "start voice@2.00"]);
+		log.length = 0;
+
+		// Backwards: what's live stops, and nothing starts as it runs over sounds, a one-shot included
+		tl.rate(-1);
+		expect(log.sort()).toEqual(["stop ambience", "stop voice"]);
+		log.length = 0;
+		tl.update(500);
+		tl.update(500);
+		expect(tl.time()).toBeCloseTo(6, 6);
+		tl.update(1500);
+		expect(tl.time()).toBeCloseTo(4.5, 6);
+		tl.seek(3);
+		tl.update(200);
+		expect(log).toEqual([]);
+
+		// Forwards again: the long sounds resume at the offset for where it is now
+		tl.rate(1);
+		// (time is 3.2: the loop has run 1.2 s; the voice, 5 to 9, hasn't begun)
+		expect(log).toEqual(["start ambience@1.20 loop"]);
+		tl.pause();
+	});
+
+	it("is silent when it starts playing already running backwards, and a seek while backwards starts nothing", () => {
+		const { audio, log } = fakeAudio({});
+		const tl = new IgeTimeline({ duration: 10, sounds: [{ start: 1, source: "a", loop: true }] }).setAudio(audio);
+		tl.rate(-1);
+		tl.seek(5);
+		tl.play();
+		tl.seek(4);
+		tl.update(100);
+		expect(log).toEqual([]);
+		tl.rate(2);
+		expect(log).toEqual([`start a@${(tl.time() - 1).toFixed(2)} loop`]);
+	});
+
 	it("stops a long sound when playback passes its end", () => {
 		const { audio, log } = fakeAudio({ v: 10 });
 		const tl = new IgeTimeline({ duration: 20, sounds: [{ start: 1, source: "v", end: 3 }] }).setAudio(audio);

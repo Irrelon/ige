@@ -1,3 +1,4 @@
+import type { IgeRecorderTimeSource } from "@/engine/webgl/IgeRecorderEffect";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { ige } from "@/engine/instance";
 import { IgeBehaviourType } from "@/enums";
@@ -241,7 +242,7 @@ const NUMERIC: ReadonlySet<IgeTimelineProperty> = new Set(["position", "rotation
 export const igeTimelineSoundRate = (rate: number): number => Math.min(Math.max(Math.abs(rate), 0.1), 8);
 
 /** The effect a bound target carries (a panel's `effect`), or the target itself if it is one (has `set`). */
-function effectOf (target: any): { set?: (s: Record<string, number>) => unknown; has?: (n: string) => boolean; time?: (t: number) => unknown } | undefined {
+function effectOf (target: any): { set?: (s: Record<string, number>) => unknown; has?: (n: string) => boolean; time?: (t: number) => unknown; source?: IgeRecorderTimeSource; history?: () => boolean } | undefined {
 	if (!target) return undefined;
 	if (target.effect && typeof target.effect === "object") return target.effect;
 	if (typeof target.set === "function" && typeof target.time === "function") return target;
@@ -290,6 +291,7 @@ export class IgeTimeline extends IgeEventingClass {
 	protected _cursorInclusive = true;
 	protected _targets = new Map<string, unknown>();
 	protected _baseMaterial = new WeakMap<object, unknown>();
+	protected _sources = new WeakMap<object, IgeRecorderTimeSource>();
 	protected _sounds: Array<{ cue: IgeTimelineSoundCue; handle: IgeTimelineSoundHandle }> = [];
 	protected _runs = new Map<string, ParticleRun>();
 	protected _captionKey = "";
@@ -355,14 +357,21 @@ export class IgeTimeline extends IgeEventingClass {
 		return this;
 	}
 
-	/** Playback speed (1 normal, 2 twice as fast, negative runs backwards: cues don't fire going backwards). */
+	/** Playback speed (1 normal, 2 twice as fast, negative runs backwards: cues don't fire going backwards and sound is silent until the rate is positive again). */
 	rate (): number;
 	rate (val: number): this;
 	rate (val?: number): number | this {
 		if (val === undefined) return this._rate;
 		this._rate = val;
-		// Sound follows: what's sounding speeds up and slows down with the timeline
-		for (const s of this._sounds) s.handle.setRate?.(igeTimelineSoundRate(val));
+		if (val < 0) {
+			// Sound has no backwards: it goes quiet (what's live stops, nothing starts) until the rate is positive again
+			this._stopSounds();
+		} else {
+			// Sound follows: what's sounding speeds up and slows down with the timeline
+			for (const s of this._sounds) s.handle.setRate?.(igeTimelineSoundRate(val));
+			// Back to forwards: long sounds come back at the right offset
+			this._syncSounds();
+		}
 		return this;
 	}
 
@@ -539,11 +548,21 @@ export class IgeTimeline extends IgeEventingClass {
 
 	/** Set the scene to its state at the current time (done by seek() and update(); call it after changing the scene by hand). */
 	apply (): this {
-		const t = this._time;
+		return this._applyAt(this._time, false);
+	}
+
+	/** The scene at time `t` (the current time unless a freeze is being drawn: see `renderAt`). `quiet`: emit nothing. */
+	protected _applyAt (t: number, quiet: boolean): this {
 		// A panel's effect works its noise out from the timeline's time, so scrubbing back gives the same picture
-		for (const target of this._targets.values()) effectOf(target)?.time?.(t);
+		for (const target of this._targets.values()) {
+			const effect = effectOf(target);
+			if (!effect) continue;
+			effect.time?.(t);
+			if (typeof effect.history === "function" && effect.source !== this._effectSource(effect)) effect.source = this._effectSource(effect);
+		}
 		for (const track of this._data.tracks) this._applyTrack(track, t);
 		this._applyParticles(t);
+		if (quiet) return this;
 		const captions = this.captionsAt(t);
 		const key = captions.map((c) => `${c.start}|${c.end}|${c.speaker ?? ""}|${c.text}`).join("\n");
 		if (key !== this._captionKey) {
@@ -551,6 +570,41 @@ export class IgeTimeline extends IgeEventingClass {
 			this.emit("captions", captions);
 		}
 		return this;
+	}
+
+	/**
+	 * The scene's state at another time for one draw: sets the scene to `time`, calls `draw()`, sets it back to the
+	 * current time. Nothing is emitted and no cue fires. A panel's recorder freeze uses it to draw the picture it holds.
+	 */
+	renderAt (time: number, draw: () => void): void {
+		const d = this._data.duration;
+		const at = Math.min(Math.max(Number.isFinite(time) ? time : 0, 0), d);
+		this._applyAt(at, true);
+		try {
+			draw();
+		} finally {
+			this._applyAt(this._time, true);
+		}
+	}
+
+	/** What an effect can ask of this timeline (the value a scripted setting has at a time; draw the scene at a time). One per effect, kept. */
+	protected _effectSource (effect: object): IgeRecorderTimeSource {
+		let source = this._sources.get(effect);
+		if (!source) {
+			source = {
+				sample: (name, time) => {
+					for (const track of this._data.tracks) {
+						if (track.property !== `effect.${name}` || effectOf(this._targets.get(track.target)) !== effect) continue;
+						const value = igeTimelineSample(track.keys, time, track.property);
+						if (typeof value === "number") return value;
+					}
+					return undefined;
+				},
+				renderAt: (time, draw) => this.renderAt(time, draw)
+			};
+			this._sources.set(effect, source);
+		}
+		return source;
 	}
 
 	/** Stop sounds and the behaviour. */
@@ -727,6 +781,7 @@ export class IgeTimeline extends IgeEventingClass {
 	}
 
 	protected _startSound (cue: IgeTimelineSoundCue, offset: number): void {
+		if (this._rate < 0) return;
 		const handle = this.audio.start(cue.source, { offset, loop: !!cue.loop, volume: cue.volume ?? 1, rate: igeTimelineSoundRate(this._rate) });
 		if (!handle) return;
 		this._sounds.push({ cue, handle });
@@ -741,6 +796,11 @@ export class IgeTimeline extends IgeEventingClass {
 	/** While playing: long sounds that should be sounding now and aren't are started at the right offset; ones whose time has gone are stopped. */
 	protected _syncSounds (): void {
 		if (!this._playing) return;
+		// Running backwards is silent
+		if (this._rate < 0) {
+			this._stopSounds();
+			return;
+		}
 		const t = this._time;
 		for (const cue of this._data.sounds) {
 			if (!this._isTrack(cue)) continue;
