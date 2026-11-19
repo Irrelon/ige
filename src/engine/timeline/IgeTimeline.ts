@@ -15,9 +15,12 @@ import type { IgeParticleSystem3d, IgeParticleVec3 } from "@/engine/webgl/IgePar
 export type IgeTimelineEase = "step" | "linear" | "smooth";
 
 /** What a track sets on its target. */
-export type IgeTimelineProperty = "position" | "rotation" | "quaternion" | "scale" | "visible" | "color" | "opacity" | "animation" | "camera";
+export type IgeTimelineProperty = "position" | "rotation" | "quaternion" | "scale" | "visible" | "color" | "opacity" | "animation" | "camera" | `effect.${string}`;
 
 export const IGE_TIMELINE_PROPERTIES: readonly IgeTimelineProperty[] = ["position", "rotation", "quaternion", "scale", "visible", "color", "opacity", "animation", "camera"];
+
+/** A panel effect's numeric setting is animated by a property `effect.<name>` (e.g. `effect.dropout`). */
+export const igeTimelineIsEffectProperty = (property: string): property is `effect.${string}` => property.startsWith("effect.") && property.length > 7;
 
 export interface IgeTimelineVec3 { x: number; y: number; z: number }
 export interface IgeTimelineQuat { x: number; y: number; z: number; w: number }
@@ -47,7 +50,8 @@ export interface IgeTimelineKey<V = unknown> {
  * Keys for one property of one target. Targets are names the game binds to entities (or, for `camera`, a panel)
  * with IgeTimeline.bind(). Before its first key a track holds its first value, after its last it holds its last.
  * Values: position, rotation (Euler radians) and scale are {x, y, z}; quaternion {x, y, z, w}; visible a boolean;
- * color {r, g, b, a?}; opacity a number; animation an IgeTimelineAnimation; camera a camera name of the panel.
+ * color {r, g, b, a?}; opacity a number; animation an IgeTimelineAnimation; camera a camera name of the panel;
+ * `effect.<name>` a number: a setting of the target panel's effect (IgeRecorderEffect), e.g. `effect.dropout`.
  */
 export interface IgeTimelineTrackData {
 	target: string;
@@ -119,12 +123,14 @@ export interface IgeTimelineData {
 /** A sound that was started and can be stopped. */
 export interface IgeTimelineSoundHandle {
 	stop (): void;
+	/** Change the playback rate of a sound already sounding (the timeline calls it when its rate changes). */
+	setRate? (rate: number): void;
 }
 
 /** How the timeline makes sound. The default uses the engine's audio (`ige.audio`); a game or a test can swap its own. */
 export interface IgeTimelineAudio {
 	/** Start `source` `offset` seconds in. Null if it can't play (no audio, unknown source). */
-	start (source: string, options: { offset: number; loop: boolean; volume: number }): IgeTimelineSoundHandle | null;
+	start (source: string, options: { offset: number; loop: boolean; volume: number; rate?: number }): IgeTimelineSoundHandle | null;
 	/** The source's length in seconds, if known. */
 	length? (source: string): number | undefined;
 }
@@ -136,14 +142,14 @@ export const igeTimelineEngineAudio: IgeTimelineAudio = {
 		if (!audio?._ctx) return null;
 		let control: any = null;
 		try {
-			control = audio.createAudioControl(source, { loop: options.loop, volume: options.volume });
+			control = audio.createAudioControl(source, { loop: options.loop, volume: options.volume, rate: options.rate });
 		} catch {
 			return null;
 		}
 		if (!control) return null;
 		if (options.offset > 0) control.play(options.offset);
 		else control.play();
-		return { stop: () => control.stop() };
+		return { stop: () => control.stop(), setRate: (rate) => control.playbackRate(rate) };
 	},
 	length (source) {
 		return (ige as any).audio?.get?.(source)?.buffer?.duration;
@@ -231,6 +237,17 @@ export function igeTimelineSample (keys: IgeTimelineKey[], t: number, property?:
 /** What a property's keys do between them when no ease is given: only numbers, vectors and colours move. */
 const NUMERIC: ReadonlySet<IgeTimelineProperty> = new Set(["position", "rotation", "quaternion", "scale", "color", "opacity"]);
 
+/** A sound's playback rate for a timeline rate: the speed (sound has no backwards), kept to what audio allows. */
+export const igeTimelineSoundRate = (rate: number): number => Math.min(Math.max(Math.abs(rate), 0.1), 8);
+
+/** The effect a bound target carries (a panel's `effect`), or the target itself if it is one (has `set`). */
+function effectOf (target: any): { set?: (s: Record<string, number>) => unknown; has?: (n: string) => boolean; time?: (t: number) => unknown } | undefined {
+	if (!target) return undefined;
+	if (target.effect && typeof target.effect === "object") return target.effect;
+	if (typeof target.set === "function" && typeof target.time === "function") return target;
+	return undefined;
+}
+
 const PARTICLE_STEP = 1 / 60;
 
 interface ParticleRun {
@@ -278,18 +295,19 @@ export class IgeTimeline extends IgeEventingClass {
 	protected _captionKey = "";
 	protected _behaviour?: { entity: IgeEntity; id: string };
 	protected _missing = new Set<string>();
+	protected _whileHidden = false;
 
 	constructor (data: IgeTimelineData) {
 		super();
 		const tracks = (data.tracks ?? []).map((track) => {
-			if (!IGE_TIMELINE_PROPERTIES.includes(track.property)) throw new Error(`Timeline track for "${track.target}" has an unknown property "${track.property}"`);
+			if (!IGE_TIMELINE_PROPERTIES.includes(track.property) && !igeTimelineIsEffectProperty(track.property)) throw new Error(`Timeline track for "${track.target}" has an unknown property "${track.property}"`);
 			const keys = track.keys.map((k) => {
 				if (!Number.isFinite(k.t)) throw new Error(`Timeline key for "${track.target}.${track.property}" has no time`);
 				return { t: k.t, value: structuredCloneJson(k.value), ...(k.ease ? { ease: k.ease } : {}) };
 			});
 			// A stable sort: keys at the same time keep their order
 			keys.sort((a, b) => a.t - b.t);
-			const ease = NUMERIC.has(track.property) ? "linear" : "step";
+			const ease = NUMERIC.has(track.property) || igeTimelineIsEffectProperty(track.property) ? "linear" : "step";
 			return { target: track.target, property: track.property, keys: keys.map((k) => (k.ease ? k : { ...k, ease: k.ease ?? ease })) as IgeTimelineKey[] };
 		});
 		const captions = (data.captions ?? []).map((c) => ({ ...c })).sort((a, b) => a.start - b.start);
@@ -343,6 +361,8 @@ export class IgeTimeline extends IgeEventingClass {
 	rate (val?: number): number | this {
 		if (val === undefined) return this._rate;
 		this._rate = val;
+		// Sound follows: what's sounding speeds up and slows down with the timeline
+		for (const s of this._sounds) s.handle.setRate?.(igeTimelineSoundRate(val));
 		return this;
 	}
 
@@ -479,9 +499,19 @@ export class IgeTimeline extends IgeEventingClass {
 	 * Run from an entity's update (its pre-update behaviours), so the timeline plays as the entity's scene does: a
 	 * panel's scene updates only while the panel is shown, so a hidden panel's timeline waits. One entity at a time.
 	 */
-	attach (entity: IgeEntity): this {
+	attach (entity: IgeEntity, options: { whileHidden?: boolean } = {}): this {
 		this.detach();
 		const id = `igeTimeline${++timelineCount}`;
+		this._whileHidden = !!options.whileHidden;
+		if (this._whileHidden) {
+			// Driven by the engine's own update (every tick, whether or not the entity's scene updates)
+			const engine = ige.engine as unknown as IgeEntity;
+			engine.addBehaviour(IgeBehaviourType.preUpdate, id, ((_entity: IgeEntity, tickDelta: number) => {
+				this.update(tickDelta);
+			}) as never);
+			this._behaviour = { entity: engine, id };
+			return this;
+		}
 		entity.addBehaviour(IgeBehaviourType.preUpdate, id, ((_entity: IgeEntity, tickDelta: number) => {
 			this.update(tickDelta);
 		}) as never);
@@ -510,6 +540,8 @@ export class IgeTimeline extends IgeEventingClass {
 	/** Set the scene to its state at the current time (done by seek() and update(); call it after changing the scene by hand). */
 	apply (): this {
 		const t = this._time;
+		// A panel's effect works its noise out from the timeline's time, so scrubbing back gives the same picture
+		for (const target of this._targets.values()) effectOf(target)?.time?.(t);
 		for (const track of this._data.tracks) this._applyTrack(track, t);
 		this._applyParticles(t);
 		const captions = this.captionsAt(t);
@@ -539,6 +571,17 @@ export class IgeTimeline extends IgeEventingClass {
 		}
 		const value = igeTimelineSample(track.keys, t, track.property) as any;
 		if (value === undefined) return;
+
+		if (igeTimelineIsEffectProperty(track.property)) {
+			const effect = effectOf(target);
+			const name = track.property.slice(7);
+			if (!effect?.set || (effect.has && !effect.has(name)) || typeof value !== "number") {
+				this._missing.add(`${track.target}.${track.property}`);
+				return;
+			}
+			effect.set({ [name]: value });
+			return;
+		}
 
 		switch (track.property) {
 			case "position":
@@ -684,7 +727,7 @@ export class IgeTimeline extends IgeEventingClass {
 	}
 
 	protected _startSound (cue: IgeTimelineSoundCue, offset: number): void {
-		const handle = this.audio.start(cue.source, { offset, loop: !!cue.loop, volume: cue.volume ?? 1 });
+		const handle = this.audio.start(cue.source, { offset, loop: !!cue.loop, volume: cue.volume ?? 1, rate: igeTimelineSoundRate(this._rate) });
 		if (!handle) return;
 		this._sounds.push({ cue, handle });
 		if (this._sounds.length > 64) this._sounds.shift()?.handle.stop();

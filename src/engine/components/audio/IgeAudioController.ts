@@ -252,6 +252,7 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> impleme
 		audioControl.relativeTo(relativeTo);
 		audioControl.pannerSettings(pannerSettings);
 		audioControl.volume(gain);
+		if (typeof options.rate === "number") audioControl.playbackRate(options.rate);
 		audioControl.onEnded(() => {
 			if (onEnded) {
 				onEnded();

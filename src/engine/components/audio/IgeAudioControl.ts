@@ -31,6 +31,7 @@ export class IgeAudioControl extends IgeEventingClass implements IgeCanId {
 	_onEnded?: () => void;
 	_resumePlaybackOffset: number = 0;
 	_startTime: number = 0;
+	_playbackRate: number = 1;
 
 	constructor () {
 		super();
@@ -66,6 +67,20 @@ export class IgeAudioControl extends IgeEventingClass implements IgeCanId {
 		}
 
 		this._gainNode.gain.value = val;
+		return this;
+	}
+
+	/**
+	 * Gets or sets the playback rate: 1 normal, 2 twice as fast (and an octave higher), 0.5 half speed. Applies to
+	 * what's playing now and to later plays of this control. Kept to 0.0625 to 16.
+	 */
+	playbackRate (): number;
+	playbackRate (val: number): this;
+	playbackRate (val?: number): number | this {
+		if (val === undefined) return this._playbackRate;
+		if (!Number.isFinite(val)) return this;
+		this._playbackRate = Math.min(Math.max(val, 0.0625), 16);
+		if (this._bufferNode) this._bufferNode.playbackRate.value = this._playbackRate;
 		return this;
 	}
 
@@ -116,6 +131,7 @@ export class IgeAudioControl extends IgeEventingClass implements IgeCanId {
 		this._bufferNode.connect(this._gainNode);
 		this._bufferNode.buffer = this._audioSourceBuffer;
 		this._bufferNode.loop = this._loop;
+		this._bufferNode.playbackRate.value = this._playbackRate;
 
 		if (playbackFromOffset) {
 			// Start playback from the designated location

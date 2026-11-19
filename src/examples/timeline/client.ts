@@ -14,6 +14,7 @@ import { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import { IgePrimitiveGeometry } from "@/engine/webgl/IgePrimitiveGeometry";
 import { timeline } from "@/engine/timeline/IgeTimelineBuilder";
 import { IgeTimeline } from "@/engine/timeline/IgeTimeline";
+import { IgeRecorderEffect } from "@/engine/webgl/IgeRecorderEffect";
 import type { IgeCanInit } from "@/types/IgeCanInit";
 
 // @ts-ignore
@@ -44,7 +45,10 @@ function toneUrl (freq: number, seconds: number, decay: boolean, volume = 0.5): 
  * colour and fades (position, visibility, colour, opacity), a cube turning by quaternion, sparks (particle cues,
  * which replay the same when you scrub), camera cuts, captions, a sound and an event. Play, pause, rewind and
  * drag the bar to scrub; the picture at a time is the same however you get there.
- * ?t=4.6 starts at a time, ?paused=1 starts paused.
+ * The panel has a recorder look (IgeRecorderEffect, guides/recorder-effect.md): P cycles the presets (site recorder,
+ * warship camera, precursor memory, none). Its grain, flicker and random dropouts come from the timeline's time, so a
+ * paused frame holds still and scrubbing back gives the same picture; the scene spikes a dropout at 3.2s.
+ * ?t=4.6 starts at a time, ?paused=1 starts paused, ?preset=warshipCamera starts on a preset.
  */
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
@@ -205,6 +209,16 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 					.at(6, { quaternion: { x: Math.sin(Math.PI / 3) * 0.7, y: 0.4, z: 0, w: Math.cos(Math.PI / 3) } }, "smooth")
 					.at(10, { quaternion: { x: 0, y: 0, z: 0, w: 1 } })
 			)
+			// The recorder look's dropout, spiked by the scene when the hatch blows at 3.2s (and a small one at the last cut)
+			.track("panel", (t) =>
+				t
+					.at(0, { effect: { dropout: 0 } })
+					.at(3.2, { effect: { dropout: 1 } }, "smooth")
+					.at(3.55, { effect: { dropout: 0.55 } }, "smooth")
+					.at(3.9, { effect: { dropout: 0 } }, "step")
+					.at(6.5, { effect: { dropout: 0.45 } })
+					.at(6.6, { effect: { dropout: 0 } })
+			)
 			.cut("panel", 0, "main")
 			.cut("panel", 3.5, "wide")
 			.cut("panel", 6.5, "close")
@@ -218,6 +232,26 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			.particles("sparks", 3, { count: 60, position: { x: 0, y: 30, z: -40 }, direction: { x: 0, y: 1, z: 0 }, seed: 11 })
 			.particles("sparks", 5, { rate: 50, until: 6.5, position: { x: 60, y: 30, z: 0 }, direction: { x: 0, y: 1, z: 0.3 } })
 			.build();
+
+		// The recorder look: its noise follows the timeline's time (the timeline sets it when bound to the panel)
+		const params = new URLSearchParams(window.location.search);
+		const presets = ["siteRecorder", "warshipCamera", "precursorMemory"];
+		let presetIndex = Math.max(0, presets.indexOf(params.get("preset") || ""));
+		panel.effect = new IgeRecorderEffect(presets[presetIndex]);
+		(window as any).recorderPreset = (name: string | null) => {
+			if (name === null) panel.effect = null;
+			else if (panel.effect instanceof IgeRecorderEffect) panel.effect.preset(name);
+			else panel.effect = new IgeRecorderEffect(name);
+			this.playback?.apply();
+			const label = document.getElementById("preset");
+			if (label) label.textContent = name ?? "none";
+		};
+		window.addEventListener("keydown", (e) => {
+			if (e.key !== "p" && e.key !== "P") return;
+			// site, warship, memory, none, ...
+			presetIndex = (presetIndex + 1) % (presets.length + 1);
+			(window as any).recorderPreset(presets[presetIndex] ?? null);
+		});
 
 		this.playback = new IgeTimeline(data).bind({ man, beacon, spinner, sparks, panel }).attach(playScene);
 		this.playback.on("event", (cue: any) => {
@@ -242,6 +276,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				<button id="rewind">&#9198; Rewind</button>
 				<button id="play">Pause</button>
 				<button id="loop">Loop: off</button>
+				<span>Look (P): <b id="preset">${new URLSearchParams(window.location.search).get("preset") || "siteRecorder"}</b></span>
 				<span id="time" style="float:right"></span>
 			</div>
 			<input id="scrub" type="range" min="0" max="${playback.duration()}" step="0.01" value="0" />

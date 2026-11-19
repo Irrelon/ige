@@ -25,6 +25,8 @@ export interface IgeTimelineKeyValues {
 	opacity?: number;
 	/** A clip name, or a clip with its time and speed. */
 	animation?: string | IgeTimelineAnimation;
+	/** Settings of the target panel's effect (IgeRecorderEffect), each a number: `{ dropout: 1, grain: 0.4 }` keys `effect.dropout` and `effect.grain`. */
+	effect?: Record<string, number>;
 }
 
 const KEY_PROPERTIES: IgeTimelineProperty[] = ["position", "rotation", "quaternion", "scale", "visible", "color", "opacity", "animation"];
@@ -43,6 +45,12 @@ export class IgeTimelineTrackBuilder {
 			let value: unknown = values[property];
 			if (value === undefined) continue;
 			if (property === "animation" && typeof value === "string") value = { clip: value };
+			const keys = this._tracks.get(property) ?? [];
+			keys.push({ t: time, value, ...(ease ? { ease } : {}) });
+			this._tracks.set(property, keys);
+		}
+		for (const [name, value] of Object.entries(values.effect ?? {})) {
+			const property = `effect.${name}` as IgeTimelineProperty;
 			const keys = this._tracks.get(property) ?? [];
 			keys.push({ t: time, value, ...(ease ? { ease } : {}) });
 			this._tracks.set(property, keys);

@@ -90,6 +90,9 @@ makes its own pipelines (lazily, from the device it's given; they stay valid acr
 With no effect set the renderer copies the panel as it is. (Effects written for the earlier hook, which drew over
 a panel already on the canvas, must now draw the panel's pixels too.)
 
+`IgeRecorderEffect` (`guides/recorder-effect.md`) is a ready-made effect: grain, scanlines, tint, dropouts and
+more, with presets, its noise tied to a time you set.
+
 ## No main viewport
 
 Shown panels draw even when the engine has no viewport (a menu-only screen with a panel): the frame is cleared,

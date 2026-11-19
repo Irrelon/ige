@@ -50,6 +50,7 @@ colours; step for everything else.
 | `color` | `{r, g, b, a?}` | `entity.material()`: over the material the entity had when the timeline first touched it |
 | `animation` | `{ clip, time?, speed?, loop? }` | skeletal clip, see below |
 | `camera` | camera name | `panel.cut(name)`; the target is the panel's name |
+| `effect.<setting>` | number | a setting of the panel's recorder look (`guides/recorder-effect.md`): `effect.dropout`, `effect.grain`, ...; the target is the panel's name; default linear |
 
 **Skeletal animation.** A key says which clip and the clip's time at that key (`time`, 0 by default); from there
 the clip runs at `speed` (1) until the next key (`speed: 0` holds a pose). At time `t` the timeline works out the
@@ -68,9 +69,12 @@ moment (it replaces whatever was playing; the pose is applied on the next update
   A **one-shot** (no `loop`, `end` or `track`) starts when play passes `start`; scrubbing over it makes no sound.
   A **long** sound (`loop`, `end` or `track: true`: ambience, a log's voice) is sounding between `start` and `end`
   (its own length; the timeline's end when it loops). Whenever playback starts, resumes or follows a seek inside
-  that stretch it starts at the right offset (wrapped for a loop). Pause and seek stop what's sounding. The
-  engine's audio has no playback rate, so `rate()` doesn't change a sound. Swap `timeline.audio` (an
-  `IgeTimelineAudio`: `start(source, {offset, loop, volume})` returning something with `stop()`) for other sound.
+  that stretch it starts at the right offset (wrapped for a loop). Pause and seek stop what's sounding.
+  **Audio rate:** `rate()` sets the playback rate of the sounds (`IgeAudioControl.playbackRate()`, also the `rate`
+  option of `ige.audio.createAudioControl()` and `play()`): sounds start at the timeline's rate and what's sounding
+  speeds up or slows down (pitch with it) when `rate()` changes. Backwards plays forwards, and the rate is kept to
+  0.1x to 8x. Seeking still stops what's ringing. Swap `timeline.audio` (an
+  `IgeTimelineAudio`: `start(source, {offset, loop, volume, rate})` returning something with `stop()`, and `setRate(rate)` if it can) for other sound.
 - **Events** `{ at, name, data? }`: fire (`on("event", cue => ...)`) when play crosses them, once. Seeking doesn't
   fire them. `timeline.eventsBetween(from, to)` lists the events with `from < at <= to`, for a game that wants to
   know what a stretch holds. A cue at exactly 0 fires when played from the start.
@@ -113,7 +117,7 @@ const data = timeline({ duration: 10 })
 ```
 
 `at(time, values, ease?)` takes any of `position`, `rotation`, `quaternion`, `scale`, `visible`, `color`,
-`opacity`, `animation`; each gets a key at that time. Calling `track()` again for the same target adds keys.
+`opacity`, `animation`, and `effect` (a record of recorder settings, each its own `effect.<name>` track); each gets a key at that time. Calling `track()` again for the same target adds keys.
 `new IgeTimeline(data)` reads the data back (keys sorted, eases filled in; `toData()` gives it again, and loading
 that gives the same thing); an unknown property throws.
 
@@ -154,6 +158,13 @@ playback.attach(playbackScene);                    // the panel scene updates on
 ```
 
 `attach()` to the panel's scene means a hidden panel's timeline waits (a hidden panel costs nothing and isn't
-updated); attach it to an entity in the main view, or call `update()` yourself, to keep time while it's hidden.
+updated). To keep time while it's hidden, `playback.attach(playbackScene, { whileHidden: true })`: the engine drives
+it every tick instead (the default stays as above; or attach to an entity in the main view, or call `update()`
+yourself).
+
+**Recorder look.** `panel.effect = new IgeRecorderEffect("siteRecorder")` (`guides/recorder-effect.md`). A timeline
+bound to the panel sets the effect's time on every apply, so its grain, flicker and random dropouts are a function of
+the timeline's time: paused holds still, scrubbing back gives the same picture. `effect.<setting>` tracks animate its
+settings, e.g. a dropout spike at 3.2 s.
 Show captions in the game's own UI from `captionsAt()` / the `"captions"` event, placed from `panel.rect()`.
-`panel.samples` sets the panel's multisampling. The recorder look is `panel.effect`.
+`panel.samples` sets the panel's multisampling. 
