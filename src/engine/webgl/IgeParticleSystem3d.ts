@@ -122,6 +122,11 @@ export class IgeParticleSystem3d extends IgeEntity {
 	/** Incremented whenever _renderData changes (renderer upload check). */
 	_renderVersion: number = 0;
 
+	/** Where random numbers come from: Math.random, or a seeded sequence after seed(). */
+	_random: () => number = () => Math.random();
+	/** True once driven(true): update() no longer simulates (see driven()). */
+	_driven: boolean = false;
+
 	/** World-space bounding sphere of the live particles (for culling). */
 	_boundsCenter: IgeParticleVec3 = { x: 0, y: 0, z: 0 };
 	_boundsRadius: number = 0;
@@ -179,6 +184,47 @@ export class IgeParticleSystem3d extends IgeEntity {
 		return this;
 	}
 
+	/**
+	 * Seed the random numbers every particle is made from (position in the emitter, direction, speed, lifetime),
+	 * so a system started from the same state and stepped the same way makes the same particles every time. Call
+	 * it again to restart the sequence. `null` goes back to Math.random. Unseeded systems behave as before.
+	 */
+	seed (value: number | null): this {
+		if (value === null) {
+			this._random = () => Math.random();
+			return this;
+		}
+		// mulberry32
+		let a = value >>> 0;
+		this._random = () => {
+			a = (a + 0x6d2b79f5) >>> 0;
+			let t = a;
+			t = Math.imul(t ^ (t >>> 15), t | 1);
+			t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+			return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+		};
+		return this;
+	}
+
+	/**
+	 * Gets / sets whether the game steps the system itself (true) rather than update() doing it with the frame's
+	 * time. A driven system still builds its render data on update(); use simulate() to move it on. IgeTimeline
+	 * drives the systems it has particle cues for, so a seek can replay them.
+	 */
+	driven (): boolean;
+	driven (val: boolean): this;
+	driven (val?: boolean): boolean | this {
+		if (val === undefined) return this._driven;
+		this._driven = val;
+		return this;
+	}
+
+	/** Step the simulation by `dt` seconds (continuous emission, ageing, movement). Not capped, unlike update(). */
+	simulate (dt: number): this {
+		this._simulate(dt);
+		return this;
+	}
+
 	/** Number of live particles. */
 	particleCount (): number {
 		return this._liveCount;
@@ -208,7 +254,7 @@ export class IgeParticleSystem3d extends IgeEntity {
 
 	update (tickDelta: number) {
 		super.update(tickDelta);
-		this._simulate(Math.min(tickDelta / 1000, 0.1));
+		if (!this._driven) this._simulate(Math.min(tickDelta / 1000, 0.1));
 	}
 
 	/**
@@ -235,8 +281,8 @@ export class IgeParticleSystem3d extends IgeEntity {
 		// Position: origin plus a random point inside the emitter sphere
 		let px = origin.x, py = origin.y, pz = origin.z;
 		if (o.emitterRadius > 0) {
-			const r = o.emitterRadius * Math.cbrt(Math.random());
-			const d = randomUnitVector();
+			const r = o.emitterRadius * Math.cbrt(this._random());
+			const d = randomUnitVector(this._random);
 			px += d.x * r;
 			py += d.y * r;
 			pz += d.z * r;
@@ -255,14 +301,14 @@ export class IgeParticleSystem3d extends IgeEntity {
 		this._particlePosition[p3 + 2] = pz;
 
 		// Velocity: random direction within the cone around `direction`
-		const dir = randomDirectionInCone(direction, o.spread);
-		const speed = lerp(o.speed[0], o.speed[1], Math.random());
+		const dir = randomDirectionInCone(direction, o.spread, this._random);
+		const speed = lerp(o.speed[0], o.speed[1], this._random());
 		this._particleVelocity[p3] = dir.x * speed;
 		this._particleVelocity[p3 + 1] = dir.y * speed;
 		this._particleVelocity[p3 + 2] = dir.z * speed;
 
 		this._particleAge[i] = 0;
-		this._particleLife[i] = Math.max(0.001, lerp(o.lifetime[0], o.lifetime[1], Math.random()));
+		this._particleLife[i] = Math.max(0.001, lerp(o.lifetime[0], o.lifetime[1], this._random()));
 		return true;
 	}
 
@@ -380,9 +426,9 @@ function lerp (a: number, b: number, t: number): number {
 	return a + (b - a) * t;
 }
 
-function randomUnitVector (): IgeParticleVec3 {
-	const z = Math.random() * 2 - 1;
-	const a = Math.random() * Math.PI * 2;
+function randomUnitVector (rand: () => number): IgeParticleVec3 {
+	const z = rand() * 2 - 1;
+	const a = rand() * Math.PI * 2;
 	const r = Math.sqrt(1 - z * z);
 	return { x: r * Math.cos(a), y: r * Math.sin(a), z };
 }
@@ -391,7 +437,7 @@ function randomUnitVector (): IgeParticleVec3 {
  * Uniformly distributed direction within a cone of half-angle `spread`
  * around `axis`.
  */
-function randomDirectionInCone (axis: IgeParticleVec3, spread: number): IgeParticleVec3 {
+function randomDirectionInCone (axis: IgeParticleVec3, spread: number, rand: () => number): IgeParticleVec3 {
 	let ax = axis.x, ay = axis.y, az = axis.z;
 	const len = Math.sqrt(ax * ax + ay * ay + az * az) || 1;
 	ax /= len;
@@ -402,9 +448,9 @@ function randomDirectionInCone (axis: IgeParticleVec3, spread: number): IgeParti
 
 	// Sample around +Z, then rotate +Z onto the axis
 	const cosMax = Math.cos(Math.min(spread, Math.PI));
-	const cosTheta = 1 - Math.random() * (1 - cosMax);
+	const cosTheta = 1 - rand() * (1 - cosMax);
 	const sinTheta = Math.sqrt(1 - cosTheta * cosTheta);
-	const phi = Math.random() * Math.PI * 2;
+	const phi = rand() * Math.PI * 2;
 	const lx = sinTheta * Math.cos(phi);
 	const ly = sinTheta * Math.sin(phi);
 	const lz = cosTheta;

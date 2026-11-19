@@ -35,7 +35,7 @@ pixel ratio changes because the rectangle is worked out from the canvas each fra
 
 - **Order.** After the main views (every split-screen view), their post-processing, outlines and UI layer, and
   before the overlays (ui2, `IgeRenderer` overlays), so the game's UI can frame it.
-- **Own target.** A shown panel draws into an offscreen target of its own (multisampled where the GPU allows, depth
+- **Own target.** A shown panel draws into an offscreen target of its own (multisampled where the GPU allows, see `samples` below, depth
   and stencil kept), sized to its rectangle in device pixels, cleared and drawn from its corner. The target is made
   the first frame the panel is shown, made again when its rectangle's size changes (canvas resize, pixel ratio,
   `layout()`), freed by `removePanel()` and made again after a lost and restored WebGL context. A hidden panel has
@@ -55,6 +55,13 @@ pixel ratio changes because the rectangle is worked out from the canvas each fra
   and drawn like one more small view of its scene (its entities are updated once per rendered frame).
 - **Render on demand.** Showing, hiding, cutting and moving a panel ask for a frame. Changes inside its scene do
   too, as they do anywhere.
+
+## Multisampling
+
+`panel.samples` is the samples per pixel of the panel's own target: 4 by default, capped to what the GPU allows
+(`device.limits.maxSamples`); 0 or 1 means none (the panel draws straight into the texture the composite reads).
+Changing it (`panel.samples = 0`) makes the target again the next frame the panel is drawn. It's separate from the
+main view's antialiasing.
 
 ## Fog
 

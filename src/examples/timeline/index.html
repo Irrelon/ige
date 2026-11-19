@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Timeline - Isogenic Engine</title>
+	<script src="./index.bundle.js" type="module"></script>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background: #0b0e14;
+			overflow: hidden;
+			font-family: ui-monospace, monospace;
+		}
+
+		#bar {
+			position: absolute;
+			left: 16px;
+			bottom: 16px;
+			width: 380px;
+			padding: 10px 12px;
+			background: rgba(8, 14, 22, 0.8);
+			border: 1px solid rgba(95, 227, 255, 0.35);
+			border-radius: 6px;
+			color: #cfe9f2;
+			font-size: 12px;
+		}
+
+		#bar button {
+			background: #12303c;
+			color: #5fe3ff;
+			border: 1px solid rgba(95, 227, 255, 0.4);
+			border-radius: 4px;
+			padding: 4px 10px;
+			font: inherit;
+			cursor: pointer;
+		}
+
+		#bar input[type=range] {
+			width: 100%;
+			margin: 10px 0 4px;
+		}
+
+		#caption {
+			position: absolute;
+			display: none;
+			box-sizing: border-box;
+			padding: 0 10px;
+			text-align: center;
+			color: #fff;
+			font-size: 14px;
+			text-shadow: 0 1px 3px #000, 0 0 6px #000;
+			pointer-events: none;
+		}
+
+		#caption b {
+			color: #ffd84a;
+		}
+
+		#log {
+			margin-top: 6px;
+			color: #8fb2bf;
+			min-height: 1.4em;
+		}
+	</style>
+</head>
+<body>
+</body>
+</html>

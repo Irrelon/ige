@@ -3,7 +3,7 @@ import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { ige } from "@/engine/instance";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
-import { IgePanelTargets } from "@/engine/webgl/IgePanelTarget";
+import { IgePanelTargets, igePanelSamples } from "@/engine/webgl/IgePanelTarget";
 import { igeSceneChange } from "@/engine/utils/sceneChange";
 
 describe("igePanelRect", () => {
@@ -282,5 +282,46 @@ describe("IgePanelTargets", () => {
 		const u = targets.ensure(p, 64, 64, true);
 		expect(u.depth).toBe(u.renderDepth);
 		expect(targets.ensure(p, 64, 64, false).depth).toBeNull();
+	});
+
+	it("makes the target with the samples asked for, capped to the GPU, and again when they change", () => {
+		const device = fakeDevice();
+		const max = device.limits.maxSamples;
+		const targets = new IgePanelTargets(device);
+		const panel = {};
+		const a = targets.ensure(panel, 64, 64, false);
+		expect(a.samples).toBe(Math.min(4, max));
+		expect(targets.ensure(panel, 64, 64, false, 4)).toBe(a);
+		const b = targets.ensure(panel, 64, 64, false, 2);
+		expect(b).not.toBe(a);
+		expect([b.samples, b.multisampled]).toEqual([Math.min(2, max), true]);
+		const c = targets.ensure(panel, 64, 64, false, 1);
+		expect([c.samples, c.multisampled]).toEqual([0, false]);
+		expect(c.renderColor).toBe(c.color);
+		const d = targets.ensure(panel, 64, 64, false, 99);
+		expect(d.samples).toBe(max);
+		targets.free(panel);
+		expect(device.live()).toBe(0);
+	});
+
+	it("caps samples to the GPU's maximum and treats under 2 as none", () => {
+		expect(igePanelSamples(4, 8)).toBe(4);
+		expect(igePanelSamples(16, 8)).toBe(8);
+		expect(igePanelSamples(1, 8)).toBe(0);
+		expect(igePanelSamples(0, 8)).toBe(0);
+		expect(igePanelSamples(4, 0)).toBe(0);
+	});
+});
+
+describe("IgePanelViewport samples", () => {
+	it("defaults to 4, can be set, and marks a change only when it differs", () => {
+		const panel = new IgePanelViewport();
+		expect(panel.samples).toBe(4);
+		const count = igeSceneChange.count;
+		panel.samples = 4;
+		expect(igeSceneChange.count).toBe(count);
+		panel.samples = 0;
+		expect(panel.samples).toBe(0);
+		expect(igeSceneChange.count).toBeGreaterThan(count);
 	});
 });

@@ -1234,7 +1234,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					width: Math.floor(vp._bounds2d.x * dpr),
 					height: Math.floor(vp._bounds2d.y * dpr)
 				};
-				const target = targets && frame.width >= 1 && frame.height >= 1 ? targets.ensure(panel, frame.width, frame.height, !!panel.effect?.depth) : null;
+				const target = targets && frame.width >= 1 && frame.height >= 1 ? targets.ensure(panel, frame.width, frame.height, !!panel.effect?.depth, panel.samples) : null;
 				this._panelTarget = target;
 				try {
 					this._renderViewport(vp);

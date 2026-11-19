@@ -43,9 +43,18 @@ export interface IgePanelTarget extends IgePanelSource {
 	renderDepth: IgeGpuTexture;
 	/** Multisampled: `color` is resolved from `renderColor` after the pass. */
 	multisampled: boolean;
+	/** The samples per pixel it was made with (0 when single-sampled). */
+	samples: number;
 }
 
-const SAMPLES = 4;
+/** The default samples per pixel of a panel's target (see IgePanelViewport.samples). */
+export const IGE_PANEL_DEFAULT_SAMPLES = 4;
+
+/** The samples a panel's target is made with: what was asked for, capped to the GPU's maximum; under 2 is none (0). */
+export function igePanelSamples (requested: number, max: number): number {
+	const n = Math.min(Math.floor(requested) || 0, Math.floor(max) || 0);
+	return n >= 2 ? n : 0;
+}
 
 export class IgePanelTargets {
 	protected _targets = new Map<object, IgePanelTarget>();
@@ -69,24 +78,26 @@ export class IgePanelTargets {
 
 	/**
 	 * The panel's target at this size in device pixels: made the first time, made again when the size changes, kept
-	 * otherwise. `wantDepth`: its depth readable too (resolved after the pass).
+	 * otherwise. `wantDepth`: its depth readable too (resolved after the pass). `samples`: the multisampling asked
+	 * for, capped to what the GPU allows (under 2 means none); it's made again when this changes.
 	 */
-	ensure (panel: object, width: number, height: number, wantDepth: boolean): IgePanelTarget {
+	ensure (panel: object, width: number, height: number, wantDepth: boolean, samples: number = IGE_PANEL_DEFAULT_SAMPLES): IgePanelTarget {
 		const d = this._device;
+		const effective = igePanelSamples(samples, d.limits.maxSamples);
 		let t = this._targets.get(panel);
-		if (t && (t.width !== width || t.height !== height)) {
+		if (t && (t.width !== width || t.height !== height || t.samples !== effective)) {
 			this._destroy(t);
 			t = undefined;
 		}
 		if (!t) {
-			const samples = Math.min(SAMPLES, d.limits.maxSamples);
-			const multisampled = samples >= 2;
+			const multisampled = effective >= 2;
+			const samples = effective;
 			const linear = { minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" } as const;
 			const nearest = { minFilter: "nearest", magFilter: "nearest", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" } as const;
 			const color = d.createTexture({ width, height, format: "rgba8unorm", sampler: linear, label: "panel" });
 			const renderColor = multisampled ? d.createTexture({ width, height, format: "rgba8unorm", sampleCount: samples, sampler: linear, label: "panel frame" }) : color;
 			const renderDepth = d.createTexture({ width, height, format: "depth24plus-stencil8", sampleCount: multisampled ? samples : undefined, sampler: nearest, label: "panel depth" });
-			t = { color, depth: null, width, height, renderColor, renderDepth, multisampled };
+			t = { color, depth: null, width, height, renderColor, renderDepth, multisampled, samples: multisampled ? samples : 0 };
 			this._targets.set(panel, t);
 		}
 		if (wantDepth && !t.depth) {

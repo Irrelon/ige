@@ -90,6 +90,8 @@ export interface IgeAnimationState {
 	fadeTime: number;
 	/** Non-looping: start fading out this many seconds (of playback) before the end (see IgeAnimationPlayOptions.blendOut). */
 	blendOut?: number;
+	/** Posed once, then dropped (the skeleton keeps the pose): a state made by IgeSkeletalAnimationComponent.pose(). */
+	hold?: boolean;
 }
 
 /**

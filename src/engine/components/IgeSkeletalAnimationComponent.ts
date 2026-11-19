@@ -395,6 +395,49 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 	}
 
 	/**
+	 * Pose the skeleton at an exact moment of a clip: a clip's time set directly, for scrubbing a scripted scene
+	 * or cutting to a pose. Whatever was playing is replaced (no cross-fade), the pose is applied on the next
+	 * update and the skeleton then holds it; call it again for another time. The same clip and time always give
+	 * the same pose. Times wrap for a looping clip (default) and clamp to the clip's ends otherwise. The pose
+	 * cache quantises poses to poseCacheRate samples a second, so for an exact scrub turn it off for the entity
+	 * with poseCache(false).
+	 * @example #Show the second half-second of a walk
+	 *     entity.skeletalAnimation()?.pose("Walk", 0.5);
+	 */
+	pose(animId: string, time: number, options?: { loop?: boolean }): this {
+		const clip = this._clips.get(animId);
+		if (!clip) {
+			this.log(`Animation "${animId}" not found`, "error");
+			return this;
+		}
+
+		const loop = options?.loop ?? true;
+		const d = clip.duration;
+		let t = time;
+		if (loop && d > 0) {
+			t = t % d;
+			if (t < 0) t += d;
+		} else {
+			t = Math.max(0, Math.min(d, t));
+		}
+
+		this._activeStates = [{
+			clip,
+			time: t,
+			weight: 1,
+			speed: 0,
+			loop: false,
+			playing: true,
+			fadeInDuration: 0,
+			fadeOutDuration: 0,
+			fadeTime: 0,
+			hold: true
+		}];
+		markSceneChanged();
+		return this;
+	}
+
+	/**
 	 * Stop all animations.
 	 */
 	stop(): this {
@@ -640,7 +683,7 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 					this.emit("complete", state.clip.id);
 				}
 			}
-			if (state.time >= state.clip.duration) {
+			if (state.time >= state.clip.duration && !state.hold) {
 				if (state.loop) {
 					state.time = state.clip.duration > 0 ? state.time % state.clip.duration : 0;
 					this.emit("loopComplete", state.clip.id);
@@ -653,6 +696,9 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			}
 
 			totalWeight += state.weight;
+
+			// A held pose (pose()): this frame samples it, then it's done and the skeleton keeps it
+			if (state.hold) state.playing = false;
 		}
 		return totalWeight;
 	}

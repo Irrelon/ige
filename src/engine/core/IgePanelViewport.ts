@@ -4,7 +4,7 @@ import { IgeViewport } from "@/engine/core/IgeViewport";
 import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeGpuDevice } from "@/engine/gpu/IgeGpuDevice";
 import type { IgeWebGlFogSettings } from "@/engine/core/IgeWebGlRenderer";
-import type { IgePanelSource } from "@/engine/webgl/IgePanelTarget";
+import { IGE_PANEL_DEFAULT_SAMPLES, type IgePanelSource } from "@/engine/webgl/IgePanelTarget";
 import type { IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
 import { IgeWebGlLightManager } from "@/engine/webgl/IgeWebGlLightManager";
 
@@ -116,6 +116,7 @@ export class IgePanelViewport {
 	/** @internal */
 	_shadowLight?: IgeDirectionalLight;
 	protected _visible = false;
+	protected _samples = IGE_PANEL_DEFAULT_SAMPLES;
 	protected _fog: IgeWebGlFogSettings | null = null;
 	protected _layout: IgePanelLayout;
 	protected _cameras = new Map<string, IgeCamera>();
@@ -165,6 +166,21 @@ export class IgePanelViewport {
 			markSceneChanged();
 		}
 		return this;
+	}
+
+	/**
+	 * Gets / sets the multisampling of the panel's own target: samples per pixel, 4 by default, capped to what the
+	 * GPU allows; 0 or 1 means none. Changing it makes the target again on the next frame the panel is drawn.
+	 */
+	get samples (): number {
+		return this._samples;
+	}
+
+	set samples (val: number) {
+		const n = Math.max(0, Math.floor(val) || 0);
+		if (n === this._samples) return;
+		this._samples = n;
+		markSceneChanged();
 	}
 
 	/** Draw the panel from the next frame. */
