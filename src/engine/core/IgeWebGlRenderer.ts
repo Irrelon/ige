@@ -38,7 +38,7 @@ import {
 } from "@/engine/webgl/IgeWebGlInstancing";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import { igeGpuUniformLayout, type IgeGpuBlendState, type IgeGpuBuffer, type IgeGpuRenderPass, type IgeGpuRenderPipeline, type IgeGpuRenderPipelineDesc, type IgeGpuTexture, type IgeGpuUniform, type IgeGpuVertexBufferLayout } from "@/engine/gpu/IgeGpuDevice";
-import { type IgeWebGl2GpuDevice, webGl2ExternalTexture, webGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import { type IgeWebGl2GpuDevice, webGl2ExternalTexture, webGl2Framebuffer, webGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
 import { EFFECT_ATTRIBUTES, IgeGpuMeshPrograms, INSTANCE_LAYOUT, meshLayout, meshTopology } from "@/engine/webgl/IgeGpuMeshPrograms";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
@@ -52,6 +52,7 @@ import { IGE_POST_PROCESS_DEFAULTS, igePictureEffectsOn, IgeWebGlPostProcess, ty
 import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
 import { type IgeUiSettings, type IgeUiView, placeUi } from "@/engine/webgl/IgeUiLayout";
 import { type IgeUiQuad, IgeWebGlUiPass } from "@/engine/webgl/IgeWebGlUiPass";
+import { IgePanelTargets } from "@/engine/webgl/IgePanelTarget";
 import { type IgeOutlineRect, IgeWebGlOutlinePass, OUTLINE_MAX_RADIUS, outlineGroups, outlineOf, outlineRect } from "@/engine/webgl/IgeWebGlOutlinePass";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
@@ -860,6 +861,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._defaultDecalTexture = null;
 		this._debugLineBuffer = null;
 		this._postProcess?.contextLost();
+		this._panelTargets?.contextLost();
 		this._uiPass = undefined;
 		this._outlinePass = undefined;
 		this._shadowMapHoldsCache = false;
@@ -1153,6 +1155,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _inPanel: boolean = false;
 	/** The panels drawn this frame. */
 	protected _visiblePanels: IgePanelViewport[] = [];
+	/** Each shown panel's offscreen target (made on first use, with the device). */
+	protected _panelTargets?: IgePanelTargets;
+	/** The target the panel being drawn draws into (none: the canvas). */
+	protected _panelTarget: ReturnType<IgePanelTargets["ensure"]> | null = null;
 
 	protected _renderOverlays(): void {
 		const gl = this._canvasContext;
@@ -1180,6 +1186,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const i = this._panels.indexOf(panel);
 		if (i >= 0) {
 			panel.disableShadows();
+			this._panelTargets?.free(panel);
 			this._panels.splice(i, 1);
 			panel._renderer = undefined;
 		}
@@ -1192,10 +1199,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
-	 * Draw the shown panels (prepared and collected by renderSceneGraph) straight onto the canvas, after the main
-	 * views' post-processing. Each swaps in its own lights and shadow light for the draw, so nothing of the main
-	 * view's reaches into it and nothing of it into the main view; the main view's shadow caching and shared shadow
-	 * map are left as they were.
+	 * Draw the shown panels (prepared and collected by renderSceneGraph), each into an offscreen target of its own
+	 * sized to its rectangle, then composite it onto the canvas (through the panel's effect, or a plain copy), after
+	 * the main views' post-processing. Each swaps in its own lights, shadow light and fog for the draw (a panel with
+	 * no fog of its own has none), so nothing of the main view's reaches into it and nothing of it into the main
+	 * view; the main view's shadow caching and shared shadow map are left as they were.
 	 */
 	protected _renderPanels(): void {
 		const saved = {
@@ -1204,8 +1212,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			id: this._shadowLightId,
 			points: this._shadowCastingPointLights,
 			shared: this._sharedShadowFrame,
-			holds: this._shadowMapHoldsCache
+			holds: this._shadowMapHoldsCache,
+			fog: this._fog
 		};
+		const device = this._device;
+		const targets = device ? (this._panelTargets ??= new IgePanelTargets(device)) : null;
+		const dpr = this._devicePixelRatio;
 		this._inPanel = true;
 		this._sharedShadowFrame = -1;
 		try {
@@ -1214,17 +1226,27 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				this._shadowCastingLight = panel._shadowLight;
 				this._shadowLightId = panel.shadowId;
 				this._shadowCastingPointLights = [];
-				this._renderViewport(panel.viewport);
-				if (panel.effect && this._device) {
-					const dpr = this._devicePixelRatio;
-					const vp = panel.viewport;
-					panel.effect.apply(this._device, {
-						x: Math.floor((vp._translate?.x || 0) * dpr),
-						y: Math.floor((vp._translate?.y || 0) * dpr),
-						width: Math.floor(vp._bounds2d.x * dpr),
-						height: Math.floor(vp._bounds2d.y * dpr)
-					});
-					this._device.release();
+				this._fog = panel.fog() ?? { ...saved.fog, mode: "none" };
+				const vp = panel.viewport;
+				const frame = {
+					x: Math.floor((vp._translate?.x || 0) * dpr),
+					y: Math.floor((vp._translate?.y || 0) * dpr),
+					width: Math.floor(vp._bounds2d.x * dpr),
+					height: Math.floor(vp._bounds2d.y * dpr)
+				};
+				const target = targets && frame.width >= 1 && frame.height >= 1 ? targets.ensure(panel, frame.width, frame.height, !!panel.effect?.depth) : null;
+				this._panelTarget = target;
+				try {
+					this._renderViewport(vp);
+				} finally {
+					this._panelTarget = null;
+				}
+				if (target && targets && device) {
+					targets.resolve(target);
+					this._gpuBegin();
+					if (panel.effect) panel.effect.apply(device, frame, target);
+					else targets.copy(target, frame);
+					device.release();
 					this._stateManager?.reset();
 				}
 			}
@@ -1236,6 +1258,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._shadowCastingPointLights = saved.points;
 			this._sharedShadowFrame = saved.shared;
 			this._shadowMapHoldsCache = saved.holds;
+			this._fog = saved.fog;
 		}
 	}
 
@@ -1881,7 +1904,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-		if (!viewports || viewports.length === 0) {
+		// No main viewport: nothing to draw but the shown panels (a menu-only screen with a panel)
+		const hasViews = !!viewports && viewports.length > 0;
+		if (!hasViews && !this._panels?.some((p) => p.visible())) {
 			if (postActive) {
 				post!.end();
 				this._stateManager.reset();
@@ -1894,8 +1919,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._skeletonRows.clear();
 		this._bonePalette?.begin();
 
-		for (let i = 0; i < viewports.length; i++) {
-			this._collectScene(viewports[i]._scene);
+		const views: IgeViewport[] = hasViews ? viewports : [];
+		for (let i = 0; i < views.length; i++) {
+			this._collectScene(views[i]._scene);
 		}
 
 		// Panels that are shown: placed and advanced, then their scenes collected like the views' (hidden ones cost nothing)
@@ -1930,16 +1956,16 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		// Close-together split-screen views can share one shadow map
-		this._renderSharedShadowMap(viewports);
+		this._renderSharedShadowMap(views);
 
-		for (let i = 0; i < viewports.length; i++) {
-			this._renderViewport(viewports[i]);
+		for (let i = 0; i < views.length; i++) {
+			this._renderViewport(views[i]);
 		}
 
 		// Post-processing: bloom, tone mapping and grading onto the canvas
 		if (postActive) {
 			// Depth of field turns depth into distance with the main view's camera
-			const cam = viewports[0].camera as unknown as { _near?: number; _far?: number; _projectionType?: string } | undefined;
+			const cam = views[0]?.camera as unknown as { _near?: number; _far?: number; _projectionType?: string } | undefined;
 			post!.depthRange(cam?._near || 0.1, cam?._far || 1000, (cam?._projectionType || "perspective") === "perspective");
 			post!.end();
 			this._stateManager.reset();
@@ -1949,7 +1975,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._renderOutlines();
 
 		// The UI layer: on top of everything, post-processing included, in each view
-		this._renderUiLayer(viewports);
+		this._renderUiLayer(views);
 
 		// Panels over the finished frame, under the overlays
 		if (this._visiblePanels?.length) this._renderPanels();
@@ -2559,8 +2585,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// Get viewport dimensions in CSS pixels and convert to device pixels.
 		const dpr = this._devicePixelRatio;
-		const vpX = Math.floor((viewport._translate?.x || 0) * dpr);
-		const vpY = Math.floor((viewport._translate?.y || 0) * dpr);
+		let vpX = Math.floor((viewport._translate?.x || 0) * dpr);
+		let vpY = Math.floor((viewport._translate?.y || 0) * dpr);
 		const vpWidth = Math.floor(viewport._bounds2d.x * dpr);
 		const vpHeight = Math.floor(viewport._bounds2d.y * dpr);
 
@@ -2765,7 +2791,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		const device = this._gpuBegin();
 		const post = inPanel ? null : this._postProcess?.target();
-		const pass = device.beginRenderPass(post ? { color: { target: post.color }, depthStencil: { target: post.depth } } : { color: { target: device.surface() } });
+		// A panel draws into its own target, from its corner
+		const panelTarget = inPanel ? this._panelTarget : null;
+		if (panelTarget) {
+			vpX = 0;
+			vpY = 0;
+		}
+		const pass = device.beginRenderPass(post ? { color: { target: post.color }, depthStencil: { target: post.depth } } : panelTarget ? { color: { target: panelTarget.renderColor }, depthStencil: { target: panelTarget.renderDepth } } : { color: { target: device.surface() } });
 		try {
 			pass.setViewport(vpX, vpY, vpWidth, vpHeight);
 			// Always scissor the clear so split-screen viewports don't wipe each other; drawing itself is already confined
@@ -2793,7 +2825,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			if (!inPanel) this._drawDebugLines(pass, matrices);
 		} finally {
 			pass.end();
-			this._gpuHandBack(inPanel ? null : this._postProcess?.targetFramebuffer() ?? null, vpX, vpY, vpWidth, vpHeight);
+			this._gpuHandBack(panelTarget ? webGl2Framebuffer(device, panelTarget.renderColor, panelTarget.renderDepth) : inPanel ? null : this._postProcess?.targetFramebuffer() ?? null, vpX, vpY, vpWidth, vpHeight);
 		}
 
 		// Outlined items: drawn round once the frame's finished (and post-processed)
@@ -4252,6 +4284,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (this._gpuInstances) this._device?.destroyBuffer(this._gpuInstances);
 		this._postProcess?.dispose();
 		this._postProcess = null;
+		this._panelTargets?.dispose();
+		this._panelTargets = undefined;
 		this._uiPass?.destroy();
 		this._uiPass = undefined;
 		this._outlinePass?.destroy();

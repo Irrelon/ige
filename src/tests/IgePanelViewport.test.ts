@@ -3,6 +3,7 @@ import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { ige } from "@/engine/instance";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
+import { IgePanelTargets } from "@/engine/webgl/IgePanelTarget";
 import { igeSceneChange } from "@/engine/utils/sceneChange";
 
 describe("igePanelRect", () => {
@@ -86,7 +87,7 @@ describe("IgePanelViewport", () => {
 
 describe("IgePanelViewport: the renderer", () => {
 	/** A renderer with no canvas that records the order of a frame's passes. */
-	function frame (shown: boolean[]) {
+	function frame (shown: boolean[], opts: { views?: boolean; device?: any; fogs?: Array<any> } = {}) {
 		const r = Object.create(IgeWebGlRenderer.prototype) as any;
 		const order: string[] = [];
 		r._sceneData = new WeakMap();
@@ -99,6 +100,9 @@ describe("IgePanelViewport: the renderer", () => {
 		r._stats = {};
 		r._clearColor = { r: 0, g: 0, b: 0, a: 1 };
 		r._frameId = 0;
+		r._devicePixelRatio = 1;
+		r._fog = { mode: "linear", color: { r: 1, g: 1, b: 1 }, near: 1, far: 2, density: 0.1 };
+		r._device = opts.device;
 		r._skeletonRows = new Map();
 		r._shadowCastingPointLights = [];
 		r._postProcessor = () => ({ begin: () => true, end: () => order.push("post"), depthRange: () => undefined, bindTarget: () => undefined });
@@ -108,9 +112,13 @@ describe("IgePanelViewport: the renderer", () => {
 		r._renderUiLayer = () => order.push("ui");
 		r._renderOverlays = () => order.push("overlays");
 		const lightsSeen: unknown[] = [];
+		const fogsSeen: any[] = [];
+		const targetsSeen: any[] = [];
 		r._renderViewport = (vp: any) => {
 			order.push(vp.name ?? "view");
 			lightsSeen.push(r._lightManager);
+			fogsSeen.push(r._fog);
+			targetsSeen.push(r._panelTarget);
 		};
 		const panels = shown.map((on, i) => {
 			const panel = new IgePanelViewport({ left: 0, top: 0, width: 100, height: 100 });
@@ -118,13 +126,15 @@ describe("IgePanelViewport: the renderer", () => {
 			panel.scene(new IgeEntity() as any);
 			(panel.viewport._scene as any).update = jest.fn();
 			if (on) panel.show();
+			if (opts.fogs?.[i]) panel.fog(opts.fogs[i]);
 			r.addPanel(panel);
 			return panel;
 		});
 		const mainLights = {};
 		r._lightManager = mainLights;
-		r.renderSceneGraph({} as never, [{ _scene: new IgeEntity(), camera: {} }]);
-		return { r, order, panels, lightsSeen, mainLights };
+		const mainFog = r._fog;
+		r.renderSceneGraph({} as never, opts.views === false ? [] : [{ _scene: new IgeEntity(), camera: {} }]);
+		return { r, order, panels, lightsSeen, mainLights, fogsSeen, targetsSeen, mainFog };
 	}
 
 	beforeAll(() => {
@@ -154,5 +164,123 @@ describe("IgePanelViewport: the renderer", () => {
 		const { r, panels } = frame([true]);
 		r.removePanel(panels[0]);
 		expect(r.panels()).toEqual([]);
+	});
+	it("swaps in each panel's own fog for its pass (none when it has none) and puts the renderer's back", () => {
+		const own = { mode: "exp2", density: 0.5 };
+		const { r, fogsSeen, mainFog } = frame([true, true], { fogs: [own, null] });
+		expect(fogsSeen[0]).toBe(mainFog);
+		expect(fogsSeen[1]).toMatchObject({ mode: "exp2", density: 0.5 });
+		expect(fogsSeen[2].mode).toBe("none");
+		expect(r._fog).toBe(mainFog);
+	});
+
+	it("draws shown panels with no main viewport, and nothing without them", () => {
+		const shown = frame([true, false], { views: false });
+		expect(shown.order).toEqual(["post", "outlines", "ui", "panel0", "overlays"]);
+		const none = frame([false], { views: false });
+		expect(none.order).toEqual(["post"]);
+		expect(frame([], { views: false }).order).toEqual(["post"]);
+	});
+
+	it("draws each shown panel into its own target, composites it, and frees it when the panel is removed", () => {
+		const device = fakeDevice();
+		const { r, panels, targetsSeen } = frame([true, false, true], { device });
+		expect(targetsSeen[0]).toBeFalsy();
+		expect(targetsSeen[1]).toBeTruthy();
+		expect(targetsSeen[2]).toBeTruthy();
+		expect(targetsSeen[1]).not.toBe(targetsSeen[2]);
+		expect(targetsSeen[1].width).toBe(100);
+		expect(r._panelTargets.count).toBe(2);
+		expect(device.copies).toBe(2);
+		expect(r._panelTarget).toBeNull();
+		const live = device.live();
+		r.removePanel(panels[0]);
+		expect(r._panelTargets.count).toBe(1);
+		expect(device.live()).toBeLessThan(live);
+	});
+
+	it("hands a panel's effect its pixels and rectangle instead of the plain copy", () => {
+		const device = fakeDevice();
+		const apply = jest.fn();
+		const r = frame([true], { device }).r;
+		const panel = r.panels()[0];
+		panel.effect = { depth: true, apply };
+		r._visiblePanels = [panel];
+		r._renderPanels();
+		expect(apply).toHaveBeenCalledTimes(1);
+		const [dev, rect, source] = apply.mock.calls[0];
+		expect(dev).toBe(device);
+		expect(rect).toEqual({ x: 0, y: 500, width: 100, height: 100 });
+		expect(source.color).toBeTruthy();
+		expect(source.depth).toBeTruthy();
+		expect([source.width, source.height]).toEqual([100, 100]);
+	});
+
+	it("makes the target again after a context loss", () => {
+		const device = fakeDevice();
+		const { r } = frame([true], { device });
+		const first = r._panelTargets.get(r.panels()[0]);
+		r._panelTargets.contextLost();
+		expect(r._panelTargets.count).toBe(0);
+		r._visiblePanels = [r.panels()[0]];
+		r._renderPanels();
+		expect(r._panelTargets.get(r.panels()[0])).not.toBe(first);
+	});
+});
+
+/** A device that counts what's made and freed and what's drawn (no GPU). */
+function fakeDevice (maxSamples = 4) {
+	let made = 0;
+	let freed = 0;
+	const d: any = {
+		limits: { maxSamples },
+		copies: 0,
+		live: () => made - freed,
+		surface: () => ({ kind: "surface", width: 800, height: 600 }),
+		createTexture: (desc: any) => (made++, { kind: "texture", ...desc }),
+		destroyTexture: () => void freed++,
+		createShaderModule: () => ({}),
+		destroyShaderModule: () => undefined,
+		createRenderPipeline: () => ({}),
+		resolveTexture: () => undefined,
+		invalidate: () => undefined,
+		release: () => undefined,
+		beginRenderPass: () => ({
+			setViewport: () => undefined, setScissorRect: () => undefined, setPipeline: () => undefined, setTexture: () => undefined,
+			draw: () => void d.copies++, end: () => undefined
+		})
+	};
+	return d;
+}
+
+describe("IgePanelTargets", () => {
+	it("makes a target at the panel's size, keeps it, makes it again when the size changes, and frees it", () => {
+		const device = fakeDevice();
+		const targets = new IgePanelTargets(device);
+		const panel = {};
+		const a = targets.ensure(panel, 320, 180, false);
+		expect([a.width, a.height, a.multisampled]).toEqual([320, 180, true]);
+		expect(targets.ensure(panel, 320, 180, false)).toBe(a);
+		const made = device.live();
+		const b = targets.ensure(panel, 640, 360, false);
+		expect(b).not.toBe(a);
+		expect(b.renderColor.width).toBe(640);
+		expect(device.live()).toBe(made);
+		targets.free(panel);
+		expect(device.live()).toBe(0);
+		expect(targets.count).toBe(0);
+	});
+
+	it("draws straight into the readable textures when the GPU has no multisampling, and makes depth only when asked", () => {
+		const device = fakeDevice(0);
+		const targets = new IgePanelTargets(device);
+		const t = targets.ensure({}, 64, 64, false);
+		expect(t.multisampled).toBe(false);
+		expect(t.renderColor).toBe(t.color);
+		expect(t.depth).toBeNull();
+		const p = {};
+		const u = targets.ensure(p, 64, 64, true);
+		expect(u.depth).toBe(u.renderDepth);
+		expect(targets.ensure(p, 64, 64, false).depth).toBeNull();
 	});
 });

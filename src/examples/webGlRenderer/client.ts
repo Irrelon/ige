@@ -4,7 +4,9 @@ import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { IgeViewport } from "@/engine/core/IgeViewport";
-import { IgePanelViewport } from "@/engine/core/IgePanelViewport";
+import { IgePanelViewport, type IgePanelEffect } from "@/engine/core/IgePanelViewport";
+import type { IgeGpuRenderPipeline } from "@/engine/gpu/IgeGpuDevice";
+import { IGE_PANEL_FULLSCREEN_VERT } from "@/engine/webgl/IgePanelTarget";
 import { IgeCamera } from "@/engine/core/IgeCamera";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { ige } from "@/engine/instance";
@@ -190,6 +192,44 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		side.translateTo(-220, 60, 60);
 		side.lookAtPoint(new IgePoint3d(0, 30, 0));
 
+		// Its own fog (the main view's doesn't reach it)
+		panel.fog({ mode: "linear", color: { r: 0.55, g: 0.6, b: 0.7 }, near: 200, far: 700 });
+
+		// E: a colour-shift effect that reads the panel's pixels (a green-tinted, scanlined recorder look)
+		let pipeline: IgeGpuRenderPipeline | undefined;
+		const effect: IgePanelEffect = {
+			apply: (device, frame, source) => {
+				pipeline ??= device.createRenderPipeline({
+					module: device.createShaderModule({
+						vertex: IGE_PANEL_FULLSCREEN_VERT,
+						fragment: `#version 300 es
+precision highp float;
+in vec2 v_uv;
+out vec4 o;
+uniform sampler2D u_src;
+void main() {
+	vec3 c = texture(u_src, v_uv).rgb;
+	float l = dot(c, vec3(0.299, 0.587, 0.114));
+	c = mix(vec3(l) * vec3(0.4, 1.0, 0.5), c, 0.25);
+	c *= 0.8 + 0.2 * sin(gl_FragCoord.y * 1.6);
+	o = vec4(c, 1.0);
+}`
+					}),
+					vertex: { buffers: [] },
+					primitive: { topology: "triangle-list" },
+					textures: [{ name: "u_src" }]
+				});
+				const pass = device.beginRenderPass({ color: { target: device.surface() } });
+				pass.setViewport(frame.x, frame.y, frame.width, frame.height);
+				pass.setScissorRect([frame.x, frame.y, frame.width, frame.height]);
+				pass.setPipeline(pipeline);
+				pass.setTexture(0, source.color);
+				pass.draw(3);
+				pass.end();
+			}
+		};
+		if (new URLSearchParams(window.location.search).get("panelEffect") === "1") panel.effect = effect;
+
 		this.renderer.addPanel(panel);
 		panel.enableShadows(sun, 1024);
 		panel.show();
@@ -198,6 +238,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		setInterval(() => panel.cut((wide = !wide) ? "main" : "side"), 3000);
 		window.addEventListener("keydown", (e) => {
 			if (e.key === "m") panel.visible() ? panel.hide() : panel.show();
+			if (e.key === "e") panel.effect = panel.effect ? null : effect;
 		});
 		(window as any).panel = panel;
 	}

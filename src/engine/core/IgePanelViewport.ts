@@ -3,6 +3,8 @@ import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeGpuDevice } from "@/engine/gpu/IgeGpuDevice";
+import type { IgeWebGlFogSettings } from "@/engine/core/IgeWebGlRenderer";
+import type { IgePanelSource } from "@/engine/webgl/IgePanelTarget";
 import type { IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
 import { IgeWebGlLightManager } from "@/engine/webgl/IgeWebGlLightManager";
 
@@ -42,13 +44,18 @@ export interface IgePanelFrame {
 }
 
 /**
- * An effect over a panel's rectangle (the hook for a "recorder look": grain, scanlines). The renderer calls apply()
- * each frame the panel was drawn, after its pass has ended and before the UI overlays, with the canvas as the
- * surface: begin a pass on device.surface() with its scissor (and viewport) set to the frame and blend over what's
- * there. Nothing outside the rectangle may be touched.
+ * An effect over a panel: the hook for a "recorder look" (blur, colour shift, warp, grain, scanlines). The panel is
+ * drawn into a target of its own; each frame it was drawn, after its pass and before the UI overlays, the renderer
+ * calls apply() with the device, the panel's rectangle on the canvas and the panel's pixels (`source.color`, and
+ * `source.depth` when `depth` is true). The effect draws the composite itself: begin a pass on device.surface(),
+ * set its viewport and scissor to `frame`, and draw the panel's pixels (a full-screen triangle, with
+ * IGE_PANEL_FULLSCREEN_VERT as its vertex shader: `v_uv` runs 0 to 1 over the panel) with whatever it does to them.
+ * Nothing outside the rectangle may be touched. With no effect set the renderer copies the panel as it is.
  */
 export interface IgePanelEffect {
-	apply(device: IgeGpuDevice, frame: IgePanelFrame): void;
+	/** The panel's depth is wanted in `source.depth` (resolved after the pass; it costs a resolve, so off by default). */
+	depth?: boolean;
+	apply(device: IgeGpuDevice, frame: IgePanelFrame, source: IgePanelSource): void;
 }
 
 const resolve = (value: IgePanelLength | undefined, whole: number): number | undefined => {
@@ -98,7 +105,7 @@ export class IgePanelViewport {
 	classId = "IgePanelViewport";
 	/** Lights of this panel's scene (the main view's lights don't reach it): panel.lights.addLight(light). */
 	readonly lights = new IgeWebGlLightManager();
-	/** Set to draw an effect over just the panel's rectangle (see IgePanelEffect). */
+	/** Set to composite the panel through an effect that reads its pixels (see IgePanelEffect); none: a plain copy. */
 	effect: IgePanelEffect | null = null;
 	/** The id of this panel's shadow map. */
 	readonly shadowId = `panel${++panelCount}`;
@@ -109,6 +116,7 @@ export class IgePanelViewport {
 	/** @internal */
 	_shadowLight?: IgeDirectionalLight;
 	protected _visible = false;
+	protected _fog: IgeWebGlFogSettings | null = null;
 	protected _layout: IgePanelLayout;
 	protected _cameras = new Map<string, IgeCamera>();
 	protected _rect: IgePanelRect = { x: 0, y: 0, width: 0, height: 0 };
@@ -177,6 +185,25 @@ export class IgePanelViewport {
 			this._visible = val;
 			markSceneChanged();
 		}
+		return this;
+	}
+
+	/**
+	 * Gets / sets the panel's own distance fog (the same settings as the renderer's fog()), used for its pass in
+	 * place of the renderer's. A panel with none draws with no fog (the main view's doesn't reach it); `fog(null)`
+	 * clears it.
+	 */
+	fog (): IgeWebGlFogSettings | null;
+	fog (settings: Partial<IgeWebGlFogSettings> | null): this;
+	fog (settings?: Partial<IgeWebGlFogSettings> | null): IgeWebGlFogSettings | null | this {
+		if (settings === undefined) return this._fog && { ...this._fog, color: { ...this._fog.color } };
+		if (settings === null) {
+			this._fog = null;
+		} else {
+			const base = this._fog ?? { mode: "none", color: { r: 0, g: 0, b: 0 }, near: 500, far: 2000, density: 0.001 };
+			this._fog = { ...base, ...settings, color: { ...base.color, ...(settings.color || {}) } };
+		}
+		markSceneChanged();
 		return this;
 	}
 
