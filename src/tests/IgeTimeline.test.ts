@@ -402,8 +402,8 @@ describe("IgeTimeline: cues", () => {
 
 		// Forwards again: the long sounds resume at the offset for where it is now
 		tl.rate(1);
-		// (time is 3.2: the loop has run 1.2 s; the voice, 5 to 9, hasn't begun)
-		expect(log).toEqual(["start ambience@1.20 loop"]);
+		// (time is 2.8: the loop has run 0.8 s; the voice, 5 to 9, hasn't begun)
+		expect(log).toEqual(["start ambience@0.80 loop"]);
 		tl.pause();
 	});
 

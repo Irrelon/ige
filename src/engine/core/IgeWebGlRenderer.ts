@@ -1246,7 +1246,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				}
 				targets.resolve(target);
 				target.captureHistory();
-				target.historyKey = request.key;
+				// A picture drawn while model textures are still being made isn't kept: it is drawn again next frame
+				if (!this._blobTexturesLoading()) target.historyKey = request.key;
 			});
 		}
 		if (!redo) return;
@@ -2045,6 +2046,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._debugLineVertices = 0;
 
 		return true;
+	}
+
+	/** True while a model texture that was asked for is still being made (the picture drawn meanwhile isn't final). */
+	protected _blobTexturesLoading(): boolean {
+		const tm = this._textureManager;
+		if (!tm) return false;
+		for (const id of this._pendingBlobTextures) if (!tm.hasBlobTexture(id)) return true;
+		return false;
 	}
 
 	/** Make the next _collectScene of a scene walk it again this frame (its entities changed since it was collected). */

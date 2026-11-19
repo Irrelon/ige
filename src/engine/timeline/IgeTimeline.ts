@@ -560,7 +560,7 @@ export class IgeTimeline extends IgeEventingClass {
 			effect.time?.(t);
 			if (typeof effect.history === "function" && effect.source !== this._effectSource(effect)) effect.source = this._effectSource(effect);
 		}
-		for (const track of this._data.tracks) this._applyTrack(track, t);
+		for (const track of this._data.tracks) this._applyTrack(track, t, quiet);
 		this._applyParticles(t);
 		if (quiet) return this;
 		const captions = this.captionsAt(t);
@@ -617,7 +617,7 @@ export class IgeTimeline extends IgeEventingClass {
 
 	// ----- tracks
 
-	protected _applyTrack (track: IgeTimelineTrackData, t: number): void {
+	protected _applyTrack (track: IgeTimelineTrackData, t: number, immediate: boolean = false): void {
 		const target = this._targets.get(track.target) as any;
 		if (!target) {
 			this._missing.add(track.target);
@@ -668,7 +668,7 @@ export class IgeTimeline extends IgeEventingClass {
 				break;
 			}
 			case "animation":
-				this._applyAnimation(target, value as IgeTimelineAnimation, track.keys, t);
+				this._applyAnimation(target, value as IgeTimelineAnimation, track.keys, t, immediate);
 				break;
 			case "camera":
 				try {
@@ -680,7 +680,7 @@ export class IgeTimeline extends IgeEventingClass {
 		}
 	}
 
-	protected _applyAnimation (entity: IgeEntity, key: IgeTimelineAnimation, keys: IgeTimelineKey[], t: number): void {
+	protected _applyAnimation (entity: IgeEntity, key: IgeTimelineAnimation, keys: IgeTimelineKey[], t: number, immediate: boolean): void {
 		const anim = entity.skeletalAnimation?.();
 		if (!anim) return;
 		const i = Math.max(0, keyAtOrBefore(keys, t));
@@ -690,6 +690,8 @@ export class IgeTimeline extends IgeEventingClass {
 		// Exact poses: the shared pose cache quantises time
 		anim.poseCache(false);
 		anim.pose(a.clip, clipTime, { loop: a.loop ?? true });
+		// Drawing another moment within this frame: the skeleton can't wait for its next update
+		if (immediate) anim.poseNow();
 	}
 
 	// ----- particles

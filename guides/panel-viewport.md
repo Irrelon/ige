@@ -78,9 +78,16 @@ before the overlays, the renderer calls `apply` with:
 
 - the `IgeGpuDevice`;
 - `frame`: the panel's rectangle on the canvas in device pixels, from the canvas's bottom-left;
-- `source`: `{ color, depth, width, height }`, the panel's resolved colour texture (linear sampled, v = 0 at the
+- `source`: `{ color, depth, width, height, history, historyKey, captureHistory() }`, the panel's resolved colour texture (linear sampled, v = 0 at the
   bottom) and its size in device pixels. `depth` is the panel's depth (`depth24plus-stencil8`, nearest) only when
   the effect sets `depth: true` (it costs one resolve); null otherwise.
+
+`history` is a second texture of the same size, there only when the effect has `history(): true` (null otherwise, and
+freed again when it stops); `captureHistory()` copies `color` into it and `historyKey` is a number the effect keeps there
+to say what the history holds (null for a new or rebuilt one). An effect can also define
+`historyRequest(source)`: asked before each draw, it may return `{ time, key, renderAt(draw) }` to have the history hold
+the panel's picture at another moment; the renderer calls `renderAt`, which sets the scene to that moment and runs a
+draw that fills the history, then stores `key` as `historyKey`. The recorder's freeze uses it.
 
 The effect **draws the composite itself**: begin a pass on `device.surface()`, set its viewport and scissor to
 `frame`, and draw a full-screen triangle that samples `source.color` (`IGE_PANEL_FULLSCREEN_VERT` from
@@ -91,7 +98,7 @@ With no effect set the renderer copies the panel as it is. (Effects written for 
 a panel already on the canvas, must now draw the panel's pixels too.)
 
 `IgeRecorderEffect` (`guides/recorder-effect.md`) is a ready-made effect: grain, scanlines, tint, dropouts and
-more, with presets, its noise tied to a time you set.
+more (a freeze on the last good frame, overscan so a warp fills its rectangle), with presets, its noise tied to a time you set.
 
 ## No main viewport
 

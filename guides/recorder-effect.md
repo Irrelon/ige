@@ -33,19 +33,50 @@ All are numbers (so a timeline can animate any of them). Defaults leave the pict
 | `vignette` | dark corners (0 to 1) | 0 |
 | `fringe` | chromatic fringe: channels pulled apart toward the edges, in device px | 0 |
 | `blur`, `sharpen` | soft focus (0 to 1), sharpening (0 to 2) | 0, 0 |
-| `warp` | barrel distortion (0 to about 0.2); corners fall away to black | 0 |
+| `warp` | barrel distortion (0 to about 0.2) | 0 |
+| `overscan` | 0 to 1: enlarge the picture so the warp leaves no black corners; 1 fills the rectangle exactly (below) | 0 |
 | `dropout` | a scripted glitch, 0 none to 1 total loss (below) | 0 |
+| `freeze` | dropout level (0.05 to 1) above which the picture sticks on the last good frame; 0 off (below) | 0 |
 | `dropoutRandom` | how often small random dropouts happen (0 never to 1) | 0 |
 | `shimmer`, `shimmerSpeed` | 0 recorder to 1 shimmer mode (below); its speed | 0, 1 |
 | `fps` | noise frames a second | 24 |
 | `seed` | another (equally repeatable) take of all the noise | 0 |
 
 **Dropouts.** The level `dropout` (0 to 1) makes the picture glitch, worse as it rises: torn horizontal rows, a bright
-band rolling up the picture, the picture rolling and holding in coarse blocks (the "freeze"), and above 0.8 a loss into
-static. The effect has no picture history, so "freeze" is a blocky hold rather than a repeated old frame. The scene
+band rolling up the picture, the picture rolling, and above 0.8 a loss into static. With `freeze` off the picture also holds in coarse blocks above
+0.5; with `freeze` on it holds a real frame instead (below). The scene
 sets `dropout` at dramatic moments (a timeline track, below); between them small random ones come from
 `dropoutRandom`: each half-second has that much chance (times a half) of one short glitch of low level. The level
 drawn is the larger of the two.
+
+**Freeze.** Set `freeze` to a level (the presets that tear use 0.5) and, in a noise frame whose glitch level is at or
+above it, the picture is not the live panel but the last good frame, as on a real recorder; grain, scanlines, tearing,
+the rolling band and the loss into static go on over it. The effect asks the panel for one more texture of its size
+(`source.history`); only effects whose `history()` is true (`freeze > 0`) get one, every other panel costs nothing extra.
+The texture is freed and rebuilt with the panel's target (removal, resize, context loss).
+
+*The rule (deterministic, so scrubbing is exact).* A noise frame is frozen when the glitch level at the frame's start
+time (the larger of the scripted `dropout` and the random one, both pure functions of time) is at or above `freeze`.
+The held picture is the panel's picture at the start time of the last noise frame before the stretch where it was
+under that level, i.e. the moment the dropout crossed the threshold (frame 0 if it starts frozen; a stretch is looked
+back over for at most `IGE_RECORDER_FREEZE_SCAN` frames, about 50 s). `igeRecorderFreezeStart(settings, time, dropoutAt)`
+is the pure function. Playing into a freeze and seeking into the middle of it hold the same frame.
+
+*How the frame is made.* With a timeline bound to the panel (which gives the effect its `source`: the scripted
+`dropout` at any time, and `renderAt(time, draw)`), nothing is copied while the picture is good. When a freeze starts
+(play, or a seek into it) and the history doesn't hold that start frame, the renderer sets the scene to the start time
+with `timeline.renderAt()`, draws the panel once into its target, copies the picture into the history, sets the scene
+back, and draws the panel as usual; it does that once for the stretch, nothing is emitted, and no cue fires (a
+particle system is replayed to that time and back and a held skeleton pose is sampled there at once, so a freeze costs one extra panel draw plus the replay; a picture drawn while model textures are still loading is not kept, it is drawn again next frame). Without a
+timeline (the game sets `dropout` itself) the effect has no past to draw, so it copies the panel's colour into the
+history every frame while the picture is good (one texture copy) and holds the last copy, which is the last good frame
+as drawn, not exact under scrubbing.
+
+**Overscan.** The warp bulges the picture, which leaves black corners. `overscan: 1` enlarges the picture just enough
+(`igeRecorderOverscan(warp, amount)` gives the scale) that the warped corner lands exactly on the rectangle's corner,
+so the picture always fills it; the edges lose a few percent. The game's own frame around the panel is the bezel.
+It is on in the presets that warp (`siteRecorder`, `warshipCamera`) and 0 otherwise; the loss of the strip is the
+price of no black. Tears and the shimmer ripple can still push the picture's edge inside during a glitch.
 
 **Shimmer.** `shimmer: 1` is a mode for something that isn't a recorder: the picture's light is remapped onto a warm,
 slowly drifting gold, with a slow ripple and a soft glow. Mix it in partway for a transition.
@@ -99,5 +130,5 @@ A track whose target has no effect, or names a setting that doesn't exist, is ig
 
 ## Cost
 
-One full-rectangle pass reading the panel's colour: up to seven texture reads a pixel (fringe on, blur or sharpen on, shimmer on),
-fewer when those are off. It costs nothing while the panel is hidden.
+One full-rectangle pass reading the panel's colour (or the history frame while frozen, no extra reads): up to seven texture reads a pixel (fringe on, blur or sharpen on, shimmer on),
+fewer when those are off. It costs nothing while the panel is hidden. A history frame is one more panel-sized RGBA texture, only with `freeze` on, and one texture copy per good frame without a timeline or one extra panel draw per freeze with one.

@@ -72,7 +72,7 @@ moment (it replaces whatever was playing; the pose is applied on the next update
   that stretch it starts at the right offset (wrapped for a loop). Pause and seek stop what's sounding.
   **Audio rate:** `rate()` sets the playback rate of the sounds (`IgeAudioControl.playbackRate()`, also the `rate`
   option of `ige.audio.createAudioControl()` and `play()`): sounds start at the timeline's rate and what's sounding
-  speeds up or slows down (pitch with it) when `rate()` changes. Backwards plays forwards, and the rate is kept to
+  speeds up or slows down (pitch with it) when `rate()` changes. Backwards is silent: at a negative rate sounds that are live stop and none start, and long sounds come back at the right offset when the rate is positive again. The rate is kept to
   0.1x to 8x. Seeking still stops what's ringing. Swap `timeline.audio` (an
   `IgeTimelineAudio`: `start(source, {offset, loop, volume, rate})` returning something with `stop()`, and `setRate(rate)` if it can) for other sound.
 - **Events** `{ at, name, data? }`: fire (`on("event", cue => ...)`) when play crosses them, once. Seeking doesn't
@@ -165,6 +165,8 @@ yourself).
 **Recorder look.** `panel.effect = new IgeRecorderEffect("siteRecorder")` (`guides/recorder-effect.md`). A timeline
 bound to the panel sets the effect's time on every apply, so its grain, flicker and random dropouts are a function of
 the timeline's time: paused holds still, scrubbing back gives the same picture. `effect.<setting>` tracks animate its
-settings, e.g. a dropout spike at 3.2 s.
+settings, e.g. a dropout spike at 3.2 s. For the effect's freeze the timeline also gives it `source` (the scripted value of a setting at any time) and
+`renderAt(time, draw)`, which sets the scene to `time` for one draw and puts it back, emitting and firing nothing; it's public
+if you need the scene at another moment for a draw of your own.
 Show captions in the game's own UI from `captionsAt()` / the `"captions"` event, placed from `panel.rect()`.
 `panel.samples` sets the panel's multisampling. 

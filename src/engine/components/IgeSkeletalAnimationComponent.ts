@@ -438,6 +438,22 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 	}
 
 	/**
+	 * Sample the pose now (a pose() held, or the animation's current time) instead of at the entity's next update:
+	 * for drawing the skeleton at another moment within one frame (a timeline's renderAt).
+	 */
+	poseNow(): this {
+		// Whether or not it was drawn lately (the pose must be the one asked for)
+		const culled = this._cullOffscreen;
+		this._cullOffscreen = false;
+		try {
+			this._update(this._entity, 0);
+		} finally {
+			this._cullOffscreen = culled;
+		}
+		return this;
+	}
+
+	/**
 	 * Stop all animations.
 	 */
 	stop(): this {
