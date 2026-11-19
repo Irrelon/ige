@@ -4,7 +4,9 @@ import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgePanelViewport } from "@/engine/core/IgePanelViewport";
 import { IgeCamera } from "@/engine/core/IgeCamera";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { ige } from "@/engine/instance";
 import type { IgeCanInit } from "@/types/IgeCanInit";
 import { IgeBehaviourType } from "@/enums";
@@ -92,6 +94,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			this.updateStatus("Loading GLTF model...");
 			await this.loadGltfModel();
 
+			// ?panel=1: a second small scene in a corner (see guides/panel-viewport.md)
+			if (new URLSearchParams(window.location.search).get("panel") === "1") this.setupPanel();
+
 			// Setup camera animation
 			this.setupCameraAnimation();
 
@@ -143,6 +148,58 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.viewport.mount(ige.engine);
 
 		this.log("Scene, camera, and viewport created");
+	}
+
+	/** Dev switch (?panel=1): a panel viewport in the bottom right with its own scene, lights, shadow and two cameras it cuts between. */
+	setupPanel() {
+		if (!this.renderer) return;
+		const scene = new IgeScene2d();
+		scene.id("panelScene");
+
+		const floor = new IgeEntity();
+		floor._geometryData = { ...IgePrimitiveGeometry.createPlane(400, 400, "panel_floor"), id: "panel_floor" };
+		floor.material({ color: { r: 0.8, g: 0.8, b: 0.7, a: 1 }, metallic: 0, roughness: 0.9 });
+		floor.rotateTo(-Math.PI / 2, 0, 0);
+		floor.mount(scene);
+
+		const cube = new IgeEntity();
+		cube._geometryData = { ...IgePrimitiveGeometry.createCube(60, "panel_cube"), id: "panel_cube" };
+		cube.material({ color: { r: 1, g: 0.5, b: 0.1, a: 1 }, metallic: 0.1, roughness: 0.6 });
+		cube.translateTo(0, 40, 0);
+		cube.mount(scene);
+		scene.addBehaviour(IgeBehaviourType.preUpdate, "spinPanelCube", () => cube.rotateTo(0, Date.now() / 1000, 0));
+
+		const panel = new IgePanelViewport({ right: 16, bottom: 16, width: "30%", aspect: 16 / 9 });
+		panel.scene(scene);
+		const ambient = new IgeAmbientLight();
+		ambient.lightColor(0.5, 0.5, 0.6);
+		ambient.intensity(0.5);
+		const sun = new IgeDirectionalLight();
+		sun.lightColor(1, 1, 1);
+		sun.intensity(1.2);
+		sun.direction(-0.4, -0.8, -0.3);
+		sun.shadowBias(0);
+		panel.lights.addLight(ambient);
+		panel.lights.addLight(sun);
+
+		panel.camera.projectionType("perspective");
+		panel.camera.translateTo(150, 120, 220);
+		panel.camera.lookAtPoint(new IgePoint3d(0, 30, 0));
+		const side = panel.newCamera("side");
+		side.projectionType("perspective");
+		side.translateTo(-220, 60, 60);
+		side.lookAtPoint(new IgePoint3d(0, 30, 0));
+
+		this.renderer.addPanel(panel);
+		panel.enableShadows(sun, 1024);
+		panel.show();
+		// A cut every three seconds; M shows and hides it
+		let wide = true;
+		setInterval(() => panel.cut((wide = !wide) ? "main" : "side"), 3000);
+		window.addEventListener("keydown", (e) => {
+			if (e.key === "m") panel.visible() ? panel.hide() : panel.show();
+		});
+		(window as any).panel = panel;
 	}
 
 	setupLights() {

@@ -4,6 +4,7 @@ import { IgeDummyContext } from "@/engine/core/IgeDummyContext";
 import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeEngine } from "@/engine/core/IgeEngine";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import type { IgePanelViewport } from "@/engine/core/IgePanelViewport";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
 import { isClient, isServer } from "@/engine/utils/clientServer";
@@ -1146,6 +1147,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 	protected _overlays: IgeWebGlOverlay[] = [];
 
+	/** Panel viewports (picture-in-picture views), drawn in order after the main views and their post-processing. */
+	protected _panels: IgePanelViewport[] = [];
+	/** True while a panel is drawn: its pass skips what belongs to the main views (outlines, UI layer, debug lines, shadow caching). */
+	protected _inPanel: boolean = false;
+	/** The panels drawn this frame. */
+	protected _visiblePanels: IgePanelViewport[] = [];
+
 	protected _renderOverlays(): void {
 		const gl = this._canvasContext;
 		const canvas = this._canvasElement;
@@ -1153,6 +1161,82 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		for (const o of this._overlays) this._stats.drawCalls += o.draw(gl as WebGL2RenderingContext, canvas.width, canvas.height, this._devicePixelRatio) || 0;
 		this._stateManager.reset();
 		gl.depthFunc(gl.LEQUAL);
+	}
+
+	/**
+	 * Add a panel viewport (a picture-in-picture view with its own scene, camera, lights and shadows, see
+	 * IgePanelViewport and guides/panel-viewport.md). Panels draw in the order added (later on top), over the main
+	 * views and the UI layer, under the overlays; a panel that isn't shown costs nothing.
+	 */
+	addPanel(panel: IgePanelViewport): this {
+		if (!this._panels.includes(panel)) {
+			this._panels.push(panel);
+			panel._renderer = this;
+		}
+		return this;
+	}
+
+	removePanel(panel: IgePanelViewport): this {
+		const i = this._panels.indexOf(panel);
+		if (i >= 0) {
+			panel.disableShadows();
+			this._panels.splice(i, 1);
+			panel._renderer = undefined;
+		}
+		return this;
+	}
+
+	/** The panels added to the renderer, in drawing order. */
+	panels(): readonly IgePanelViewport[] {
+		return this._panels;
+	}
+
+	/**
+	 * Draw the shown panels (prepared and collected by renderSceneGraph) straight onto the canvas, after the main
+	 * views' post-processing. Each swaps in its own lights and shadow light for the draw, so nothing of the main
+	 * view's reaches into it and nothing of it into the main view; the main view's shadow caching and shared shadow
+	 * map are left as they were.
+	 */
+	protected _renderPanels(): void {
+		const saved = {
+			lights: this._lightManager,
+			light: this._shadowCastingLight,
+			id: this._shadowLightId,
+			points: this._shadowCastingPointLights,
+			shared: this._sharedShadowFrame,
+			holds: this._shadowMapHoldsCache
+		};
+		this._inPanel = true;
+		this._sharedShadowFrame = -1;
+		try {
+			for (const panel of this._visiblePanels) {
+				this._lightManager = panel.lights;
+				this._shadowCastingLight = panel._shadowLight;
+				this._shadowLightId = panel.shadowId;
+				this._shadowCastingPointLights = [];
+				this._renderViewport(panel.viewport);
+				if (panel.effect && this._device) {
+					const dpr = this._devicePixelRatio;
+					const vp = panel.viewport;
+					panel.effect.apply(this._device, {
+						x: Math.floor((vp._translate?.x || 0) * dpr),
+						y: Math.floor((vp._translate?.y || 0) * dpr),
+						width: Math.floor(vp._bounds2d.x * dpr),
+						height: Math.floor(vp._bounds2d.y * dpr)
+					});
+					this._device.release();
+					this._stateManager?.reset();
+				}
+			}
+		} finally {
+			this._inPanel = false;
+			this._lightManager = saved.lights;
+			this._shadowCastingLight = saved.light;
+			this._shadowLightId = saved.id;
+			this._shadowCastingPointLights = saved.points;
+			this._sharedShadowFrame = saved.shared;
+			this._shadowMapHoldsCache = saved.holds;
+		}
 	}
 
 	/**
@@ -1811,32 +1895,19 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._bonePalette?.begin();
 
 		for (let i = 0; i < viewports.length; i++) {
-			const scene = viewports[i]._scene;
-			if (!scene) continue;
+			this._collectScene(viewports[i]._scene);
+		}
 
-			let data = this._sceneData.get(scene);
-			if (!data) {
-				data = { frameId: -1, models: [], sprites: [], particles: [], decals: [], ui: [], uiSettings: [] };
-				this._sceneData.set(scene, data);
-			}
-
-			if (data.frameId !== this._frameId) {
-				data.frameId = this._frameId;
-				data.models.length = 0;
-				data.sprites.length = 0;
-				data.particles.length = 0;
-				data.decals.length = 0;
-				data.ui.length = 0;
-				data.uiSettings.length = 0;
-				this._collectRenderables(scene, data);
-				if (data.particles.length || data.decals.length) this._gpuBegin();
-				for (let p = 0; p < data.particles.length; p++) {
-					this._uploadInstanceData(data.particles[p], PARTICLE_FLOATS);
+		// Panels that are shown: placed and advanced, then their scenes collected like the views' (hidden ones cost nothing)
+		const panels = (this._visiblePanels ??= []);
+		panels.length = 0;
+		if (this._panels?.length) {
+			const tickDelta = ige.engine._tickDelta;
+			for (const panel of this._panels) {
+				if (panel.visible() && panel._prepare(this._bounds2d.x, this._bounds2d.y, tickDelta)) {
+					panels.push(panel);
+					this._collectScene(panel.viewport._scene);
 				}
-				for (let d = 0; d < data.decals.length; d++) {
-					this._uploadInstanceData(data.decals[d], DECAL_INSTANCE_FLOATS);
-				}
-				stats.items += data.models.length + data.sprites.length;
 			}
 		}
 
@@ -1880,6 +1951,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// The UI layer: on top of everything, post-processing included, in each view
 		this._renderUiLayer(viewports);
 
+		// Panels over the finished frame, under the overlays
+		if (this._visiblePanels?.length) this._renderPanels();
+
 		// Overlays (the document UI) over the whole canvas, last of all
 		this._renderOverlays();
 
@@ -1887,6 +1961,36 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._debugLineVertices = 0;
 
 		return true;
+	}
+
+	/** Collect a scene's renderables for this frame (once per scene, however many views draw it). */
+	protected _collectScene(scene: IgeObject | undefined): void {
+		if (!scene) return;
+		const stats = this._stats;
+		let data = this._sceneData.get(scene);
+		if (!data) {
+			data = { frameId: -1, models: [], sprites: [], particles: [], decals: [], ui: [], uiSettings: [] };
+			this._sceneData.set(scene, data);
+		}
+
+		if (data.frameId !== this._frameId) {
+			data.frameId = this._frameId;
+			data.models.length = 0;
+			data.sprites.length = 0;
+			data.particles.length = 0;
+			data.decals.length = 0;
+			data.ui.length = 0;
+			data.uiSettings.length = 0;
+			this._collectRenderables(scene, data);
+			if (data.particles.length || data.decals.length) this._gpuBegin();
+			for (let p = 0; p < data.particles.length; p++) {
+				this._uploadInstanceData(data.particles[p], PARTICLE_FLOATS);
+			}
+			for (let d = 0; d < data.decals.length; d++) {
+				this._uploadInstanceData(data.decals[d], DECAL_INSTANCE_FLOATS);
+			}
+			stats.items += data.models.length + data.sprites.length;
+		}
 	}
 
 	/**
@@ -2446,7 +2550,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	protected _renderViewport(viewport: IgeViewport): void {
-		this._applyDefaultCameraPreset(viewport);
+		const inPanel = this._inPanel;
+		if (!inPanel) this._applyDefaultCameraPreset(viewport);
 		const gl = this._canvasContext;
 		if (!gl || !this._cameraController || !this._stateManager) {
 			return;
@@ -2493,7 +2598,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const perspective = proj[11] !== 0;
 
 		// The UI layer draws after every view (and the post-processing): keep this one's camera for it
-		if (data.ui.length > 0) {
+		if (data.ui.length > 0 && !inPanel) {
 			let uiView = this._uiViews.get(viewport);
 			if (!uiView) {
 				uiView = { viewProj: new Float32Array(16), yScale: 1, width: 0, height: 0, frameId: -1 };
@@ -2656,10 +2761,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		for (const item of occludedItems) this._prepareTextures(item, item);
 		const decals = this._visibleDecals(data.decals, matrices);
 		const particles = this._visibleParticles(data.particles, matrices);
-		this._pushDebugShapes();
+		if (!inPanel) this._pushDebugShapes();
 
 		const device = this._gpuBegin();
-		const post = this._postProcess?.target();
+		const post = inPanel ? null : this._postProcess?.target();
 		const pass = device.beginRenderPass(post ? { color: { target: post.color }, depthStencil: { target: post.depth } } : { color: { target: device.surface() } });
 		try {
 			pass.setViewport(vpX, vpY, vpWidth, vpHeight);
@@ -2685,17 +2790,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			// Silhouettes of marked entities where something stands in front of them
 			if (occludedItems.length > 0) this._drawOccluded(pass, occludedItems);
 
-			this._drawDebugLines(pass, matrices);
+			if (!inPanel) this._drawDebugLines(pass, matrices);
 		} finally {
 			pass.end();
-			this._gpuHandBack(this._postProcess?.targetFramebuffer() ?? null, vpX, vpY, vpWidth, vpHeight);
+			this._gpuHandBack(inPanel ? null : this._postProcess?.targetFramebuffer() ?? null, vpX, vpY, vpWidth, vpHeight);
 		}
 
 		// Outlined items: drawn round once the frame's finished (and post-processed)
-		if (outlined) (this._outlineJobs ??= []).push({ items: outlined, matrices, view: { x0: vpX, y0: vpY, x1: vpX + vpWidth, y1: vpY + vpHeight } });
+		if (outlined && !inPanel) (this._outlineJobs ??= []).push({ items: outlined, matrices, view: { x0: vpX, y0: vpY, x1: vpX + vpWidth, y1: vpY + vpHeight } });
 
 		// Keep only the queued lines for the next viewport
-		this._debugLineVertices = this._debugLinesQueued;
+		if (!inPanel) this._debugLineVertices = this._debugLinesQueued;
 	}
 
 	/**
@@ -3314,8 +3419,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			shadowManager.getShadowMapSize(lightId) * 0.5;
 
 		// Cache static casters when this is the frame's only directional pass
-		this._directionalPassesThisFrame++;
-		const cache = this._shadowCaching && this._directionalPassesLastFrame <= 1
+		// (A panel's pass isn't counted and never caches, so it can't switch the main view's caching off)
+		if (!this._inPanel) this._directionalPassesThisFrame++;
+		const cache = this._shadowCaching && !this._inPanel && this._directionalPassesLastFrame <= 1
 			? shadowManager.getShadowCache(lightId)
 			: null;
 

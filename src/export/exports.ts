@@ -209,6 +209,7 @@ export * from "../engine/filters/igeFilterBlur";
 // Some More Engine Classes (export order matters to avoid circular refs)
 //////////////////////////////////////////////////////////////////////
 export * from "../engine/core/IgeViewport";
+export * from "../engine/core/IgePanelViewport";
 export * from "../engine/core/IgeUiManagerController";
 
 export * from "../engine/core/IgeTweenController";
