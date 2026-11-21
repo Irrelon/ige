@@ -38,6 +38,8 @@ interface Running {
 export class IgeChildProcessLauncher implements IgeZoneLauncher {
 	_options: IgeChildProcessLauncherOptions;
 	_running = new Map<string, Running>();
+	/** Every child still alive, a zone's old one that's stopping included (its port isn't free until it's gone). */
+	_alive = new Set<Running>();
 	_exitListeners: ((zone: string, code: number | null) => void)[] = [];
 
 	constructor (options: IgeChildProcessLauncherOptions) {
@@ -69,6 +71,7 @@ export class IgeChildProcessLauncher implements IgeZoneLauncher {
 		});
 		const running: Running = { child, port, stopping: false };
 		this._running.set(zone, running);
+		this._alive.add(running);
 		const log = o.log === false ? undefined : o.log ?? ((z: string, line: string) => console.log(`[zone ${z}] ${line}`));
 		const lines = (data: Buffer) => {
 			if (!log) return;
@@ -77,6 +80,7 @@ export class IgeChildProcessLauncher implements IgeZoneLauncher {
 		child.stdout?.on("data", lines);
 		child.stderr?.on("data", lines);
 		child.on("exit", (code) => {
+			this._alive.delete(running);
 			if (this._running.get(zone) === running) this._running.delete(zone);
 			if (!running.stopping) for (const fn of this._exitListeners) fn(zone, code);
 		});
@@ -88,8 +92,12 @@ export class IgeChildProcessLauncher implements IgeZoneLauncher {
 		if (!running) return;
 		running.stopping = true;
 		const child = running.child;
+		// (Only this child's own entry: the zone may have been started again while this one was stopping, and that one stays known)
+		const forget = () => {
+			if (this._running.get(zone) === running) this._running.delete(zone);
+		};
 		if (child.exitCode !== null || child.signalCode !== null) {
-			this._running.delete(zone);
+			forget();
 			return;
 		}
 		await new Promise<void>((resolve) => {
@@ -100,7 +108,7 @@ export class IgeChildProcessLauncher implements IgeZoneLauncher {
 			});
 			child.kill("SIGTERM");
 		});
-		this._running.delete(zone);
+		forget();
 	}
 
 	/** Stops every zone (shutting down). */
@@ -111,7 +119,7 @@ export class IgeChildProcessLauncher implements IgeZoneLauncher {
 	/** A port in the range that nothing (ours or anyone's) is listening on. */
 	async _freePort (): Promise<number> {
 		const [from, to] = this._options.ports;
-		const ours = new Set([...this._running.values()].map((r) => r.port));
+		const ours = new Set([...this._alive].map((r) => r.port));
 		for (let port = from; port <= to; port++) {
 			if (ours.has(port)) continue;
 			if (await portFree(port, this._options.host ?? "127.0.0.1")) return port;
@@ -120,10 +128,21 @@ export class IgeChildProcessLauncher implements IgeZoneLauncher {
 	}
 }
 
-function portFree (port: number, host: string): Promise<boolean> {
+/**
+ * Whether nothing's listening on a port: on every address (how a zone listens, and anything else may) as well as the host's
+ * own. A listener on every address doesn't stop another binding one address of it (address reuse), so a check on the host
+ * alone would call a port in use by a zone free.
+ */
+async function portFree (port: number, host: string): Promise<boolean> {
+	return (await canListen(port)) && canListen(port, host);
+}
+
+function canListen (port: number, host?: string): Promise<boolean> {
 	return new Promise((resolve) => {
 		const server = createServer();
 		server.once("error", () => resolve(false));
-		server.listen(port, host, () => server.close(() => resolve(true)));
+		const done = () => server.close(() => resolve(true));
+		if (host === undefined) server.listen(port, done);
+		else server.listen(port, host, done);
 	});
 }

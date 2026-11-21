@@ -1,12 +1,18 @@
 import { IgeNetSyncClient } from "@/engine/network/sync/IgeNetSyncClient";
 import { IgeNetSyncHost, type IgeNetMachine } from "@/engine/network/sync/IgeNetSyncHost";
 import { igeNetLoopback } from "@/engine/network/sync/IgeNetTransport";
+import { IgeChildProcessLauncher } from "@/engine/network/zones/IgeChildProcessLauncher";
 import { IgeDockerLauncher } from "@/engine/network/zones/IgeDockerLauncher";
 import { IgeZoneDirectory } from "@/engine/network/zones/IgeZoneDirectory";
 import { IgeZoneHost } from "@/engine/network/zones/IgeZoneHost";
 import type { IgeZoneLauncher } from "@/engine/network/zones/IgeZoneLauncher";
 import { type IgeZoneTicket, IgeZoneTicketGuard, signTicket, verifyTicket } from "@/engine/network/zones/igeZoneTicket";
 import { igeLayerZone, igeZoneLayer } from "@/engine/network/zones/igeZoneLayers";
+
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { createServer, type Server } from "node:net";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const SECRET = "test-secret";
 
@@ -680,6 +686,49 @@ describe("zone layers", () => {
 			top.stop();
 		} finally {
 			await dir.close();
+		}
+	});
+});
+
+describe("zones as child processes (IgeChildProcessLauncher)", () => {
+	// A zone that holds its port on every address, as a real one does, and takes a moment to stop
+	const script = join(mkdtempSync(join(tmpdir(), "ige-zone-")), "zone.cjs");
+	writeFileSync(script, `const s = require("node:net").createServer().listen(Number(process.env.PORT));
+process.on("SIGTERM", () => setTimeout(() => { s.close(); process.exit(0); }, 150));`);
+	const base = 30000 + Math.floor(Math.random() * 20000);
+	const portOf = (url: string) => Number(new URL(url.replace(/^ws/, "http")).port);
+	const listening = (port: number) => new Promise<boolean>((resolve) => {
+		const probe = createServer().once("error", () => resolve(true));
+		probe.listen(port, () => probe.close(() => resolve(false)));
+	});
+
+	it("a zone started again while its old process is still stopping stays known, and is the one stopped next", async () => {
+		const launcher = new IgeChildProcessLauncher({ script, ports: [base, base + 20], log: false, stopTimeout: 2000 });
+		const first = portOf((await launcher.start("z", {})).url);
+		const stopping = launcher.stop("z");
+		// (Wanted again before the old one's gone: a new process on another port)
+		const second = portOf((await launcher.start("z", {})).url);
+		expect(second).not.toBe(first);
+		await stopping;
+		// The old one's exit mustn't forget the new one (it went on unstoppable, holding its port)
+		expect(launcher._running.get("z")?.port).toBe(second);
+		await new Promise((resolve) => setTimeout(resolve, 400));
+		expect(await listening(second)).toBe(true);
+		await launcher.stop("z");
+		expect(launcher._running.has("z")).toBe(false);
+		expect(await listening(second)).toBe(false);
+	}, 10000);
+
+	it("doesn't hand a zone a port something's listening on every address of", async () => {
+		const held: Server = await new Promise((resolve) => {
+			const s = createServer();
+			s.listen(base + 30, () => resolve(s));
+		});
+		try {
+			const launcher = new IgeChildProcessLauncher({ script, host: "127.0.0.1", ports: [base + 30, base + 31], log: false });
+			expect(await launcher._freePort()).toBe(base + 31);
+		} finally {
+			await new Promise((resolve) => held.close(resolve));
 		}
 	});
 });
