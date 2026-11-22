@@ -3,6 +3,8 @@ import type { AddressInfo } from "net";
 import websocket from "websocket";
 import { IgeNetSyncHost, type IgeNetMachine } from "@/engine/network/sync/IgeNetSyncHost";
 import { IgeNetSyncClient } from "@/engine/network/sync/IgeNetSyncClient";
+import { IgeNetReplicationHost } from "@/engine/network/replication/IgeNetReplicationHost";
+import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
 import { igeNetLoopback, type IgeNetListener } from "@/engine/network/sync/IgeNetTransport";
 import { igeNetMergeListeners, igeNetRelayHost, igeNetRelayJoin, igeNetWebSocketConnect, type IgeWebSocketClass } from "@/engine/network/sync/igeNetWebSocket";
 import { IgeNetWebSocketServer } from "@/engine/network/sync/IgeNetWebSocketServer";
@@ -119,5 +121,88 @@ describe("Sync over WebSockets", () => {
 		hosting.close();
 		await until(() => gone);
 		host.destroy();
+	});
+
+	it("carries binary messages through the relay both ways, byte for byte", async () => {
+		sockets.relay("/relay");
+		const hosting = await igeNetRelayHost(`${base}/relay`, { WebSocket: WebSocketClass });
+		const heard: Record<string, Uint8Array[]> = {};
+		const connections: Record<string, import("@/engine/network/sync/IgeNetTransport").IgeNetConnection> = {};
+		hosting.listener.onConnection((connection) => {
+			const key = `m${Object.keys(connections).length}`;
+			connections[key] = connection;
+			heard[key] = [];
+			connection.onMessage((m) => { if (m instanceof Uint8Array) heard[key].push(m); });
+		});
+		const a = await igeNetRelayJoin(`${base}/relay`, hosting.code, { WebSocket: WebSocketClass });
+		const b = await igeNetRelayJoin(`${base}/relay`, hosting.code, { WebSocket: WebSocketClass });
+		const got: Record<string, unknown[]> = { a: [], b: [] };
+		a.onMessage((m) => got.a.push(m));
+		b.onMessage((m) => got.b.push(m));
+		const all = Uint8Array.from({ length: 256 }, (_, i) => i);
+		a.send(all);
+		b.send(new Uint8Array([9, 8, 7]));
+		a.send({ json: true });
+		await until(() => heard.m0?.length === 1 && heard.m1?.length === 1);
+		expect([...heard.m0[0]]).toEqual([...all]);
+		expect([...heard.m1[0]]).toEqual([9, 8, 7]);
+		// The host answers each machine separately, binary and JSON mixed
+		connections.m0.send(new Uint8Array([1, 2, 3]));
+		connections.m1.send(new Uint8Array([4, 5]));
+		connections.m1.send({ ok: 1 });
+		await until(() => got.a.length === 1 && got.b.length === 2);
+		expect(got.a[0]).toBeInstanceOf(Uint8Array);
+		expect([...(got.a[0] as Uint8Array)]).toEqual([1, 2, 3]);
+		expect([...(got.b[0] as Uint8Array)]).toEqual([4, 5]);
+		expect(got.b[1]).toEqual({ ok: 1 });
+		hosting.close();
+	});
+
+	it("runs a replication host in a browser host with a joiner through the relay", async () => {
+		sockets.relay("/relay");
+		const hosting = await igeNetRelayHost(`${base}/relay`, { WebSocket: WebSocketClass });
+		const local = igeNetLoopback();
+		const schemas = { dot: { x: { type: "number" as const, precision: 0.01 }, name: { type: "string" as const } } };
+		const inputSchema = { dx: { type: "number" as const, precision: 0.01, min: -1, max: 1 } };
+		const host: IgeNetReplicationHost<{ dx: number }> = new IgeNetReplicationHost(igeNetMergeListeners(local.listener, hosting.listener), {
+			schemas,
+			inputSchema,
+			join: (machine, players) => {
+				machine.viewer.subscribe("world");
+				return players.map((p, i) => {
+					const id = `${machine.id}.${i}`;
+					host.replicator.create("dot", id, { name: (p as { name: string }).name }, { scope: "world" });
+					return id;
+				});
+			},
+			leave: (machine) => { for (const id of machine.players) host.replicator.destroy(id); },
+			step: (dt, tick, inputs) => {
+				inputs.forEach((input, id) => {
+					const dot = host.replicator.get(id);
+					if (dot) dot.write({ x: (dot.values.x as number) + input.dx * 100 * dt });
+				});
+			}
+		});
+		const options = { schemas, inputSchema, pingInterval: 0 };
+		const mine = new IgeNetReplicationClient<{ dx: number }>(local.connect(), options);
+		const theirs = new IgeNetReplicationClient<{ dx: number }>(await igeNetRelayJoin(`${base}/relay`, hosting.code, { WebSocket: WebSocketClass }), options);
+		const runHost = async (ms: number) => {
+			for (let t = 0; t < ms; t += 20) {
+				host.update(20);
+				await new Promise((resolve) => setTimeout(resolve, 5));
+			}
+		};
+		const joins = Promise.all([mine.join([{ name: "Host" }]), theirs.join([{ name: "Bob" }])]);
+		await runHost(150);
+		const [, { players: [bob] }] = await joins;
+		for (let i = 0; i < 10; i++) {
+			theirs.sendInput([{ dx: 1 }]);
+			await runHost(40);
+		}
+		await until(() => ((mine.latest(bob) as { x: number } | undefined)?.x ?? 0) > 5);
+		expect((mine.latest(bob) as { name: string }).name).toBe("Bob");
+		await until(() => ((theirs.latest(bob) as { x: number } | undefined)?.x ?? 0) > 5);
+		host.destroy();
+		hosting.close();
 	});
 });

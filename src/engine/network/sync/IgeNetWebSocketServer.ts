@@ -14,7 +14,9 @@ import { IGE_RELAY_CODE_CHARS } from "@/engine/network/sync/igeNetWebSocket";
  *   have their messages passed to the host and back.
  *
  * Messages are JSON text frames; binary ones (Uint8Array, the replication layer's packets)
- * are binary frames.
+ * are binary frames, through the relay too (a host's frames to a machine start with
+ * [id length][id], which the relay strips; a machine's frames reach the host with that
+ * header added).
  * @example #A dedicated server that also relays browser-hosted games
  *     const server = http.createServer();
  *     const sockets = new IgeNetWebSocketServer(server);
@@ -109,6 +111,26 @@ export class IgeNetWebSocketServer {
 				if (to.connected) to.sendUTF(JSON.stringify(message));
 			};
 			socket.on("message", (data) => {
+				if (data.type === "binary") {
+					const bytes = data.binaryData;
+					if (joined) {
+						// A machine's packet: tell the host which machine it's from
+						const game = this._games.get(joined.code);
+						if (!game?.host.connected) return;
+						const id = joined.id;
+						const frame = Buffer.alloc(1 + id.length + bytes.length);
+						frame[0] = id.length;
+						frame.write(id, 1, "latin1");
+						bytes.copy(frame, 1 + id.length);
+						game.host.sendBytes(frame);
+					} else if (hosting && bytes.length > 0) {
+						// The host's packet for a machine: strip the header
+						const idLength = bytes[0];
+						const to = this._games.get(hosting)?.machines.get(bytes.toString("latin1", 1, 1 + idLength));
+						if (to?.connected) to.sendBytes(bytes.subarray(1 + idLength));
+					}
+					return;
+				}
 				if (data.type !== "utf8") return;
 				let message: any;
 				try {

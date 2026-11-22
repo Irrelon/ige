@@ -16,7 +16,10 @@ import type { IgeNetConnection, IgeNetListener } from "@/engine/network/sync/Ige
  *   the relay).
  *
  * Messages are JSON text frames; binary ones (the replication layer's packets, Uint8Array)
- * are binary frames. Binary isn't carried through a relay yet.
+ * are binary frames, through a relay too: a joiner sends its packet as a binary frame
+ * as it is; the relay passes it to the host with a small header (one byte for the
+ * machine id's length, then the id), and the host's frames to a joiner carry the same
+ * header, which the relay strips. No base64, no JSON around the bytes.
  *
  * WebSockets are TCP: every message arrives, in order, so unreliable sends
  * cost the same as reliable ones.
@@ -59,7 +62,7 @@ function openSocket (url: string, options: IgeNetWebSocketOptions): Promise<WebS
 /** An IgeNetConnection over an open socket, sending with `wrap` and reading with `unwrap` (undefined: not for us). */
 const identity = (m: unknown): unknown => m;
 
-function socketConnection (socket: WebSocket, wrap: (message: unknown) => unknown = identity, unwrap: (data: any) => unknown = (d) => d): IgeNetConnection & { _receive: (data: any) => void; _end: () => void } {
+function socketConnection (socket: WebSocket, wrap: (message: unknown) => unknown = identity, unwrap: (data: any) => unknown = (d) => d, wrapBinary?: (bytes: Uint8Array) => Uint8Array): IgeNetConnection & { _receive: (data: any) => void; _end: () => void } {
 	const messageListeners: ((message: unknown) => void)[] = [];
 	const closeListeners: (() => void)[] = [];
 	let closed = false;
@@ -67,8 +70,7 @@ function socketConnection (socket: WebSocket, wrap: (message: unknown) => unknow
 		send: (message: unknown) => {
 			if (closed || socket.readyState !== 1) return;
 			if (message instanceof Uint8Array) {
-				if (wrap !== identity) throw new Error("Binary messages aren't carried through a relay");
-				socket.send(message);
+				socket.send(wrapBinary ? wrapBinary(message) : message);
 			} else {
 				socket.send(JSON.stringify(wrap(message)));
 			}
@@ -107,6 +109,20 @@ export async function igeNetWebSocketConnect (url: string, options: IgeNetWebSoc
 	return connection;
 }
 
+/** A binary relay frame for a machine: [id length][id][payload]. */
+function relayFrame (id: string, payload: Uint8Array): Uint8Array {
+	const frame = new Uint8Array(1 + id.length + payload.length);
+	frame[0] = id.length;
+	for (let i = 0; i < id.length; i++) frame[1 + i] = id.charCodeAt(i);
+	frame.set(payload, 1 + id.length);
+	return frame;
+}
+
+/** Binary frames arrive as ArrayBuffers (or Blobs in some environments, which we don't use). */
+function toBytes (data: unknown): Uint8Array {
+	return data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
+}
+
 /** A browser-hosted game on a relay: its join code, the listener for IgeNetSyncHost, and how to stop hosting. */
 export interface IgeNetRelayHosting {
 	code: string;
@@ -133,15 +149,24 @@ export async function igeNetRelayHost (url: string, options: IgeNetWebSocketOpti
 		resolveCode = resolve;
 		rejectCode = reject;
 	});
+	socket.binaryType = "arraybuffer";
 	socket.onmessage = (event) => {
-		const data = JSON.parse(String(event.data));
+		if (typeof event.data !== "string") {
+			const frame = toBytes(event.data);
+			const idLength = frame[0];
+			let id = "";
+			for (let i = 0; i < idLength; i++) id += String.fromCharCode(frame[1 + i]);
+			machines.get(id)?._receive(frame.slice(1 + idLength));
+			return;
+		}
+		const data = JSON.parse(event.data);
 		if (data.t === "hosted") {
 			resolveCode(data.code);
 		} else if (data.t === "error") {
 			rejectCode(new Error(data.reason));
 		} else if (data.t === "open") {
 			const id = data.id as string;
-			const connection = socketConnection(socket, (m) => ({ t: "m", id, d: m }));
+			const connection = socketConnection(socket, (m) => ({ t: "m", id, d: m }), (d) => d, (bytes) => relayFrame(id, bytes));
 			connection.close = () => {
 				socket.send(JSON.stringify({ t: "kick", id }));
 				machines.delete(id);
@@ -181,9 +206,14 @@ export async function igeNetRelayHost (url: string, options: IgeNetWebSocketOpti
 export async function igeNetRelayJoin (url: string, code: string, options: IgeNetWebSocketOptions = {}): Promise<IgeNetConnection> {
 	const socket = await openSocket(url, options);
 	const connection = socketConnection(socket, (m) => ({ t: "m", d: m }));
+	socket.binaryType = "arraybuffer";
 	return new Promise((resolve, reject) => {
 		socket.onmessage = (event) => {
-			const data = JSON.parse(String(event.data));
+			if (typeof event.data !== "string") {
+				connection._receive(toBytes(event.data));
+				return;
+			}
+			const data = JSON.parse(event.data);
 			if (data.t === "joined") resolve(connection);
 			else if (data.t === "error") reject(new Error(data.reason));
 			else if (data.t === "m") connection._receive(data.d);

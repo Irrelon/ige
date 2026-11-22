@@ -98,7 +98,7 @@ A game can make its objects before there's a host (a world a test steps with nob
 
 ## Transports
 
-`IgeNetConnection.send()` takes a JSON-able object or a `Uint8Array`; binary goes as a binary WebSocket frame (`igeNetWebSocketConnect`, `IgeNetWebSocketServer.listen`) or byte for byte over `igeNetLoopback`. Not yet carried: the browser-host relay (`igeNetRelayHost`/`Join`, throws) and the IgeNetIo adapter (`igeNetIoSyncTransport`).
+`IgeNetConnection.send()` takes a JSON-able object or a `Uint8Array`; binary goes as a binary WebSocket frame (`igeNetWebSocketConnect`, `IgeNetWebSocketServer.listen`) or byte for byte over `igeNetLoopback`. The browser-host relay (`igeNetRelayHost` / `igeNetRelayJoin` / `IgeNetWebSocketServer.relay()`) carries binary too, as binary frames with no JSON or base64 around them: a joiner's packet reaches the host with a header of one byte (the machine id's length) and the id, which the relay adds; the host's frames to a machine carry the same header, which the relay strips before passing the packet on. Not carried: the IgeNetIo adapter (`igeNetIoSyncTransport`) stays JSON only, because IgeNetIo commands serialise their data as JSON; use the WebSocket transports for replication.
 
 ## Measured
 
