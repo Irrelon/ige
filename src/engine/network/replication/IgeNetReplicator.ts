@@ -47,6 +47,12 @@ export interface IgeNetViewState {
 	priority: number;
 	/** The round it first had something to send that wasn't sent, or -1. */
 	pendingSince: number;
+	/**
+	 * While changes wait (the budget, a rate): the tick of the last round before the first of them, when the viewer's copy was
+	 * still current; -1 when nothing's been held back since the last send. Sent with the update so the machine blends across the
+	 * wait instead of holding the object still and then jumping it.
+	 */
+	heldTick: number;
 	/** Per class: the epoch and round of the last send (only kept where rates or resend gaps need them). */
 	se?: number[];
 	sr?: number[];
@@ -245,6 +251,8 @@ interface Candidate {
 	payload: Payload;
 	/** Pending changes were held back (a rate, a resend gap): the object stays in the work set. */
 	gated: boolean;
+	/** An update after a wait: ticks back from this round's to the one the viewer's copy was last current at (0: the last round). */
+	still: number;
 }
 
 export interface IgeNetViewerStats {
@@ -297,6 +305,11 @@ export interface IgeNetViewerReport {
 }
 
 /** The bytes a varuint takes. */
+/** The bits a candidate takes in a packet: its handle, an update's wait marker, its payload. */
+function entryBits (cand: Candidate, handleBits: number): number {
+	return cand.payload.bits + handleBits + (cand.create ? 0 : cand.still ? 1 + 8 * varBytes(cand.still) : 1);
+}
+
 function varBytes (n: number): number {
 	return n < 128 ? 1 : n < 16384 ? 2 : n < 2097152 ? 3 : n < 268435456 ? 4 : 5;
 }
@@ -351,6 +364,10 @@ export class IgeNetViewer {
 	_window = 0;
 	_interests: IgeNetInterest[] = [];
 	_focus: Set<IgeNetObject> = new Set();
+	/** Objects this viewer's machine predicts (its own player): never held back, always in full. */
+	_controlled: Set<IgeNetObject> = new Set();
+	/** The tick of the last round built for this viewer. */
+	_lastTick = -1;
 	/** Objects of kinds with no blips that are in range (or focused): only these are seen. */
 	_admitted: Set<IgeNetObject> = new Set();
 	/** Spatial states at full detail by the last round's reckoning, and this round's. */
@@ -477,6 +494,24 @@ export class IgeNetViewer {
 		return this._focus.has(obj);
 	}
 
+	/**
+	 * The machine predicts this object (its own player: a ship it flies, a character it walks), so it needs every change as soon as
+	 * it happens: its changes are never held back by the bandwidth budget or rates, go first in the round, and it's always in full
+	 * detail. Prediction replays the inputs the authority hasn't applied on top of the newest state, so a state held back while the
+	 * inputs before it are acknowledged would pull the player back. Keep it to the few objects that need it.
+	 */
+	control (obj: IgeNetObject): void {
+		this._controlled.add(obj);
+	}
+
+	uncontrol (obj: IgeNetObject): void {
+		this._controlled.delete(obj);
+	}
+
+	isControlled (obj: IgeNetObject): boolean {
+		return this._controlled.has(obj);
+	}
+
 	/** The detail level the authority has an object at for this viewer: undefined if it doesn't see it. */
 	detailOf (obj: IgeNetObject): "full" | "blip" | undefined {
 		const state = this._states.get(obj);
@@ -555,6 +590,7 @@ export class IgeNetViewer {
 		this._slots.length = 0;
 		this._interests.length = 0;
 		this._focus.clear();
+		this._controlled.clear();
 		for (const scope of this.scopes) this._rep._scope(scope).viewers.delete(this);
 		this.scopes.clear();
 		this._rep._viewers.delete(this);
@@ -572,7 +608,7 @@ export class IgeNetViewer {
 		const rep = this._rep;
 		const state: IgeNetViewState = {
 			obj, viewer: this, handle, known: false, acked: new Array(schema.classCount).fill(-1), sentEver: false, dead: false,
-			spatial, full: !spatial || !schema.blips, gen: 0, levelSeq: 0, levelRound: -1e9, priority: 0, pendingSince: -1, lastRound: -1e9, createRound: -1e9
+			spatial, full: !spatial || !schema.blips, gen: 0, levelSeq: 0, levelRound: -1e9, priority: 0, pendingSince: -1, heldTick: -1, lastRound: -1e9, createRound: -1e9
 		};
 		if (schema.rated || schema.leveled || rep._resend > 0) {
 			state.se = new Array(schema.classCount).fill(-1);
@@ -777,14 +813,16 @@ export class IgeNetViewer {
 		this._fullPrev = this._fullNow;
 		this._fullNow = now;
 		const prev = this._fullPrev;
-		for (const obj of this._focus) {
-			let state = this._states.get(obj);
-			if (!state && obj._spatial && !obj.schema.blips && !obj.destroyed && rep._scopeSees(obj, this)) {
-				this._admitted.add(obj);
-				rep._reconcile(obj, this);
-				state = this._states.get(obj);
+		for (const set of [this._focus, this._controlled]) {
+			for (const obj of set) {
+				let state = this._states.get(obj);
+				if (!state && obj._spatial && !obj.schema.blips && !obj.destroyed && rep._scopeSees(obj, this)) {
+					this._admitted.add(obj);
+					rep._reconcile(obj, this);
+					state = this._states.get(obj);
+				}
+				if (state && state.spatial) now.add(state);
 			}
-			if (state && state.spatial) now.add(state);
 		}
 		const near = this._near;
 		const hysteresis = 1 + rep.hysteresis;
@@ -850,10 +888,12 @@ export class IgeNetViewer {
 	 * Looks at one state in the work set: makes a candidate for it if there's something to send now,
 	 * drops it from the set if nothing's pending, keeps it if what's pending is held back.
 	 */
-	_candidate (state: IgeNetViewState, round: number): void | typeof KEEP {
+	_candidate (state: IgeNetViewState, round: number, tick: number): void | typeof KEEP {
 		const rep = this._rep;
 		const obj = state.obj;
 		const schema = obj.schema;
+		// What the machine predicts isn't held back by rates (or the budget, in _build)
+		const ctl = this._controlled.size > 0 && this._controlled.has(obj);
 		let cand: Candidate;
 		if (!state.known) {
 			if (rep._resend && state.sentEver && round - state.createRound < rep._resend) return KEEP;
@@ -864,6 +904,7 @@ export class IgeNetViewer {
 			cand.classes = level ? (1 << schema.classCount) - 1 : 1 << schema.blipClass;
 			cand.payload = rep._createPayload(obj, level);
 			cand.gated = false;
+			cand.still = 0;
 			return;
 		}
 		const full = state.full;
@@ -871,7 +912,7 @@ export class IgeNetViewer {
 		let pending = false;
 		// The object's rate
 		const maxRate = schema.options.maxRate;
-		const objectGated = !!maxRate && round - state.lastRound < rep.sendRate / maxRate - 1e-9;
+		const objectGated = !ctl && !!maxRate && round - state.lastRound < rep.sendRate / maxRate - 1e-9;
 		let classes = 0;
 		let mask: IgeNetMask = schema.emptyMask;
 		let blipUpdate = false;
@@ -897,7 +938,7 @@ export class IgeNetViewer {
 					pending = true;
 					if (objectGated) gated = true;
 					else if (rep._resend && obj._lastChange <= state.se![0] && round - state.sr![0] < rep._resend) gated = true;
-					else if (schema.classRate[0] && round - state.sr![0] < rep.sendRate / schema.classRate[0] - 1e-9) gated = true;
+					else if (!ctl && schema.classRate[0] && round - state.sr![0] < rep.sendRate / schema.classRate[0] - 1e-9) gated = true;
 					else {
 						mask = m;
 						classes = 1;
@@ -914,7 +955,7 @@ export class IgeNetViewer {
 					continue;
 				}
 				const rate = schema.classRate[c];
-				if (rate && round - state.sr![c] < rep.sendRate / rate - 1e-9) {
+				if (!ctl && rate && round - state.sr![c] < rep.sendRate / rate - 1e-9) {
 					gated = true;
 					continue;
 				}
@@ -931,8 +972,11 @@ export class IgeNetViewer {
 				this._work.delete(state);
 				state.priority = 0;
 				state.pendingSince = -1;
+				state.heldTick = -1;
 				return;
 			}
+			// Everything pending waits (a rate, a resend gap)
+			if (state.heldTick < 0) state.heldTick = this._lastTick;
 			return KEEP;
 		}
 		cand = this._take(state);
@@ -941,12 +985,13 @@ export class IgeNetViewer {
 		cand.classes = classes;
 		cand.payload = blipUpdate ? rep._blipUpdatePayload(obj) : rep._updatePayload(obj, mask);
 		cand.gated = gated;
+		cand.still = state.heldTick >= 0 && state.heldTick < this._lastTick ? tick - state.heldTick : 0;
 	}
 
 	_take (state: IgeNetViewState): Candidate {
 		const cands = this._cands;
 		let cand = this._pool[cands.length];
-		if (!cand) this._pool[cands.length] = cand = { state, create: false, classes: 0, level: true, payload: { byte: 0, bits: 0 }, gated: false };
+		if (!cand) this._pool[cands.length] = cand = { state, create: false, classes: 0, level: true, payload: { byte: 0, bits: 0 }, gated: false, still: 0 };
 		cand.state = state;
 		cands.push(cand);
 		return cand;
@@ -978,10 +1023,10 @@ export class IgeNetViewer {
 	_build (epoch: number, tick: number): number {
 		const rep = this._rep;
 		const round = rep._round;
-		if (this._spatialCount || this._fullNow.size || this._admitted.size || this._focus.size || this._interests.length) this._relevance(round);
+		if (this._spatialCount || this._fullNow.size || this._admitted.size || this._focus.size || this._controlled.size || this._interests.length) this._relevance(round);
 		const cands = this._cands;
 		cands.length = 0;
-		for (const state of this._work) this._candidate(state, round);
+		for (const state of this._work) this._candidate(state, round, tick);
 
 		const bandwidth = this._bandwidth();
 		const limited = Number.isFinite(bandwidth);
@@ -994,7 +1039,7 @@ export class IgeNetViewer {
 			this._allow = this._allow < 0 ? perRound * rep.carry : Math.min(this._allow + perRound, perRound * rep.carry);
 			const availBits = (this._allow - 12 - (destroyCount * handleBits) / 8) * 8;
 			let wanted = 0;
-			for (const cand of cands) wanted += cand.payload.bits + handleBits;
+			for (const cand of cands) wanted += entryBits(cand, handleBits);
 			if (wanted > availBits && cands.length > 1) {
 				// More wanted than the budget holds: everything waiting gathers priority, and the budget is spent from the top
 				for (const cand of cands) {
@@ -1005,23 +1050,39 @@ export class IgeNetViewer {
 				cands.sort((a, b) => b.state.priority - a.state.priority);
 				let used = 0;
 				selected = [];
+				// What the machine predicts goes whatever the budget
+				const controlled = this._controlled;
+				if (controlled.size) {
+					for (const cand of cands) {
+						if (!controlled.has(cand.state.obj)) continue;
+						selected.push(cand);
+						used += entryBits(cand, handleBits);
+					}
+				}
+				let first = true;
 				for (let i = 0; i < cands.length; i++) {
 					const cand = cands[i];
-					const cost = cand.payload.bits + handleBits;
+					if (controlled.size && controlled.has(cand.state.obj)) continue;
+					const cost = entryBits(cand, handleBits);
 					// The first is always sent, so nothing is too big for ever
-					if (i === 0 || used + cost <= availBits) {
+					if (first || used + cost <= availBits) {
 						selected.push(cand);
 						used += cost;
+						first = false;
 					} else if (availBits - used < 16) {
 						break;
 					}
 				}
 				if (selected.length < cands.length) {
 					const chosen = new Set(selected);
+					const last = this._lastTick;
 					for (const cand of cands) {
 						if (chosen.has(cand)) continue;
-						const since = cand.state.pendingSince;
+						const state = cand.state;
+						const since = state.pendingSince;
 						if (since >= 0 && since < oldest) oldest = since;
+						// Held back: the viewer's copy was current at the last round
+						if (!cand.create && state.heldTick < 0) state.heldTick = last;
 					}
 				}
 			}
@@ -1057,7 +1118,7 @@ export class IgeNetViewer {
 			}
 			while (next < selected.length && nextDestroy >= destroyHandles.length) {
 				const cand = selected[next];
-				const cost = cand.payload.bits + handleBits;
+				const cost = entryBits(cand, handleBits);
 				if (maxPacket && count > 0 && (bits + cost + 7) >> 3 > maxPacket) break;
 				(cand.create ? cE : uE).push(cand);
 				bits += cost;
@@ -1092,6 +1153,13 @@ export class IgeNetViewer {
 					w.writeVarUint(uE.length);
 					for (const cand of uE) {
 						w.writeBits(cand.state.handle, handleBits);
+						// After a wait: how many ticks back the machine's copy was current (it blends across the wait)
+						if (cand.still) {
+							w.writeBits(1, 1);
+							w.writeVarUint(cand.still);
+						} else {
+							w.writeBits(0, 1);
+						}
 						w.writeBitsFrom(arena, cand.payload.byte, cand.payload.bits);
 						const kind = cand.state.obj.kind;
 						kinds[kind] = (kinds[kind] ?? 0) + (cand.payload.bits + handleBits) / 8;
@@ -1112,6 +1180,7 @@ export class IgeNetViewer {
 			this._send(bytes);
 		} while (next < selected.length || nextDestroy < destroyHandles.length);
 		if (limited) this._allow = Math.max(-perRound * rep.carry * 2, this._allow - total);
+		this._lastTick = tick;
 		return total;
 	}
 
@@ -1129,6 +1198,7 @@ export class IgeNetViewer {
 			}
 			state.priority = 0;
 			state.pendingSince = -1;
+			if (!cand.gated) state.heldTick = -1;
 			state.lastRound = round;
 			if (state.sr) {
 				for (let c = 0; c < state.sr.length; c++) {

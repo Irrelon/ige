@@ -184,6 +184,7 @@ const interest = viewer.addInterest(ship, { radius: 2200 }); // follow an object
 interest.radius = 4000;                                      // a better scanner: takes effect next send
 viewer.addInterest({ x: 0, z: 0 }, { radius: 500 });         // or a fixed point; a viewer may have several
 viewer.focus(wingman);   viewer.unfocus(wingman);            // always full, whatever the distance, top boost
+viewer.control(myShip);  viewer.uncontrol(myShip);            // the machine predicts it: every change, never held back
 viewer.bandwidth = 16000;                                    // bytes/s for this viewer (host default 32768)
 viewer.nearRadius = 1500;                                    // default radius for interests without one
 ```
@@ -197,6 +198,10 @@ Each send round, every object with something to send to a viewer is a candidate.
     weight = kind priority x group priority x distance falloff x focus boost x owner boost x create boost
 
 (distance falloff `1/(1+(d/range)^2)` for spatial objects, so a blip is far below an object in range; focus 8, owner-only 10, create 4, all configurable in `relevance.weights`), then entries go out highest accumulated priority first until the budget is used; sent entries reset to zero and unsent ones keep accumulating, so nothing starves. A change that isn't sent stays pending (the viewer's baseline for the object doesn't move); when it goes it carries the latest values. Destroys always go first. At least one entry goes every round, and up to `carry` rounds (default 2) of unused budget are kept, so a big create can go out; an entry bigger than a round's budget goes whole and the debt is paid back over the next rounds. On a lossy transport the same unacknowledged change isn't resent within `resendAfter` rounds (default: a sixth of a second, when a budget is set).
+
+**What the machine predicts** (`viewer.control(obj)`: its own player's ship or character) is never held back: its changes go every round they happen, first, whatever the budget or the kind's rates, and it's always in full detail. Prediction replays the inputs the authority hasn't applied on top of the newest state, and each packet acknowledges inputs; a state held back while the inputs before it are acknowledged would pull the player back. It counts against the budget like anything else, so keep it to the few objects that need it.
+
+**Held-back changes blend.** A client holds an object that wasn't in a packet still (it didn't change), so blending towards its next state starts from the round before the change, not from the last change long ago. When a change waits (the budget, a rate), the update carries how many ticks back the viewer's copy was last current (a bit per update, and a byte or so when it waited), and the client blends from there across the wait: an object moving steadily stays on its line instead of standing still and then jumping. Waits shorter than the interpolation delay are invisible.
 
 `maxPacketBytes` (viewer or `relevance`; default 0, any size) splits a round into packets no bigger than it, each decodable alone and acknowledged on its own (so each can be one datagram). A single entry bigger than the limit (a large json field) goes in a packet by itself; stage 3 will fragment those. The client applies packets in any order: each field keeps the number of the newest packet that set it, so a late packet never puts back older data.
 

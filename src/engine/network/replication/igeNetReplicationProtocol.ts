@@ -66,8 +66,11 @@ export interface IgeNetDecodedSnapshot extends IgeNetSnapshotHeader {
 	destroys: { handle: number; id?: string }[];
 	/** `level` is set for kinds with detail levels; `gone` when the object was destroyed already (an old packet arriving late): ignore it. */
 	creates: { handle: number; id: string; kind: string; values: Record<string, unknown>; level?: IgeNetDetail; gone?: boolean; schema?: IgeNetSchema; anon?: boolean; from?: string }[];
-	/** Changed fields only (an anonymous blip's: all its blip fields). */
-	updates: { handle: number; id: string; kind: string; values: Record<string, unknown>; gone?: boolean }[];
+	/**
+	 * Changed fields only (an anonymous blip's: all its blip fields). `still`: the changes waited (the budget, a rate), and the
+	 * machine's copy was current this many ticks before the packet's tick (blend from it across the wait; absent: the last round).
+	 */
+	updates: { handle: number; id: string; kind: string; values: Record<string, unknown>; gone?: boolean; still?: number }[];
 }
 
 export function igeNetPacketType (bytes: Uint8Array): number {
@@ -145,6 +148,7 @@ export function igeNetReadSnapshotBody (
 		const count = r.readVarUint();
 		for (let i = 0; i < count; i++) {
 			const handle = r.readBits(handleBits);
+			const still = r.readBits(1) ? r.readVarUint() : 0;
 			const entry = table.get(handle);
 			const tomb = entry ? undefined : dead?.get(handle);
 			let known = entry ?? tomb;
@@ -156,7 +160,9 @@ export function igeNetReadSnapshotBody (
 				stale = true;
 			}
 			const values = known.anon ? known.schema.readAll(r) : known.schema.readMasked(r);
-			out.updates.push({ handle, id: known.id, kind: known.anon ? "blip" : known.schema.name, values, gone: !entry || stale });
+			const update: IgeNetDecodedSnapshot["updates"][number] = { handle, id: known.id, kind: known.anon ? "blip" : known.schema.name, values, gone: !entry || stale };
+			if (still) update.still = still;
+			out.updates.push(update);
 		}
 	}
 	return out;

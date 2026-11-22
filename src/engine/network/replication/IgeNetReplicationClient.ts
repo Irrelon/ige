@@ -126,6 +126,8 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	_recvSeq = 0;
 	_recvBits = 0;
 	_latestTick = 0;
+	/** The tick of the round before the newest one. */
+	_priorTick = 0;
 	_offset?: number;
 	_ref = 0;
 	_joining?: { ref: number; resolve: (w: IgeNetWelcome) => void; reject: (e: Error) => void };
@@ -204,7 +206,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		this._dead.clear();
 		this._pending = [];
 		this._ticks.clear();
-		this._applied = this._recvSeq = this._recvBits = this._latestTick = 0;
+		this._applied = this._recvSeq = this._recvBits = this._latestTick = this._priorTick = 0;
 		this._offset = undefined;
 		this._lastHeard = this._now();
 		this._unanswered = 0;
@@ -479,7 +481,9 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		const fresh = seq > this._applied;
 		this.bytesReceived += bytes.length;
 		this.packetsReceived++;
-		const previousTick = this._latestTick;
+		// The tick of the last round before this one (a round split over packets shares one tick)
+		if (fresh && header.tick !== this._latestTick) this._priorTick = this._latestTick;
+		const previousTick = this._priorTick;
 		if (fresh) {
 			this._applied = seq;
 			this._latestTick = header.tick;
@@ -495,7 +499,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			this.emit("destroyed", gone.id, obj.kind);
 		}
 		const history = this._options.history ?? 32;
-		const push = (obj: IgeNetClientObject, values: Record<string, unknown>) => {
+		const push = (obj: IgeNetClientObject, values: Record<string, unknown>, still = 0) => {
 			const states = obj.states;
 			const last = states[states.length - 1];
 			if (!fresh) {
@@ -506,8 +510,10 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 				last.values = values;
 				return;
 			}
-			// Still until now, so blending towards this state starts from the last packet, not the last change
-			if (previousTick > last.tick) states.push({ tick: previousTick, values: last.values });
+			// Still until the last round (or, when its changes waited, until the tick the authority says), so blending towards this
+			// state starts from then, not from the last change
+			const stillAt = still ? header.tick - still : previousTick;
+			if (stillAt > last.tick && stillAt < header.tick) states.push({ tick: stillAt, values: last.values });
 			states.push({ tick: header.tick, values });
 			const cutoff = header.tick - history;
 			let drop = 0;
@@ -570,7 +576,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			const obj = this.objects.get(update.id);
 			if (!obj || obj.handle !== update.handle) continue;
 			const last = obj.states[obj.states.length - 1];
-			push(obj, apply(obj, update.values, last.values));
+			push(obj, apply(obj, update.values, last.values), update.still);
 		}
 		if (fresh) {
 			this._syncClock(header.tick, this.rtt / 2);

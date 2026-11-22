@@ -517,6 +517,80 @@ describe("rates, priority and budget", () => {
 		for (const id of ["mine", "near", "mid", "focused", "me"]) expect(all.has(id)).toBe(true);
 	});
 
+	it("never holds back what the machine predicts: a controlled object goes every round it changes, whatever the budget, big entries or rates", () => {
+		const rated = new IgeNetSchemaSet(defs, { ...kinds, ship: { ...kinds.ship, groupRates: { look: 5 }, maxRate: 10 } });
+		const replicator = make({ bandwidth: 2500 }, rated);
+		const a = watch(replicator, rated);
+		const me = replicator.create("ship", "me", { x: 0, z: 0 }, { scope: "sol" });
+		a.viewer.addInterest(me, { radius: 100000 });
+		a.viewer.control(me);
+		expect(a.viewer.isControlled(me)).toBe(true);
+		const busy: IgeNetObject[] = [];
+		for (let i = 0; i < 60; i++) busy.push(replicator.create("ship", `b${i}`, { x: i * 10, z: 0 }, { scope: "sol" }));
+		const big = replicator.create("ship", "big", { x: 5, z: 5 }, { scope: "sol" });
+		flushN(replicator, 60, (i) => busy.forEach((s, n) => s.write({ x: n * 10 + (i % 7), z: i % 5 })));
+		const run = (rounds: number) => {
+			let missed = 0;
+			for (let i = 0; i < rounds; i++) {
+				busy.forEach((s, n) => s.write({ x: n * 10 + (i % 9), z: i % 4 }));
+				// A big entry now and then (several rounds' worth of budget), and a field of the rated group every round
+				if (i % 15 === 0) big.write({ table: { blob: "x".repeat(4000 + i) } });
+				me.write({ x: i + 1, heading: ((i % 60) + 1) / 10 });
+				const from = a.described.length;
+				replicator.flush();
+				const ups = a.since(from).flatMap((d) => d.updates ?? []).filter((u: any) => u.id === "me");
+				if (!ups.length || ups[0].values.heading === undefined) missed++;
+			}
+			return missed;
+		};
+		expect(run(90)).toBe(0);
+		expect(a.viewer.report().deferred).toBeGreaterThan(0); // the budget was holding others back meanwhile
+		// Without control the same object waits its turn (and its rate)
+		a.viewer.uncontrol(me);
+		expect(run(90)).toBeGreaterThan(10);
+	});
+
+	it("tells the machine where held-back changes start, so it blends across the wait: no standing still, then a jump", () => {
+		const fake = { send () {}, onMessage () {}, onClose () {}, close () {} };
+		for (const mode of ["budget", "rate"] as const) {
+			const set = mode === "rate" ? new IgeNetSchemaSet(defs, { ...kinds, ship: { ...kinds.ship, maxRate: 7 } }) : schemas;
+			const replicator = make(mode === "budget" ? { bandwidth: 2500 } : {}, set);
+			const a = watch(replicator, set);
+			a.viewer.addInterest({ x: 0, z: 0 }, { radius: 100000 });
+			const busy: IgeNetObject[] = [];
+			if (mode === "budget") for (let i = 0; i < 60; i++) busy.push(replicator.create("ship", `b${i}`, { x: i * 10, z: 0 }, { scope: "sol" }));
+			const mover = replicator.create("ship", "mover", { x: 0, z: 0 }, { scope: "sol" });
+			const client = new IgeNetReplicationClient(fake, { schemas: set, pingInterval: 0 });
+			let fed = 0;
+			const feed = () => {
+				for (; fed < a.packets.length; fed++) client._onPacket(a.packets[fed]);
+			};
+			let tick = 0;
+			const round = (move: boolean) => {
+				tick++;
+				replicator.tick = tick;
+				busy.forEach((s, n) => s.write({ x: n * 10 + (tick % 9), z: tick % 4 }));
+				if (move) mover.write({ x: tick * 10 });
+				replicator.flush();
+				feed();
+			};
+			// It stands still a while, then moves at a steady speed (x = 10 a tick) while the budget or its rate holds it back at times
+			for (let i = 0; i < 40; i++) round(false);
+			const startTick = tick;
+			for (let i = 0; i < 150; i++) round(true);
+			for (let i = 0; i < 60; i++) round(false);
+			expect(a.updatesOf("mover").some((u: any) => u.still > 0)).toBe(true);
+			const states = client.objects.get("mover")!.states.filter((s) => s.tick > startTick && s.tick <= startTick + 150);
+			expect(states.length).toBeGreaterThan(5);
+			// Every state the machine holds is on the line: none still at an old place while its tick moves on
+			for (const s of states) expect(Math.abs((s.values.x as number) - s.tick * 10)).toBeLessThan(0.11);
+			// And where it started moving, it was still until then (the last state before the move is the old place, not one held later)
+			const all = client.objects.get("mover")!.states;
+			const before = all.filter((s) => s.tick <= startTick);
+			if (before.length) expect(before[before.length - 1].values.x ?? 0).toBe(0);
+		}
+	});
+
 	it("splits a round into packets within the size limit, each readable alone, and reassembles on a client", () => {
 		const replicator = make({ bandwidth: Infinity, maxPacketBytes: 200 });
 		const a = watch(replicator);
