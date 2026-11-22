@@ -73,14 +73,20 @@ The schema set and the input schema must be the same on both ends (a hash is che
 | `float` | 32-bit float |
 | `json` | any JSON value; compared as text only when written (or `obj.touch(field)` after changing it in place), sent whole when it changes |
 
-Any field may be `optional: true` (a presence bit; `undefined` is a value), `group: "name"` (labels fields for later per-group rates), `blend: false` (steps instead of blending). A kind has at most 32 fields. Values read back from `obj.values` are the quantised ones the clients get, so the server and the clients agree exactly.
+Any field may be `optional: true` (a presence bit; `undefined` is a value), `group: "name"` (labels fields for later per-group rates), `blend: false` (steps instead of blending) or, on a `number`, `blend: "angle"` (a heading kept to a precision and not wrapped, blended the short way round). A kind may have any number of fields: the changed-field mask is a 32-bit number up to 32 fields and an array of words beyond. Values read back from `obj.values` are the quantised ones the clients get, so the server and the clients agree exactly. A precision of 1/n (0.1, 0.001) is kept as whole steps over n, so values come out clean (0.3, not 0.30000000000000004).
 
 ### Scopes, owners, reveals
 
 - `create(kind, id, fields, { scope })`: seen by every viewer subscribed to the scope. `obj.moveTo(scope)` moves it.
 - `{ owner: viewer }`: only that viewer sees it (a player's private state).
 - `{ hidden: true }` with `viewer.reveal(obj)` / `viewer.hide(obj)`: a hidden station a pilot has charted. `hide` also hides a normal scope object from one viewer.
+- `viewer.unreveal(obj)`: ends a reveal without excluding the viewer from the object's scope (a cloaked ship revealed to its wing, then not). An object moved out of every scope (`obj.moveTo(undefined)`) is seen only by viewers it's revealed to.
 - `viewer.subscribe(scope)` / `unsubscribe(scope)`: creates and destroys go out for what appears and disappears.
+- `viewer.view()`: every object the viewer sees now as `{ id, kind, values }` (with `{ copy: true }` json fields are parsed afresh): for tests, tools and debugging, and for a game that keeps a `snapshotFor`-style helper built from what's replicated.
+
+Writing the same json value to many objects (a table every pilot's private object carries): `obj.writeJson(field, value, text)` takes the JSON text so it's made once.
+
+A game can make its objects before there's a host (a world a test steps with nobody connected): `new IgeNetReplicator(schemas)`, then `new IgeNetReplicationHost(listener, { replicator, ... })` uses it.
 
 ### Reliable and lossy transports
 

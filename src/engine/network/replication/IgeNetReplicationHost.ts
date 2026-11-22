@@ -52,6 +52,8 @@ export interface IgeNetReplicationHostOptions<Input> {
 	maxQueuedInputs?: number;
 	/** Clock for timing (ms), for tests. */
 	now?: () => number;
+	/** A replicator the game keeps its objects in already (made before the host, so the world can be built without one). Default: a new one. */
+	replicator?: IgeNetReplicator;
 }
 
 interface MachineState<Input> {
@@ -126,7 +128,7 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		this.sendRate = Math.min(this.tickRate, options.sendRate ?? 20);
 		this.schemas = options.schemas instanceof IgeNetSchemaSet ? options.schemas : new IgeNetSchemaSet(options.schemas);
 		this.inputSchema = options.inputSchema instanceof IgeNetSchema ? options.inputSchema : new IgeNetSchema("input", options.inputSchema ?? {});
-		this.replicator = new IgeNetReplicator(this.schemas, { now: options.now });
+		this.replicator = options.replicator ?? new IgeNetReplicator(this.schemas, { now: options.now });
 		this._listener = listener;
 		listener?.onConnection((connection) => this.connect(connection));
 	}

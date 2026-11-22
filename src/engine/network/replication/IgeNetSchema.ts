@@ -9,8 +9,11 @@ export interface IgeNetFieldCommon {
 	 * label fields for now; later they let a group be sent at a rate of its own.
 	 */
 	group?: string;
-	/** Set false to keep the client from blending this field between states (it steps instead). */
-	blend?: boolean;
+	/**
+	 * Set false to keep the client from blending this field between states (it steps instead), or
+	 * "angle" to blend a number field (a heading kept to a precision, not wrapped) the short way round.
+	 */
+	blend?: boolean | "angle";
 }
 
 /**
@@ -93,25 +96,31 @@ export class IgeNetField {
 		this.type = def.type;
 		this.optional = !!def.optional;
 		this.group = def.group;
-		this.blend = def.blend === false ? "none" : def.type === "angle" ? "angle" : def.type === "number" || def.type === "int" || def.type === "float" ? "linear" : "none";
+		this.blend = def.blend === false ? "none" : def.blend === "angle" || def.type === "angle" ? "angle" : def.type === "number" || def.type === "int" || def.type === "float" ? "linear" : "none";
 		let defaultValue: unknown = 0;
 		switch (def.type) {
 			case "number": {
 				const { precision, min, max } = def;
 				if (!(precision > 0)) throw new Error(`Field ${name}: precision must be above 0`);
+				// A precision of 1/n (0.1, 0.001) is kept as whole steps over n, so values come out clean (0.3, not 0.30000000000000004)
+				const per = 1 / precision;
+				const scale = Math.abs(per - Math.round(per)) < 1e-9 ? Math.round(per) : 0;
+				const toStep = scale ? (v: number) => Math.round(v * scale) : (v: number) => Math.round(v / precision);
+				const fromStep = scale ? (n: number) => n / scale : (n: number) => n * precision;
 				if (min !== undefined && max !== undefined) {
-					const top = Math.round((max - min) / precision);
+					const minStep = toStep(min);
+					const top = toStep(max) - minStep;
 					const bits = igeNetBitsFor(top + 1);
 					if (bits > 32) throw new Error(`Field ${name}: the range needs more than 32 bits`);
-					this._canon = (v) => min + clampInt(Math.round((toNumber(v) - min) / precision), 0, top) * precision;
-					this._write = (w, v) => w.writeBits(clampInt(Math.round((v - min) / precision), 0, top), bits);
-					this._read = (r) => min + r.readBits(bits) * precision;
+					this._canon = (v) => fromStep(minStep + clampInt(toStep(toNumber(v)) - minStep, 0, top));
+					this._write = (w, v) => w.writeBits(clampInt(toStep(v) - minStep, 0, top), bits);
+					this._read = (r) => fromStep(minStep + r.readBits(bits));
 					defaultValue = min <= 0 && max >= 0 ? 0 : min;
 					defaultValue = this._canon(defaultValue);
 				} else {
-					this._canon = (v) => Math.round(toNumber(v) / precision) * precision;
-					this._write = (w, v) => w.writeVarInt(Math.round(v / precision));
-					this._read = (r) => r.readVarInt() * precision;
+					this._canon = (v) => fromStep(toStep(toNumber(v)));
+					this._write = (w, v) => w.writeVarInt(toStep(v));
+					this._read = (r) => fromStep(r.readVarInt());
 				}
 				break;
 			}
@@ -224,8 +233,26 @@ export class IgeNetField {
 	}
 }
 
-/** The most fields one kind may have (a changed-field mask is one 32-bit word). */
-export const IGE_NET_MAX_FIELDS = 32;
+/** The most fields one kind may have. */
+export const IGE_NET_MAX_FIELDS = 1024;
+
+/**
+ * Which fields of an object changed: a number (a bit per field) for a kind of 32 fields or fewer,
+ * an array of 32-bit words (field `i` is bit `i & 31` of word `i >> 5`) for a wider one.
+ */
+export type IgeNetMask = number | number[];
+
+/** Whether no field is in a mask. */
+export function igeNetMaskEmpty (mask: IgeNetMask): boolean {
+	if (typeof mask === "number") return mask === 0;
+	for (let i = 0; i < mask.length; i++) if (mask[i]) return false;
+	return true;
+}
+
+/** A value that is the same for the same fields in a mask (a map key). */
+export function igeNetMaskKey (mask: IgeNetMask): number | string {
+	return typeof mask === "number" ? mask : mask.join(",");
+}
 
 /**
  * What one kind of replicated object (or one player's input) is made of: its fields, declared
@@ -247,7 +274,9 @@ export class IgeNetSchema {
 	/** Field indexes by group name. */
 	readonly groups: Map<string, number[]> = new Map();
 	/** The mask with every field's bit set. */
-	readonly fullMask: number;
+	readonly fullMask: IgeNetMask;
+	/** More than 32 fields: masks are arrays of words. */
+	readonly wide: boolean;
 
 	constructor (name: string, defs: Record<string, IgeNetFieldDef>) {
 		this.name = name;
@@ -263,13 +292,39 @@ export class IgeNetSchema {
 				this.groups.set(field.group, list);
 			}
 		}
-		this.fullMask = names.length === 32 ? 0xffffffff : ((1 << names.length) - 1) >>> 0;
+		this.wide = names.length > 32;
+		if (this.wide) {
+			const words: number[] = new Array(Math.ceil(names.length / 32)).fill(0);
+			for (let i = 0; i < names.length; i++) words[i >> 5] = (words[i >> 5] | (1 << (i & 31))) >>> 0;
+			this.fullMask = words;
+		} else {
+			this.fullMask = names.length === 32 ? 0xffffffff : ((1 << names.length) - 1) >>> 0;
+		}
 	}
 
-	/** The bit mask of a group's fields. */
-	groupMask (group: string): number {
+	/** The mask of a group's fields. */
+	groupMask (group: string): IgeNetMask {
+		const list = this.groups.get(group) ?? [];
+		if (this.wide) {
+			const words: number[] = new Array(Math.ceil(this.fields.length / 32)).fill(0);
+			for (const i of list) words[i >> 5] = (words[i >> 5] | (1 << (i & 31))) >>> 0;
+			return words;
+		}
 		let mask = 0;
-		for (const i of this.groups.get(group) ?? []) mask |= 1 << i;
+		for (const i of list) mask |= 1 << i;
+		return mask >>> 0;
+	}
+
+	/** The mask of the fields whose epoch (in `changed`, a slot per field) is after `epoch`. */
+	maskAfter (changed: Float64Array, epoch: number): IgeNetMask {
+		if (this.wide) {
+			const words: number[] = new Array(Math.ceil(changed.length / 32)).fill(0);
+			for (let i = 0; i < changed.length; i++) if (changed[i] > epoch) words[i >> 5] |= 1 << (i & 31);
+			for (let w = 0; w < words.length; w++) words[w] >>>= 0;
+			return words;
+		}
+		let mask = 0;
+		for (let i = 0; i < changed.length; i++) if (changed[i] > epoch) mask |= 1 << i;
 		return mask >>> 0;
 	}
 
@@ -296,21 +351,28 @@ export class IgeNetSchema {
 	}
 
 	/** Writes the mask (a bit per field) and the fields in it. `json` holds fields' JSON text where known. */
-	writeMasked (w: IgeNetBitWriter, mask: number, values: Record<string, unknown>, json?: (string | undefined)[]): void {
+	writeMasked (w: IgeNetBitWriter, mask: IgeNetMask, values: Record<string, unknown>, json?: (string | undefined)[]): void {
 		const fields = this.fields;
-		for (let i = 0; i < fields.length; i++) w.writeBits((mask >>> i) & 1, 1);
+		if (typeof mask === "number") {
+			for (let i = 0; i < fields.length; i++) w.writeBits((mask >>> i) & 1, 1);
+			for (let i = 0; i < fields.length; i++) {
+				if ((mask >>> i) & 1) fields[i].write(w, values[fields[i].name], json?.[i]);
+			}
+			return;
+		}
+		for (let i = 0; i < fields.length; i++) w.writeBits((mask[i >> 5] >>> (i & 31)) & 1, 1);
 		for (let i = 0; i < fields.length; i++) {
-			if ((mask >>> i) & 1) fields[i].write(w, values[fields[i].name], json?.[i]);
+			if ((mask[i >> 5] >>> (i & 31)) & 1) fields[i].write(w, values[fields[i].name], json?.[i]);
 		}
 	}
 
 	readMasked (r: IgeNetBitReader): Record<string, unknown> {
 		const fields = this.fields;
-		let mask = 0;
-		for (let i = 0; i < fields.length; i++) mask |= r.readBits(1) << i;
+		const set: boolean[] = [];
+		for (let i = 0; i < fields.length; i++) set.push(r.readBits(1) === 1);
 		const out: Record<string, unknown> = {};
 		for (let i = 0; i < fields.length; i++) {
-			if ((mask >>> i) & 1) out[fields[i].name] = fields[i].read(r);
+			if (set[i]) out[fields[i].name] = fields[i].read(r);
 		}
 		return out;
 	}

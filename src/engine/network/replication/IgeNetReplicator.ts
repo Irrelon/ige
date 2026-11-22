@@ -1,5 +1,5 @@
 import { IgeNetBitWriter, igeNetBitsFor } from "@/engine/network/replication/IgeNetBits";
-import type { IgeNetSchema, IgeNetSchemaSet } from "@/engine/network/replication/IgeNetSchema";
+import { igeNetMaskEmpty, igeNetMaskKey, type IgeNetMask, type IgeNetSchema, type IgeNetSchemaSet } from "@/engine/network/replication/IgeNetSchema";
 import { IGE_NET_PACKET_SNAPSHOT } from "@/engine/network/replication/igeNetReplicationProtocol";
 
 /** Where an object is seen and by whom. */
@@ -62,8 +62,8 @@ export class IgeNetObject {
 	_excluded: Set<IgeNetViewer> = new Set();
 	_round = -1;
 	_create?: Payload;
-	_updates: Map<number, Payload> = new Map();
-	_masks: Map<number, number> = new Map();
+	_updates: Map<number | string, Payload> = new Map();
+	_masks: Map<number, IgeNetMask> = new Map();
 
 	constructor (rep: IgeNetReplicator, schema: IgeNetSchema, id: string, fields: Record<string, unknown>, options: IgeNetObjectOptions) {
 		this._rep = rep;
@@ -108,6 +108,22 @@ export class IgeNetObject {
 		}
 		if (any) this._markDirty(epoch);
 		return any;
+	}
+
+	/**
+	 * Sets one json field whose JSON text the game already has (the same value written to many objects: the text is made once).
+	 * Returns whether it changed.
+	 */
+	writeJson (name: string, value: unknown, text: string): boolean {
+		if (this.destroyed) throw new Error(`${this.id} is destroyed`);
+		const field = this.schema.byName.get(name);
+		if (!field || field.type !== "json") throw new Error(`${this.kind}.${name} isn't a json field`);
+		if (text === this._json[field.index]) return false;
+		this._json[field.index] = text;
+		this.values[name] = value;
+		this._changed[field.index] = this._rep._epoch;
+		this._markDirty(this._rep._epoch);
+		return true;
 	}
 
 	/** Says a json field was changed in place (the object `values[field]` holds): it's compared again and sent if different. */
@@ -242,6 +258,37 @@ export class IgeNetViewer {
 		this._rep._reconcile(obj, this);
 	}
 
+	/**
+	 * Stops a reveal without excluding the viewer: it sees the object again only if the scope rules
+	 * (or another reveal) let it. (`hide` is for taking a scope object away from one viewer.)
+	 */
+	unreveal (obj: IgeNetObject): void {
+		obj._revealed.delete(this);
+		this._rep._reconcile(obj, this);
+	}
+
+	/**
+	 * Every object it sees now, as plain data: its id, kind and current (quantised) field values, the
+	 * same ones its machine arrives at. For tests, tools and debugging. The values are the objects' own unless `copy` is set (then json fields are parsed afresh); don't change them.
+	 */
+	view (options: { copy?: boolean } = {}): { id: string; kind: string; values: Record<string, unknown> }[] {
+		const out: { id: string; kind: string; values: Record<string, unknown> }[] = [];
+		for (const obj of this._states.keys()) {
+			let values = obj.values;
+			if (options.copy) {
+				// Json fields as the machine gets them (parsed from the text sent), not the game's own live objects
+				values = { ...obj.values };
+				for (const field of obj.schema.fields) {
+					if (field.type !== "json") continue;
+					const text = obj._json[field.index];
+					values[field.name] = text === undefined ? undefined : JSON.parse(text);
+				}
+			}
+			out.push({ id: obj.id, kind: obj.kind, values });
+		}
+		return out;
+	}
+
 	/** Takes the viewer out of the replicator. */
 	close (): void {
 		if (this._closed) return;
@@ -327,7 +374,7 @@ export class IgeNetViewer {
 					continue;
 				}
 				const mask = rep._maskFor(obj, state.acked);
-				if (!mask) {
+				if (igeNetMaskEmpty(mask)) {
 					this._work.delete(state);
 					continue;
 				}
@@ -577,14 +624,11 @@ export class IgeNetReplicator {
 	}
 
 	/** The fields of an object that changed after `epoch`, as a mask (worked out once per round per epoch). */
-	_maskFor (obj: IgeNetObject, epoch: number): number {
+	_maskFor (obj: IgeNetObject, epoch: number): IgeNetMask {
 		this._roundOf(obj);
 		let mask = obj._masks.get(epoch);
 		if (mask === undefined) {
-			mask = 0;
-			const changed = obj._changed;
-			for (let i = 0; i < changed.length; i++) if (changed[i] > epoch) mask |= 1 << i;
-			mask >>>= 0;
+			mask = obj.schema.maskAfter(obj._changed, epoch);
 			obj._masks.set(epoch, mask);
 		}
 		return mask;
@@ -615,9 +659,10 @@ export class IgeNetReplicator {
 		return (obj._create = { byte: start >> 3, bits: arena.bitLength - start });
 	}
 
-	_updatePayload (obj: IgeNetObject, mask: number): Payload {
+	_updatePayload (obj: IgeNetObject, mask: IgeNetMask): Payload {
 		this._roundOf(obj);
-		let payload = obj._updates.get(mask);
+		const key = igeNetMaskKey(mask);
+		let payload = obj._updates.get(key);
 		if (payload) {
 			this.stats.cacheHits++;
 			return payload;
@@ -628,7 +673,7 @@ export class IgeNetReplicator {
 		const start = arena.bitLength;
 		obj.schema.writeMasked(arena, mask, obj.values, obj._json);
 		payload = { byte: start >> 3, bits: arena.bitLength - start };
-		obj._updates.set(mask, payload);
+		obj._updates.set(key, payload);
 		return payload;
 	}
 

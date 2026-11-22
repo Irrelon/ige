@@ -125,6 +125,55 @@ describe("IgeNetReplicator", () => {
 		expect(Object.keys(update.updates[0].values)).toEqual(["x"]);
 	});
 
+	it("takes kinds of more than 32 fields: masks span words, only changed fields go", () => {
+		const wide: Record<string, IgeNetFieldDef> = {};
+		for (let i = 0; i < 80; i++) wide[`f${i}`] = i % 3 === 0 ? { type: "int" } : i % 3 === 1 ? { type: "json" } : { type: "number", precision: 0.1 };
+		const set = new IgeNetSchemaSet({ wide });
+		const replicator = new IgeNetReplicator(set);
+		const inspector = new IgeNetPacketInspector(set);
+		let described: any;
+		const viewer = replicator.addViewer((bytes) => { described = inspector.describe(bytes); });
+		const a = { viewer, last: () => described };
+		a.viewer.subscribe("sol");
+		const obj = replicator.create("wide", "w1", {}, { scope: "sol" });
+		replicator.flush();
+		obj.write({ f2: 1.5, f40: 7, f79: 2.5, f70: { a: [1, 2] } });
+		replicator.flush();
+		const update = a.last();
+		expect(update.updates).toHaveLength(1);
+		expect(update.updates[0].values).toEqual({ f2: 1.5, f40: 7, f70: { a: [1, 2] }, f79: 2.5 });
+		obj.write({ f79: 3.5 });
+		replicator.flush();
+		expect(Object.keys(a.last().updates[0].values)).toEqual(["f79"]);
+		expect(a.viewer.view().find((o) => o.id === "w1")!.values.f79).toBe(3.5);
+	});
+
+	it("keeps decimals clean: a precision of 0.1 gives 0.3, not 0.30000000000000004", () => {
+		const schema = new IgeNetSchema("n", { a: { type: "number", precision: 0.1 }, b: { type: "number", precision: 0.001 }, c: { type: "number", precision: 0.01, min: -5, max: 5 } });
+		expect(schema.canonical({ a: 0.3, b: 1.2345, c: 2.37 })).toEqual({ a: 0.3, b: 1.235, c: 2.37 });
+		expect(bitsRoundTrip(schema, { a: 12.3, b: -0.007, c: -4.99 })).toEqual({ a: 12.3, b: -0.007, c: -4.99 });
+	});
+
+	it("unreveal stops a reveal without excluding the viewer from the scope, and view() lists what a viewer sees", () => {
+		const replicator = new IgeNetReplicator(schemas);
+		const a = watch(replicator);
+		const b = watch(replicator);
+		a.viewer.subscribe("sol");
+		b.viewer.subscribe("sol");
+		const dot = replicator.create("dot", "d1", { x: 1, table: { k: 1 } }, { scope: "sol" });
+		expect(b.viewer.view().map((o) => o.id)).toEqual(["d1"]);
+		dot.moveTo(undefined);
+		expect(b.viewer.view()).toEqual([]);
+		a.viewer.reveal(dot);
+		expect(a.viewer.view().map((o) => o.id)).toEqual(["d1"]);
+		a.viewer.unreveal(dot);
+		expect(a.viewer.view()).toEqual([]);
+		dot.moveTo("sol");
+		expect(b.viewer.view().map((o) => o.id)).toEqual(["d1"]);
+		expect(a.viewer.view({ copy: true })[0].values.table).toEqual({ k: 1 });
+		expect(a.viewer.view({ copy: true })[0].values.table).not.toBe(dot.values.table);
+	});
+
 	it("doesn't see sub-precision jitter or an unchanged write as a change", () => {
 		const replicator = new IgeNetReplicator(schemas);
 		const a = watch(replicator);
