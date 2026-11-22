@@ -121,7 +121,7 @@ export class IgeNetWebSocketServer {
 						const frame = Buffer.alloc(1 + id.length + bytes.length);
 						frame[0] = id.length;
 						frame.write(id, 1, "latin1");
-						bytes.copy(frame, 1 + id.length);
+						frame.set(bytes, 1 + id.length);
 						game.host.sendBytes(frame);
 					} else if (hosting && bytes.length > 0) {
 						// The host's packet for a machine: strip the header
