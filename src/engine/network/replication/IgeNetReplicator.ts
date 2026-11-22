@@ -91,6 +91,11 @@ export class IgeNetObject {
 	/** In a scope's grid (a spatial kind in a scope, not private). */
 	_spatial = false;
 	_cell = -1;
+	_cellIdx = -1;
+	/** The position fields' values, kept as plain numbers (NaN for a kind without a position). */
+	_px = NaN;
+	_pz = NaN;
+	_py = NaN;
 
 	constructor (rep: IgeNetReplicator, schema: IgeNetSchema, id: string, fields: Record<string, unknown>, options: IgeNetObjectOptions) {
 		this._rep = rep;
@@ -105,6 +110,15 @@ export class IgeNetObject {
 		this._changed = new Float64Array(schema.fields.length).fill(rep._epoch);
 		if (schema.classCount > 1) this._classLast = new Float64Array(schema.classCount).fill(rep._epoch);
 		this._lastChange = rep._epoch;
+		this._readPosition();
+	}
+
+	_readPosition (): void {
+		const pos = this.schema.options.position;
+		if (!pos) return;
+		this._px = this.values[pos[0]] as number;
+		this._pz = this.values[pos[1]] as number;
+		this._py = pos.length > 2 ? (this.values[pos[2]] as number) : NaN;
 	}
 
 	/**
@@ -138,7 +152,10 @@ export class IgeNetObject {
 			any = true;
 		}
 		if (any) this._markDirty(epoch);
-		if (moved && this._spatial) this._rep._placed(this);
+		if (moved) {
+			this._readPosition();
+			if (this._spatial) this._rep._placed(this);
+		}
 		return any;
 	}
 
@@ -334,7 +351,7 @@ export class IgeNetViewer {
 	_fullPrev: Set<IgeNetViewState> = new Set();
 	_fullNow: Set<IgeNetViewState> = new Set();
 	/** Blip states in slots of a period, so each round visits only the ones that are due. */
-	_slots: Map<number, Set<IgeNetViewState>[]> = new Map();
+	_slots: { period: number; sets: Set<IgeNetViewState>[] }[] = [];
 	_spatialCount = 0;
 	_allow = -1;
 	_cands: Candidate[] = [];
@@ -343,7 +360,7 @@ export class IgeNetViewer {
 	/** Scratch: the position of the interest last looked at. */
 	_ix = 0;
 	_iz = 0;
-	_iy: number | undefined = undefined;
+	_iy = NaN;
 
 	constructor (rep: IgeNetReplicator, send: (bytes: Uint8Array) => void, options: { lossy?: boolean } = {}) {
 		this._rep = rep;
@@ -519,7 +536,7 @@ export class IgeNetViewer {
 		this._work.clear();
 		this._fullPrev.clear();
 		this._fullNow.clear();
-		this._slots.clear();
+		this._slots.length = 0;
 		this._interests.length = 0;
 		this._focus.clear();
 		for (const scope of this.scopes) this._rep._scope(scope).viewers.delete(this);
@@ -599,13 +616,13 @@ export class IgeNetViewer {
 	_slotAdd (state: IgeNetViewState): void {
 		if (state._slot) return;
 		const period = this._period(state.obj.schema);
-		let slots = this._slots.get(period);
+		let slots = this._slots.find((s) => s.period === period);
 		if (!slots) {
-			slots = [];
-			for (let i = 0; i < period; i++) slots.push(new Set());
-			this._slots.set(period, slots);
+			slots = { period, sets: [] };
+			for (let i = 0; i < period; i++) slots.sets.push(new Set());
+			this._slots.push(slots);
 		}
-		state._slot = slots[state.handle % period];
+		state._slot = slots.sets[state.handle % period];
 		state._slot.add(state);
 	}
 
@@ -648,33 +665,29 @@ export class IgeNetViewer {
 		}
 	}
 
-	/** Puts where an interest is in `_ix`, `_iz`, `_iy`. False if what it follows is gone. */
+	/** Puts where an interest is in `_ix`, `_iz`, `_iy` (NaN: no height). False if what it follows is gone. */
 	_where (interest: IgeNetInterest): boolean {
 		const target = interest.target;
 		if (!target) {
 			this._ix = interest.x;
 			this._iz = interest.z;
-			this._iy = interest.y;
+			this._iy = interest.y ?? NaN;
 			return true;
 		}
 		if (target.destroyed) return false;
-		const pos = target.schema.options.position!;
-		this._ix = target.values[pos[0]] as number;
-		this._iz = target.values[pos[1]] as number;
-		this._iy = pos.length > 2 ? (target.values[pos[2]] as number) : undefined;
+		this._ix = target._px;
+		this._iz = target._pz;
+		this._iy = target._py;
 		return true;
 	}
 
-	/** Distance from an object to a point, using height when both have it. */
-	_distance (obj: IgeNetObject, x: number, z: number, y: number | undefined): number {
-		const pos = obj.schema.options.position!;
-		const dx = (obj.values[pos[0]] as number) - x, dz = (obj.values[pos[1]] as number) - z;
+	/** Distance from an object to a point squared, using height when both have it. */
+	_distance2 (obj: IgeNetObject, x: number, z: number, y: number): number {
+		const dx = obj._px - x, dz = obj._pz - z;
 		let d2 = dx * dx + dz * dz;
-		if (y !== undefined && pos.length > 2) {
-			const dy = (obj.values[pos[2]] as number) - y;
-			d2 += dy * dy;
-		}
-		return Math.sqrt(d2);
+		const dy = obj._py - y;
+		if (dy === dy) d2 += dy * dy;
+		return d2;
 	}
 
 	/** How far an object is from the nearest interest, in units of that interest's radius (0: at it; 1: at the edge of range). */
@@ -683,7 +696,7 @@ export class IgeNetViewer {
 		for (const interest of this._interests) {
 			if (!this._where(interest)) continue;
 			const radius = interest.radius ?? this.nearRadius ?? this._rep.nearRadius;
-			const d = this._distance(obj, this._ix, this._iz, this._iy) / radius;
+			const d = Math.sqrt(this._distance2(obj, this._ix, this._iz, this._iy)) / radius;
 			if (d < best) best = d;
 		}
 		return best;
@@ -727,11 +740,14 @@ export class IgeNetViewer {
 				if (!grid) continue;
 				near.length = 0;
 				grid.query(x, z, radius * hysteresis, near);
-				for (const obj of near) {
+				const enter2 = radius * radius, leave2 = enter2 * hysteresis * hysteresis;
+				for (let i = 0; i < near.length; i++) {
+					const obj = near[i];
+					const d2 = this._distance2(obj, x, z, y);
+					if (d2 > leave2) continue;
 					const state = this._states.get(obj);
 					if (!state || now.has(state)) continue;
-					const limit = prev.has(state) ? radius * hysteresis : radius;
-					if (this._distance(obj, x, z, y) <= limit) now.add(state);
+					if (d2 <= enter2 || prev.has(state)) now.add(state);
 				}
 			}
 		}
@@ -752,8 +768,9 @@ export class IgeNetViewer {
 			this._work.add(state);
 		}
 		// Blips due this round
-		for (const [period, slots] of this._slots) {
-			for (const state of slots[round % period]) {
+		const slots = this._slots;
+		for (let i = 0; i < slots.length; i++) {
+			for (const state of slots[i].sets[round % slots[i].period]) {
 				if (this._hasChanges(state)) this._work.add(state);
 			}
 		}
@@ -814,8 +831,8 @@ export class IgeNetViewer {
 		} else {
 			const cl = obj._classLast!;
 			const blipClass = schema.blipClass;
-			for (let c = 0; c < schema.classCount; c++) {
-				if (!full && c !== blipClass) continue;
+			const lo = full ? 0 : blipClass, hi = full ? schema.classCount : blipClass + 1;
+			for (let c = lo; c < hi; c++) {
 				if (cl[c] <= state.acked[c]) continue;
 				pending = true;
 				if (objectGated) {
@@ -900,34 +917,38 @@ export class IgeNetViewer {
 		let oldest = Infinity;
 		const perRound = limited ? bandwidth / rep.sendRate : Infinity;
 		if (limited) {
-			// Everything waiting gathers priority; the budget is spent from the top
-			for (const cand of cands) {
-				const state = cand.state;
-				state.priority += this._weigh(cand);
-				if (state.pendingSince < 0) state.pendingSince = round;
-			}
-			cands.sort((a, b) => b.state.priority - a.state.priority);
 			this._allow = this._allow < 0 ? perRound * rep.carry : Math.min(this._allow + perRound, perRound * rep.carry);
 			const availBits = (this._allow - 12 - (destroyCount * handleBits) / 8) * 8;
-			let used = 0;
-			selected = [];
-			for (let i = 0; i < cands.length; i++) {
-				const cand = cands[i];
-				const cost = cand.payload.bits + handleBits;
-				// The first is always sent, so nothing is too big for ever
-				if (i === 0 || used + cost <= availBits) {
-					selected.push(cand);
-					used += cost;
-				} else if (availBits - used < 16) {
-					break;
-				}
-			}
-			if (selected.length < cands.length) {
-				const chosen = new Set(selected);
+			let wanted = 0;
+			for (const cand of cands) wanted += cand.payload.bits + handleBits;
+			if (wanted > availBits && cands.length > 1) {
+				// More wanted than the budget holds: everything waiting gathers priority, and the budget is spent from the top
 				for (const cand of cands) {
-					if (chosen.has(cand)) continue;
-					const since = cand.state.pendingSince;
-					if (since >= 0 && since < oldest) oldest = since;
+					const state = cand.state;
+					state.priority += this._weigh(cand);
+					if (state.pendingSince < 0) state.pendingSince = round;
+				}
+				cands.sort((a, b) => b.state.priority - a.state.priority);
+				let used = 0;
+				selected = [];
+				for (let i = 0; i < cands.length; i++) {
+					const cand = cands[i];
+					const cost = cand.payload.bits + handleBits;
+					// The first is always sent, so nothing is too big for ever
+					if (i === 0 || used + cost <= availBits) {
+						selected.push(cand);
+						used += cost;
+					} else if (availBits - used < 16) {
+						break;
+					}
+				}
+				if (selected.length < cands.length) {
+					const chosen = new Set(selected);
+					for (const cand of cands) {
+						if (chosen.has(cand)) continue;
+						const since = cand.state.pendingSince;
+						if (since >= 0 && since < oldest) oldest = since;
+					}
 				}
 			}
 		}
@@ -1235,12 +1256,7 @@ export class IgeNetReplicator {
 		if (entry.grid) {
 			const old = entry.grid;
 			entry.grid = undefined;
-			const members: IgeNetObject[] = [];
-			for (const cell of old.cells.values()) for (const obj of cell) members.push(obj);
-			for (const obj of members) {
-				const pos = obj.schema.options.position!;
-				this._gridOf(scope).add(obj, obj.values[pos[0]] as number, obj.values[pos[1]] as number);
-			}
+			for (const obj of old.all()) this._gridOf(scope).add(obj, obj._px, obj._pz);
 		}
 	}
 
@@ -1291,15 +1307,13 @@ export class IgeNetReplicator {
 	/** Puts a spatial object in its scope's grid (it's in one only if its kind is spatial and it's in a scope and not private). */
 	_place (obj: IgeNetObject): void {
 		if (!obj.schema.leveled || !obj.scope || obj.owner) return;
-		const pos = obj.schema.options.position!;
 		obj._spatial = true;
-		this._gridOf(obj.scope).add(obj, obj.values[pos[0]] as number, obj.values[pos[1]] as number);
+		this._gridOf(obj.scope).add(obj, obj._px, obj._pz);
 	}
 
 	/** A spatial object's position changed: its cell follows, if it crossed a border. */
 	_placed (obj: IgeNetObject): void {
-		const pos = obj.schema.options.position!;
-		this._scopes.get(obj.scope!)?.grid?.move(obj, obj.values[pos[0]] as number, obj.values[pos[1]] as number);
+		this._scopes.get(obj.scope!)?.grid?.move(obj, obj._px, obj._pz);
 	}
 
 	_moveTo (obj: IgeNetObject, scope: string | undefined): void {
@@ -1401,7 +1415,7 @@ export class IgeNetReplicator {
 	_updatePayload (obj: IgeNetObject, mask: IgeNetMask, level?: boolean): Payload {
 		this._roundOf(obj);
 		const maskKey = igeNetMaskKey(mask);
-		const key = level === undefined ? maskKey : `${maskKey}|${level ? 1 : 0}`;
+		const key = level === undefined ? maskKey : typeof maskKey === "number" ? maskKey * 2 + (level ? 1 : 0) : `${maskKey}|${level ? 1 : 0}`;
 		let payload = obj._updates.get(key);
 		if (payload) {
 			this.stats.cacheHits++;

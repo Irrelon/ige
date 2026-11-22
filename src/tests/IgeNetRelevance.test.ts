@@ -64,16 +64,17 @@ const flushN = (replicator: IgeNetReplicator, n: number, each?: (i: number) => v
 };
 
 describe("IgeNetGrid", () => {
-	type Item = { _cell: number; id: number };
+	type Item = { _cell: number; _cellIdx: number; id: number };
 	it("holds items by cell, moves them only across a border and answers circle queries", () => {
 		const grid = new IgeNetGrid<Item>(100);
-		const a: Item = { _cell: -1, id: 1 }, b: Item = { _cell: -1, id: 2 }, c: Item = { _cell: -1, id: 3 };
+		const a: Item = { _cell: -1, _cellIdx: -1, id: 1 }, b: Item = { _cell: -1, _cellIdx: -1, id: 2 }, c: Item = { _cell: -1, _cellIdx: -1, id: 3 };
 		grid.add(a, 50, 50);
 		grid.add(b, 450, 50);
 		grid.add(c, -250, -30);
 		expect(grid.size).toBe(3);
 		expect(grid.query(50, 50, 60, []).map((i) => i.id).sort()).toEqual([1]);
-		expect(grid.query(50, 50, 450, []).map((i) => i.id).sort()).toEqual([1, 2, 3].filter((n) => n !== 3 || true).sort().filter((n) => n !== 3 || grid.query(50, 50, 450, []).some((i) => i.id === 3)));
+		expect(grid.query(50, 50, 330, []).map((i) => i.id).sort()).toEqual([1, 3]); // the far one's cell is out of reach
+		expect(grid.query(50, 50, 600, []).map((i) => i.id).sort()).toEqual([1, 2, 3]);
 		expect(grid.query(-250, -30, 10, []).map((i) => i.id)).toEqual([3]);
 		// A move inside the cell costs nothing; across a border it changes cell
 		expect(grid.move(a, 80, 90)).toBe(false);
@@ -94,7 +95,7 @@ describe("IgeNetGrid", () => {
 
 	it("a query touches only the cells under the circle", () => {
 		const grid = new IgeNetGrid<Item>(100);
-		for (let i = 0; i < 2000; i++) grid.add({ _cell: -1, id: i }, (i % 50) * 100 + 5, Math.floor(i / 50) * 100 + 5);
+		for (let i = 0; i < 2000; i++) grid.add({ _cell: -1, _cellIdx: -1, id: i }, (i % 50) * 100 + 5, Math.floor(i / 50) * 100 + 5);
 		const found = grid.query(2500, 2000, 250, []);
 		expect(found.length).toBeLessThan(40);
 		expect(found.length).toBeGreaterThan(8);
