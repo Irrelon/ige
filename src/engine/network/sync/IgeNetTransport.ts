@@ -2,6 +2,9 @@
  * One connection between a machine and the authority, as either end sees
  * it. Reliable messages arrive once and in order; unreliable ones (inputs,
  * snapshots) may be lost or arrive out of order, and the sync layer copes.
+ * A message is a JSON-able object (the sync layer's) or binary (a Uint8Array: the
+ * replication layer's packets); every transport carries both, a binary one as a
+ * binary frame, and the receiving end gets whichever was sent.
  * Implementations: igeNetLoopback() (same page, or tests with simulated
  * latency and loss); WebSocket and WebRTC transports follow the same shape.
  */
@@ -25,7 +28,7 @@ export interface IgeNetLoopbackOptions {
 	jitter?: number;
 	/** Chance (0-1) that an unreliable message is lost. */
 	loss?: number;
-	/** Messages are copied through JSON like a real network (default true), so nothing is shared by reference. */
+	/** Messages are copied through JSON (binary ones byte for byte) like a real network (default true), so nothing is shared by reference. */
 	copy?: boolean;
 }
 
@@ -56,7 +59,7 @@ export function igeNetLoopback (options: IgeNetLoopbackOptions = {}): { listener
 			close: () => { open = false; },
 			deliver: (message: unknown, reliable: boolean) => {
 				if (!open || (!reliable && loss > 0 && Math.random() < loss)) return;
-				const data = copy ? JSON.parse(JSON.stringify(message)) : message;
+				const data = !copy ? message : message instanceof Uint8Array ? message.slice() : JSON.parse(JSON.stringify(message));
 				const run = () => {
 					if (open) for (const listener of listeners) listener(data);
 				};

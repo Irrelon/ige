@@ -13,7 +13,8 @@ import { IGE_RELAY_CODE_CHARS } from "@/engine/network/sync/igeNetWebSocket";
  *   short join code; machines joining with that code (igeNetRelayJoin())
  *   have their messages passed to the host and back.
  *
- * Messages are JSON text frames.
+ * Messages are JSON text frames; binary ones (Uint8Array, the replication layer's packets)
+ * are binary frames.
  * @example #A dedicated server that also relays browser-hosted games
  *     const server = http.createServer();
  *     const sockets = new IgeNetWebSocketServer(server);
@@ -55,19 +56,25 @@ export class IgeNetWebSocketServer {
 				for (const fn of closeListeners) fn();
 			};
 			socket.on("message", (data) => {
-				if (data.type !== "utf8" || closed) return;
+				if (closed) return;
 				let message: unknown;
-				try {
-					message = JSON.parse(data.utf8Data);
-				} catch {
-					return;
+				if (data.type === "binary") {
+					message = new Uint8Array(data.binaryData);
+				} else {
+					try {
+						message = JSON.parse(data.utf8Data);
+					} catch {
+						return;
+					}
 				}
 				for (const fn of messageListeners) fn(message);
 			});
 			socket.on("close", end);
 			const connection: IgeNetConnection = {
 				send: (message) => {
-					if (!closed && socket.connected) socket.sendUTF(JSON.stringify(message));
+					if (closed || !socket.connected) return;
+					if (message instanceof Uint8Array) socket.sendBytes(Buffer.from(message.buffer, message.byteOffset, message.byteLength));
+					else socket.sendUTF(JSON.stringify(message));
 				},
 				onMessage: (fn) => { messageListeners.push(fn); },
 				onClose: (fn) => { closeListeners.push(fn); },

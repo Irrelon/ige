@@ -15,6 +15,9 @@ import type { IgeNetConnection, IgeNetListener } from "@/engine/network/sync/Ige
  *   (a browser host: its own players over igeNetLoopback(), remote ones over
  *   the relay).
  *
+ * Messages are JSON text frames; binary ones (the replication layer's packets, Uint8Array)
+ * are binary frames. Binary isn't carried through a relay yet.
+ *
  * WebSockets are TCP: every message arrives, in order, so unreliable sends
  * cost the same as reliable ones.
  */
@@ -54,13 +57,21 @@ function openSocket (url: string, options: IgeNetWebSocketOptions): Promise<WebS
 }
 
 /** An IgeNetConnection over an open socket, sending with `wrap` and reading with `unwrap` (undefined: not for us). */
-function socketConnection (socket: WebSocket, wrap: (message: unknown) => unknown = (m) => m, unwrap: (data: any) => unknown = (d) => d): IgeNetConnection & { _receive: (data: any) => void; _end: () => void } {
+const identity = (m: unknown): unknown => m;
+
+function socketConnection (socket: WebSocket, wrap: (message: unknown) => unknown = identity, unwrap: (data: any) => unknown = (d) => d): IgeNetConnection & { _receive: (data: any) => void; _end: () => void } {
 	const messageListeners: ((message: unknown) => void)[] = [];
 	const closeListeners: (() => void)[] = [];
 	let closed = false;
 	const connection = {
 		send: (message: unknown) => {
-			if (!closed && socket.readyState === 1) socket.send(JSON.stringify(wrap(message)));
+			if (closed || socket.readyState !== 1) return;
+			if (message instanceof Uint8Array) {
+				if (wrap !== identity) throw new Error("Binary messages aren't carried through a relay");
+				socket.send(message);
+			} else {
+				socket.send(JSON.stringify(wrap(message)));
+			}
 		},
 		onMessage: (fn: (message: unknown) => void) => { messageListeners.push(fn); },
 		onClose: (fn: () => void) => { closeListeners.push(fn); },
@@ -90,7 +101,8 @@ function socketConnection (socket: WebSocket, wrap: (message: unknown) => unknow
 export async function igeNetWebSocketConnect (url: string, options: IgeNetWebSocketOptions = {}): Promise<IgeNetConnection> {
 	const socket = await openSocket(url, options);
 	const connection = socketConnection(socket);
-	socket.onmessage = (event) => connection._receive(JSON.parse(String(event.data)));
+	socket.binaryType = "arraybuffer";
+	socket.onmessage = (event) => connection._receive(typeof event.data === "string" ? JSON.parse(event.data) : new Uint8Array(event.data as ArrayBuffer));
 	socket.onclose = () => connection._end();
 	return connection;
 }

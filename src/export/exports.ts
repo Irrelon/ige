@@ -172,6 +172,12 @@ export * from "../engine/network/sync/IgeNetSyncClient";
 export * from "../engine/network/sync/igeNetIoSyncTransport";
 export * from "../engine/network/sync/igeNetWebSocket";
 export * from "../engine/network/sync/IgeNetWebSocketServer";
+export * from "../engine/network/replication/IgeNetBits";
+export * from "../engine/network/replication/IgeNetSchema";
+export * from "../engine/network/replication/igeNetReplicationProtocol";
+export * from "../engine/network/replication/IgeNetReplicator";
+export * from "../engine/network/replication/IgeNetReplicationHost";
+export * from "../engine/network/replication/IgeNetReplicationClient";
 export * from "../engine/network/chat/IgeChatServer";
 
 export * from "../engine/network/chat/IgeChatClient";
