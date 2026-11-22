@@ -81,6 +81,8 @@ export class IgeNetField {
 	readonly type: IgeNetFieldDef["type"];
 	readonly optional: boolean;
 	readonly group?: string;
+	/** Part of the kind's position (the object's grid cell depends on it). */
+	positional = false;
 	/** How the client blends this field between states. */
 	readonly blend: "linear" | "angle" | "none";
 	/** The value a created object has when the game doesn't give one. */
@@ -233,6 +235,34 @@ export class IgeNetField {
 	}
 }
 
+/**
+ * How the replicator treats one kind of object beyond its fields: where it is, who needs it and how
+ * urgently. Everything is optional; a kind with none of it is sent to every viewer of its scope in full.
+ * Everything here that changes the wire format (relevance, position, blip) is part of the schema hash.
+ */
+export interface IgeNetKindOptions {
+	/**
+	 * "scope": sent in full to everyone in the scope, any distance (stations, gates, asteroids).
+	 * "spatial": full detail within a viewer's range (or when focused), position-only blips beyond it.
+	 * Needs `position`.
+	 */
+	relevance?: "scope" | "spatial";
+	/** The fields that say where the object is: two for the ground plane, optionally a third for height (used for distance only). */
+	position?: string[];
+	/** The field group sent as the blip (default: the position fields). Nothing that identifies the object should be in it. */
+	blip?: string;
+	/** Blips per second of one object (default: the replicator's blipRate). */
+	blipRate?: number;
+	/** Base priority of the kind (default 1). */
+	priority?: number;
+	/** Base priority of a group of fields (multiplies the kind's), by group name. */
+	groupPriority?: Record<string, number>;
+	/** The most sends per second of the object as a whole, per viewer. */
+	maxRate?: number;
+	/** The most sends per second of each group of fields, per viewer, by group name. */
+	groupRates?: Record<string, number>;
+}
+
 /** The most fields one kind may have. */
 export const IGE_NET_MAX_FIELDS = 1024;
 
@@ -277,10 +307,36 @@ export class IgeNetSchema {
 	readonly fullMask: IgeNetMask;
 	/** More than 32 fields: masks are arrays of words. */
 	readonly wide: boolean;
+	/** The mask with no field in it. */
+	readonly emptyMask: IgeNetMask;
+	readonly options: IgeNetKindOptions;
+	readonly relevance?: "scope" | "spatial";
+	/** Spatial kinds have two detail levels, and a level bit on the wire. */
+	readonly leveled: boolean;
+	/** Field indexes of the position (two or three). */
+	readonly positionIdx: number[] = [];
+	/**
+	 * Fields are sorted into classes that are sent and acknowledged on their own: the blip class
+	 * (first, when the kind has one), a class per other group, the ungrouped rest. A kind that needs
+	 * no distinction has the one class.
+	 */
+	readonly classCount: number;
+	readonly classOf: number[];
+	readonly classFields: number[][] = [];
+	readonly classNames: string[] = [];
+	/** The blip class, or -1. */
+	readonly blipClass: number;
+	/** Per class: priority and the most sends per second (0: unlimited). */
+	readonly classPriority: number[] = [];
+	readonly classRate: number[] = [];
+	/** Whether any rate limits are set. */
+	readonly rated: boolean;
+	readonly priority: number;
 
-	constructor (name: string, defs: Record<string, IgeNetFieldDef>) {
+	constructor (name: string, defs: Record<string, IgeNetFieldDef>, options: IgeNetKindOptions = {}) {
 		this.name = name;
-		this.hash = hashText(JSON.stringify(defs));
+		this.options = options;
+		this.hash = hashText(JSON.stringify(defs) + kindWireText(options));
 		const names = Object.keys(defs);
 		if (names.length > IGE_NET_MAX_FIELDS) throw new Error(`${name}: at most ${IGE_NET_MAX_FIELDS} fields (it has ${names.length})`);
 		this.fields = names.map((n, i) => new IgeNetField(n, i, defs[n]));
@@ -292,7 +348,63 @@ export class IgeNetSchema {
 				this.groups.set(field.group, list);
 			}
 		}
+		this.relevance = options.relevance;
+		this.leveled = options.relevance === "spatial";
+		this.priority = options.priority ?? 1;
+		if (options.position) {
+			if (options.position.length < 2 || options.position.length > 3) throw new Error(`${name}: position is two or three field names`);
+			for (const fieldName of options.position) {
+				const field = this.byName.get(fieldName);
+				if (!field || (field.type !== "number" && field.type !== "int" && field.type !== "float")) throw new Error(`${name}: position field "${fieldName}" must be a number field`);
+				field.positional = true;
+				this.positionIdx.push(field.index);
+			}
+		}
+		if (this.leveled && this.positionIdx.length < 2) throw new Error(`${name}: a spatial kind needs a position`);
+		const useClasses = this.leveled || !!options.groupRates || !!options.groupPriority;
+		this.classOf = new Array(names.length).fill(-1);
+		let blipClass = -1;
+		if (useClasses) {
+			if (this.leveled) {
+				const blipFields = options.blip !== undefined ? this.groups.get(options.blip) : this.positionIdx;
+				if (!blipFields || !blipFields.length) throw new Error(`${name}: blip group "${options.blip}" has no fields`);
+				blipClass = 0;
+				this.classNames.push(options.blip ?? "blip");
+				this.classFields.push([...blipFields]);
+				for (const i of blipFields) this.classOf[i] = 0;
+			}
+			for (const field of this.fields) {
+				if (this.classOf[field.index] >= 0) continue;
+				const key = field.group ?? "";
+				let c = this.classNames.indexOf(key);
+				if (c < 0) {
+					c = this.classNames.length;
+					this.classNames.push(key);
+					this.classFields.push([]);
+				}
+				this.classOf[field.index] = c;
+				this.classFields[c].push(field.index);
+			}
+			if (this.classNames.length > 30) throw new Error(`${name}: at most 30 field groups`);
+		} else {
+			this.classNames.push("");
+			this.classFields.push(names.map((_, i) => i));
+			this.classOf.fill(0);
+		}
+		this.blipClass = blipClass;
+		this.classCount = this.classNames.length;
+		let rated = !!options.maxRate;
+		for (let c = 0; c < this.classCount; c++) {
+			this.classPriority.push(options.groupPriority?.[this.classNames[c]] ?? 1);
+			const rate = options.groupRates?.[this.classNames[c]] ?? 0;
+			this.classRate.push(rate);
+			if (rate) rated = true;
+		}
+		this.rated = rated;
+		for (const key of Object.keys(options.groupRates ?? {})) if (!this.classNames.includes(key)) throw new Error(`${name}: no group "${key}" for a rate`);
+		for (const key of Object.keys(options.groupPriority ?? {})) if (!this.classNames.includes(key)) throw new Error(`${name}: no group "${key}" for a priority`);
 		this.wide = names.length > 32;
+		this.emptyMask = this.wide ? new Array(Math.ceil(names.length / 32)).fill(0) : 0;
 		if (this.wide) {
 			const words: number[] = new Array(Math.ceil(names.length / 32)).fill(0);
 			for (let i = 0; i < names.length; i++) words[i >> 5] = (words[i >> 5] | (1 << (i & 31))) >>> 0;
@@ -326,6 +438,31 @@ export class IgeNetSchema {
 		let mask = 0;
 		for (let i = 0; i < changed.length; i++) if (changed[i] > epoch) mask |= 1 << i;
 		return mask >>> 0;
+	}
+
+	/** The mask of the fields of one class whose epoch is after `epoch`. */
+	classMaskAfter (changed: Float64Array, epoch: number, c: number): IgeNetMask {
+		const list = this.classFields[c];
+		if (this.wide) {
+			const words: number[] = new Array(Math.ceil(changed.length / 32)).fill(0);
+			for (const i of list) if (changed[i] > epoch) words[i >> 5] |= 1 << (i & 31);
+			for (let w = 0; w < words.length; w++) words[w] >>>= 0;
+			return words;
+		}
+		let mask = 0;
+		for (const i of list) if (changed[i] > epoch) mask |= 1 << i;
+		return mask >>> 0;
+	}
+
+	/** Writes the fields of the blip class (no mask: both ends know which they are). */
+	writeBlip (w: IgeNetBitWriter, values: Record<string, unknown>, json?: (string | undefined)[]): void {
+		for (const i of this.classFields[this.blipClass]) this.fields[i].write(w, values[this.fields[i].name], json?.[i]);
+	}
+
+	readBlip (r: IgeNetBitReader): Record<string, unknown> {
+		const out: Record<string, unknown> = {};
+		for (const i of this.classFields[this.blipClass]) out[this.fields[i].name] = this.fields[i].read(r);
+		return out;
 	}
 
 	/** Every field of `values` made canonical (missing ones take their defaults). */
@@ -389,11 +526,16 @@ export class IgeNetSchemaSet {
 	readonly kindBits: number;
 	readonly hash: string;
 
-	constructor (defs: Record<string, Record<string, IgeNetFieldDef>>) {
-		this.kinds = Object.keys(defs).map((name) => new IgeNetSchema(name, defs[name]));
+	/** Whether any kind declares relevance (the game uses stage 2 of replication). */
+	readonly hasRelevance: boolean;
+
+	constructor (defs: Record<string, Record<string, IgeNetFieldDef>>, kinds: Record<string, IgeNetKindOptions> = {}) {
+		for (const name of Object.keys(kinds)) if (!defs[name]) throw new Error(`Options for unknown kind "${name}"`);
+		this.kinds = Object.keys(defs).map((name) => new IgeNetSchema(name, defs[name], kinds[name]));
 		for (const kind of this.kinds) this.byName.set(kind.name, kind);
 		this.kindBits = igeNetBitsFor(this.kinds.length);
-		this.hash = hashText(JSON.stringify(defs));
+		this.hasRelevance = this.kinds.some((k) => !!k.relevance);
+		this.hash = hashText(JSON.stringify(defs) + this.kinds.map((k) => kindWireText(k.options)).join(""));
 	}
 
 	kind (name: string): IgeNetSchema {
@@ -401,6 +543,12 @@ export class IgeNetSchemaSet {
 		if (!schema) throw new Error(`Unknown kind "${name}"`);
 		return schema;
 	}
+}
+
+/** The part of a kind's options that changes the wire format ("" when none do, so older hashes stay). */
+function kindWireText (options: IgeNetKindOptions): string {
+	if (!options.relevance) return "";
+	return JSON.stringify([options.relevance, options.position, options.blip]);
 }
 
 function toNumber (value: unknown): number {

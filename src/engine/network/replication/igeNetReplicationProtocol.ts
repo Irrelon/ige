@@ -15,8 +15,9 @@ import type { IgeNetSchema, IgeNetSchemaSet } from "@/engine/network/replication
  *     6 bits  handleBits          (only when any flag is set) bits in a handle
  *     per section present: varuint count, then
  *         destroys:  handle
- *         creates:   handle, kind (kindBits), id (string), every field in order
- *         updates:   handle, field mask (a bit per field), the masked fields
+ *         creates:   handle, kind (kindBits), id (string), [level bit: kinds with relevance "spatial"
+ *                    only: 1 full, 0 blip], then every field in order (a blip: just the blip fields)
+ *         updates:   handle, [level bit, as above], field mask (a bit per field), the masked fields
  *
  * Input packet, machine to authority:
  *     4 bits type (2), 4 spare    varuint newest frame seq
@@ -39,14 +40,20 @@ export interface IgeNetSnapshotHeader {
 export interface IgeNetHandleEntry {
 	id: string;
 	schema: IgeNetSchema;
+	/** On a destroyed handle: the packet that destroyed it. */
+	seq?: number;
 }
+
+/** The detail an object of a spatial kind is sent at: everything, or just its blip fields. */
+export type IgeNetDetail = "full" | "blip";
 
 export interface IgeNetDecodedSnapshot extends IgeNetSnapshotHeader {
 	/** The ids of objects gone, as the table knew them. */
 	destroys: { handle: number; id?: string }[];
-	creates: { handle: number; id: string; kind: string; values: Record<string, unknown> }[];
+	/** `level` is set for kinds with detail levels; `gone` when the object was destroyed already (an old packet arriving late): ignore it. */
+	creates: { handle: number; id: string; kind: string; values: Record<string, unknown>; level?: IgeNetDetail; gone?: boolean }[];
 	/** Changed fields only. */
-	updates: { handle: number; id: string; kind: string; values: Record<string, unknown> }[];
+	updates: { handle: number; id: string; kind: string; values: Record<string, unknown>; level?: IgeNetDetail; gone?: boolean }[];
 }
 
 export function igeNetPacketType (bytes: Uint8Array): number {
@@ -68,7 +75,8 @@ export function igeNetReadSnapshotBody (
 	r: IgeNetBitReader,
 	header: IgeNetSnapshotHeader,
 	schemas: IgeNetSchemaSet,
-	table: Map<number, IgeNetHandleEntry>
+	table: Map<number, IgeNetHandleEntry>,
+	dead?: Map<number, IgeNetHandleEntry>
 ): IgeNetDecodedSnapshot {
 	const out: IgeNetDecodedSnapshot = { ...header, destroys: [], creates: [], updates: [] };
 	if (!header.flags) return out;
@@ -77,7 +85,10 @@ export function igeNetReadSnapshotBody (
 		const count = r.readVarUint();
 		for (let i = 0; i < count; i++) {
 			const handle = r.readBits(handleBits);
-			out.destroys.push({ handle, id: table.get(handle)?.id });
+			const entry = table.get(handle);
+			out.destroys.push({ handle, id: entry?.id });
+			// Remembered, so a packet from before the destroy arriving late can still be read (and ignored)
+			if (entry && dead) dead.set(handle, { ...entry, seq: header.seq });
 			table.delete(handle);
 		}
 	}
@@ -89,9 +100,15 @@ export function igeNetReadSnapshotBody (
 			const schema = schemas.kinds[kindIndex];
 			if (!schema) throw new RangeError("Unknown kind");
 			const id = r.readString();
-			const values = schema.readAll(r);
-			table.set(handle, { id, schema });
-			out.creates.push({ handle, id, kind: schema.name, values });
+			const level: IgeNetDetail | undefined = schema.leveled ? (r.readBits(1) ? "full" : "blip") : undefined;
+			const values = level === "blip" ? schema.readBlip(r) : schema.readAll(r);
+			const tomb = dead?.get(handle);
+			const gone = !!tomb && tomb.id === id && header.seq < (tomb.seq ?? 0);
+			if (!gone) {
+				table.set(handle, { id, schema });
+				dead?.delete(handle);
+			}
+			out.creates.push({ handle, id, kind: schema.name, values, level, gone });
 		}
 	}
 	if (header.flags & 4) {
@@ -99,8 +116,11 @@ export function igeNetReadSnapshotBody (
 		for (let i = 0; i < count; i++) {
 			const handle = r.readBits(handleBits);
 			const entry = table.get(handle);
-			if (!entry) throw new RangeError(`Update for unknown handle ${handle}`);
-			out.updates.push({ handle, id: entry.id, kind: entry.schema.name, values: entry.schema.readMasked(r) });
+			const tomb = entry ? undefined : dead?.get(handle);
+			const known = entry ?? tomb;
+			if (!known) throw new RangeError(`Update for unknown handle ${handle}`);
+			const level: IgeNetDetail | undefined = known.schema.leveled ? (r.readBits(1) ? "full" : "blip") : undefined;
+			out.updates.push({ handle, id: known.id, kind: known.schema.name, values: known.schema.readMasked(r), level, gone: !entry });
 		}
 	}
 	return out;
@@ -169,6 +189,7 @@ export class IgeNetPacketInspector {
 	_schemas: IgeNetSchemaSet;
 	_inputSchema?: IgeNetSchema;
 	_table: Map<number, IgeNetHandleEntry> = new Map();
+	_dead: Map<number, IgeNetHandleEntry> = new Map();
 
 	constructor (schemas: IgeNetSchemaSet, inputSchema?: IgeNetSchema) {
 		this._schemas = schemas;
@@ -178,6 +199,7 @@ export class IgeNetPacketInspector {
 	/** Forget the handles seen (a new connection). */
 	reset (): void {
 		this._table.clear();
+		this._dead.clear();
 	}
 
 	describe (bytes: Uint8Array, options: { slots?: number } = {}): Record<string, unknown> {
@@ -187,7 +209,7 @@ export class IgeNetPacketInspector {
 			const r = new IgeNetBitReader(bytes);
 			if (type === IGE_NET_PACKET_SNAPSHOT) {
 				const header = igeNetReadSnapshotHeader(r);
-				return { ...base, ...igeNetReadSnapshotBody(r, header, this._schemas, this._table) };
+				return { ...base, ...igeNetReadSnapshotBody(r, header, this._schemas, this._table, this._dead) };
 			}
 			if (type === IGE_NET_PACKET_INPUT && this._inputSchema) {
 				return { ...base, ...igeNetReadInputPacket(r, this._inputSchema, options.slots ?? 1) };

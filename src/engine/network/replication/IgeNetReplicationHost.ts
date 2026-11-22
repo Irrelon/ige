@@ -1,7 +1,7 @@
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeNetBitReader } from "@/engine/network/replication/IgeNetBits";
-import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef } from "@/engine/network/replication/IgeNetSchema";
-import { IgeNetReplicator, type IgeNetViewer } from "@/engine/network/replication/IgeNetReplicator";
+import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions } from "@/engine/network/replication/IgeNetSchema";
+import { IgeNetReplicator, type IgeNetReplicatorOptions, type IgeNetViewer } from "@/engine/network/replication/IgeNetReplicator";
 import { IGE_NET_PACKET_INPUT, igeNetPacketType, igeNetReadInputPacket } from "@/engine/network/replication/igeNetReplicationProtocol";
 import type { IgeNetMachine } from "@/engine/network/sync/IgeNetSyncHost";
 import type { IgeNetConnection, IgeNetListener } from "@/engine/network/sync/IgeNetTransport";
@@ -16,6 +16,15 @@ export interface IgeNetReplicationMachine extends IgeNetMachine {
 export interface IgeNetReplicationHostOptions<Input> {
 	/** The kinds of object the game replicates: a set, or definitions to make one from. The clients need the same. */
 	schemas: IgeNetSchemaSet | Record<string, Record<string, IgeNetFieldDef>>;
+	/** Kind options (relevance, position, blip, priorities, rates), by kind, when `schemas` is plain definitions. The clients need the same. */
+	kinds?: Record<string, IgeNetKindOptions>;
+	/**
+	 * Relevance and budget settings, passed to the replicator (see IgeNetReplicatorOptions):
+	 * `bandwidth` per machine in bytes/s (default 32768 when any kind declares relevance, else no limit),
+	 * `maxPacketBytes`, `nearRadius`, `blipRate`, `cellSize`, `hysteresis`, `carry`, `resendAfter`, `weights`.
+	 * Per machine: `machine.viewer.bandwidth`, `.nearRadius`, `.maxPacketBytes`, `addInterest()`, `focus()`.
+	 */
+	relevance?: Omit<IgeNetReplicatorOptions, "now" | "sendRate">;
 	/** What one player's input is (fields as in a schema). The clients need the same. Default: none. */
 	inputSchema?: IgeNetSchema | Record<string, IgeNetFieldDef>;
 	/** Simulation steps per second (default 30). */
@@ -126,9 +135,18 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		this._options = options;
 		this.tickRate = options.tickRate ?? 30;
 		this.sendRate = Math.min(this.tickRate, options.sendRate ?? 20);
-		this.schemas = options.schemas instanceof IgeNetSchemaSet ? options.schemas : new IgeNetSchemaSet(options.schemas);
+		this.schemas = options.replicator?.schemas ?? (options.schemas instanceof IgeNetSchemaSet ? options.schemas : new IgeNetSchemaSet(options.schemas, options.kinds));
 		this.inputSchema = options.inputSchema instanceof IgeNetSchema ? options.inputSchema : new IgeNetSchema("input", options.inputSchema ?? {});
-		this.replicator = options.replicator ?? new IgeNetReplicator(this.schemas, { now: options.now });
+		this.replicator = options.replicator ?? new IgeNetReplicator(this.schemas, { ...options.relevance, now: options.now, sendRate: this.sendRate });
+		if (options.replicator) {
+			// A replicator made before the host runs at the host's send rate
+			this.replicator.sendRate = this.sendRate;
+			const r = options.relevance;
+			if (r?.bandwidth !== undefined) this.replicator.bandwidth = r.bandwidth > 0 ? r.bandwidth : Infinity;
+			if (r?.maxPacketBytes !== undefined) this.replicator.maxPacketBytes = r.maxPacketBytes;
+			if (r?.nearRadius !== undefined) this.replicator.nearRadius = r.nearRadius;
+			if (r?.blipRate !== undefined) this.replicator.blipRate = r.blipRate;
+		}
 		this._listener = listener;
 		listener?.onConnection((connection) => this.connect(connection));
 	}
@@ -330,7 +348,8 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 			...this.replicator.stats,
 			rates: this.replicator.rates(),
 			bytesByKind: this.replicator.bytesByKind(),
-			machines: [...this._machines.values()].map((m) => ({ id: m.machine.id, bytes: m.machine.viewer.stats.bytes, bytesPerSecond: m.machine.viewer.bytesPerSecond, visible: m.machine.viewer.visibleCount }))
+			machines: [...this._machines.values()].map((m) => ({ id: m.machine.id, bytes: m.machine.viewer.stats.bytes, ...m.machine.viewer.report() })),
+			report: this.replicator.report()
 		};
 	}
 

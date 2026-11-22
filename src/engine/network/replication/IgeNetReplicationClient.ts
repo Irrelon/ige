@@ -1,8 +1,9 @@
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeNetBitReader, IgeNetBitWriter } from "@/engine/network/replication/IgeNetBits";
-import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef } from "@/engine/network/replication/IgeNetSchema";
+import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions } from "@/engine/network/replication/IgeNetSchema";
 import {
 	IGE_NET_PACKET_SNAPSHOT,
+	type IgeNetDetail,
 	igeNetPacketType,
 	igeNetReadSnapshotBody,
 	igeNetReadSnapshotHeader,
@@ -16,6 +17,8 @@ import type { IgeNetWelcome } from "@/engine/network/sync/igeNetSyncProtocol";
 export interface IgeNetReplicationClientOptions {
 	/** The kinds of object, the same as the host's. */
 	schemas: IgeNetSchemaSet | Record<string, Record<string, IgeNetFieldDef>>;
+	/** Kind options (relevance, position, blip), when `schemas` is plain definitions: the same as the host's. */
+	kinds?: Record<string, IgeNetKindOptions>;
 	/** What one player's input is, the same as the host's. */
 	inputSchema?: IgeNetSchema | Record<string, IgeNetFieldDef>;
 	/** How far behind the newest state other objects are drawn, in ms (default 100). */
@@ -45,6 +48,19 @@ export interface IgeNetClientObject {
 	kind: string;
 	schema: IgeNetSchema;
 	states: IgeNetObjectState[];
+	/** The handle the authority knows it by. */
+	handle: number;
+	/**
+	 * How much of it the authority is sending: "full", or "blip" (only the blip fields of a spatial
+	 * kind, at a low rate: draw it as an unidentified contact). While it's a blip its states hold the
+	 * blip fields alone: the others are not there rather than stale. They're kept in `held` (the last
+	 * values it had at full detail) for a game that wants to show what it last knew, never as current.
+	 */
+	detail: IgeNetDetail;
+	held: Record<string, unknown>;
+	/** The newest packet that set each field, so packets arriving out of order never put back older data. */
+	fieldSeq: number[];
+	levelSeq: number;
 }
 
 const UNANSWERED_PINGS = 3;
@@ -101,6 +117,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	_ticks: Map<string, { seq: number; previous: Record<string, unknown>; current: Record<string, unknown> }> = new Map();
 	/** handle to object, as the packets define them. */
 	_table: Map<number, IgeNetHandleEntry> = new Map();
+	_dead: Map<number, IgeNetHandleEntry> = new Map();
 	/** The newest snapshot packet applied, the newest seen (for acks) and the bits before it. */
 	_applied = 0;
 	_recvSeq = 0;
@@ -118,7 +135,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		this._connection = connection;
 		this._options = options;
 		this._now = options.now ?? (() => (typeof performance !== "undefined" ? performance.now() : Date.now()));
-		this.schemas = options.schemas instanceof IgeNetSchemaSet ? options.schemas : new IgeNetSchemaSet(options.schemas);
+		this.schemas = options.schemas instanceof IgeNetSchemaSet ? options.schemas : new IgeNetSchemaSet(options.schemas, options.kinds);
 		this.inputSchema = options.inputSchema instanceof IgeNetSchema ? options.inputSchema : new IgeNetSchema("input", options.inputSchema ?? {});
 		this._hash = igeNetSchemaHash(this.schemas, this.inputSchema);
 		this._attach(connection);
@@ -181,6 +198,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	_reset (): void {
 		this.objects.clear();
 		this._table.clear();
+		this._dead.clear();
 		this._pending = [];
 		this._ticks.clear();
 		this._applied = this._recvSeq = this._recvBits = this._latestTick = 0;
@@ -237,6 +255,11 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	latest (id: string): Record<string, unknown> | undefined {
 		const states = this.objects.get(id)?.states;
 		return states?.[states.length - 1].values;
+	}
+
+	/** How much of an object the authority is sending: "full" or "blip" (see IgeNetClientObject.detail). */
+	detailOf (id: string): IgeNetDetail | undefined {
+		return this.objects.get(id)?.detail;
 	}
 
 	kindOf (id: string): string | undefined {
@@ -429,27 +452,31 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		} catch {
 			return;
 		}
-		this._noteSeq(header.seq);
-		// Older than one already applied: whatever it carried, the newer one covers
-		if (header.seq <= this._applied) return;
 		let packet;
 		try {
-			packet = igeNetReadSnapshotBody(r, header, this.schemas, this._table);
+			packet = igeNetReadSnapshotBody(r, header, this.schemas, this._table, this._dead);
 		} catch (error) {
+			// Not acknowledged, so the authority sends it again
 			this.emit("error", `Bad packet: ${(error as Error).message}`);
 			return;
 		}
-		this._applied = header.seq;
+		this._noteSeq(header.seq);
+		const seq = header.seq;
+		// An older packet may arrive after a newer one: what it holds that no newer packet set still counts, but it isn't a new state of the world
+		const fresh = seq > this._applied;
 		this.bytesReceived += bytes.length;
 		this.packetsReceived++;
 		const previousTick = this._latestTick;
-		this._latestTick = header.tick;
-		while (this._pending.length && this._pending[0].seq <= header.inputAck) this._pending.shift();
+		if (fresh) {
+			this._applied = seq;
+			this._latestTick = header.tick;
+			while (this._pending.length && this._pending[0].seq <= header.inputAck) this._pending.shift();
+		}
 
 		for (const gone of packet.destroys) {
 			if (gone.id === undefined) continue;
 			const obj = this.objects.get(gone.id);
-			if (!obj) continue;
+			if (!obj || obj.handle !== gone.handle) continue;
 			this.objects.delete(gone.id);
 			this._ticks.delete(gone.id);
 			this.emit("destroyed", gone.id, obj.kind);
@@ -458,6 +485,10 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		const push = (obj: IgeNetClientObject, values: Record<string, unknown>) => {
 			const states = obj.states;
 			const last = states[states.length - 1];
+			if (!fresh) {
+				last.values = values;
+				return;
+			}
 			if (last.tick === header.tick) {
 				last.values = values;
 				return;
@@ -470,24 +501,76 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			while (states.length - drop > 2 && states[drop + 1].tick <= cutoff) drop++;
 			if (drop) states.splice(0, drop);
 		};
+		/** Applies a level and fields to an object, newest packet winning per field. Returns the new current values. */
+		const apply = (obj: IgeNetClientObject, incoming: Record<string, unknown>, level: IgeNetDetail | undefined, base: Record<string, unknown>) => {
+			const schema = obj.schema;
+			let values = base;
+			let target = obj.detail;
+			if (level !== undefined && seq > obj.levelSeq) {
+				obj.levelSeq = seq;
+				target = level;
+			}
+			if (target !== obj.detail) {
+				if (target === "blip") {
+					// Dropping to a blip: what isn't a blip field is no longer current, so it leaves the values (kept aside)
+					values = {};
+					for (const field of schema.fields) {
+						if (schema.classOf[field.index] === schema.blipClass) {
+							if (field.name in base) values[field.name] = base[field.name];
+						} else if (field.name in base) {
+							obj.held[field.name] = base[field.name];
+						}
+					}
+				} else {
+					values = { ...base, ...obj.held };
+				}
+				obj.detail = target;
+				this.emit("detail", obj, target);
+			} else {
+				values = { ...base };
+			}
+			for (const name in incoming) {
+				const field = schema.byName.get(name)!;
+				if (seq <= obj.fieldSeq[field.index]) continue;
+				obj.fieldSeq[field.index] = seq;
+				if (obj.detail === "blip" && schema.classOf[field.index] !== schema.blipClass) obj.held[name] = incoming[name];
+				else values[name] = incoming[name];
+			}
+			return values;
+		};
 		for (const created of packet.creates) {
+			if (created.gone) continue;
 			const schema = this.schemas.kind(created.kind);
 			const existing = this.objects.get(created.id);
-			if (existing) {
-				push(existing, created.values);
+			if (existing && existing.handle === created.handle) {
+				const last = existing.states[existing.states.length - 1];
+				push(existing, apply(existing, created.values, created.level, last.values));
 			} else {
-				const obj: IgeNetClientObject = { id: created.id, kind: created.kind, schema, states: [{ tick: header.tick, values: created.values }] };
+				// A new object (or the same id under another handle: the old one is replaced)
+				const obj: IgeNetClientObject = {
+					id: created.id, kind: created.kind, schema, handle: created.handle, states: [{ tick: header.tick, values: { ...created.values } }],
+					detail: created.level ?? "full", held: {}, fieldSeq: new Array(schema.fields.length).fill(seq), levelSeq: seq
+				};
+				if (created.level === "blip") {
+					// Nothing of the other fields yet
+					for (const field of schema.fields) if (!(field.name in created.values)) obj.fieldSeq[field.index] = -1;
+				}
+				if (existing) this._ticks.delete(created.id);
 				this.objects.set(created.id, obj);
 				this.emit("created", obj);
 			}
 		}
 		for (const update of packet.updates) {
+			if (update.gone) continue;
 			const obj = this.objects.get(update.id);
-			if (!obj) continue;
-			push(obj, { ...obj.states[obj.states.length - 1].values, ...update.values });
+			if (!obj || obj.handle !== update.handle) continue;
+			const last = obj.states[obj.states.length - 1];
+			push(obj, apply(obj, update.values, update.level, last.values));
 		}
-		this._syncClock(header.tick, this.rtt / 2);
-		this.emit("snapshot", header.tick);
+		if (fresh) {
+			this._syncClock(header.tick, this.rtt / 2);
+			this.emit("snapshot", header.tick);
+		}
 	}
 }
 
@@ -496,6 +579,8 @@ function blendValues (schema: IgeNetSchema, a: Record<string, unknown>, b: Recor
 	if (a === b) return b;
 	const out: Record<string, unknown> = {};
 	for (const field of schema.fields) {
+		// A field the later state doesn't have (a blip has only some) isn't there to show
+		if (!(field.name in b)) continue;
 		const va = a[field.name], vb = b[field.name];
 		if (field.blend !== "none" && typeof va === "number" && typeof vb === "number") {
 			out[field.name] = field.blend === "angle" ? lerpAngle(va, vb, f) : va + (vb - va) * f;
