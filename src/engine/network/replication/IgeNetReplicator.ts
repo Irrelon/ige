@@ -484,6 +484,15 @@ export class IgeNetViewer {
 	}
 
 	/**
+	 * Works out what's in range now (a flush does this for each enabled viewer). Call it before
+	 * `view()` or `sees()` on a viewer that isn't being sent to (a test, a tool), or after moving
+	 * interests, to read the current answer without waiting for a flush.
+	 */
+	refresh (): void {
+		this._relevance(this._rep._round);
+	}
+
+	/**
 	 * Every object it sees now, as plain data: its id, kind and current (quantised) field values, the
 	 * same ones its machine arrives at. For tests, tools and debugging. The values are the objects' own unless `copy` is set (then json fields are parsed afresh); don't change them.
 	 */
