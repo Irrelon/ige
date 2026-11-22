@@ -95,13 +95,22 @@ export class IgeNetBitWriter {
 	/** Appends `bits` bits that start at a byte boundary in another buffer. */
 	writeBitsFrom (source: Uint8Array, byteStart: number, bits: number): void {
 		const whole = bits >> 3;
-		if ((this._pos & 7) === 0) {
-			this._ensure(bits);
-			this._buf.set(source.subarray(byteStart, byteStart + whole), this._pos >> 3);
-			this._pos += whole << 3;
+		this._ensure(bits);
+		const buf = this._buf;
+		const shift = this._pos & 7;
+		if (shift === 0) {
+			buf.set(source.subarray(byteStart, byteStart + whole), this._pos >> 3);
 		} else {
-			for (let i = 0; i < whole; i++) this.writeBits(source[byteStart + i], 8);
+			// Each source byte straddles two destination bytes
+			let at = this._pos >> 3;
+			const back = 8 - shift;
+			for (let i = 0; i < whole; i++) {
+				const byte = source[byteStart + i];
+				buf[at] |= byte >>> shift;
+				buf[++at] |= (byte << back) & 255;
+			}
 		}
+		this._pos += whole << 3;
 		const rest = bits & 7;
 		if (rest) this.writeBits(source[byteStart + whole] >>> (8 - rest), rest);
 	}
