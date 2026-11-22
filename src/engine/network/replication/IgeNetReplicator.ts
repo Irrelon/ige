@@ -41,6 +41,8 @@ export interface IgeNetViewState {
 	levelAcked?: boolean;
 	levelSeq: number;
 	levelRound: number;
+	/** Counts changes of detail (a blip named, or a full object gone back to a blip) so late acknowledgements of the old one are ignored. */
+	gen: number;
 	/** Priority gathered while it waits to be sent. */
 	priority: number;
 	/** The round it first had something to send that wasn't sent, or -1. */
@@ -222,6 +224,8 @@ interface SentEntry {
 	classes: number;
 	create: boolean;
 	level?: boolean;
+	/** The state's generation when it was sent: an acknowledgement of an earlier one (before it went to full or back to a blip) means nothing now. */
+	gen: number;
 }
 
 /** Packet bookkeeping for a viewer on a lossy transport: what an acknowledgement of it confirms. */
@@ -347,6 +351,8 @@ export class IgeNetViewer {
 	_window = 0;
 	_interests: IgeNetInterest[] = [];
 	_focus: Set<IgeNetObject> = new Set();
+	/** Objects of kinds with no blips that are in range (or focused): only these are seen. */
+	_admitted: Set<IgeNetObject> = new Set();
 	/** Spatial states at full detail by the last round's reckoning, and this round's. */
 	_fullPrev: Set<IgeNetViewState> = new Set();
 	_fullNow: Set<IgeNetViewState> = new Set();
@@ -536,6 +542,7 @@ export class IgeNetViewer {
 		this._work.clear();
 		this._fullPrev.clear();
 		this._fullNow.clear();
+		this._admitted.clear();
 		this._slots.length = 0;
 		this._interests.length = 0;
 		this._focus.clear();
@@ -556,7 +563,7 @@ export class IgeNetViewer {
 		const rep = this._rep;
 		const state: IgeNetViewState = {
 			obj, viewer: this, handle, known: false, acked: new Array(schema.classCount).fill(-1), sentEver: false, dead: false,
-			spatial, full: !spatial, levelSeq: 0, levelRound: -1e9, priority: 0, pendingSince: -1, lastRound: -1e9, createRound: -1e9
+			spatial, full: !spatial || !schema.blips, gen: 0, levelSeq: 0, levelRound: -1e9, priority: 0, pendingSince: -1, lastRound: -1e9, createRound: -1e9
 		};
 		if (schema.rated || schema.leveled || rep._resend > 0) {
 			state.se = new Array(schema.classCount).fill(-1);
@@ -565,7 +572,7 @@ export class IgeNetViewer {
 		this._states.set(obj, state);
 		obj._seenBy.set(this, state);
 		this._work.add(state);
-		if (spatial) {
+		if (spatial && schema.blips) {
 			this._spatialCount++;
 			this._slotAdd(state);
 		}
@@ -579,8 +586,10 @@ export class IgeNetViewer {
 		obj._seenBy.delete(this);
 		this._work.delete(state);
 		if (state.spatial) {
-			this._spatialCount--;
-			this._slotDelete(state);
+			if (obj.schema.blips) {
+				this._spatialCount--;
+				this._slotDelete(state);
+			}
 			this._fullPrev.delete(state);
 			this._fullNow.delete(state);
 		}
@@ -594,17 +603,55 @@ export class IgeNetViewer {
 		const spatial = state.obj._spatial;
 		if (spatial === state.spatial) return;
 		state.spatial = spatial;
+		const blips = state.obj.schema.blips;
 		if (spatial) {
-			this._spatialCount++;
-			state.full = false;
-			this._slotAdd(state);
+			if (blips) {
+				this._spatialCount++;
+				this._demote(state);
+			}
 		} else {
-			this._spatialCount--;
-			this._slotDelete(state);
+			if (blips) {
+				this._spatialCount--;
+				this._slotDelete(state);
+				if (!state.full) this._promote(state);
+			}
 			this._fullPrev.delete(state);
 			this._fullNow.delete(state);
 			state.full = true;
 		}
+		this._work.add(state);
+	}
+
+	/** A blip named: the viewer is sent the object in full, a create at the handle the blip had. */
+	_promote (state: IgeNetViewState): void {
+		state.full = true;
+		state.gen++;
+		state.known = false;
+		state.acked.fill(-1);
+		state.createRound = -1e9;
+		state.se?.fill(-1);
+		state.sr?.fill(-1e9);
+		this._work.add(state);
+	}
+
+	/**
+	 * Full detail left behind: the viewer's object is destroyed and what it gets next is a new
+	 * anonymous blip under a new handle, so nothing ties the contact to the object it was.
+	 */
+	_demote (state: IgeNetViewState): void {
+		state.full = false;
+		state.gen++;
+		if (state.sentEver) {
+			this._destroys.set(state.handle, state);
+			state.handle = this._free.length ? this._free.pop()! : ++this._high;
+		}
+		state.sentEver = false;
+		state.known = false;
+		state.acked.fill(-1);
+		state.createRound = -1e9;
+		state.se?.fill(-1);
+		state.sr?.fill(-1e9);
+		this._slotAdd(state);
 		this._work.add(state);
 	}
 
@@ -644,14 +691,10 @@ export class IgeNetViewer {
 			if (distance === 0 || (distance <= 32 && ((bits >>> (distance - 1)) & 1) === 1)) {
 				for (const entry of packet.entries) {
 					const state = entry.state;
-					if (state.dead) continue;
+					if (state.dead || entry.gen !== state.gen) continue;
 					if (entry.create) state.known = true;
 					for (let c = 0; c < state.acked.length; c++) {
 						if (((entry.classes >>> c) & 1) && packet.epoch > state.acked[c]) state.acked[c] = packet.epoch;
-					}
-					if (entry.level !== undefined && packetSeq > state.levelSeq) {
-						state.levelSeq = packetSeq;
-						state.levelAcked = entry.level;
 					}
 				}
 				for (const handle of packet.destroys) {
@@ -726,7 +769,12 @@ export class IgeNetViewer {
 		this._fullNow = now;
 		const prev = this._fullPrev;
 		for (const obj of this._focus) {
-			const state = this._states.get(obj);
+			let state = this._states.get(obj);
+			if (!state && obj._spatial && !obj.schema.blips && !obj.destroyed && rep._scopeSees(obj, this)) {
+				this._admitted.add(obj);
+				rep._reconcile(obj, this);
+				state = this._states.get(obj);
+			}
 			if (state && state.spatial) now.add(state);
 		}
 		const near = this._near;
@@ -745,16 +793,31 @@ export class IgeNetViewer {
 					const obj = near[i];
 					const d2 = this._distance2(obj, x, z, y);
 					if (d2 > leave2) continue;
-					const state = this._states.get(obj);
-					if (!state || now.has(state)) continue;
+					let state = this._states.get(obj);
+					if (!state) {
+						// A kind with no blips is seen only in range: it's made for the viewer now
+						if (obj.schema.blips || d2 > enter2 || !rep._scopeSees(obj, this)) continue;
+						this._admitted.add(obj);
+						rep._reconcile(obj, this);
+						state = this._states.get(obj);
+						if (!state) continue;
+					}
+					if (now.has(state)) continue;
 					if (d2 <= enter2 || prev.has(state)) now.add(state);
 				}
 			}
 		}
 		near.length = 0;
+		// Kinds with no blips that are out of range (and not focused) go
+		for (const obj of this._admitted) {
+			const state = this._states.get(obj);
+			if (state && now.has(state)) continue;
+			this._admitted.delete(obj);
+			rep._reconcile(obj, this);
+		}
 		for (const state of now) {
 			if (!prev.has(state)) {
-				state.full = true;
+				if (state.obj.schema.blips) this._promote(state);
 				this._slotDelete(state);
 				this._work.add(state);
 			} else if (this._hasChanges(state)) {
@@ -763,9 +826,7 @@ export class IgeNetViewer {
 		}
 		for (const state of prev) {
 			if (now.has(state) || state.dead) continue;
-			state.full = false;
-			this._slotAdd(state);
-			this._work.add(state);
+			if (state.obj.schema.blips) this._demote(state);
 		}
 		// Blips due this round
 		const slots = this._slots;
@@ -799,22 +860,28 @@ export class IgeNetViewer {
 		const full = state.full;
 		let gated = false;
 		let pending = false;
-		// A change of detail owed
-		let levelDue = false;
-		if (schema.leveled) {
-			const have = this.lossy ? state.levelAcked : state.levelSent;
-			if (have !== full) {
-				pending = true;
-				if (state.levelSent !== full || !rep._resend || round - state.levelRound >= rep._resend) levelDue = true;
-				else gated = true;
-			}
-		}
 		// The object's rate
 		const maxRate = schema.options.maxRate;
 		const objectGated = !!maxRate && round - state.lastRound < rep.sendRate / maxRate - 1e-9;
 		let classes = 0;
 		let mask: IgeNetMask = schema.emptyMask;
-		if (schema.classCount === 1) {
+		let blipUpdate = false;
+		if (!full) {
+			// An anonymous blip: its blip fields as they are, at the blip rate
+			const bc = schema.blipClass;
+			const changed = obj._classLast ? obj._classLast[bc] : obj._lastChange;
+			if (changed > state.acked[bc]) {
+				pending = true;
+				const rate = schema.options.blipRate ?? rep.blipRate;
+				if (objectGated) gated = true;
+				else if (rate && round - state.sr![bc] < rep.sendRate / rate - 1e-9) gated = true;
+				else if (rep._resend && changed <= state.se![bc] && round - state.sr![bc] < rep._resend) gated = true;
+				else {
+					classes = 1 << bc;
+					blipUpdate = true;
+				}
+			}
+		} else if (schema.classCount === 1) {
 			if (obj._lastChange > state.acked[0]) {
 				const m = rep._maskFor(obj, state.acked[0]);
 				if (!igeNetMaskEmpty(m)) {
@@ -830,16 +897,14 @@ export class IgeNetViewer {
 			}
 		} else {
 			const cl = obj._classLast!;
-			const blipClass = schema.blipClass;
-			const lo = full ? 0 : blipClass, hi = full ? schema.classCount : blipClass + 1;
-			for (let c = lo; c < hi; c++) {
+			for (let c = 0; c < schema.classCount; c++) {
 				if (cl[c] <= state.acked[c]) continue;
 				pending = true;
 				if (objectGated) {
 					gated = true;
 					continue;
 				}
-				const rate = !full && c === blipClass ? schema.options.blipRate ?? rep.blipRate : schema.classRate[c];
+				const rate = schema.classRate[c];
 				if (rate && round - state.sr![c] < rep.sendRate / rate - 1e-9) {
 					gated = true;
 					continue;
@@ -852,7 +917,7 @@ export class IgeNetViewer {
 				classes |= 1 << c;
 			}
 		}
-		if (!classes && !levelDue) {
+		if (!classes) {
 			if (!pending) {
 				this._work.delete(state);
 				state.priority = 0;
@@ -865,7 +930,7 @@ export class IgeNetViewer {
 		cand.create = false;
 		cand.level = full;
 		cand.classes = classes;
-		cand.payload = rep._updatePayload(obj, mask, schema.leveled ? full : undefined);
+		cand.payload = blipUpdate ? rep._blipUpdatePayload(obj) : rep._updatePayload(obj, mask);
 		cand.gated = gated;
 	}
 
@@ -904,7 +969,7 @@ export class IgeNetViewer {
 	_build (epoch: number, tick: number): number {
 		const rep = this._rep;
 		const round = rep._round;
-		if (this._spatialCount || this._fullNow.size) this._relevance(round);
+		if (this._spatialCount || this._fullNow.size || this._admitted.size || this._focus.size || this._interests.length) this._relevance(round);
 		const cands = this._cands;
 		cands.length = 0;
 		for (const state of this._work) this._candidate(state, round);
@@ -1048,7 +1113,7 @@ export class IgeNetViewer {
 		const apply = (cand: Candidate) => {
 			const state = cand.state;
 			const schema = state.obj.schema;
-			const level = schema.leveled ? cand.level : undefined;
+			const level: boolean | undefined = undefined;
 			if (cand.create) {
 				state.sentEver = true;
 				state.createRound = round;
@@ -1064,20 +1129,12 @@ export class IgeNetViewer {
 					}
 				}
 			}
-			if (level !== undefined) {
-				state.levelSent = level;
-				state.levelRound = round;
-			}
 			if (lossy) {
-				entries!.push({ state, classes: cand.classes, create: cand.create, level });
+				entries!.push({ state, classes: cand.classes, create: cand.create, level, gen: state.gen });
 				return;
 			}
 			if (cand.create) state.known = true;
 			for (let c = 0; c < state.acked.length; c++) if ((cand.classes >>> c) & 1) state.acked[c] = epoch;
-			if (level !== undefined) {
-				state.levelAcked = level;
-				state.levelSeq = seq;
-			}
 			if (!cand.gated) this._work.delete(state);
 		};
 		for (const cand of creates) apply(cand);
@@ -1288,7 +1345,10 @@ export class IgeNetReplicator {
 			entry.objects.delete(obj);
 			if (obj._spatial) entry.grid?.remove(obj);
 		}
-		for (const viewer of [...obj._seenBy.keys()]) viewer._remove(obj);
+		for (const viewer of [...obj._seenBy.keys()]) {
+			viewer._admitted.delete(obj);
+			viewer._remove(obj);
+		}
 		obj._revealed.clear();
 		obj._excluded.clear();
 	}
@@ -1342,6 +1402,16 @@ export class IgeNetReplicator {
 	_visible (obj: IgeNetObject, viewer: IgeNetViewer): boolean {
 		if (obj._revealed.has(viewer)) return true;
 		if (obj.owner) return obj.owner === viewer;
+		if (obj.hidden || obj._excluded.has(viewer)) return false;
+		if (!obj.scope || !viewer.scopes.has(obj.scope)) return false;
+		// A spatial kind with no blips is seen only while it's in range or focused
+		if (obj._spatial && !obj.schema.blips) return viewer._admitted.has(obj);
+		return true;
+	}
+
+	/** Whether the scope rules would let the viewer see an object, range aside. */
+	_scopeSees (obj: IgeNetObject, viewer: IgeNetViewer): boolean {
+		if (obj.owner) return false;
 		if (obj.hidden || obj._excluded.has(viewer)) return false;
 		return !!obj.scope && viewer.scopes.has(obj.scope);
 	}
@@ -1401,21 +1471,43 @@ export class IgeNetReplicator {
 		const arena = this._arena;
 		arena.align();
 		const start = arena.bitLength;
-		arena.writeBits(this.schemas.kinds.indexOf(obj.schema), this.schemas.kindBits);
-		arena.writeString(obj.id);
-		if (obj.schema.leveled) arena.writeBits(full ? 1 : 0, 1);
-		if (full) obj.schema.writeAll(arena, obj.values, obj._json);
-		else obj.schema.writeBlip(arena, obj.values, obj._json);
+		if (full) {
+			arena.writeBits(this.schemas.kinds.indexOf(obj.schema), this.schemas.kindBits);
+			arena.writeString(obj.id);
+			obj.schema.writeAll(arena, obj.values, obj._json);
+		} else {
+			// An anonymous contact: not the id, not the kind, only the shape of a blip and its fields
+			arena.writeBits(this.schemas.kinds.length, this.schemas.kindBits);
+			arena.writeBits(obj.schema.blipLayout, this.schemas.layoutBits);
+			obj.schema.writeBlip(arena, obj.values, obj._json);
+		}
 		const payload = { byte: start >> 3, bits: arena.bitLength - start };
 		if (full) obj._create = payload;
 		else obj._createBlip = payload;
 		return payload;
 	}
 
-	_updatePayload (obj: IgeNetObject, mask: IgeNetMask, level?: boolean): Payload {
+	/** An anonymous blip's update: every blip field, no mask (the machine doesn't know the kind). */
+	_blipUpdatePayload (obj: IgeNetObject): Payload {
 		this._roundOf(obj);
-		const maskKey = igeNetMaskKey(mask);
-		const key = level === undefined ? maskKey : typeof maskKey === "number" ? maskKey * 2 + (level ? 1 : 0) : `${maskKey}|${level ? 1 : 0}`;
+		let payload = obj._updates.get("blip");
+		if (payload) {
+			this.stats.cacheHits++;
+			return payload;
+		}
+		this.stats.cacheMisses++;
+		const arena = this._arena;
+		arena.align();
+		const start = arena.bitLength;
+		obj.schema.writeBlip(arena, obj.values, obj._json);
+		payload = { byte: start >> 3, bits: arena.bitLength - start };
+		obj._updates.set("blip", payload);
+		return payload;
+	}
+
+	_updatePayload (obj: IgeNetObject, mask: IgeNetMask): Payload {
+		this._roundOf(obj);
+		const key = igeNetMaskKey(mask);
 		let payload = obj._updates.get(key);
 		if (payload) {
 			this.stats.cacheHits++;
@@ -1425,7 +1517,6 @@ export class IgeNetReplicator {
 		const arena = this._arena;
 		arena.align();
 		const start = arena.bitLength;
-		if (level !== undefined) arena.writeBits(level ? 1 : 0, 1);
 		obj.schema.writeMasked(arena, mask, obj.values, obj._json);
 		payload = { byte: start >> 3, bits: arena.bitLength - start };
 		obj._updates.set(key, payload);

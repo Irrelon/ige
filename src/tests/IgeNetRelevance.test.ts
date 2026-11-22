@@ -17,13 +17,15 @@ const defs: Record<string, Record<string, IgeNetFieldDef>> = {
 	},
 	rock: { x: { type: "number", precision: 0.1 }, z: { type: "number", precision: 0.1 }, name: { type: "string" } },
 	beacon: { x: { type: "number", precision: 0.1 }, z: { type: "number", precision: 0.1 }, y: { type: "number", precision: 0.1 }, tag: { type: "int" } },
-	gate: { x: { type: "number", precision: 0.1 }, z: { type: "number", precision: 0.1 }, label: { type: "string" } }
+	gate: { x: { type: "number", precision: 0.1 }, z: { type: "number", precision: 0.1 }, label: { type: "string" } },
+	pod: { x: { type: "number", precision: 0.1 }, z: { type: "number", precision: 0.1 }, name: { type: "string" } }
 };
 const kinds: Record<string, IgeNetKindOptions> = {
 	ship: { relevance: "spatial", position: ["x", "z"] },
 	rock: { relevance: "scope" },
 	beacon: { relevance: "spatial", position: ["x", "z", "y"], blip: "ping" },
-	gate: { relevance: "scope" }
+	gate: { relevance: "scope" },
+	pod: { relevance: "spatial", position: ["x", "z"], blip: false }
 };
 // A beacon's blip group: x and z (written in the schema as a group)
 defs.beacon.x = { type: "number", precision: 0.1, group: "ping" };
@@ -55,6 +57,9 @@ function watch (replicator: IgeNetReplicator, set = schemas, options: { lossy?: 
 		bytes: (from = 0) => packets.slice(from).reduce((n, p) => n + p.length, 0)
 	};
 }
+
+/** The anonymous contacts a viewer's machine has been told of (ids are the handles "?n"). */
+const contacts = (a: ReturnType<typeof watch>, from = 0) => a.described.slice(from).flatMap((d) => d.creates ?? []).filter((c: any) => c.anon);
 
 const flushN = (replicator: IgeNetReplicator, n: number, each?: (i: number) => void) => {
 	for (let i = 0; i < n; i++) {
@@ -137,22 +142,29 @@ describe("spatial relevance", () => {
 		expect(creates.me.level).toBe("full");
 		expect(creates.near.level).toBe("full");
 		expect(creates.near.values).toMatchObject({ name: "Near", hull: 5 });
-		expect(creates.far.level).toBe("blip");
-		expect(Object.keys(creates.far.values).sort()).toEqual(["x", "z"]);
+		// The far ship is an anonymous contact: no id, no kind, the blip fields alone
+		expect(creates.far).toBeUndefined();
+		const [blip] = contacts(a) as any[];
+		expect(blip.kind).toBe("blip");
+		expect(blip.id).toMatch(/^\?\d+$/);
+		expect(blip.level).toBe("blip");
+		expect(Object.keys(blip.values).sort()).toEqual(["x", "z"]);
+		expect(blip.values).toEqual({ x: 5000, z: 0 });
 		expect(a.viewer.detailOf(far)).toBe("blip");
 
 		// Name and hull of a far ship never go out, only x and z
 		far.write({ name: "Far Renamed", hull: 1, heading: 1 });
 		flushN(replicator, 40);
-		expect(a.updatesOf("far")).toEqual([]);
+		expect(a.updatesOf(blip.id)).toEqual([]);
 		far.write({ x: 5010 });
 		flushN(replicator, 40);
-		const updates = a.updatesOf("far");
+		const updates = a.updatesOf(blip.id);
 		expect(updates.length).toBeGreaterThan(0);
-		for (const u of updates) {
-			expect(u.level).toBe("blip");
-			expect(Object.keys(u.values)).toEqual(["x"]);
-		}
+		for (const u of updates) expect(Object.keys(u.values)).toEqual(["x", "z"]);
+		// Nothing on the wire carries the far ship's id or its text
+		const wire = Buffer.concat(a.packets.map((p) => Buffer.from(p))).toString("latin1");
+		expect(wire).not.toContain("far");
+		expect(wire).not.toContain("Far");
 	});
 
 	it("sends blips at the blip rate and near objects every round", () => {
@@ -169,7 +181,8 @@ describe("spatial relevance", () => {
 			far.write({ x: 9000 + i + 1 });
 		});
 		expect(a.updatesOf("near", from)).toHaveLength(60);
-		const blips = a.updatesOf("far", from).length;
+		const blipId = (contacts(a)[0] as any).id;
+		const blips = a.updatesOf(blipId, from).length;
 		expect(blips).toBeGreaterThanOrEqual(3);
 		expect(blips).toBeLessThanOrEqual(5); // 2 a second for 2 seconds
 		// A kind's own blip rate
@@ -182,8 +195,9 @@ describe("spatial relevance", () => {
 		flushN(r2, 3);
 		const base = b.described.length;
 		flushN(r2, 60, (i) => f2.write({ x: 9000 + i + 1 }));
-		expect(b.updatesOf("far", base).length).toBeGreaterThanOrEqual(11);
-		expect(b.updatesOf("far", base).length).toBeLessThanOrEqual(13);
+		const ownId = (contacts(b)[0] as any).id;
+		expect(b.updatesOf(ownId, base).length).toBeGreaterThanOrEqual(11);
+		expect(b.updatesOf(ownId, base).length).toBeLessThanOrEqual(13);
 	});
 
 	it("switching to full sends what the viewer lacks (everything the first time, then only what changed since); switching back stops sending the rest", () => {
@@ -193,33 +207,40 @@ describe("spatial relevance", () => {
 		a.viewer.addInterest(me, { radius: 500 });
 		const ship = replicator.create("ship", "s", { x: 5000, z: 0, name: "Gull", hull: 3, heading: 1 }, { scope: "sol" });
 		flushN(replicator, 3);
-		// Comes into range: it never had the other fields, so it gets all of them
+		// Comes into range: the contact is named by a create at its handle, with every field
+		const blipId = (contacts(a)[0] as any).id;
+		const handle = blipId;
 		let from = a.described.length;
 		ship.write({ x: 100 });
 		flushN(replicator, 2);
-		let ups = a.updatesOf("s", from);
-		expect(ups).toHaveLength(1);
-		expect(ups[0].level).toBe("full");
-		expect(ups[0].values).toMatchObject({ x: 100, name: "Gull", hull: 3 });
-		expect(Object.keys(ups[0].values).sort()).toEqual(["heading", "hull", "name", "table", "x"]); // z hadn't changed since its blip
-		// Goes out of range: a level change only, then nothing of the rest
+		let named = a.described.slice(from).flatMap((d) => d.creates).filter((c: any) => c.id === "s");
+		expect(named).toHaveLength(1);
+		expect(named[0].kind).toBe("ship");
+		expect(named[0].values).toMatchObject({ x: 100, z: 0, name: "Gull", hull: 3 });
+		expect(Object.keys(named[0].values).sort()).toEqual(["heading", "hull", "name", "table", "x", "z"]);
+		expect(a.updatesOf(blipId, from)).toEqual([]);
+		expect(handle).toBeDefined();
+		// Goes out of range: the object is destroyed on the machine and a new anonymous contact takes its place
 		from = a.described.length;
 		ship.write({ x: 6000 });
 		flushN(replicator, 3);
-		ups = a.updatesOf("s", from);
-		expect(ups[0].level).toBe("blip");
+		const gone = a.described.slice(from).flatMap((d) => d.destroys);
+		expect(gone.map((d: any) => d.id)).toContain("s");
+		const again = contacts(a, from) as any[];
+		expect(again).toHaveLength(1);
+		expect(again[0].id).not.toBe(blipId);
+		expect(Object.keys(again[0].values).sort()).toEqual(["x", "z"]);
 		ship.write({ hull: 99, name: "Hidden change", heading: 2 });
 		const quiet = a.described.length;
 		flushN(replicator, 40);
-		for (const u of a.updatesOf("s", quiet)) expect(Object.keys(u.values).every((k) => k === "x" || k === "z")).toBe(true);
-		// Back in range: only the fields changed while it was away (and the position)
+		for (const u of a.described.slice(quiet).flatMap((d) => d.updates)) expect(Object.keys(u.values).every((k) => k === "x" || k === "z")).toBe(true);
+		// Back in range: named again with everything as it is now
 		from = a.described.length;
 		ship.write({ x: 50 });
 		flushN(replicator, 2);
-		ups = a.updatesOf("s", from);
-		expect(ups[0].level).toBe("full");
-		expect(Object.keys(ups[0].values).sort()).toEqual(["heading", "hull", "name", "x"]);
-		expect(ups[0].values).toMatchObject({ hull: 99, name: "Hidden change" });
+		named = a.described.slice(from).flatMap((d) => d.creates).filter((c: any) => c.id === "s");
+		expect(named).toHaveLength(1);
+		expect(named[0].values).toMatchObject({ x: 50, hull: 99, name: "Hidden change" });
 	});
 
 	it("an object on the edge doesn't flip each round (hysteresis) but does leave once clearly beyond", () => {
@@ -296,9 +317,9 @@ describe("spatial relevance", () => {
 		target.write({ x: 80001, name: "Hostile" });
 		flushN(replicator, 2);
 		expect(a.viewer.detailOf(target)).toBe("full");
-		let ups = a.updatesOf("t", from);
-		expect(ups[ups.length - 1].level).toBe("full");
-		expect(ups.reduce((all, u) => ({ ...all, ...u.values }), {})).toMatchObject({ name: "Hostile", x: 80001 });
+		const named = a.described.slice(from).flatMap((d) => d.creates).filter((c: any) => c.id === "t");
+		expect(named).toHaveLength(1);
+		expect(named[0].values).toMatchObject({ name: "Hostile", x: 80001 });
 		// Every change goes out at once while focused
 		from = a.described.length;
 		flushN(replicator, 10, (i) => target.write({ x: 80002 + i }));
@@ -595,49 +616,99 @@ function game (net: ReturnType<typeof igeNetLoopback>, options: { lossy?: boolea
 const clientOptions = { schemas: defs, kinds, inputSchema: inputDefs, pingInterval: 0 };
 
 describe("detail levels on a client", () => {
-	it("exposes the level, drops stale fields while a blip, and restores everything on the way back", async () => {
+	it("knows a far ship only as an anonymous contact, names it when it comes into range (the same object, smooth) and forgets it going out", async () => {
 		const net = igeNetLoopback();
 		const host = game(net, { bandwidth: Infinity });
 		const client = new IgeNetReplicationClient<Input>(net.connect(), clientOptions);
-		const levels: string[] = [];
-		client.on("detail", (obj: { id: string }, level: string) => { levels.push(`${obj.id}:${level}`); });
+		const log: string[] = [];
+		client.on("created", (obj: { id: string; kind: string }) => { log.push(`created ${obj.kind}`); });
+		client.on("revealed", (obj: { id: string }, anonId: string) => { log.push(`revealed ${anonId}>${obj.id}`); });
+		client.on("destroyed", (id: string, kind: string) => { log.push(`destroyed ${id} ${kind}`); });
 		const { players: [me] } = await client.join([{ name: "Ann" }]);
 		const other = host.replicator.create("ship", "other", { x: 5000, z: 0, name: "Other", hull: 4, heading: 2 }, { scope: "world" });
 		host.update(1000 / 30);
 		await settle();
-		expect(client.detailOf("other")).toBe("blip");
-		expect(client.latest("other")).toEqual({ x: 5000, z: 0 }); // nothing of name or hull: they were never sent
+		expect(client.objects.has("other")).toBe(false);
 		expect(client.detailOf(me)).toBe("full");
+		const contact = [...client.objects.values()].find((o) => o.anon)!;
+		expect(contact.kind).toBe("blip");
+		expect(contact.detail).toBe("blip");
+		expect(contact.id).not.toContain("other");
+		expect(client.latest(contact.id)).toEqual({ x: 5000, z: 0 }); // nothing of name or hull: they were never sent
+		const anonId = contact.id;
 
 		other.write({ x: 100 });
 		host.update(1000 / 30);
 		host.update(1000 / 30);
 		await settle();
+		expect(client.objects.has(anonId)).toBe(false);
+		expect(client.objects.get("other")).toBe(contact); // the same object goes on
+		expect(contact.anon).toBe(false);
+		expect(contact.kind).toBe("ship");
 		expect(client.detailOf("other")).toBe("full");
 		expect(client.latest("other")).toMatchObject({ x: 100, name: "Other", hull: 4 });
-		expect(levels).toContain("other:full");
+		expect(log).toContain(`revealed ${anonId}>other`);
+		// Its history is kept: still the blip's states before the full ones
+		expect(contact.states[0].values).toEqual({ x: 5000, z: 0 });
 
 		other.write({ x: 5000 });
 		host.update(1000 / 30);
 		host.update(1000 / 30);
 		await settle();
-		expect(client.detailOf("other")).toBe("blip");
-		// The stale full-detail fields are gone from what's drawn, but kept aside
-		expect(Object.keys(client.latest("other")!).sort()).toEqual(["x", "z"]);
-		expect(Object.keys(client.interpolated().other).sort()).toEqual(["x", "z"]);
-		for (let i = 0; i < 20; i++) host.update(1000 / 30);
-		await settle();
-		expect(client.latest("other")).toEqual({ x: 5000, z: 0 });
-		expect(client.objects.get("other")!.held).toMatchObject({ name: "Other", hull: 4 });
+		expect(log).toContain("destroyed other ship");
+		expect(client.objects.has("other")).toBe(false);
+		const again = [...client.objects.values()].find((o) => o.anon)!;
+		expect(again.id).not.toBe(anonId);
+		expect(client.latest(again.id)).toEqual({ x: 5000, z: 0 });
 		other.write({ name: "Renamed" });
 		for (let i = 0; i < 40; i++) host.update(1000 / 30);
 		await settle();
-		expect(client.latest("other")).toEqual({ x: 5000, z: 0 });
-		other.write({ x: 120 });
-		host.update(1000 / 30);
-		host.update(1000 / 30);
+		expect(client.latest(again.id)).toEqual({ x: 5000, z: 0 });
+		host.destroy();
+		client.destroy();
+	});
+
+	it("leaves a kind with no blips out of sight beyond range: destroyed there, made again in full when it returns, focus overriding", async () => {
+		const net = igeNetLoopback();
+		const host = game(net, { bandwidth: Infinity });
+		const client = new IgeNetReplicationClient<Input>(net.connect(), clientOptions);
+		const gone: string[] = [];
+		client.on("destroyed", (id: string) => { gone.push(id); });
+		await client.join([{ name: "Ann" }]);
+		const viewer = host.machines()[0].viewer;
+		const pod = host.replicator.create("pod", "pod", { x: 5000, z: 0, name: "Pod" }, { scope: "world" });
+		const near = host.replicator.create("pod", "near", { x: 100, z: 0, name: "Near" }, { scope: "world" });
+		for (let i = 0; i < 5; i++) host.update(1000 / 30);
 		await settle();
-		expect(client.latest("other")).toMatchObject({ x: 120, name: "Renamed", hull: 4 });
+		expect(client.objects.has("pod")).toBe(false);
+		expect(viewer.sees(pod)).toBe(false);
+		expect(client.latest("near")).toMatchObject({ name: "Near" });
+		// Nothing of it on the wire: no blip either
+		expect([...client.objects.values()].filter((o) => o.anon)).toEqual([]);
+		pod.write({ x: 200, name: "Pod arrived" });
+		for (let i = 0; i < 5; i++) host.update(1000 / 30);
+		await settle();
+		expect(client.latest("pod")).toMatchObject({ x: 200, name: "Pod arrived" });
+		pod.write({ x: 9000 });
+		for (let i = 0; i < 5; i++) host.update(1000 / 30);
+		await settle();
+		expect(client.objects.has("pod")).toBe(false);
+		expect(gone).toContain("pod");
+		// Focus brings it back at any distance, and letting go sends it away again
+		viewer.focus(pod);
+		for (let i = 0; i < 5; i++) host.update(1000 / 30);
+		await settle();
+		expect(client.latest("pod")).toMatchObject({ x: 9000 });
+		viewer.unfocus(pod);
+		for (let i = 0; i < 5; i++) host.update(1000 / 30);
+		await settle();
+		expect(client.objects.has("pod")).toBe(false);
+		// Destroying what's in range tells the machine, and nothing is left admitted
+		near.destroy();
+		for (let i = 0; i < 3; i++) host.update(1000 / 30);
+		await settle();
+		expect(client.objects.has("near")).toBe(false);
+		expect(viewer._admitted.size).toBe(0);
 		host.destroy();
 		client.destroy();
 	});
@@ -680,17 +751,22 @@ describe("over a network with latency, jitter and loss", () => {
 			await jest.advanceTimersByTimeAsync(800);
 			expect(client.objects.size).toBe(viewer.visibleCount);
 			let blips = 0, fulls = 0;
+			const blipPositions: string[] = [];
 			for (const obj of host.replicator.objects()) {
 				const detail = viewer.detailOf(obj);
 				if (!detail) continue;
+				if (detail === "blip") {
+					// Known only as an anonymous contact: no such id on the machine
+					expect(client.objects.has(obj.id)).toBe(false);
+					blips++;
+					blipPositions.push(`${obj.values.x},${obj.values.z}`);
+					continue;
+				}
 				const client_ = client.objects.get(obj.id);
 				expect(client_).toBeDefined();
 				if (obj.schema.leveled) {
 					expect(client.detailOf(obj.id)).toBe(detail);
-					if (detail === "blip") {
-						blips++;
-						expect(client.latest(obj.id)).toEqual({ x: obj.values.x, z: obj.values.z });
-					} else {
+					{
 						fulls++;
 						expect(client.latest(obj.id)).toEqual(obj.values);
 					}
@@ -698,6 +774,8 @@ describe("over a network with latency, jitter and loss", () => {
 					expect(client.latest(obj.id)).toEqual(obj.values);
 				}
 			}
+			const contactPositions = [...client.objects.values()].filter((o) => o.anon).map((o) => `${client.latest(o.id)!.x},${client.latest(o.id)!.z}`);
+			expect(contactPositions.sort()).toEqual(blipPositions.sort());
 			expect(blips).toBeGreaterThan(3);
 			expect(fulls).toBeGreaterThan(1);
 			expect(client.latest(me)).toEqual(host.replicator.get(me)!.values);

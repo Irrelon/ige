@@ -51,12 +51,15 @@ export interface IgeNetClientObject {
 	/** The handle the authority knows it by. */
 	handle: number;
 	/**
-	 * How much of it the authority is sending: "full", or "blip" (only the blip fields of a spatial
-	 * kind, at a low rate: draw it as an unidentified contact). While it's a blip its states hold the
-	 * blip fields alone: the others are not there rather than stale. They're kept in `held` (the last
-	 * values it had at full detail) for a game that wants to show what it last knew, never as current.
+	 * How much of it the authority is sending: "full", or "blip": an unidentified contact. A blip
+	 * has no real id or kind here (`id` is a handle of this machine's own, `kind` is "blip") and its
+	 * states hold the blip fields alone. When the authority sends it in full the same object
+	 * continues under its real id and kind (a "revealed" event), so its position stays smooth.
+	 * Going back out of range destroys it and, if it's a blip kind, makes a new anonymous contact.
 	 */
 	detail: IgeNetDetail;
+	/** True while it's an anonymous blip. */
+	anon?: boolean;
 	held: Record<string, unknown>;
 	/** The newest packet that set each field, so packets arriving out of order never put back older data. */
 	fieldSeq: number[];
@@ -283,17 +286,6 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		const renderTick = this.serverTick() - ((this._options.interpolationDelay ?? 100) * this.tickRate) / 1000;
 		for (const [id, obj] of this.objects) {
 			const states = obj.states;
-			if (obj.detail === "blip") {
-				// Drawn a little in the past it may have been at full detail then; a blip's fields only, so nothing stale shows as current
-				const blended = this._blendAt(obj, renderTick);
-				const only: Record<string, unknown> = {};
-				for (const i of obj.schema.classFields[obj.schema.blipClass]) {
-					const name = obj.schema.fields[i].name;
-					if (name in blended) only[name] = blended[name];
-				}
-				out[id] = only;
-				continue;
-			}
 			if (states.length === 1) {
 				out[id] = states[0].values;
 				continue;
@@ -522,71 +514,63 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			while (states.length - drop > 2 && states[drop + 1].tick <= cutoff) drop++;
 			if (drop) states.splice(0, drop);
 		};
-		/** Applies a level and fields to an object, newest packet winning per field. Returns the new current values. */
-		const apply = (obj: IgeNetClientObject, incoming: Record<string, unknown>, level: IgeNetDetail | undefined, base: Record<string, unknown>) => {
+		/** Applies fields to an object, newest packet winning per field. Returns the new current values. */
+		const apply = (obj: IgeNetClientObject, incoming: Record<string, unknown>, base: Record<string, unknown>) => {
 			const schema = obj.schema;
-			let values = base;
-			let target = obj.detail;
-			if (level !== undefined && seq > obj.levelSeq) {
-				obj.levelSeq = seq;
-				target = level;
-			}
-			if (target !== obj.detail) {
-				if (target === "blip") {
-					// Dropping to a blip: what isn't a blip field is no longer current, so it leaves the values (kept aside)
-					values = {};
-					for (const field of schema.fields) {
-						if (schema.classOf[field.index] === schema.blipClass) {
-							if (field.name in base) values[field.name] = base[field.name];
-						} else if (field.name in base) {
-							obj.held[field.name] = base[field.name];
-						}
-					}
-				} else {
-					values = { ...base, ...obj.held };
-				}
-				obj.detail = target;
-				this.emit("detail", obj, target);
-			} else {
-				values = { ...base };
-			}
+			const values = { ...base };
 			for (const name in incoming) {
 				const field = schema.byName.get(name)!;
 				if (seq <= obj.fieldSeq[field.index]) continue;
 				obj.fieldSeq[field.index] = seq;
-				if (obj.detail === "blip" && schema.classOf[field.index] !== schema.blipClass) obj.held[name] = incoming[name];
-				else values[name] = incoming[name];
+				values[name] = incoming[name];
 			}
 			return values;
 		};
 		for (const created of packet.creates) {
 			if (created.gone) continue;
-			const schema = this.schemas.kind(created.kind);
+			const schema = created.schema ?? this.schemas.kind(created.kind);
 			const existing = this.objects.get(created.id);
-			if (existing && existing.handle === created.handle) {
+			if (existing && existing.handle === created.handle && !created.from) {
 				const last = existing.states[existing.states.length - 1];
-				push(existing, apply(existing, created.values, created.level, last.values));
-			} else {
-				// A new object (or the same id under another handle: the old one is replaced)
-				const obj: IgeNetClientObject = {
-					id: created.id, kind: created.kind, schema, handle: created.handle, states: [{ tick: header.tick, values: { ...created.values } }],
-					detail: created.level ?? "full", held: {}, fieldSeq: new Array(schema.fields.length).fill(seq), levelSeq: seq
-				};
-				if (created.level === "blip") {
-					// Nothing of the other fields yet
-					for (const field of schema.fields) if (!(field.name in created.values)) obj.fieldSeq[field.index] = -1;
-				}
-				if (existing) this._ticks.delete(created.id);
-				this.objects.set(created.id, obj);
-				this.emit("created", obj);
+				push(existing, apply(existing, created.values, last.values));
+				continue;
 			}
+			const from = created.from ? this.objects.get(created.from) : undefined;
+			if (from && from.handle === created.handle) {
+				// An anonymous contact now named: the same object goes on under its real id and kind
+				this.objects.delete(from.id);
+				this._ticks.delete(from.id);
+				const anonId = from.id;
+				from.id = created.id;
+				from.kind = created.kind;
+				from.schema = schema;
+				from.anon = false;
+				from.detail = "full";
+				from.fieldSeq = new Array(schema.fields.length).fill(seq);
+				from.levelSeq = seq;
+				const old = this.objects.get(created.id);
+				if (old) this._ticks.delete(created.id);
+				this.objects.set(created.id, from);
+				push(from, { ...created.values });
+				this.emit("revealed", from, anonId);
+				this.emit("detail", from, "full");
+				continue;
+			}
+			// A new object (or the same id under another handle: the old one is replaced)
+			const obj: IgeNetClientObject = {
+				id: created.id, kind: created.kind, schema, handle: created.handle, states: [{ tick: header.tick, values: { ...created.values } }],
+				detail: created.anon ? "blip" : "full", anon: created.anon, held: {}, fieldSeq: new Array(schema.fields.length).fill(seq), levelSeq: seq
+			};
+			if (existing) this._ticks.delete(created.id);
+			this.objects.set(created.id, obj);
+			this.emit("created", obj);
 		}
 		for (const update of packet.updates) {
 			if (update.gone) continue;
 			const obj = this.objects.get(update.id);
 			if (!obj || obj.handle !== update.handle) continue;
 			const last = obj.states[obj.states.length - 1];
-			push(obj, apply(obj, update.values, update.level, last.values));
+			push(obj, apply(obj, update.values, last.values));
 		}
 		if (fresh) {
 			this._syncClock(header.tick, this.rtt / 2);

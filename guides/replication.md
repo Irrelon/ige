@@ -144,7 +144,7 @@ const kinds = {
 	ship: {
 		relevance: "spatial",            // full detail near a viewer, blips far away
 		position: ["x", "z"],           // the fields that say where it is (a third is a height: used for distance only)
-		blip: "blip",                    // the field group sent as the blip; default: the position fields
+		blip: "blip",                    // the field group sent as the blip; default: the position fields; false: no blips (beyond range the object isn't sent at all)
 		blipRate: 2,                     // blips per second (default: replicator option, 2)
 		priority: 1,                     // base priority of the kind (default 1)
 		groupPriority: { status: 3, id: 0.2 },
@@ -155,10 +155,11 @@ const kinds = {
 };
 ```
 
-- `"spatial"`: the object sits in its scope's grid. A viewer sees it in full detail within range of one of its interest points or when it focuses on it, and as a blip otherwise.
+- `"spatial"`: the object sits in its scope's grid. A viewer sees it in full detail within range of one of its interest points or when it focuses on it, and as an anonymous blip otherwise (or, with `blip: false`, not at all).
 - `"scope"`: sent in full to every viewer of the scope whatever the distance (it can still have priority and rates).
 - No `relevance`: as stage 1.
-- A **blip** is a field group (`blip: "name of a group"`) or, by default, just the position fields. Put nothing that identifies the object in it: the client draws a blip as an unidentified contact. (The object's id and kind do arrive: ids should be opaque.)
+- A **blip** is a field group (`blip: "name of a group"`) or, by default, just the position fields. A blip is **opaque**: the authority sends neither the object's id nor its kind, only the fields of the group, and the client holds it as an anonymous contact. Put nothing in the group that identifies the object.
+- `blip: false`: the kind has no blips. Beyond range (with the same hysteresis) the object is **destroyed on that client and not sent**; when it comes back in range it is created again in full. Focus (`viewer.focus`) still brings it in at any distance. Use it for things that shouldn't be known of beyond range at all (loose cargo, missiles, ships out of scanner range).
 - `groupRates` / `groupPriority` name groups from the field definitions (`group:`). Fields of one group are sent and acknowledged together; each group keeps its own baseline, so a rate-limited group never makes the others wait, and nothing is lost: what's held back goes when the rate allows, as the latest values.
 - Hidden objects (`hidden: true`, never revealed) are never sent in any form; objects with an `owner` are always full and have the highest priority.
 
@@ -201,11 +202,13 @@ Each send round, every object with something to send to a viewer is a candidate.
 
 ### What the client sees
 
-`client.detailOf(id)` is `"full"` or `"blip"`, also `obj.detail` on `client.objects`, and a `"detail"` event (object, level) when it changes. Moving between levels never destroys the object. Going to full sends the fields the client lacks (all of them the first time, then only what changed since it last had them); going to blip stops sending the rest. A blip's `latest(id)` and `interpolated()` hold **only the blip fields**: the non-blip fields are removed, not left stale (the last full-detail values stay aside in `obj.held` for a game that wants to show what it last knew; never treat them as current). `created` fires once, whatever level the object arrives at.
+A far object of a blip kind arrives as an **anonymous contact**: a client object with `kind: "blip"`, `anon: true`, `detail: "blip"` and an `id` that is only this machine's own handle (`"?12"`), holding the blip fields alone. `created` fires for it like any object. When the object comes into range (or is focused) the authority sends a full create at the same handle and the **same client object continues** under its real id and kind: `client.objects` re-keys it, `anon` becomes false, `detail` becomes `"full"`, its earlier states are kept (so its position stays smooth), and `"revealed"` (object, anonymousId) and `"detail"` (object, "full") fire. When it goes out of range again it is destroyed (`"destroyed"` with the real id) and a **new** anonymous contact appears under a new handle: nothing ties the new contact to the object it was. `client.detailOf(id)` is `"full"` or `"blip"`.
+
+What a client can and can't infer from a blip: it learns the position (the blip fields), the timing of updates (the blip rate), the number of contacts, and which **blip layout** the contact has. Kinds whose blip fields are identical (same names, types and precisions) share a layout and can't be told apart; kinds with different blip fields can, so give kinds you want hidden from each other the same blip group. It never learns the id, the kind, the other fields, or whether a contact now is the same object as one before. Once an object has been named the client knows it (and may remember where it was); a game that must prevent that should use `blip: false`. Handles are small integers reused by the authority and mean nothing. On a lossy transport, acknowledgements from before an object was named or sent back to a blip are ignored, and a packet older than the one that named a contact still reads as a blip.
 
 ### Stats
 
-- `viewer.report()`: bytes per second, `bandwidth`, `budgetUse`, `deferred` (entries held back last round), `oldestPendingAge` (seconds the oldest unsent change has waited: starvation), `detail` counts (full / blip), bytes by kind.
+- `viewer.report()`: bytes per second, `bandwidth`, `budgetUse`, `deferred` (entries held back last round), `oldestPendingAge` (seconds the oldest unsent change has waited: starvation), `detail` counts (full / blip; a `blip: false` object out of range isn't seen at all), bytes by kind.
 - `replicator.report()` (`host.stats().report`): totals over every viewer (by kind, deferred, worst age, worst budget use, detail counts, grid sizes). `host.stats().machines` lists each machine's report.
 - `viewer.detailOf(obj)`, `viewer.stats.deferred / oldestPendingAge / entries` (last round).
 

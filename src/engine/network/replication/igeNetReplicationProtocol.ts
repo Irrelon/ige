@@ -15,9 +15,13 @@ import type { IgeNetSchema, IgeNetSchemaSet } from "@/engine/network/replication
  *     6 bits  handleBits          (only when any flag is set) bits in a handle
  *     per section present: varuint count, then
  *         destroys:  handle
- *         creates:   handle, kind (kindBits), id (string), [level bit: kinds with relevance "spatial"
- *                    only: 1 full, 0 blip], then every field in order (a blip: just the blip fields)
- *         updates:   handle, [level bit, as above], field mask (a bit per field), the masked fields
+ *         creates:   handle, kind (kindBits), id (string), then every field in order
+ *                    An anonymous blip instead: handle, the kind number one past the last real kind,
+ *                    a layout number (layoutBits), then the blip fields: no id, no kind. The machine
+ *                    keeps it under a handle of its own making until a full create for the same
+ *                    handle names it (the object then goes by its real id and kind).
+ *         updates:   handle, field mask (a bit per field), the masked fields
+ *                    (an anonymous blip's update: just its blip fields, no mask)
  *
  * Input packet, machine to authority:
  *     4 bits type (2), 4 spare    varuint newest frame seq
@@ -42,18 +46,28 @@ export interface IgeNetHandleEntry {
 	schema: IgeNetSchema;
 	/** On a destroyed handle: the packet that destroyed it. */
 	seq?: number;
+	/** An anonymous blip (the schema is a blip layout). */
+	anon?: boolean;
+	/** On a real object that was an anonymous blip: what it was, and the packet that named it (older packets still read as the blip). */
+	prev?: IgeNetHandleEntry;
+	fromSeq?: number;
 }
 
-/** The detail an object of a spatial kind is sent at: everything, or just its blip fields. */
+/** The detail an object of a spatial kind is sent at: everything, or an anonymous blip (just its blip fields). */
 export type IgeNetDetail = "full" | "blip";
+
+/** The id a machine gives an anonymous blip (it knows only its handle; the authority never sends an id). */
+export function igeNetBlipId (handle: number): string {
+	return `?${handle}`;
+}
 
 export interface IgeNetDecodedSnapshot extends IgeNetSnapshotHeader {
 	/** The ids of objects gone, as the table knew them. */
 	destroys: { handle: number; id?: string }[];
 	/** `level` is set for kinds with detail levels; `gone` when the object was destroyed already (an old packet arriving late): ignore it. */
-	creates: { handle: number; id: string; kind: string; values: Record<string, unknown>; level?: IgeNetDetail; gone?: boolean }[];
-	/** Changed fields only. */
-	updates: { handle: number; id: string; kind: string; values: Record<string, unknown>; level?: IgeNetDetail; gone?: boolean }[];
+	creates: { handle: number; id: string; kind: string; values: Record<string, unknown>; level?: IgeNetDetail; gone?: boolean; schema?: IgeNetSchema; anon?: boolean; from?: string }[];
+	/** Changed fields only (an anonymous blip's: all its blip fields). */
+	updates: { handle: number; id: string; kind: string; values: Record<string, unknown>; gone?: boolean }[];
 }
 
 export function igeNetPacketType (bytes: Uint8Array): number {
@@ -97,18 +111,34 @@ export function igeNetReadSnapshotBody (
 		for (let i = 0; i < count; i++) {
 			const handle = r.readBits(handleBits);
 			const kindIndex = r.readBits(schemas.kindBits);
+			if (schemas.hasBlips && kindIndex === schemas.kinds.length) {
+				const layout = schemas.blipLayouts[r.readBits(schemas.layoutBits)];
+				if (!layout) throw new RangeError("Unknown blip layout");
+				const id = igeNetBlipId(handle);
+				const values = layout.readAll(r);
+				const tomb = dead?.get(handle);
+				const gone = !!tomb && tomb.id === id && header.seq < (tomb.seq ?? 0);
+				if (!gone) {
+					table.set(handle, { id, schema: layout, anon: true });
+					dead?.delete(handle);
+				}
+				out.creates.push({ handle, id, kind: "blip", values, level: "blip", gone, schema: layout, anon: true });
+				continue;
+			}
 			const schema = schemas.kinds[kindIndex];
 			if (!schema) throw new RangeError("Unknown kind");
 			const id = r.readString();
-			const level: IgeNetDetail | undefined = schema.leveled ? (r.readBits(1) ? "full" : "blip") : undefined;
-			const values = level === "blip" ? schema.readBlip(r) : schema.readAll(r);
+			const values = schema.readAll(r);
 			const tomb = dead?.get(handle);
 			const gone = !!tomb && tomb.id === id && header.seq < (tomb.seq ?? 0);
+			let from: string | undefined;
 			if (!gone) {
-				table.set(handle, { id, schema });
+				const before = table.get(handle);
+				if (before?.anon) from = before.id;
+				table.set(handle, before?.anon ? { id, schema, prev: before, fromSeq: header.seq } : { id, schema });
 				dead?.delete(handle);
 			}
-			out.creates.push({ handle, id, kind: schema.name, values, level, gone });
+			out.creates.push({ handle, id, kind: schema.name, values, level: schema.blips ? "full" : undefined, gone, from });
 		}
 	}
 	if (header.flags & 4) {
@@ -117,10 +147,16 @@ export function igeNetReadSnapshotBody (
 			const handle = r.readBits(handleBits);
 			const entry = table.get(handle);
 			const tomb = entry ? undefined : dead?.get(handle);
-			const known = entry ?? tomb;
+			let known = entry ?? tomb;
 			if (!known) throw new RangeError(`Update for unknown handle ${handle}`);
-			const level: IgeNetDetail | undefined = known.schema.leveled ? (r.readBits(1) ? "full" : "blip") : undefined;
-			out.updates.push({ handle, id: known.id, kind: known.schema.name, values: known.schema.readMasked(r), level, gone: !entry });
+			// A packet older than the one that named a blip is still a blip's
+			let stale = false;
+			if (entry?.prev && header.seq < (entry.fromSeq ?? 0)) {
+				known = entry.prev;
+				stale = true;
+			}
+			const values = known.anon ? known.schema.readAll(r) : known.schema.readMasked(r);
+			out.updates.push({ handle, id: known.id, kind: known.anon ? "blip" : known.schema.name, values, gone: !entry || stale });
 		}
 	}
 	return out;

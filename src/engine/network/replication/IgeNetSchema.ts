@@ -243,14 +243,19 @@ export class IgeNetField {
 export interface IgeNetKindOptions {
 	/**
 	 * "scope": sent in full to everyone in the scope, any distance (stations, gates, asteroids).
-	 * "spatial": full detail within a viewer's range (or when focused), position-only blips beyond it.
-	 * Needs `position`.
+	 * "spatial": full detail within a viewer's range (or when focused); beyond it a blip (position
+	 * only, anonymous, at a low rate) or, with `blip: false`, nothing at all (the object is
+	 * destroyed on that machine and made again in full when it comes back in range). Needs `position`.
 	 */
 	relevance?: "scope" | "spatial";
 	/** The fields that say where the object is: two for the ground plane, optionally a third for height (used for distance only). */
 	position?: string[];
-	/** The field group sent as the blip (default: the position fields). Nothing that identifies the object should be in it. */
-	blip?: string;
+	/**
+	 * The field group sent as the blip (default: the position fields), or false for no blips: beyond
+	 * range the object is not sent. A blip arrives as an anonymous contact (no id, no kind), so
+	 * nothing in the group should identify the object either.
+	 */
+	blip?: string | false;
 	/** Blips per second of one object (default: the replicator's blipRate). */
 	blipRate?: number;
 	/** Base priority of the kind (default 1). */
@@ -311,8 +316,12 @@ export class IgeNetSchema {
 	readonly emptyMask: IgeNetMask;
 	readonly options: IgeNetKindOptions;
 	readonly relevance?: "scope" | "spatial";
-	/** Spatial kinds have two detail levels, and a level bit on the wire. */
+	/** A spatial kind: sent by distance from the viewer's interests. */
 	readonly leveled: boolean;
+	/** A spatial kind that is sent as a blip beyond range (not `blip: false`). */
+	readonly blips: boolean;
+	/** The index of this kind's blip layout in the schema set (-1: none). */
+	blipLayout = -1;
 	/** Field indexes of the position (two or three). */
 	readonly positionIdx: number[] = [];
 	/**
@@ -350,6 +359,7 @@ export class IgeNetSchema {
 		}
 		this.relevance = options.relevance;
 		this.leveled = options.relevance === "spatial";
+		this.blips = this.leveled && options.blip !== false;
 		this.priority = options.priority ?? 1;
 		if (options.position) {
 			if (options.position.length < 2 || options.position.length > 3) throw new Error(`${name}: position is two or three field names`);
@@ -361,15 +371,15 @@ export class IgeNetSchema {
 			}
 		}
 		if (this.leveled && this.positionIdx.length < 2) throw new Error(`${name}: a spatial kind needs a position`);
-		const useClasses = this.leveled || !!options.groupRates || !!options.groupPriority;
+		const useClasses = this.blips || !!options.groupRates || !!options.groupPriority;
 		this.classOf = new Array(names.length).fill(-1);
 		let blipClass = -1;
 		if (useClasses) {
-			if (this.leveled) {
-				const blipFields = options.blip !== undefined ? this.groups.get(options.blip) : this.positionIdx;
+			if (this.blips) {
+				const blipFields = typeof options.blip === "string" ? this.groups.get(options.blip) : this.positionIdx;
 				if (!blipFields || !blipFields.length) throw new Error(`${name}: blip group "${options.blip}" has no fields`);
 				blipClass = 0;
-				this.classNames.push(options.blip ?? "blip");
+				this.classNames.push(typeof options.blip === "string" ? options.blip : "blip");
 				this.classFields.push([...blipFields]);
 				for (const i of blipFields) this.classOf[i] = 0;
 			}
@@ -454,6 +464,16 @@ export class IgeNetSchema {
 		return mask >>> 0;
 	}
 
+	/** The definitions of the blip class's fields, in wire order (what a blip layout is made from). */
+	blipDefs (): Record<string, IgeNetFieldDef> {
+		const out: Record<string, IgeNetFieldDef> = {};
+		for (const i of this.classFields[this.blipClass]) {
+			const { group: _group, ...def } = this.fields[i].def as IgeNetFieldDef & { group?: string };
+			out[this.fields[i].name] = def as IgeNetFieldDef;
+		}
+		return out;
+	}
+
 	/** Writes the fields of the blip class (no mask: both ends know which they are). */
 	writeBlip (w: IgeNetBitWriter, values: Record<string, unknown>, json?: (string | undefined)[]): void {
 		for (const i of this.classFields[this.blipClass]) this.fields[i].write(w, values[this.fields[i].name], json?.[i]);
@@ -524,6 +544,14 @@ export class IgeNetSchemaSet {
 	readonly kinds: IgeNetSchema[];
 	readonly byName: Map<string, IgeNetSchema> = new Map();
 	readonly kindBits: number;
+	/**
+	 * The shapes a blip can have: kinds whose blips have the same fields share one, so a blip says
+	 * which shape it is, never which kind. A client reads an anonymous contact with one of these.
+	 */
+	readonly blipLayouts: IgeNetSchema[] = [];
+	/** Whether any kind sends blips (then a kind number past the real ones means "anonymous blip"). */
+	readonly hasBlips: boolean;
+	readonly layoutBits: number;
 	readonly hash: string;
 
 	/** Whether any kind declares relevance (the game uses stage 2 of replication). */
@@ -533,7 +561,22 @@ export class IgeNetSchemaSet {
 		for (const name of Object.keys(kinds)) if (!defs[name]) throw new Error(`Options for unknown kind "${name}"`);
 		this.kinds = Object.keys(defs).map((name) => new IgeNetSchema(name, defs[name], kinds[name]));
 		for (const kind of this.kinds) this.byName.set(kind.name, kind);
-		this.kindBits = igeNetBitsFor(this.kinds.length);
+		this.hasBlips = this.kinds.some((k) => k.blips);
+		this.kindBits = igeNetBitsFor(this.kinds.length + (this.hasBlips ? 1 : 0));
+		const layoutKeys: string[] = [];
+		for (const kind of this.kinds) {
+			if (!kind.blips) continue;
+			const defs = kind.blipDefs();
+			const key = JSON.stringify(Object.entries(defs));
+			let at = layoutKeys.indexOf(key);
+			if (at < 0) {
+				at = layoutKeys.length;
+				layoutKeys.push(key);
+				this.blipLayouts.push(new IgeNetSchema(`blip${at}`, defs));
+			}
+			kind.blipLayout = at;
+		}
+		this.layoutBits = igeNetBitsFor(this.blipLayouts.length);
 		this.hasRelevance = this.kinds.some((k) => !!k.relevance);
 		this.hash = hashText(JSON.stringify(defs) + this.kinds.map((k) => kindWireText(k.options)).join(""));
 	}
