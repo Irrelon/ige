@@ -283,6 +283,17 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		const renderTick = this.serverTick() - ((this._options.interpolationDelay ?? 100) * this.tickRate) / 1000;
 		for (const [id, obj] of this.objects) {
 			const states = obj.states;
+			if (obj.detail === "blip") {
+				// Drawn a little in the past it may have been at full detail then; a blip's fields only, so nothing stale shows as current
+				const blended = this._blendAt(obj, renderTick);
+				const only: Record<string, unknown> = {};
+				for (const i of obj.schema.classFields[obj.schema.blipClass]) {
+					const name = obj.schema.fields[i].name;
+					if (name in blended) only[name] = blended[name];
+				}
+				out[id] = only;
+				continue;
+			}
 			if (states.length === 1) {
 				out[id] = states[0].values;
 				continue;
@@ -297,6 +308,16 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			}
 		}
 		return out;
+	}
+
+	_blendAt (obj: IgeNetClientObject, renderTick: number): Record<string, unknown> {
+		const states = obj.states;
+		let i = states.length - 1;
+		while (i >= 0 && states[i].tick > renderTick) i--;
+		if (i < 0) return states[0].values;
+		if (i === states.length - 1) return states[i].values;
+		const a = states[i], b = states[i + 1];
+		return blendValues(obj.schema, a.values, b.values, Math.min(1, (renderTick - a.tick) / (b.tick - a.tick)));
 	}
 
 	/**
