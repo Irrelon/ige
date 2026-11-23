@@ -1,8 +1,9 @@
 import type { IgeEntity } from "@/engine/core/IgeEntity";
+import { IGE_NET_QUAT_BITS } from "@/engine/network/entities/igeNetQuat";
 import type { IgeNetFieldDef, IgeNetKindOptions } from "@/engine/network/replication/IgeNetSchema";
 
 /** The axes of rotation an entity kind replicates. */
-export type IgeNetEntityRotation = "xyz" | "y" | "z" | "none";
+export type IgeNetEntityRotation = "xyz" | "y" | "z" | "none" | "quaternion";
 
 export interface IgeNetEntityTransformOptions {
 	/** The smallest step of a position, in world units (default 0.01). */
@@ -16,6 +17,13 @@ export interface IgeNetEntityTransformOptions {
 }
 
 export interface IgeNetEntityOptions {
+	/**
+	 * `"quaternion"` replicates a 3D rotation as one packed quaternion (the field `q`, 38 bits, worst
+	 * error under 0.1 degree) in place of the angles: the host sends the entity's `quaternion()` (or
+	 * its Euler angles as one) and the client sets `entity.quaternion()`, blended along the shortest
+	 * path. Any other value is the same as `transform.rotation`.
+	 */
+	rotation?: IgeNetEntityRotation;
 	transform?: IgeNetEntityTransformOptions;
 	/** The ground plane for range: "xz" (default, 3D) or "xy" (2D). */
 	plane?: "xz" | "xy";
@@ -51,7 +59,7 @@ export interface IgeNetEntityClass {
 	netCreate?: (values: Record<string, unknown>) => IgeEntity;
 }
 
-const RESERVED = new Set(["x", "y", "z", "rx", "ry", "rz", "sx", "sy", "sz", "p"]);
+const RESERVED = new Set(["x", "y", "z", "rx", "ry", "rz", "q", "sx", "sy", "sz", "p"]);
 
 /**
  * Describes how an entity class is replicated: its kind name, its own fields and its options. Put it
@@ -66,7 +74,7 @@ const RESERVED = new Set(["x", "y", "z", "rx", "ry", "rz", "sx", "sy", "sz", "p"
 export function igeNetEntity (kind: string, fields: Record<string, IgeNetFieldDef> = {}, options: IgeNetEntityOptions = {}): IgeNetEntityDescription {
 	const transform = options.transform ?? {};
 	const precision = transform.precision ?? 0.01;
-	const rotation = transform.rotation ?? "xyz";
+	const rotation = options.rotation ?? transform.rotation ?? "xyz";
 	const angleBits = transform.angleBits ?? 12;
 	const scale = !!transform.scale;
 	const plane = options.plane ?? "xz";
@@ -79,6 +87,7 @@ export function igeNetEntity (kind: string, fields: Record<string, IgeNetFieldDe
 	const defs: Record<string, IgeNetFieldDef> = {};
 	for (const axis of ["x", "y", "z"]) defs[axis] = { type: "number", precision, group: "transform" };
 	if (rotation === "xyz") for (const axis of ["rx", "ry", "rz"]) defs[axis] = { type: "angle", bits: angleBits, group: "transform" };
+	else if (rotation === "quaternion") defs.q = { type: "quat", bits: IGE_NET_QUAT_BITS, group: "transform" };
 	else if (rotation !== "none") defs[`r${rotation}`] = { type: "angle", bits: angleBits, group: "transform" };
 	if (scale) for (const axis of ["sx", "sy", "sz"]) defs[axis] = { type: "number", precision, group: "transform" };
 	Object.assign(defs, declared);

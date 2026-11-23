@@ -42,6 +42,17 @@ export interface IgeNetAngleField extends IgeNetFieldCommon {
 	bits?: number;
 }
 
+/**
+ * A rotation packed as "smallest three" (entities/igeNetQuat.ts): 2 bits for the index of the largest
+ * component and `bits` (default 12) for each of the other three, in one integer. The value is that
+ * integer (it compares with ===; unpack it with igeNetQuatUnpack). It steps between states: blend it
+ * yourself along the shortest path (IgeNetEntityClient does).
+ */
+export interface IgeNetQuatField extends IgeNetFieldCommon {
+	type: "quat";
+	bits?: number;
+}
+
 /** One of a list of strings, as many bits as the list needs. */
 export interface IgeNetEnumField extends IgeNetFieldCommon {
 	type: "enum";
@@ -67,6 +78,7 @@ export type IgeNetFieldDef =
 	| IgeNetNumberField
 	| IgeNetIntField
 	| IgeNetAngleField
+	| IgeNetQuatField
 	| IgeNetEnumField
 	| IgeNetFloatField
 	| IgeNetJsonField
@@ -165,6 +177,24 @@ export class IgeNetField {
 				this._canon = (v) => (quantise(toNumber(v)) / steps) * TWO_PI;
 				this._write = (w, v) => w.writeBits(quantise(v), bits);
 				this._read = (r) => (r.readBits(bits) / steps) * TWO_PI;
+				break;
+			}
+			case "quat": {
+				const per = def.bits ?? 12;
+				if (per < 2 || per > 16) throw new Error(`Field ${name}: quat bits must be 2 to 16`);
+				const total = 2 + per * 3;
+				const top = total - 32;
+				const span = 2 ** total;
+				this._canon = (v) => Math.max(0, Math.min(span - 1, Math.round(toNumber(v))));
+				this._write = (w, v) => {
+					const hi = Math.floor(v / 4294967296);
+					if (top > 0) w.writeBits(hi, top);
+					w.writeBits(v % 4294967296, Math.min(32, total));
+				};
+				this._read = (r) => {
+					const hi = top > 0 ? r.readBits(top) : 0;
+					return hi * 4294967296 + r.readBits(Math.min(32, total));
+				};
 				break;
 			}
 			case "enum": {
