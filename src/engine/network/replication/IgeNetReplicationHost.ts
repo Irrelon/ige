@@ -56,6 +56,12 @@ export interface IgeNetReplicationHostOptions<Input> {
 	step: (dt: number, tick: number, inputs: Map<string, Input>) => void;
 	/** Game-defined information sent to each machine as it joins. */
 	info?: (machine: IgeNetReplicationMachine) => unknown;
+	/**
+	 * Lag compensation: the most a player's view may lag the present, in ms (default 250). Each input
+	 * frame carries the tick its machine was drawing at; `host.viewTick(player)` / `viewLag(player)` give
+	 * it for the input applied this step, clamped to this cap (see IgeNetHistory).
+	 */
+	maxRewind?: number;
 	/** Input frames a player may have queued before older ones are dropped (default 8). */
 	maxQueuedInputs?: number;
 	/** Clock for timing (ms), for tests. */
@@ -71,6 +77,8 @@ interface MachineState<Input> {
 	received: number;
 	applied: number;
 	current: Input[];
+	/** How far behind the present the machine's view was for the input applied, in ticks. */
+	lag: number;
 }
 
 let nextMachine = 1;
@@ -123,6 +131,7 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 	readonly replicator: IgeNetReplicator;
 	_options: IgeNetReplicationHostOptions<Input>;
 	_machines: Map<string, MachineState<Input>> = new Map();
+	_lags: Map<string, number> = new Map();
 	_accumulator = 0;
 	_sendAccumulator = 0;
 	_timer?: ReturnType<typeof setInterval>;
@@ -264,7 +273,7 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 			machine.viewer.close();
 			return;
 		}
-		const state: MachineState<Input> = { machine, connection, queue: [], received: 0, applied: 0, current: [] };
+		const state: MachineState<Input> = { machine, connection, queue: [], received: 0, applied: 0, current: [], lag: 0 };
 		this._machines.set(machine.id, state);
 		link.joined(state);
 		this._send(connection, {
@@ -282,6 +291,24 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		for (const state of this._machines.values()) {
 			if (!id || state.machine.id === id) this._send(state.connection, { t: "event", tick: this.tick, data });
 		}
+	}
+
+	/** The most a view may lag, in ticks (`maxRewind`). */
+	maxRewindTicks (): number {
+		return ((this._options.maxRewind ?? 250) * this.tickRate) / 1000;
+	}
+
+	/**
+	 * How many ticks behind the present the player's machine was drawing other objects, for the input
+	 * applied this step (fractional, 0 to the cap; 0 when unknown). Repeats while the last input repeats.
+	 */
+	viewLag (playerId: string): number {
+		return this._lags.get(playerId) ?? 0;
+	}
+
+	/** The tick the player was looking at for the input applied this step: `history.at(id, host.viewTick(player))` is what its `interpolated()` showed. */
+	viewTick (playerId: string): number {
+		return this.tick - this.viewLag(playerId);
 	}
 
 	/** Advance by real time: runs whole fixed steps, sending packets when due. */
@@ -320,14 +347,18 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		this.tick++;
 		this.replicator.tick = this.tick;
 		const inputs = new Map<string, Input>();
+		this._lags.clear();
 		for (const state of this._machines.values()) {
 			const frame = state.queue.shift();
 			if (frame) {
 				state.current = frame.inputs;
 				state.applied = frame.seq;
+				const view = (frame as { view?: number }).view;
+				state.lag = view === undefined ? 0 : Math.min(this.maxRewindTicks(), Math.max(0, this.tick - view));
 			}
 			state.machine.viewer.inputAck = state.applied;
 			state.machine.players.forEach((id, slot) => {
+				this._lags.set(id, state.lag);
 				const input = state.current[slot];
 				if (input !== undefined) inputs.set(id, input);
 			});

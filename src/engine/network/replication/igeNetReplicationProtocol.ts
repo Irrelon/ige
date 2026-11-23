@@ -314,7 +314,17 @@ export function igeNetReadSnapshotBody (
 export interface IgeNetInputFrameBinary<Input> {
 	seq: number;
 	inputs: Input[];
+	/**
+	 * The tick the machine was drawing other objects at when it made the frame (what `interpolated()`
+	 * used; fractional, sent in 1/16 ticks). None: it hadn't drawn yet, so the frame is the present.
+	 */
+	view?: number;
 }
+
+/** Input packet flag (in the spare bits after the type): each frame carries the view tick. */
+export const IGE_NET_INPUT_FLAG_VIEWS = 1;
+/** Views go on the wire in this many parts of a tick. */
+export const IGE_NET_VIEW_STEPS = 16;
 
 export interface IgeNetInputPacket<Input> {
 	/** The newest snapshot packet the machine has seen, and the 32 before it as bits. */
@@ -332,31 +342,40 @@ export function igeNetWriteInputPacket<Input extends Record<string, unknown>> (
 	frames: IgeNetInputFrameBinary<Input>[]
 ): void {
 	const newest = frames.length ? frames[frames.length - 1].seq : 0;
+	const views = frames.length > 0 && frames[frames.length - 1].view !== undefined;
 	w.writeBits(IGE_NET_PACKET_INPUT, 4);
-	w.writeBits(0, 4);
+	w.writeBits(views ? IGE_NET_INPUT_FLAG_VIEWS : 0, 4);
 	w.writeVarUint(newest);
 	w.writeVarUint(ackSeq);
 	w.writeBits(ackBits >>> 0, 32);
 	w.writeBits(frames.length, 8);
+	// Views: the newest frame's in 1/16 ticks, the others as signed deltas from it (a frame without one takes the newest's)
+	const quantise = (view: number | undefined, fallback: number) => view === undefined ? fallback : Math.max(0, Math.round(view * IGE_NET_VIEW_STEPS));
+	const newestView = views ? quantise(frames[frames.length - 1].view, 0) : 0;
+	if (views) w.writeVarUint(newestView);
 	for (const frame of frames) {
 		w.writeVarUint(newest - frame.seq);
+		if (views) w.writeVarInt(quantise(frame.view, newestView) - newestView);
 		for (const input of frame.inputs) schema.writeAll(w, input);
 	}
 }
 
 export function igeNetReadInputPacket (r: IgeNetBitReader, schema: IgeNetSchema, slots: number): IgeNetInputPacket<Record<string, unknown>> {
 	if (r.readBits(4) !== IGE_NET_PACKET_INPUT) throw new RangeError("Not an input packet");
-	r.readBits(4);
+	const flags = r.readBits(4);
 	const newest = r.readVarUint();
 	const ackSeq = r.readVarUint();
 	const ackBits = r.readBits(32);
 	const count = r.readBits(8);
+	const views = (flags & IGE_NET_INPUT_FLAG_VIEWS) !== 0;
+	const newestView = views && count > 0 ? r.readVarUint() : 0;
 	const frames: IgeNetInputFrameBinary<Record<string, unknown>>[] = [];
 	for (let i = 0; i < count; i++) {
 		const seq = newest - r.readVarUint();
+		const view = views ? (newestView + r.readVarInt()) / IGE_NET_VIEW_STEPS : undefined;
 		const inputs: Record<string, unknown>[] = [];
 		for (let slot = 0; slot < slots; slot++) inputs.push(schema.readAll(r));
-		frames.push({ seq, inputs });
+		frames.push(view === undefined ? { seq, inputs } : { seq, inputs, view });
 	}
 	return { ackSeq, ackBits, frames };
 }

@@ -237,8 +237,37 @@ What a client can and can't infer from a blip: it learns the position (the blip 
 - `replicator.report()` (`host.stats().report`): totals over every viewer (by kind, deferred, worst age, worst budget use, detail counts, grid sizes). `host.stats().machines` lists each machine's report.
 - `viewer.detailOf(obj)`, `viewer.stats.deferred / oldestPendingAge / entries` (last round).
 
+## Lag compensation (stage 4)
+
+A client draws other objects `interpolationDelay` (about 100 ms) in the past, and its input then travels to the authority. So when a player fires, the authority sees the targets 100 to 200 ms further along than the ones the player aimed at, and shots at crossing targets miss. Lag compensation tests the shot against where the targets were when the shooter fired, on the tick the shooter was looking at.
+
+How it works:
+
+- `client.interpolated()` remembers the tick it drew at. Each input frame `sendInput()` makes carries that view tick (none if `interpolated()` was never called). On the wire the packet flag (bit 0 of the four spare bits after the packet type) says "frames carry views": the newest frame's view in 1/16 ticks as a varuint, then each frame's signed delta from it. Cost: about 2 bytes for the newest, 1 byte per frame, so about 5 bytes extra at the default redundancy of 3. Packets without the flag decode as before (no view, the present). `IgeNetPacketInspector` shows each frame's `view`.
+- The host clamps it. When a machine's frame is applied at tick N, the lag is `clamp(N - view, 0, maxRewind)` in ticks (fractional). While the last input repeats the lag stays. A view in the future gives 0, one far back gives the cap, no view gives 0. `maxRewind` (ms) is a host option, default 250.
+- `host.viewTick(playerId)` is the tick that player was looking at for the input applied this step (`tick - lag`, the current tick when unknown); `host.viewLag(playerId)` is the lag in ticks. They are in the packets' tick labels, so `history.at(id, host.viewTick(player))` is exactly what that player's `interpolated()` showed.
+
+`IgeNetHistory` holds the recent positions:
+
+```typescript
+const history = new IgeNetHistory(IgeNetHistory.ticksFor(250, 30), 2); // ticks, numbers per entry (x, z)
+// in step(dt, tick, inputs), after things moved:
+for (const ship of ships) history.record(tick, ship.id, ship.x, ship.z);
+// when player p's shot is tested:
+const at = history.at(ship.id, host.viewTick(p)); // [x, z] blended between ticks, or undefined
+```
+
+`record()` stores into typed arrays without allocating once an id has been seen; `at()` blends between the recorded ticks either side (one side only: that side; neither, or outside the window: `undefined`, so a target that wasn't there for the shooter can't be hit). `forget(id)` and `clear()` drop things; an id not recorded for longer than the window is dropped by itself, so memory follows what was recorded lately. `ticksFor(ms, tickRate)` sizes the ring for the cap plus a margin.
+
+Notes:
+
+- This favours the shooter: a player with a ping over the cap (250 ms of view lag) is compensated only up to it, and a target can be hit shortly after it moved behind cover for the shooter's view. The cap limits how far behind the victim's own screen that can be, and a hacked client can't claim more than it.
+- Projectiles: take the owner's `host.viewLag(owner)` when the shot is fired and keep it. Test the projectile against targets at `tick - lag` on every step of its flight, so a bolt that crosses a target's path hits what the shooter saw it cross.
+- Record in the same step, after the move, and remember this step's positions aren't recorded until you do: for a lag under one tick blend with the current position.
+- Don't rewind things that steer themselves (missiles that home, point defence) or that don't move (rocks, mines): test them where they are now. Rewind only what a shooter can aim at by what it sees.
+
 ## Coming
 
 - **Stage 3, datagram transport:** WebTransport / WebRTC data channels with the lossy baselines, versioned json patches and slices already in place (and MTU budgeting).
-- **Stage 4, lag compensation:** server history of positions to rewind for hit checks.
+- Stage 4, lag compensation, is done: see above.
 - Entity streaming on this layer is done: see [entity-streaming.md](entity-streaming.md). The old `IgeObject` streaming (`streamMode`, `streamSections`, the net.io stream commands and the time-stream interpolation) has been removed.

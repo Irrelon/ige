@@ -119,6 +119,8 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	_lastHeard = 0;
 	_unanswered = 0;
 	_seq = 0;
+	/** The tick the latest interpolated() call drew at. */
+	_viewTick?: number;
 	_pending: IgeNetInputFrameBinary<Input>[] = [];
 	_ticks: Map<string, { seq: number; previous: Record<string, unknown>; current: Record<string, unknown> }> = new Map();
 	/** handle to object, as the packets define them. */
@@ -242,6 +244,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		const canonical: Input[] = [];
 		for (let slot = 0; slot < slots; slot++) canonical.push(this.inputSchema.canonical(inputs[slot] as Record<string, unknown>) as Input);
 		const frame: IgeNetInputFrameBinary<Input> = { seq: ++this._seq, inputs: canonical };
+		if (this._viewTick !== undefined) frame.view = this._viewTick;
 		this._pending.push(frame);
 		if (this._pending.length > 256) this._pending.shift();
 		const redundancy = Math.max(1, this._options.inputRedundancy ?? 3);
@@ -287,11 +290,14 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	 * Every object as it was interpolationDelay ms ago, blended between the states either side of
 	 * that time. The map is the caller's (put a predicted player in it); the values in it may be the
 	 * client's own, so replace them rather than changing them.
+	 * The tick it draws at is remembered and sent with each input frame (the authority's lag
+	 * compensation: `host.viewTick(player)`).
 	 */
 	interpolated (): Record<string, Record<string, unknown>> {
 		const out: Record<string, Record<string, unknown>> = {};
-		if (!this.objects.size) return out;
 		const renderTick = this.serverTick() - ((this._options.interpolationDelay ?? 100) * this.tickRate) / 1000;
+		this._viewTick = renderTick;
+		if (!this.objects.size) return out;
 		for (const [id, obj] of this.objects) {
 			const states = obj.states;
 			if (states.length === 1) {
