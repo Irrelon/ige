@@ -405,10 +405,20 @@ export class IgeWebGlPostProcess {
 	protected _passes: Record<PassName, Pass> | null = null;
 	protected _active = false;
 	protected _failed = false;
+	/**
+	 * The scene's resolution as a fraction of the canvas (1 = the canvas's own). Below 1 the frame goes offscreen at
+	 * that size (even with post-processing off) and the composite upscales it, linear, to the canvas.
+	 */
+	renderScale = 1;
 
 	constructor (device: IgeWebGl2GpuDevice, settings: Partial<IgePostProcessSettings> = {}) {
 		this._device = device;
 		this.settings = { ...IGE_POST_PROCESS_DEFAULTS, ...settings };
+	}
+
+	/** The offscreen frame's size in device pixels (the canvas's, times the render scale), 0 before the first frame. */
+	get targetSize (): { width: number; height: number } {
+		return { width: this._w, height: this._h };
 	}
 
 	/** Whether this frame is being drawn offscreen. */
@@ -421,9 +431,12 @@ export class IgeWebGlPostProcess {
 	 * offscreen target. Returns false (and draws nothing differently) when
 	 * post-processing is off or unavailable.
 	 */
-	begin (width: number, height: number): boolean {
+	begin (canvasWidth: number, canvasHeight: number): boolean {
 		this._active = false;
-		if ((!this.settings.enabled && !igePictureEffectsOn(this.settings)) || this._failed || width < 1 || height < 1) return false;
+		const scaled = this.renderScale < 1;
+		if ((!this.settings.enabled && !igePictureEffectsOn(this.settings) && !scaled) || this._failed || canvasWidth < 1 || canvasHeight < 1) return false;
+		const width = scaled ? Math.max(1, Math.round(canvasWidth * this.renderScale)) : canvasWidth;
+		const height = scaled ? Math.max(1, Math.round(canvasHeight * this.renderScale)) : canvasHeight;
 		try {
 			this._ensure(width, height);
 		} catch (error) {
