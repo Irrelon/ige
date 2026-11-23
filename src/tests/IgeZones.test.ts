@@ -1,5 +1,5 @@
-import { IgeNetSyncClient } from "@/engine/network/sync/IgeNetSyncClient";
-import { IgeNetSyncHost, type IgeNetMachine } from "@/engine/network/sync/IgeNetSyncHost";
+import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
+import { IgeNetReplicationHost, type IgeNetReplicationMachine } from "@/engine/network/replication/IgeNetReplicationHost";
 import { igeNetLoopback } from "@/engine/network/sync/IgeNetTransport";
 import { IgeChildProcessLauncher } from "@/engine/network/zones/IgeChildProcessLauncher";
 import { IgeDockerLauncher } from "@/engine/network/zones/IgeDockerLauncher";
@@ -305,16 +305,20 @@ describe("the game's own routes on the directory", () => {
 describe("joins that load from a store (async join)", () => {
 	type Input = { dx: number };
 	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+	const schemas = { ship: { x: { type: "number", precision: 1 }, hull: { type: "int" } } } as const;
+	const inputSchema = { dx: { type: "number", precision: 0.01, min: -1, max: 1 } } as const;
+	const clientOptions = { schemas, inputSchema, pingInterval: 0 } as const;
 
-	function zoneWithStore (overrides: { join?: (machine: IgeNetMachine, players: unknown[], ticket?: unknown) => Promise<string[] | string> } = {}) {
+	function zoneWithStore (overrides: { join?: (machine: IgeNetReplicationMachine, players: unknown[], ticket?: unknown) => Promise<string[] | string> } = {}) {
 		const net = igeNetLoopback();
 		const store: Record<string, { x: number; hull: number }> = { ann: { x: 7, hull: 80 } };
 		const zoneHost = new IgeZoneHost({ zone: "a", directoryUrl: "http://unused", secret: SECRET, url: "loop://a", players: () => 0 });
-		const ships: Record<string, { x: number; hull: number }> = {};
 		const left: string[][] = [];
 		const joined: string[] = [];
 		const failures: unknown[] = [];
-		const host = new IgeNetSyncHost<Input>(net.listener, {
+		const host = new IgeNetReplicationHost<Input>(net.listener, {
+			schemas,
+			inputSchema,
 			acceptTicket: async (token) => {
 				await wait(5);
 				return zoneHost.acceptTicket(token);
@@ -323,43 +327,43 @@ describe("joins that load from a store (async join)", () => {
 				const { player } = ticket as IgeZoneTicket;
 				const saved = await wait(20).then(() => store[player]);
 				if (!saved) return "No such pilot.";
-				ships[player] = { ...saved };
+				machine.viewer.subscribe("a");
+				host.replicator.create("ship", player, saved, { scope: "a" });
 				return [player];
 			}),
 			leave: (machine) => {
 				left.push(machine.players);
-				for (const id of machine.players) delete ships[id];
+				for (const id of machine.players) if (host.replicator.get(id)) host.replicator.destroy(id);
 			},
-			step: () => undefined,
-			snapshot: () => ships
+			step: () => undefined
 		});
-		host.on("join", (machine: IgeNetMachine) => {
+		host.on("join", (machine: IgeNetReplicationMachine) => {
 			joined.push(machine.id);
 		});
 		host.on("joinFailed", (error: unknown) => {
 			failures.push(error);
 		});
-		return { net, host, ships, left, joined, failures };
+		return { net, host, left, joined, failures };
 	}
 
-	it("welcomes the machine once the game has loaded its player, and its snapshots carry them", async () => {
+	it("welcomes the machine once the game has loaded its player, and its packets carry them", async () => {
 		const a = zoneWithStore();
-		const client = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		const client = new IgeNetReplicationClient<Input>(a.net.connect(), clientOptions);
 		const ticket = signTicket({ player: "ann", zone: "a" }, SECRET);
 		const welcome = await client.join([], ticket);
 		expect(welcome.players).toEqual(["ann"]);
 		expect(a.joined.length).toBe(1);
 		expect(a.host.machines()[0].players).toEqual(["ann"]);
-		for (let i = 0; i < 5 && !client.latest(); i++) {
+		for (let i = 0; i < 5 && !client.objects.has("ann"); i++) {
 			a.host.update(50);
 			await wait(5);
 		}
-		expect(client.latest()?.entities.ann).toEqual({ x: 7, hull: 80 });
+		expect(client.interpolated().ann).toEqual({ x: 7, hull: 80 });
 		// The game's refusal, decided later, still reaches the machine
-		const nobody = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		const nobody = new IgeNetReplicationClient<Input>(a.net.connect(), clientOptions);
 		await expect(nobody.join([], signTicket({ player: "zed", zone: "a" }, SECRET))).rejects.toThrow("No such pilot.");
 		// An async ticket check: a spent ticket's still refused
-		const again = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		const again = new IgeNetReplicationClient<Input>(a.net.connect(), clientOptions);
 		await expect(again.join([], ticket)).rejects.toThrow(/already been used/);
 		client.destroy();
 		nobody.destroy();
@@ -368,7 +372,7 @@ describe("joins that load from a store (async join)", () => {
 
 	it("sees a machine out through leave if it disconnects while its join is loading", async () => {
 		const a = zoneWithStore();
-		const client = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		const client = new IgeNetReplicationClient<Input>(a.net.connect(), clientOptions);
 		const joining = client.join([], signTicket({ player: "ann", zone: "a" }, SECRET));
 		joining.catch(() => undefined);
 		await wait(10);
@@ -377,7 +381,7 @@ describe("joins that load from a store (async join)", () => {
 		expect(a.joined).toEqual([]);
 		expect(a.host.machines()).toEqual([]);
 		expect(a.left).toEqual([["ann"]]);
-		expect(a.ships.ann).toBeUndefined();
+		expect(a.host.replicator.get("ann")).toBeUndefined();
 	});
 
 	it("turns a machine away (without the error's details) when the game's join throws, and says so", async () => {
@@ -387,7 +391,7 @@ describe("joins that load from a store (async join)", () => {
 				throw new Error("redis://secret-host is down");
 			}
 		});
-		const client = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		const client = new IgeNetReplicationClient<Input>(a.net.connect(), clientOptions);
 		await expect(client.join([], signTicket({ player: "ann", zone: "a" }, SECRET))).rejects.toThrow("Couldn't join.");
 		expect((a.failures[0] as Error).message).toMatch(/is down/);
 		expect(a.host.machines()).toEqual([]);
@@ -395,7 +399,7 @@ describe("joins that load from a store (async join)", () => {
 	});
 
 	it("keeps synchronous joins synchronous (welcomed as the join arrives)", () => {
-		const host = new IgeNetSyncHost(null, { join: () => ["x"], step: () => undefined, snapshot: () => ({}) });
+		const host = new IgeNetReplicationHost(null, { schemas: {}, join: () => ["x"], step: () => undefined });
 		const sent: { t: string; players?: string[] }[] = [];
 		let deliver: (message: unknown) => void = () => undefined;
 		host.connect({
@@ -466,39 +470,46 @@ describe("Docker zones", () => {
 
 describe("moving between zones", () => {
 	type Input = { dx: number };
+	const schemas = { dot: { x: { type: "number", precision: 0.01 }, who: { type: "string" }, zone: { type: "string" } } } as const;
+	const inputSchema = { dx: { type: "number", precision: 0.01, min: -1, max: 1 } } as const;
+	const clientOptions = { schemas, inputSchema, pingInterval: 0 } as const;
 
 	/** A zone: one dot per player, which arrives where its ticket says. */
 	function zone (name: string) {
 		const net = igeNetLoopback();
 		const zoneHost = new IgeZoneHost({ zone: name, directoryUrl: "http://unused", secret: SECRET, url: `loop://${name}`, players: () => 0 });
-		const dots: Record<string, { x: number; who: string; zone: string }> = {};
 		const left: string[] = [];
-		const host = new IgeNetSyncHost<Input>(net.listener, {
+		const host = new IgeNetReplicationHost<Input>(net.listener, {
+			schemas,
+			inputSchema,
 			acceptTicket: (token) => zoneHost.acceptTicket(token),
-			join: (machine: IgeNetMachine, players, ticket) => {
+			join: (machine, players, ticket) => {
 				const t = ticket as IgeZoneTicket | undefined;
 				const who = t ? t.player : (players[0] as { name: string }).name;
 				const id = `${name}:${who}`;
 				// Reconnecting while the old connection lingers: it's replaced
 				const old = host.machines().find((m) => m.players.includes(id));
 				if (old) host.disconnect(old);
-				dots[id] = { x: (t?.data as { x?: number } | undefined)?.x ?? 0, who, zone: name };
+				machine.viewer.subscribe(name);
+				host.replicator.create("dot", id, { x: (t?.data as { x?: number } | undefined)?.x ?? 0, who, zone: name }, { scope: name });
 				return [id];
 			},
 			leave: (machine) => {
 				left.push(machine.id);
-				for (const id of machine.players) delete dots[id];
+				for (const id of machine.players) if (host.replicator.get(id)) host.replicator.destroy(id);
 			},
 			step: (dt, tick, inputs) => inputs.forEach((input, id) => {
-				if (dots[id]) dots[id].x += input.dx * 100 * dt;
+				const dot = host.replicator.get(id);
+				if (dot) dot.write({ x: (dot.values.x as number) + input.dx * 100 * dt });
 			}),
-			snapshot: () => dots,
-			snapshotRate: 30
+			sendRate: 30
 		});
-		return { net, host, zoneHost, dots, left };
+		/** A dot's x here, if it's here. */
+		const x = (id: string) => host.replicator.get(id)?.values.x as number | undefined;
+		return { net, host, zoneHost, x, has: (id: string) => !!host.replicator.get(id), left };
 	}
 
-	async function run (hosts: IgeNetSyncHost<Input>[], ms: number): Promise<void> {
+	async function run (hosts: IgeNetReplicationHost<Input>[], ms: number): Promise<void> {
 		for (let t = 0; t < ms; t += 20) {
 			for (const h of hosts) h.update(20);
 			await new Promise((resolve) => setTimeout(resolve, 2));
@@ -508,7 +519,7 @@ describe("moving between zones", () => {
 	it("a client crossing from one zone to the next joins with its ticket, keeps its slot, and starts afresh from the new zone", async () => {
 		const a = zone("a"), b = zone("b");
 		const zones: Record<string, ReturnType<typeof zone>> = { "loop://a": a, "loop://b": b };
-		const client = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0, connect: (url) => zones[url].net.connect() });
+		const client = new IgeNetReplicationClient<Input>(a.net.connect(), { ...clientOptions, connect: (url) => zones[url].net.connect() });
 		const seen: string[] = [];
 		client.on("transfer", () => {
 			seen.push("transfer");
@@ -525,32 +536,31 @@ describe("moving between zones", () => {
 			client.sendInput([{ dx: 1 }]);
 			await run([a.host, b.host], 34);
 		}
-		expect(client.latest()?.entities["a:ann"]).toBeDefined();
+		expect(client.objects.has("a:ann")).toBe(true);
 		// Over the border: zone a hands Ann on (as IgeZoneHost.handoff would, without a directory)
-		const x = a.dots["a:ann"].x;
+		const x = a.x("a:ann") as number;
 		const ticket = signTicket({ player: "ann", zone: "b", data: { x } }, SECRET);
 		const arrived = await client.transfer({ url: "loop://b", ticket });
 		expect(seen).toEqual(["transfer", "transferred"]);
 		expect(arrived.players).toEqual(["b:ann"]);
 		expect(client.players).toEqual(["b:ann"]);
-		expect(client.latest()).toBeUndefined();
+		expect(client.objects.size).toBe(0);
 		await run([a.host, b.host], 100);
 		// Gone from a, here in b where the ticket put her
 		expect(a.left.length).toBe(1);
-		expect(a.dots["a:ann"]).toBeUndefined();
-		expect(b.dots["b:ann"].x).toBeCloseTo(x, 5);
-		expect(client.latest()?.entities["b:ann"]).toBeDefined();
-		expect(client.latest()?.entities["a:ann"]).toBeUndefined();
+		expect(a.has("a:ann")).toBe(false);
+		expect(b.x("b:ann")).toBeCloseTo(x, 5);
+		expect(client.objects.has("b:ann")).toBe(true);
+		expect(client.objects.has("a:ann")).toBe(false);
 		// Inputs flow to the new zone
 		for (let i = 0; i < 6; i++) {
 			client.sendInput([{ dx: 1 }]);
 			await run([a.host, b.host], 34);
 		}
-		expect(b.dots["b:ann"].x).toBeGreaterThan(x);
+		expect(b.x("b:ann") as number).toBeGreaterThan(x);
 		// The ticket's spent: nobody else gets in on it
-		const thief = new IgeNetSyncClient<Input>(b.net.connect(), { pingInterval: 0 });
+		const thief = new IgeNetReplicationClient<Input>(b.net.connect(), clientOptions);
 		await expect(thief.join([], ticket)).rejects.toThrow(/already been used/);
-		// A host that takes no tickets turns them away
 		expect(seen).not.toContain("disconnected");
 		client.destroy();
 		thief.destroy();
@@ -558,27 +568,27 @@ describe("moving between zones", () => {
 
 	it("a fresh connection to the zone you're already in (a reconnect) joins on a ticket, replacing the old one", async () => {
 		const a = zone("a");
-		const first = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		const first = new IgeNetReplicationClient<Input>(a.net.connect(), clientOptions);
 		await first.join([{ name: "ann" }]);
 		let dropped = false;
 		first.on("disconnected", () => {
 			dropped = true;
 		});
 		// Her old connection is still open (a dead network nobody's noticed yet) as she comes back
-		const again = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		const again = new IgeNetReplicationClient<Input>(a.net.connect(), clientOptions);
 		const welcome = await again.join([], signTicket({ player: "ann", zone: "a", data: { x: 42 } }, SECRET));
 		expect(welcome.players).toEqual(["a:ann"]);
-		expect(a.dots["a:ann"].x).toBe(42);
+		expect(a.x("a:ann")).toBe(42);
 		// The old one's replaced: it left once (before she joined again), and it's gone
 		await until(() => dropped);
 		expect(a.left.length).toBe(1);
 		expect(a.host.machines().length).toBe(1);
-		expect(a.dots["a:ann"].x).toBe(42);
+		expect(a.x("a:ann")).toBe(42);
 		first.destroy();
 		// Without acceptTicket, a host refuses tickets
 		const net = igeNetLoopback();
-		new IgeNetSyncHost(net.listener, { join: () => ["x"], step: () => undefined, snapshot: () => ({}) });
-		const c = new IgeNetSyncClient(net.connect(), { pingInterval: 0 });
+		new IgeNetReplicationHost(net.listener, { schemas: {}, join: () => ["x"], step: () => undefined });
+		const c = new IgeNetReplicationClient(net.connect(), { schemas: {}, pingInterval: 0 });
 		await expect(c.join([], "anything")).rejects.toThrow(/Tickets aren't taken here/);
 		again.destroy();
 		c.destroy();

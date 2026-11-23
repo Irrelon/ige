@@ -1,12 +1,12 @@
 # Zone servers
 
 A world too big for one server is split into zones: a star system, a map region, a dungeon. Each zone is its own
-process running an `IgeNetSyncHost` (see `realtime-sync.md`), started when a player needs it and stopped when it has
+process running an `IgeNetReplicationHost` (see `replication.md`), started when a player needs it and stopped when it has
 been empty a while. Players connect straight to the zone they're in. A small directory knows which zones are running
 and where; game traffic never goes through it. A player leaving one zone for another gets the next zone's address
 and a signed ticket, and their client moves over during the game's own transition (a jump, a loading screen).
 
-The pieces live in `src/engine/network/zones/` (Node only, apart from the client side in `sync/`). Nothing in them
+The pieces live in `src/engine/network/zones/` (Node only; the client side is `IgeNetReplicationClient` in `replication/`, and the transports are in `transport/`). Nothing in them
 is game-specific: the game says where a player enters, what a zone simulates and what a ticket carries.
 
 ## How it fits together
@@ -37,9 +37,9 @@ is game-specific: the game says where a player enters, what a zone simulates and
 - **Tickets** (`signTicket` / `verifyTicket`) are HMAC-SHA256 signed with the secret the directory and zones share.
   Each names a player and a zone, expires (30 seconds by default) and is good for one join. `data` is the game's
   own, opaque to the engine: where the player arrives, their velocity. Anything bigger belongs in the game's store.
-- **The client** (`IgeNetSyncClient`) joins with a ticket (`join([], ticket)`) and moves to another zone with
+- **The client** (`IgeNetReplicationClient`) joins with a ticket (`join([], ticket)`) and moves to another zone with
   `transfer({ url, ticket })`: it leaves the old zone, connects to the new one, joins with the ticket and starts
-  afresh from its snapshots. `IgeNetSyncHost` lets ticket joins in through its `acceptTicket` option, whether the
+  afresh from its packets. `IgeNetReplicationHost` lets ticket joins in through its `acceptTicket` option, whether the
   player is arriving from another zone or reconnecting to the one they were in.
 
 A player belongs to one zone at a time. Keeping it that way is the game's job: save the player as they leave, and
@@ -119,12 +119,12 @@ const directory = new IgeZoneDirectory({
 
 ### The zone script
 
-A zone is an `IgeNetSyncHost` on a WebSocket server, with an `IgeZoneHost` beside it. Everyone joins on a ticket:
+A zone is an `IgeNetReplicationHost` on a WebSocket server, with an `IgeZoneHost` beside it. Everyone joins on a ticket:
 from the directory (entering, or reconnecting) or from the zone next door.
 
 ```typescript
 import http from "node:http";
-import { IgeNetSyncHost } from "@/engine/network/sync/IgeNetSyncHost";
+import { IgeNetReplicationHost } from "@/engine/network/replication/IgeNetReplicationHost";
 import { IgeNetWebSocketServer } from "@/engine/network/sync/IgeNetWebSocketServer";
 import { IgeZoneHost } from "@/engine/network/zones/IgeZoneHost";
 import type { IgeZoneTicket } from "@/engine/network/zones/igeZoneTicket";
@@ -134,7 +134,8 @@ const world = await loadZone(zone.zone);                                     // 
 const server = http.createServer();
 const sockets = new IgeNetWebSocketServer(server);
 
-const host = new IgeNetSyncHost<PadInput>(sockets.listen("/sync"), {
+const host = new IgeNetReplicationHost<PadInput>(sockets.listen("/sync"), {
+	schemas, inputSchema,                                 // the kinds of object and the input, as the clients have them
 	acceptTicket: (token) => zone.acceptTicket(token),   // signed, unexpired, for this zone, not used before
 	join: async (machine, players, ticket) => {   // may be async: welcomed once it resolves
 		if (!ticket) return "Enter through the directory.";
@@ -144,12 +145,12 @@ const host = new IgeNetSyncHost<PadInput>(sockets.listen("/sync"), {
 		// Reconnecting while their old connection lingers: replace it (its leave runs first)
 		const old = host.machines().find((m) => m.players.includes(player));
 		if (old) host.disconnect(old);
-		world.arrive(player, saved, data);   // place them where the ticket says
+		machine.viewer.subscribe(zone.zone);   // they see this zone's objects
+		world.arrive(player, saved, data, host.replicator);   // place them where the ticket says (creating their replicated objects)
 		return [player];
 	},
 	leave: (machine) => machine.players.forEach((id) => world.depart(id)),   // save them
-	step: (dt, tick, inputs) => world.step(dt, inputs),
-	snapshot: (machine) => world.visibleTo(machine.players),
+	step: (dt, tick, inputs) => world.step(dt, inputs),   // writes the changes to host.replicator's objects
 	info: () => ({ zone: zone.zone })
 });
 
@@ -209,18 +210,18 @@ const entry = await (await fetch(`${directoryUrl}/enter`, {
 	body: JSON.stringify({ player: "Ann", session })
 })).json();                                                       // { zone, url, ticket } or { error }
 
-const client = new IgeNetSyncClient<PadInput>(await igeNetWebSocketConnect(entry.url));
+const client = new IgeNetReplicationClient<PadInput>(await igeNetWebSocketConnect(entry.url), { schemas, inputSchema });
 await client.join([], entry.ticket);
 
 client.on("event", (data) => {
 	if (data.t === "zoneTransfer") client.transfer({ url: data.url, ticket: data.ticket });
 });
 client.on("transfer", () => showJump());                         // from here...
-client.on("snapshot", () => { if (!client.transferring) hideJump(); });   // ...to the new zone's first snapshot
+client.on("snapshot", () => { if (!client.transferring) hideJump(); });   // ...to the new zone's first packet
 client.on("transferFailed", () => reconnect());                  // enter again through the directory
 ```
 
-- `transfer()` drops the old zone's snapshots, the inputs it hadn't applied, the clock and prediction, and keeps the
+- `transfer()` drops the old zone's objects, the inputs it hadn't applied, the clock and prediction, and keeps the
   machine's local players in their slots (the new zone gives their ids in its welcome).
 - Don't send inputs while `client.transferring`.
 
@@ -228,12 +229,12 @@ client.on("transferFailed", () => reconnect());                  // enter again 
 
 A player whose connection drops enters again: `POST /enter` with the same session. `resolveEntry` reads the zone
 they're in from the store, the directory starts it if it has stopped in the meantime, and the player joins on a
-fresh ticket with a new `IgeNetSyncClient`:
+fresh ticket with a new `IgeNetReplicationClient`:
 
 ```typescript
 async function reconnect () {
 	const entry = await enter();   // as above
-	client = new IgeNetSyncClient<PadInput>(await igeNetWebSocketConnect(entry.url));
+	client = new IgeNetReplicationClient<PadInput>(await igeNetWebSocketConnect(entry.url), { schemas, inputSchema });
 	listen(client);                // its handlers, as for the first one
 	await client.join([], entry.ticket);
 }
@@ -407,7 +408,7 @@ Events:
   `"lost"` (zone, `"heartbeat"` or `"exit"`), `"enter"` (player, zone), `"layer"` (a new layer's zone), `"drain"`
   (zone, into).
 - `IgeZoneHost`: `"registered"`, `"heartbeatFailed"` (error), `"handoff"` (player, zone), `"drain"` (zone).
-- `IgeNetSyncHost`: `"join"` (machine), `"leave"` (machine), `"joinFailed"` (error: the game's `join` or
+- `IgeNetReplicationHost`: `"join"` (machine), `"leave"` (machine), `"joinFailed"` (error: the game's `join` or
   `acceptTicket` threw).
-- `IgeNetSyncClient`: `"transfer"` ({ url }), `"transferred"` (welcome), `"transferFailed"` (error), as well as its
+- `IgeNetReplicationClient`: `"transfer"` ({ url }), `"transferred"` (welcome), `"transferFailed"` (error), as well as its
   usual events.

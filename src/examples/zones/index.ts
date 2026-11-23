@@ -1,13 +1,13 @@
 /**
  * The zones example's page: enters through the directory, joins its zone
  * with the ticket, and follows the zone servers' handoffs with
- * IgeNetSyncClient.transfer. ?directory=<url> points it at another directory
+ * IgeNetReplicationClient.transfer. ?directory=<url> points it at another directory
  * (default http://localhost:8810), ?name=<name> picks the player's name.
  */
-import { IgeNetSyncClient } from "@/engine/network/sync/IgeNetSyncClient";
+import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
 import type { IgeNetWelcome } from "@/engine/network/sync/igeNetSyncProtocol";
 import { igeNetWebSocketConnect } from "@/engine/network/sync/igeNetWebSocket";
-import { moveDot, ZONE_HEIGHT, ZONE_WIDTH, type ZonesDot, type ZonesInfo, type ZonesInput, type ZonesTransferEvent } from "./shared";
+import { moveDot, ZONE_HEIGHT, ZONE_WIDTH, ZONES_INPUT_SCHEMA, ZONES_SCHEMAS, type ZonesDot, type ZonesInfo, type ZonesInput, type ZonesTransferEvent } from "./shared";
 
 const params = new URLSearchParams(location.search);
 const directoryUrl = params.get("directory") ?? "http://localhost:8810";
@@ -44,7 +44,7 @@ async function main (): Promise<void> {
 	const entry = await response.json() as { zone: string; url: string; ticket: string; error?: string };
 	if (!response.ok) throw new Error(entry.error ?? `The directory said ${response.status}`);
 
-	const client = new IgeNetSyncClient<ZonesInput>(await igeNetWebSocketConnect(entry.url));
+	const client = new IgeNetReplicationClient<ZonesInput>(await igeNetWebSocketConnect(entry.url), { schemas: ZONES_SCHEMAS, inputSchema: ZONES_INPUT_SCHEMA });
 	const arrived = (welcome: IgeNetWelcome) => {
 		info = welcome.info as ZonesInfo;
 		me = welcome.players[0];

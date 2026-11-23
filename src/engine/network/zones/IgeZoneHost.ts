@@ -27,13 +27,13 @@ export interface IgeZoneHostOptions {
  * A zone server's side of zones (Node only): registers with the directory
  * once it's ready for players, sends heartbeats with its player count,
  * hands players on to other zones (`handoff`: the next zone's url and a
- * ticket in, for the client's IgeNetSyncClient.transfer) and checks the
+ * ticket in, for the client's IgeNetReplicationClient.transfer) and checks the
  * tickets players arrive with (`acceptTicket`: signed, unexpired, for this
  * zone, and not used before). Give `acceptTicket` to the zone's
- * IgeNetSyncHost so joins with a ticket are let in.
+ * IgeNetReplicationHost so joins with a ticket are let in.
  *
  *     const zone = IgeZoneHost.fromEnv({ players: () => host.machines().length });
- *     const host = new IgeNetSyncHost(listener, { acceptTicket: (token) => zone.acceptTicket(token), join: (machine, players, ticket) => ... });
+ *     const host = new IgeNetReplicationHost(listener, { schemas, acceptTicket: (token) => zone.acceptTicket(token), join: (machine, players, ticket) => ... });
  *     await zone.start();
  *     // a player leaves through the gate:
  *     const { url, ticket } = await zone.handoff(playerId, "orhaan", { x, z, vx, vz });
@@ -117,7 +117,7 @@ export class IgeZoneHost extends IgeEventingClass {
 	 * A player leaving for another zone: the directory makes sure it's up,
 	 * and the player gets its url and a ticket in carrying `data` (where
 	 * they arrive, their velocity...). Send both to the player's machine;
-	 * it calls IgeNetSyncClient.transfer with them.
+	 * it calls IgeNetReplicationClient.transfer with them.
 	 */
 	async handoff (player: string, toZone: string, data?: unknown, options: { place?: boolean; companions?: string[] } = {}): Promise<{ url: string; ticket: string; zone: string }> {
 		const answer = await this._post("/zones/ensure", { zone: toZone, ...(options.place ? { place: true, player, companions: options.companions ?? [] } : {}) }) as { url: string; zone?: string };

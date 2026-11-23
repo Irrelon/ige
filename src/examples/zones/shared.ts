@@ -23,15 +23,34 @@ export interface ZonesInput {
 	dy: number;
 }
 
-/** A dot in a zone (what snapshots carry). */
+/** A dot in a zone (what replication carries). */
 export interface ZonesDot {
-	[key: string]: number | string;
+	[key: string]: number | string | boolean;
 	x: number;
 	y: number;
 	name: string;
-	/** 1 while it's being handed on to the next zone. */
-	leaving: number;
+	/** True while it's being handed on to the next zone. */
+	leaving: boolean;
 }
+
+/** The replicated kinds, the same on the zone servers and the page. A dot may be a little past an edge just before it's handed on. */
+export const ZONES_SCHEMAS = {
+	dot: {
+		x: { type: "number", precision: 0.1 },
+		y: { type: "number", precision: 0.1 },
+		name: { type: "string" },
+		leaving: { type: "bool", blend: false }
+	}
+} as const;
+
+/** What one player's input is: a direction, each axis from -1 to 1. */
+export const ZONES_INPUT_SCHEMA = {
+	dx: { type: "number", precision: 0.01, min: -1, max: 1 },
+	dy: { type: "number", precision: 0.01, min: -1, max: 1 }
+} as const;
+
+/** The scope every dot in a zone is in (and every machine in it sees). */
+export const ZONE_SCOPE = "zone";
 
 /** What a ticket into a zone carries: where you arrive, and who you are. */
 export interface ZonesArrival {

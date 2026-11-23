@@ -1,10 +1,9 @@
-import { IgeNetSyncHost } from "@/engine/network/sync/IgeNetSyncHost";
 import { IgeNetReplicationHost } from "@/engine/network/replication/IgeNetReplicationHost";
 import type { IgeNetFieldDef } from "@/engine/network/replication/IgeNetSchema";
 import type { IgeNetConnection, IgeNetListener } from "@/engine/network/sync/IgeNetTransport";
 
 /**
- * Old host against new host on the same synthetic world (Starflight-shaped): one scope with 140 static
+ * The replication host on a synthetic world (Starflight-shaped): one scope with 140 static
  * rocks, 5 stations with a 40-row market table that changes now and then, and N ships (position,
  * velocity, heading and a few flags, written every tick), seen by N connections, 30 sends a second.
  *
@@ -29,7 +28,6 @@ function sink () {
 			if (m instanceof Uint8Array) state.bytes += m.length;
 			else {
 				state.bytes += JSON.stringify(m).length;
-				if ((m as { t: string }).t === "snap") state.tick = (m as { tick: number }).tick;
 			}
 		},
 		onMessage: (fn) => { listener = fn; },
@@ -63,37 +61,6 @@ const newDefs: Record<string, Record<string, IgeNetFieldDef>> = {
 		heading: { type: "angle", bits: 9 }, thrust: { type: "bool" }, boost: { type: "bool" }, firing: { type: "bool" }, shield: { type: "int", min: 0, max: 127 }, name: { type: "string" }
 	}
 };
-
-function benchOld (n: number) {
-	const world: Record<string, Record<string, unknown>> = {};
-	for (let i = 0; i < 140; i++) world[`rock${i}`] = rockState(i);
-	for (let s = 0; s < 5; s++) world[`station${s}`] = { kind: "station", x: s * 300, y: s * 200, name: `Station ${s}`, market: marketRows(s, 0) };
-	const net = listener();
-	const sinks: ReturnType<typeof sink>[] = [];
-	const ids: string[] = [];
-	const host = new IgeNetSyncHost<unknown>(net.listener, {
-		tickRate: TICK,
-		snapshotRate: TICK,
-		join: (machine) => {
-			const id = `ship${ids.length}`;
-			ids.push(id);
-			world[id] = { kind: "ship", ...shipAt(ids.length - 1, 0) };
-			return [id];
-		},
-		step: (dt, tick) => {
-			ids.forEach((id, i) => Object.assign(world[id], shipAt(i, tick)));
-			if (tick % 60 === 0) world[`station${(tick / 60) % 5}`].market = marketRows((tick / 60) % 5, tick);
-		},
-		snapshot: () => world as any
-	});
-	for (let i = 0; i < n; i++) {
-		const s = sink();
-		sinks.push(s);
-		net.accept(s.connection);
-		s.deliver({ t: "join", ref: 1, players: [{}] });
-	}
-	return { host, sinks, ack: () => sinks.forEach((s) => s.deliver({ t: "input", frames: [], snap: s.state.tick })) };
-}
 
 function benchNew (n: number) {
 	const net = listener();
@@ -153,24 +120,20 @@ function measure (host: { update: (ms: number) => void }, sinks: ReturnType<type
 	return { cpuMsPerSecond: ms / seconds, bytesPerConnectionPerSecond: bytes / sinks.length / seconds, worstBytesPerSecond: worst };
 }
 
-run("old sync host against the replication host", () => {
+run("the replication host", () => {
 	it("prints the table", () => {
 		const rows: string[] = [];
-		rows.push("| N | old CPU ms/s | new CPU ms/s | CPU ratio | old bytes/conn/s | new bytes/conn/s | bytes ratio |");
-		rows.push("|---|---|---|---|---|---|---|");
+		rows.push("| N | CPU ms/s | bytes/conn/s |");
+		rows.push("|---|---|---|");
 		for (const n of SIZES) {
-			const old = benchOld(n);
-			const a = measure(old.host, old.sinks, old.ack);
-			old.host.destroy();
 			const fresh = benchNew(n);
 			const b = measure(fresh.host, fresh.sinks);
 			fresh.host.destroy();
-			rows.push(`| ${n} | ${a.cpuMsPerSecond.toFixed(1)} | ${b.cpuMsPerSecond.toFixed(1)} | ${(a.cpuMsPerSecond / b.cpuMsPerSecond).toFixed(1)}x | ${Math.round(a.bytesPerConnectionPerSecond)} | ${Math.round(b.bytesPerConnectionPerSecond)} | ${(a.bytesPerConnectionPerSecond / b.bytesPerConnectionPerSecond).toFixed(1)}x |`);
+			rows.push(`| ${n} | ${b.cpuMsPerSecond.toFixed(1)} | ${Math.round(b.bytesPerConnectionPerSecond)} |`);
 		}
 		console.log(`\n${rows.join("\n")}\n`);
 	}, 600000);
 });
-
 
 /**
  * Stage 2: a crowd of N ships spread over 20 km by 20 km (the pilot's near range is 2.2 km), every ship moving every tick,

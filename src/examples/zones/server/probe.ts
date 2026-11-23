@@ -5,10 +5,10 @@
  *
  *     node --experimental-transform-types --import ./src/examples/zones/server/register.mjs src/examples/zones/server/probe.ts [directory url]
  */
-import { IgeNetSyncClient } from "@/engine/network/sync/IgeNetSyncClient";
+import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
 import type { IgeNetWelcome } from "@/engine/network/sync/igeNetSyncProtocol";
 import { igeNetWebSocketConnect } from "@/engine/network/sync/igeNetWebSocket";
-import type { ZonesInfo, ZonesInput, ZonesTransferEvent } from "../shared";
+import { ZONES_INPUT_SCHEMA, ZONES_SCHEMAS, type ZonesInfo, type ZonesInput, type ZonesTransferEvent } from "../shared";
 
 const directoryUrl = process.argv[2] ?? "http://127.0.0.1:8810";
 const name = `probe-${process.pid}`;
@@ -19,7 +19,7 @@ async function main (): Promise<void> {
 	if (!response.ok) throw new Error(entry.error ?? `The directory said ${response.status}`);
 	console.log(`${name} enters at ${entry.zone} (${entry.url})`);
 
-	const client = new IgeNetSyncClient<ZonesInput>(await igeNetWebSocketConnect(entry.url));
+	const client = new IgeNetReplicationClient<ZonesInput>(await igeNetWebSocketConnect(entry.url), { schemas: ZONES_SCHEMAS, inputSchema: ZONES_INPUT_SCHEMA });
 	const visited = [entry.zone];
 	let dx = 1;
 

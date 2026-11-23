@@ -1,19 +1,22 @@
 /**
  * One zone server of the zones example (the directory starts these; see
- * directory.ts). It's an IgeNetSyncHost on a WebSocket, with an IgeZoneHost
+ * directory.ts). It's an IgeNetReplicationHost on a WebSocket, with an IgeZoneHost
  * for its side of zones: registering, heartbeats, checking the tickets
  * players arrive with, and handing players on when they fly off an edge.
  */
 import http from "node:http";
-import { IgeNetSyncHost } from "@/engine/network/sync/IgeNetSyncHost";
+import { IgeNetReplicationHost } from "@/engine/network/replication/IgeNetReplicationHost";
 import { IgeNetWebSocketServer } from "@/engine/network/sync/IgeNetWebSocketServer";
 import { IgeZoneHost } from "@/engine/network/zones/IgeZoneHost";
 import type { IgeZoneTicket } from "@/engine/network/zones/igeZoneTicket";
 import {
 	moveDot,
 	NEIGHBOURS,
+	ZONE_SCOPE,
 	ZONE_HEIGHT,
 	ZONE_WIDTH,
+	ZONES_INPUT_SCHEMA,
+	ZONES_SCHEMAS,
 	type ZonesArrival,
 	type ZonesDot,
 	type ZonesInfo,
@@ -21,13 +24,14 @@ import {
 	type ZonesTransferEvent
 } from "../shared";
 
-const zone = IgeZoneHost.fromEnv({ players: () => Object.keys(dots).length });
+const zone = IgeZoneHost.fromEnv({ players: () => host.replicator.size });
 const neighbours = NEIGHBOURS[zone.zone] ?? {};
-const dots: Record<string, ZonesDot> = {};
 
 const server = http.createServer();
 const sockets = new IgeNetWebSocketServer(server);
-const host = new IgeNetSyncHost<ZonesInput>(sockets.listen("/sync"), {
+const host = new IgeNetReplicationHost<ZonesInput>(sockets.listen("/sync"), {
+	schemas: ZONES_SCHEMAS,
+	inputSchema: ZONES_INPUT_SCHEMA,
 	acceptTicket: (token) => zone.acceptTicket(token),
 	// Everyone comes in on a ticket: from the directory (entering the game,
 	// or reconnecting) or from the zone next door
@@ -38,44 +42,43 @@ const host = new IgeNetSyncHost<ZonesInput>(sockets.listen("/sync"), {
 		// Reconnecting while their old connection lingers: it's replaced
 		const old = host.machines().find((m) => m.players.includes(player));
 		if (old) host.disconnect(old);
-		dots[player] = {
+		machine.viewer.subscribe(ZONE_SCOPE);
+		const dot = host.replicator.create("dot", player, {
 			x: Math.max(0, Math.min(ZONE_WIDTH, arrival.x ?? ZONE_WIDTH / 2)),
 			y: Math.max(0, Math.min(ZONE_HEIGHT, arrival.y ?? ZONE_HEIGHT / 2)),
 			name: arrival.name ?? player,
-			leaving: 0
-		};
-		console.log(`${player} arrived at x ${Math.round(dots[player].x)}`);
+			leaving: false
+		}, { scope: ZONE_SCOPE });
+		console.log(`${player} arrived at x ${Math.round(dot.values.x as number)}`);
 		return [player];
 	},
 	leave: (machine) => {
 		for (const id of machine.players) {
-			delete dots[id];
+			if (host.replicator.get(id)) host.replicator.destroy(id);
 			console.log(`${id} left`);
 		}
 	},
 	step: (dt, tick, inputs) => {
 		inputs.forEach((input, id) => {
-			const dot = dots[id];
-			if (!dot || dot.leaving) return;
-			const moved = moveDot(dot, input, dt);
+			const obj = host.replicator.get(id);
+			if (!obj || obj.values.leaving) return;
+			const moved = moveDot(obj.values as ZonesDot, input, dt);
 			const next = moved.x > ZONE_WIDTH ? neighbours.east : moved.x < 0 ? neighbours.west : undefined;
 			if (next) {
 				handOn(id, moved, next);
 				return;
 			}
 			// No zone that way: the edge of the map
-			moved.x = Math.max(0, Math.min(ZONE_WIDTH, moved.x));
-			dots[id] = moved;
+			obj.write({ x: Math.max(0, Math.min(ZONE_WIDTH, moved.x)), y: moved.y });
 		});
 	},
-	snapshot: () => dots,
 	info: (): ZonesInfo => ({ zone: zone.zone, width: ZONE_WIDTH, height: ZONE_HEIGHT, ...neighbours })
 });
 
 /** A dot flew off an edge: the next zone (started if need be) and a ticket in go to its machine. */
 function handOn (id: string, dot: ZonesDot, next: string): void {
 	const east = dot.x > ZONE_WIDTH;
-	dots[id] = { ...dot, x: east ? ZONE_WIDTH : 0, leaving: 1 };
+	host.replicator.get(id)?.write({ x: east ? ZONE_WIDTH : 0, y: dot.y, leaving: true });
 	const arrival: ZonesArrival = { x: east ? dot.x - ZONE_WIDTH : ZONE_WIDTH + dot.x, y: dot.y, name: dot.name };
 	console.log(`handing ${id} on to ${next}`);
 	zone.handoff(id, next, arrival).then(({ url, ticket }) => {
@@ -86,8 +89,7 @@ function handOn (id: string, dot: ZonesDot, next: string): void {
 	}).catch((error: Error) => {
 		// The next zone wouldn't start: back off the edge and carry on here
 		console.log(`couldn't hand ${id} on to ${next}: ${error.message}`);
-		const here = dots[id];
-		if (here) dots[id] = { ...here, x: east ? ZONE_WIDTH - 20 : 20, leaving: 0 };
+		host.replicator.get(id)?.write({ x: east ? ZONE_WIDTH - 20 : 20, leaving: false });
 	});
 }
 
