@@ -71,7 +71,7 @@ The schema set and the input schema must be the same on both ends (a hash is che
 | `enum` | `values: string[]`; as many bits as the list needs |
 | `string` | UTF-8, length-prefixed |
 | `float` | 32-bit float |
-| `json` | any JSON value; compared as text only when written (or `obj.touch(field)` after changing it in place), sent whole when it changes |
+| `json` | any JSON value; compared as text only when written (or `obj.touch(field)` after changing it in place); a change goes as a patch of what changed inside it (see [Json fields as patches](#json-fields-as-patches)) |
 
 Any field may be `optional: true` (a presence bit; `undefined` is a value), `group: "name"` (labels fields for blips, per-group rates and priorities), `blend: false` (steps instead of blending) or, on a `number`, `blend: "angle"` (a heading kept to a precision and not wrapped, blended the short way round). A kind may have any number of fields: the changed-field mask is a 32-bit number up to 32 fields and an array of words beyond. Values read back from `obj.values` are the quantised ones the clients get, so the server and the clients agree exactly. A precision of 1/n (0.1, 0.001) is kept as whole steps over n, so values come out clean (0.3, not 0.30000000000000004).
 
@@ -197,13 +197,32 @@ Each send round, every object with something to send to a viewer is a candidate.
 
     weight = kind priority x group priority x distance falloff x focus boost x owner boost x create boost
 
-(distance falloff `1/(1+(d/range)^2)` for spatial objects, so a blip is far below an object in range; focus 8, owner-only 10, create 4, all configurable in `relevance.weights`), then entries go out highest accumulated priority first until the budget is used; sent entries reset to zero and unsent ones keep accumulating, so nothing starves. A change that isn't sent stays pending (the viewer's baseline for the object doesn't move); when it goes it carries the latest values. Destroys always go first. At least one entry goes every round, and up to `carry` rounds (default 2) of unused budget are kept, so a big create can go out; an entry bigger than a round's budget goes whole and the debt is paid back over the next rounds. On a lossy transport the same unacknowledged change isn't resent within `resendAfter` rounds (default: a sixth of a second, when a budget is set).
+(distance falloff `1/(1+(d/range)^2)` for spatial objects, so a blip is far below an object in range; focus 8, owner-only 10, create 4, all configurable in `relevance.weights`), then entries go out highest accumulated priority first until the budget is used; sent entries reset to zero and unsent ones keep accumulating, so nothing starves. A change that isn't sent stays pending (the viewer's baseline for the object doesn't move); when it goes it carries the latest values. Destroys always go first. At least one entry goes every round, and up to `carry` rounds (default 2) of unused budget are kept; an entry bigger than `sliceBytes` goes in slices (below). On a lossy transport the same unacknowledged change isn't resent within `resendAfter` rounds (default: a sixth of a second, when a budget is set).
 
 **What the machine predicts** (`viewer.control(obj)`: its own player's ship or character) is never held back: its changes go every round they happen, first, whatever the budget or the kind's rates, and it's always in full detail. Prediction replays the inputs the authority hasn't applied on top of the newest state, and each packet acknowledges inputs; a state held back while the inputs before it are acknowledged would pull the player back. It counts against the budget like anything else, so keep it to the few objects that need it.
 
 **Held-back changes blend.** A client holds an object that wasn't in a packet still (it didn't change), so blending towards its next state starts from the round before the change, not from the last change long ago. When a change waits (the budget, a rate), the update carries how many ticks back the viewer's copy was last current (a bit per update, and a byte or so when it waited), and the client blends from there across the wait: an object moving steadily stays on its line instead of standing still and then jumping. Waits shorter than the interpolation delay are invisible.
 
-`maxPacketBytes` (viewer or `relevance`; default 0, any size) splits a round into packets no bigger than it, each decodable alone and acknowledged on its own (so each can be one datagram). A single entry bigger than the limit (a large json field) goes in a packet by itself; stage 3 will fragment those. The client applies packets in any order: each field keeps the number of the newest packet that set it, so a late packet never puts back older data.
+**Big entries go in slices.** With a budget, an entry bigger than `sliceBytes` (default 512 bytes: a big record's create, a large change) isn't sent at once: its bytes go in slices over the next rounds, and the client applies it when the last one is in (as an entry of the packet that completed it). Meanwhile the classes (field groups) it carries wait: no newer change of them goes until it's delivered, and then what changed meanwhile goes as usual (json fields as patches against what it carried). The object's other classes go on. An update with several classes is split: only the classes too big on their own wait, the rest goes now. So put a record's fast-changing numbers in a group of their own and give the kind `separateGroups: true` (groups are sent and acknowledged on their own; a group with a rate or priority always is):
+
+```ts
+const kinds = { pilot: { separateGroups: true } };
+const defs = { pilot: { fuel: { type: "number", precision: 0.1, group: "hot" }, shield: { type: "number", precision: 0.1, group: "hot" }, codex: { type: "json" } } };
+```
+
+Slices take only budget nothing else wants (`sliceShare`, default 0: a share from 0 to 1 is kept for them each round while any wait), except the viewer's own objects (`owner`): a slice of each of those goes first every round. What the machine predicts is never sliced. On a lossy transport each slice is acknowledged with its packet and sent again if lost (or unacknowledged for `resendAfter` rounds); a late slice of a transfer the machine has finished, or of an object gone from its handle, is ignored. `viewer.report().transfers` / `transferBytes` say what's under way; `replicator.stats.transfers` / `slices` count them.
+
+`maxPacketBytes` (viewer or `relevance`; default 0, any size) splits a round into packets no bigger than it, each decodable alone and acknowledged on its own (so each can be one datagram). With a budget, entries over `sliceBytes` are sliced (keep it under the packet size); without one, an entry bigger than the limit goes in a packet by itself. The client applies packets in any order: each field keeps the number of the newest packet that set it, so a late packet never puts back older data.
+
+### Json fields as patches
+
+A json field (a market table, a crew record) changes by a little at a time, so a change goes as a patch: the keys of an object that changed, were added or removed, and the items of an array that changed (by position), nested as deep as the change, against the version of the field the viewer is known to have. A 3 KB crew record whose clock ticks costs a few bytes. If the patch wouldn't be smaller than the value (or that version is too old), the field goes whole. The machine's copy is exactly the authority's, key order included (an object whose keys moved goes whole), so its JSON text matches.
+
+The authority numbers each json field's versions and keeps the last 16 (`IGE_NET_JSON_VERSIONS`); a patch names the version it's against, and the client keeps its last 16 too, so patches apply on a lossy transport, late or out of order. Patches are worked out once per round per base version and shared by every viewer with the same one (normally all of them). Arrays are compared position by position: an item put at the front changes every position after it, and then the array goes whole. Input fields are always whole.
+
+Treat the values a client gives you as read-only: a patched value shares the parts it didn't change with the version before.
+
+`IgeNetPacketInspector` shows a patched field as `{ ver, from, patch }`; the patch format is in `igeNetJsonDelta.ts`.
 
 ### What the client sees
 
@@ -213,12 +232,13 @@ What a client can and can't infer from a blip: it learns the position (the blip 
 
 ### Stats
 
-- `viewer.report()`: bytes per second, `bandwidth`, `budgetUse`, `deferred` (entries held back last round), `oldestPendingAge` (seconds the oldest unsent change has waited: starvation), `detail` counts (full / blip; a `blip: false` object out of range isn't seen at all), bytes by kind.
+- `viewer.report()`: bytes per second, `bandwidth`, `budgetUse`, `deferred` (entries held back last round), `oldestPendingAge` (seconds the oldest unsent change has waited: starvation), `detail` counts (full / blip; a `blip: false` object out of range isn't seen at all), bytes by kind, `transfers` and `transferBytes` (entries going in slices).
+- `replicator.stats`: `jsonPatches` / `jsonWhole` (json fields sent as patches and whole), `transfers` / `slices`.
 - `replicator.report()` (`host.stats().report`): totals over every viewer (by kind, deferred, worst age, worst budget use, detail counts, grid sizes). `host.stats().machines` lists each machine's report.
 - `viewer.detailOf(obj)`, `viewer.stats.deferred / oldestPendingAge / entries` (last round).
 
 ## Coming
 
-- **Stage 3, datagram transport:** WebTransport / WebRTC data channels with the lossy baselines already in place (and fragmentation / MTU budgeting).
+- **Stage 3, datagram transport:** WebTransport / WebRTC data channels with the lossy baselines, versioned json patches and slices already in place (and MTU budgeting).
 - **Stage 4, lag compensation:** server history of positions to rewind for hit checks.
 - Later: the author's `IgeObject` streaming rebuilt on this, and Starflight and the zombie game ported.

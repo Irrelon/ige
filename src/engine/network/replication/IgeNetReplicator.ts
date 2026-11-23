@@ -1,6 +1,7 @@
 import { IgeNetBitWriter, igeNetBitsFor } from "@/engine/network/replication/IgeNetBits";
 import { IgeNetGrid } from "@/engine/network/replication/IgeNetGrid";
-import { igeNetMaskEmpty, igeNetMaskKey, type IgeNetMask, type IgeNetSchema, type IgeNetSchemaSet } from "@/engine/network/replication/IgeNetSchema";
+import { igeNetMaskEmpty, igeNetMaskKey, type IgeNetJsonWriter, type IgeNetMask, type IgeNetSchema, type IgeNetSchemaSet } from "@/engine/network/replication/IgeNetSchema";
+import { IGE_NET_JSON_VERSIONS, igeNetJsonDiff, igeNetWriteJsonPatch, igeNetWriteJsonWhole } from "@/engine/network/replication/igeNetJsonDelta";
 import { IGE_NET_PACKET_SNAPSHOT } from "@/engine/network/replication/igeNetReplicationProtocol";
 
 /** Where an object is seen and by whom. */
@@ -11,6 +12,62 @@ export interface IgeNetObjectOptions {
 	owner?: IgeNetViewer;
 	/** Not seen through its scope: only by viewers it's revealed to (a hidden station a pilot has charted). */
 	hidden?: boolean;
+}
+
+/** One version of a json field on the authority: the epoch it was written in, its number and JSON text (parsed when a patch needs it). */
+interface JsonVersion {
+	epoch: number;
+	ver: number;
+	text: string | undefined;
+	parsed?: unknown;
+	has: boolean;
+}
+
+const NO_VERSIONS: (JsonVersion[] | undefined)[] = [];
+
+/** The smallest slice worth its header (bytes), unless it finishes its entry. */
+const MIN_SLICE = 32;
+
+/** A piece of a transfer as sent; a lossy transport keeps it until it's acknowledged. */
+interface Piece {
+	off: number;
+	len: number;
+	round: number;
+	acked: boolean;
+	lost: boolean;
+}
+
+/**
+ * An entry too big to send at once (a join's create, a big change), going to one viewer in slices
+ * over the next rounds. The classes it carries wait for it (no newer change of them goes until it's
+ * delivered); the object's other classes go on as usual.
+ */
+interface Transfer {
+	state: IgeNetViewState;
+	/** Rising per viewer, so the machine can tell a late piece of an older transfer. */
+	id: number;
+	create: boolean;
+	classes: number;
+	/** The epoch of the state it carries. */
+	epoch: number;
+	gen: number;
+	bytes: Uint8Array;
+	/** The next byte not yet sent. */
+	next: number;
+	/** Lossy: the pieces sent, and how many bytes of them are acknowledged. */
+	pieces?: Piece[];
+	ackedBytes: number;
+	/** One of the viewer's own objects (owner): a slice of it goes first each round. */
+	own: boolean;
+	done: boolean;
+}
+
+/** A slice of a transfer in this round's packets. */
+interface Slice {
+	xfer: Transfer;
+	off: number;
+	len: number;
+	piece?: Piece;
 }
 
 /** Bytes of an encoded create or update, in the round's arena (shared by every viewer that needs them). */
@@ -53,6 +110,8 @@ export interface IgeNetViewState {
 	 * wait instead of holding the object still and then jumping it.
 	 */
 	heldTick: number;
+	/** Its entry going out in slices, if one is. */
+	xfer?: Transfer;
 	/** Per class: the epoch and round of the last send (only kept where rates or resend gaps need them). */
 	se?: number[];
 	sr?: number[];
@@ -85,6 +144,10 @@ export class IgeNetObject {
 	_lastChange: number;
 	_dirty = false;
 	_json: (string | undefined)[];
+	/** Per json field, its last few versions (oldest first): a change goes as a patch against the one a viewer has. */
+	_jh: (JsonVersion[] | undefined)[];
+	/** This round's patches, by field and base version (null: whole is smaller). */
+	_jd?: Map<string, { bytes: Uint8Array; bits: number } | null>;
 	_rep: IgeNetReplicator;
 	/** Viewers that see it. */
 	_seenBy: Map<IgeNetViewer, IgeNetViewState> = new Map();
@@ -115,6 +178,7 @@ export class IgeNetObject {
 		this.hidden = !!options.hidden;
 		this.values = schema.canonical(fields);
 		this._json = schema.fields.map((f) => (f.type === "json" && this.values[f.name] !== undefined ? JSON.stringify(this.values[f.name]) ?? "null" : undefined));
+		this._jh = schema.jsonIdx.length ? schema.fields.map((f, i) => (f.type === "json" ? [{ epoch: rep._epoch, ver: 1, text: this._json[i], has: false }] : undefined)) : NO_VERSIONS;
 		this._changed = new Float64Array(schema.fields.length).fill(rep._epoch);
 		if (schema.classCount > 1) this._classLast = new Float64Array(schema.classCount).fill(rep._epoch);
 		this._lastChange = rep._epoch;
@@ -149,6 +213,7 @@ export class IgeNetObject {
 				if (text === this._json[field.index]) continue;
 				this._json[field.index] = text;
 				this.values[name] = raw;
+				this._jsonChanged(field.index);
 			} else {
 				const value = field.canonical(raw);
 				if (value === this.values[name]) continue;
@@ -178,6 +243,7 @@ export class IgeNetObject {
 		if (text === this._json[field.index]) return false;
 		this._json[field.index] = text;
 		this.values[name] = value;
+		this._jsonChanged(field.index);
 		this._stamp(field.index);
 		return true;
 	}
@@ -190,8 +256,25 @@ export class IgeNetObject {
 		const text = value === undefined ? undefined : JSON.stringify(value) ?? "null";
 		if (text === this._json[field.index]) return false;
 		this._json[field.index] = text;
+		this._jsonChanged(field.index);
 		this._stamp(field.index);
 		return true;
+	}
+
+	/** A json field has new text: a new version (or, written again in the same round, the same version changed). */
+	_jsonChanged (index: number): void {
+		const hist = this._jh[index]!;
+		const last = hist[hist.length - 1];
+		const epoch = this._rep._epoch;
+		const text = this._json[index];
+		if (last.epoch === epoch) {
+			last.text = text;
+			last.parsed = undefined;
+			last.has = false;
+			return;
+		}
+		hist.push({ epoch, ver: last.ver + 1, text, has: false });
+		if (hist.length > IGE_NET_JSON_VERSIONS) hist.shift();
 	}
 
 	_stamp (index: number): void {
@@ -240,6 +323,7 @@ interface SentPacket {
 	epoch: number;
 	entries: SentEntry[];
 	destroys: number[];
+	slices?: Slice[];
 }
 
 /** One thing to put in this round's packets for a viewer. */
@@ -302,12 +386,30 @@ export interface IgeNetViewerReport {
 	/** Objects seen at each detail level (kinds without levels count as full). */
 	detail: { full: number; blip: number };
 	byKind: Record<string, number>;
+	/** Entries going out in slices, and their bytes still to go. */
+	transfers: number;
+	transferBytes: number;
 }
 
 /** The bytes a varuint takes. */
 /** The bits a candidate takes in a packet: its handle, an update's wait marker, its payload. */
 function entryBits (cand: Candidate, handleBits: number): number {
 	return cand.payload.bits + handleBits + (cand.create ? 0 : cand.still ? 1 + 8 * varBytes(cand.still) : 1);
+}
+
+/** A json version's value, parsed from its text the first time it's needed (the authority's own copy: never the game's live object). */
+function parsedOf (v: JsonVersion): unknown {
+	if (!v.has) {
+		v.parsed = v.text === undefined ? undefined : JSON.parse(v.text);
+		v.has = true;
+	}
+	return v.parsed;
+}
+
+/** The bits a slice takes in a packet. */
+function sliceCost (slice: Slice, handleBits: number): number {
+	const x = slice.xfer;
+	return handleBits + 1 + 8 * (varBytes(x.id) + varBytes(x.bytes.length) + varBytes(slice.off) + varBytes(slice.len) + slice.len);
 }
 
 function varBytes (n: number): number {
@@ -377,6 +479,11 @@ export class IgeNetViewer {
 	_slots: { period: number; sets: Set<IgeNetViewState>[] }[] = [];
 	_spatialCount = 0;
 	_allow = -1;
+	/** Entries going out in slices, oldest first. */
+	_xfers: Transfer[] = [];
+	_xferId = 0;
+	/** This round's slices. */
+	_slices: Slice[] = [];
 	_cands: Candidate[] = [];
 	_pool: Candidate[] = [];
 	_near: IgeNetObject[] = [];
@@ -560,7 +667,11 @@ export class IgeNetViewer {
 			else blip++;
 		}
 		const bandwidth = this._bandwidth();
+		let transferBytes = 0;
+		for (const x of this._xfers) if (!x.done) transferBytes += x.bytes.length - (x.pieces ? x.ackedBytes : x.next);
 		return {
+			transfers: this._xfers.filter((x) => !x.done).length,
+			transferBytes,
 			bytesPerSecond: this.bytesPerSecond,
 			bandwidth,
 			budgetUse: Number.isFinite(bandwidth) ? this.bytesPerSecond / bandwidth : 0,
@@ -591,6 +702,7 @@ export class IgeNetViewer {
 		this._interests.length = 0;
 		this._focus.clear();
 		this._controlled.clear();
+		this._xfers.length = 0;
 		for (const scope of this.scopes) this._rep._scope(scope).viewers.delete(this);
 		this.scopes.clear();
 		this._rep._viewers.delete(this);
@@ -745,9 +857,20 @@ export class IgeNetViewer {
 				for (const handle of packet.destroys) {
 					if (this._destroys.delete(handle)) this._free.push(handle);
 				}
+				if (packet.slices) {
+					for (const slice of packet.slices) {
+						const piece = slice.piece!;
+						if (piece.acked) continue;
+						piece.acked = true;
+						const xfer = slice.xfer;
+						xfer.ackedBytes += piece.len;
+						if (!xfer.done && xfer.ackedBytes >= xfer.bytes.length) this._xferDone(xfer);
+					}
+				}
 				this._packets.delete(packetSeq);
 			} else if (distance > 32) {
-				// Too old to be acknowledged now: lost. Its objects stay unacknowledged, so they're sent again.
+				// Too old to be acknowledged now: lost. Its objects stay unacknowledged, so they're sent again (and its slices).
+				this._lost(packet);
 				this._packets.delete(packetSeq);
 			}
 		}
@@ -895,7 +1018,12 @@ export class IgeNetViewer {
 		// What the machine predicts isn't held back by rates (or the budget, in _build)
 		const ctl = this._controlled.size > 0 && this._controlled.has(obj);
 		let cand: Candidate;
+		// An entry of it going in slices holds up the classes it carries (one left from before a change of detail is over)
+		let xfer = state.xfer;
+		if (xfer && (xfer.done || xfer.gen !== state.gen)) xfer = state.xfer = undefined;
+		const busy = xfer ? xfer.classes : 0;
 		if (!state.known) {
+			if (xfer) return KEEP;
 			if (rep._resend && state.sentEver && round - state.createRound < rep._resend) return KEEP;
 			const level = state.full;
 			cand = this._take(state);
@@ -923,7 +1051,7 @@ export class IgeNetViewer {
 			if (changed > state.acked[bc]) {
 				pending = true;
 				const rate = schema.options.blipRate ?? rep.blipRate;
-				if (objectGated) gated = true;
+				if (objectGated || (busy >>> bc) & 1) gated = true;
 				else if (rate && round - state.sr![bc] < rep.sendRate / rate - 1e-9) gated = true;
 				else if (rep._resend && changed <= state.se![bc] && round - state.sr![bc] < rep._resend) gated = true;
 				else {
@@ -936,7 +1064,7 @@ export class IgeNetViewer {
 				const m = rep._maskFor(obj, state.acked[0]);
 				if (!igeNetMaskEmpty(m)) {
 					pending = true;
-					if (objectGated) gated = true;
+					if (objectGated || busy) gated = true;
 					else if (rep._resend && obj._lastChange <= state.se![0] && round - state.sr![0] < rep._resend) gated = true;
 					else if (!ctl && schema.classRate[0] && round - state.sr![0] < rep.sendRate / schema.classRate[0] - 1e-9) gated = true;
 					else {
@@ -950,7 +1078,7 @@ export class IgeNetViewer {
 			for (let c = 0; c < schema.classCount; c++) {
 				if (cl[c] <= state.acked[c]) continue;
 				pending = true;
-				if (objectGated) {
+				if (objectGated || (busy >>> c) & 1) {
 					gated = true;
 					continue;
 				}
@@ -983,7 +1111,7 @@ export class IgeNetViewer {
 		cand.create = false;
 		cand.level = full;
 		cand.classes = classes;
-		cand.payload = blipUpdate ? rep._blipUpdatePayload(obj) : rep._updatePayload(obj, mask);
+		cand.payload = blipUpdate ? rep._blipUpdatePayload(obj) : rep._updatePayload(obj, mask, state);
 		cand.gated = gated;
 		cand.still = state.heldTick >= 0 && state.heldTick < this._lastTick ? tick - state.heldTick : 0;
 	}
@@ -1032,15 +1160,53 @@ export class IgeNetViewer {
 		const limited = Number.isFinite(bandwidth);
 		const handleBits = igeNetBitsFor(this._high + 1);
 		const destroyCount = this._destroys.size;
+		const controlled = this._controlled;
+		// Entries too big to send at once go in slices over the next rounds (with a budget to keep to; never what the machine predicts)
+		const sliceBytes = rep.sliceBytes;
+		if (limited && sliceBytes > 0) {
+			let k = 0;
+			for (let i = 0; i < cands.length; i++) {
+				const cand = cands[i];
+				if (cand.payload.bits > sliceBytes * 8 && !(controlled.size && controlled.has(cand.state.obj)) && !this._split(cand, sliceBytes, epoch, round)) continue;
+				cands[k++] = cand;
+			}
+			cands.length = k;
+		}
+		let xfers = this._xfers;
+		if (xfers.length) {
+			// Done, or no longer wanted (the object went, or its detail changed)
+			xfers = this._xfers = xfers.filter((x) => {
+				const state = x.state;
+				if (!x.done && state.xfer === x && !state.dead && x.gen === state.gen) return true;
+				if (state.xfer === x) state.xfer = undefined;
+				return false;
+			});
+		}
+		const slices = this._slices;
+		slices.length = 0;
+		let sliceBits = 0;
 		let selected: Candidate[] = cands;
 		let oldest = Infinity;
 		const perRound = limited ? bandwidth / rep.sendRate : Infinity;
 		if (limited) {
 			this._allow = this._allow < 0 ? perRound * rep.carry : Math.min(this._allow + perRound, perRound * rep.carry);
 			const availBits = (this._allow - 12 - (destroyCount * handleBits) / 8) * 8;
+			// The machine's own records first: a slice of each
+			for (const x of xfers) if (x.own) sliceBits += this._slice(x, sliceBytes, availBits - sliceBits, round, handleBits);
+			// A share kept for the rest while any wait (none by default: they have what nothing else wants)
+			let reserve = 0;
+			if (rep.sliceShare > 0) {
+				for (const x of xfers) {
+					if (x.own) continue;
+					reserve = Math.min(rep.sliceShare * perRound * 8, Math.max(0, availBits - sliceBits));
+					break;
+				}
+			}
+			const forEntries = availBits - sliceBits - reserve;
 			let wanted = 0;
 			for (const cand of cands) wanted += entryBits(cand, handleBits);
-			if (wanted > availBits && cands.length > 1) {
+			let used = wanted;
+			if (wanted > forEntries && cands.length > 1) {
 				// More wanted than the budget holds: everything waiting gathers priority, and the budget is spent from the top
 				for (const cand of cands) {
 					const state = cand.state;
@@ -1048,10 +1214,9 @@ export class IgeNetViewer {
 					if (state.pendingSince < 0) state.pendingSince = round;
 				}
 				cands.sort((a, b) => b.state.priority - a.state.priority);
-				let used = 0;
+				used = 0;
 				selected = [];
 				// What the machine predicts goes whatever the budget
-				const controlled = this._controlled;
 				if (controlled.size) {
 					for (const cand of cands) {
 						if (!controlled.has(cand.state.obj)) continue;
@@ -1065,11 +1230,11 @@ export class IgeNetViewer {
 					if (controlled.size && controlled.has(cand.state.obj)) continue;
 					const cost = entryBits(cand, handleBits);
 					// The first is always sent, so nothing is too big for ever
-					if (first || used + cost <= availBits) {
+					if (first || used + cost <= forEntries) {
 						selected.push(cand);
 						used += cost;
 						first = false;
-					} else if (availBits - used < 16) {
+					} else if (forEntries - used < 16) {
 						break;
 					}
 				}
@@ -1086,29 +1251,44 @@ export class IgeNetViewer {
 					}
 				}
 			}
+			// Slices have what's left, oldest transfer first
+			let spare = availBits - sliceBits - used;
+			for (const x of xfers) {
+				while (spare > 0) {
+					const bits = this._slice(x, sliceBytes, spare, round, handleBits);
+					if (!bits) break;
+					sliceBits += bits;
+					spare -= bits;
+				}
+			}
+		} else if (xfers.length) {
+			// No budget (any more): the rest of each goes now
+			for (const x of xfers) while (this._slice(x, sliceBytes || Infinity, Infinity, round, handleBits));
 		}
 		this.stats.deferred = cands.length - selected.length;
 		this.stats.oldestPendingAge = oldest === Infinity ? 0 : (round - oldest) / rep.sendRate;
 		this.stats.entries = selected.length;
 
-		// Packets: destroys first, then entries in priority order, split where a packet would pass the size limit
+		// Packets: destroys first, then entries in priority order, then slices, split where a packet would pass the size limit
 		const maxPacket = this.maxPacketBytes ?? rep.maxPacketBytes;
-		const items = selected.length + destroyCount;
+		const items = selected.length + destroyCount + slices.length;
 		const destroyHandles = destroyCount ? [...this._destroys.keys()] : [];
 		let total = 0;
 		let next = 0;
 		let nextDestroy = 0;
+		let nextSlice = 0;
 		const kinds = this.stats.byKind;
 		const arena = rep._arena.buffer;
 		const w = rep._msg;
 		do {
 			const seq = ++this._seq;
 			w.reset();
-			const remaining = items - next - nextDestroy;
-			let bits = 8 + 8 * (varBytes(seq) + varBytes(tick) + varBytes(this.inputAck)) + 6 + 3 * 8 * varBytes(remaining);
+			const remaining = items - next - nextDestroy - nextSlice;
+			let bits = 8 + 8 * (varBytes(seq) + varBytes(tick) + varBytes(this.inputAck)) + 6 + 4 * 8 * varBytes(remaining);
 			const dH: number[] = [];
 			const cE: Candidate[] = [];
 			const uE: Candidate[] = [];
+			const sE: Slice[] = [];
 			let count = 0;
 			while (nextDestroy < destroyHandles.length) {
 				if (maxPacket && count > 0 && (bits + handleBits + 7) >> 3 > maxPacket) break;
@@ -1125,10 +1305,20 @@ export class IgeNetViewer {
 				next++;
 				count++;
 			}
+			while (nextSlice < slices.length && next >= selected.length && nextDestroy >= destroyHandles.length) {
+				const slice = slices[nextSlice];
+				const cost = sliceCost(slice, handleBits);
+				if (maxPacket && count > 0 && (bits + cost + 7) >> 3 > maxPacket) break;
+				sE.push(slice);
+				bits += cost;
+				nextSlice++;
+				count++;
+			}
 			let flags = 0;
 			if (dH.length) flags |= 1;
 			if (cE.length) flags |= 2;
 			if (uE.length) flags |= 4;
+			if (sE.length) flags |= 8;
 			w.writeBits(IGE_NET_PACKET_SNAPSHOT, 4);
 			w.writeBits(flags, 4);
 			w.writeVarUint(seq);
@@ -1165,11 +1355,27 @@ export class IgeNetViewer {
 						kinds[kind] = (kinds[kind] ?? 0) + (cand.payload.bits + handleBits) / 8;
 					}
 				}
+				if (sE.length) {
+					w.writeVarUint(sE.length);
+					for (const slice of sE) {
+						const x = slice.xfer;
+						w.writeBits(x.state.handle, handleBits);
+						w.writeVarUint(x.id);
+						w.writeBits(x.create ? 1 : 0, 1);
+						w.writeVarUint(x.bytes.length);
+						w.writeVarUint(slice.off);
+						w.writeVarUint(slice.len);
+						w.writeBitsFrom(x.bytes, slice.off, slice.len * 8);
+						const kind = x.state.obj.kind;
+						kinds[kind] = (kinds[kind] ?? 0) + sliceCost(slice, handleBits) / 8;
+					}
+				}
 			}
-			this._sent(seq, epoch, round, dH, cE, uE);
+			this._sent(seq, epoch, round, dH, cE, uE, sE);
 			rep.stats.creates += cE.length;
 			rep.stats.updates += uE.length;
 			rep.stats.destroys += dH.length;
+			rep.stats.slices += sE.length;
 			rep.stats.packets++;
 			rep._windowPackets++;
 			const bytes = w.toBytes();
@@ -1178,14 +1384,151 @@ export class IgeNetViewer {
 			this._window += bytes.length;
 			total += bytes.length;
 			this._send(bytes);
-		} while (next < selected.length || nextDestroy < destroyHandles.length);
+		} while (next < selected.length || nextDestroy < destroyHandles.length || nextSlice < slices.length);
+		// Reliable: a transfer whose last byte went is delivered
+		if (!this.lossy) for (const x of xfers) if (!x.done && x.next >= x.bytes.length) this._xferDone(x);
 		if (limited) this._allow = Math.max(-perRound * rep.carry * 2, this._allow - total);
 		this._lastTick = tick;
 		return total;
 	}
 
+	/**
+	 * A candidate too big to send at once: the classes (groups) too big on their own go in slices, the
+	 * rest stays a candidate this round. Returns whether anything is left to send now.
+	 */
+	_split (cand: Candidate, sliceBytes: number, epoch: number, round: number): boolean {
+		const rep = this._rep;
+		const state = cand.state;
+		const obj = state.obj;
+		// Several classes in an update: only the big ones wait
+		if (!cand.create && cand.level && cand.classes & (cand.classes - 1)) {
+			let big = 0;
+			let bigMask: IgeNetMask | undefined;
+			let small = 0;
+			let smallMask: IgeNetMask | undefined;
+			for (let c = 0; c < obj.schema.classCount; c++) {
+				if (!((cand.classes >>> c) & 1)) continue;
+				const mask = rep._classMask(obj, c, state.acked[c]);
+				if (rep._updatePayload(obj, mask, state).bits > sliceBytes * 8) {
+					big |= 1 << c;
+					bigMask = bigMask === undefined ? mask : orMask(bigMask, mask);
+				} else {
+					small |= 1 << c;
+					smallMask = smallMask === undefined ? mask : orMask(smallMask, mask);
+				}
+			}
+			if (big && small) {
+				this._startTransfer(state, false, big, rep._updatePayload(obj, bigMask!, state), epoch, round);
+				cand.classes = small;
+				cand.payload = rep._updatePayload(obj, smallMask!, state);
+				return true;
+			}
+		}
+		this._startTransfer(state, cand.create, cand.classes, cand.payload, epoch, round);
+		return false;
+	}
+
+	/** Starts sending an entry too big to go at once in slices: its bytes are kept, and the classes it carries wait for it. */
+	_startTransfer (state: IgeNetViewState, create: boolean, classes: number, payload: Payload, epoch: number, round: number): void {
+		const start = payload.byte;
+		const x: Transfer = {
+			state,
+			id: ++this._xferId,
+			create,
+			classes,
+			epoch,
+			gen: state.gen,
+			bytes: this._rep._arena.buffer.slice(start, start + ((payload.bits + 7) >> 3)),
+			next: 0,
+			pieces: this.lossy ? [] : undefined,
+			ackedBytes: 0,
+			own: state.obj.owner === this,
+			done: false
+		};
+		state.xfer = x;
+		this._xfers.push(x);
+		state.priority = 0;
+		state.pendingSince = -1;
+		state.lastRound = round;
+		if (create) {
+			state.sentEver = true;
+			state.createRound = round;
+		}
+		if (state.sr) {
+			for (let c = 0; c < state.sr.length; c++) {
+				if ((classes >>> c) & 1) {
+					state.sr[c] = round;
+					state.se![c] = epoch;
+				}
+			}
+		}
+		this._rep.stats.transfers++;
+	}
+
+	/**
+	 * Adds the next slice of a transfer to this round's (a lost or long-unacknowledged piece again
+	 * first, on a lossy transport) if one fits in `availBits`. Returns the bits it takes, 0 for none.
+	 */
+	_slice (x: Transfer, maxBytes: number, availBits: number, round: number, handleBits: number): number {
+		const total = x.bytes.length;
+		const head = handleBits + 1 + 8 * (varBytes(x.id) + varBytes(total) + 6);
+		const room = Math.min(maxBytes, Math.floor((availBits - head) / 8));
+		if (room <= 0) return 0;
+		let off = -1;
+		let len = 0;
+		let piece: Piece | undefined;
+		if (x.pieces) {
+			const resend = this._rep._resend;
+			for (const p of x.pieces) {
+				if (p.acked || p.round === round || !(p.lost || round - p.round >= resend)) continue;
+				if (p.len > room) return 0;
+				piece = p;
+				break;
+			}
+			if (piece) {
+				off = piece.off;
+				len = piece.len;
+				piece.round = round;
+				piece.lost = false;
+			}
+		}
+		if (off < 0) {
+			if (x.next >= total) return 0;
+			len = Math.min(total - x.next, room);
+			// Not worth a header for a crumb, unless it finishes the entry
+			if (len < MIN_SLICE && len < total - x.next) return 0;
+			off = x.next;
+			x.next += len;
+			if (x.pieces) {
+				piece = { off, len, round, acked: false, lost: false };
+				x.pieces.push(piece);
+			}
+		}
+		const slice: Slice = { xfer: x, off, len, piece };
+		this._slices.push(slice);
+		return sliceCost(slice, handleBits);
+	}
+
+	/** A transfer delivered: the machine has the state it carried. */
+	_xferDone (x: Transfer): void {
+		x.done = true;
+		const state = x.state;
+		if (state.xfer === x) state.xfer = undefined;
+		if (state.dead || x.gen !== state.gen) return;
+		if (x.create) state.known = true;
+		for (let c = 0; c < state.acked.length; c++) if ((x.classes >>> c) & 1 && x.epoch > state.acked[c]) state.acked[c] = x.epoch;
+		// What changed meanwhile goes next
+		this._work.add(state);
+	}
+
+	/** A packet given up on: its slices go again. */
+	_lost (packet: SentPacket): void {
+		if (!packet.slices) return;
+		for (const slice of packet.slices) if (!slice.piece!.acked) slice.piece!.lost = true;
+	}
+
 	/** Records what a packet carried: acknowledged at once on a reliable transport, remembered until acknowledged on a lossy one. */
-	_sent (seq: number, epoch: number, round: number, destroys: number[], creates: Candidate[], updates: Candidate[]): void {
+	_sent (seq: number, epoch: number, round: number, destroys: number[], creates: Candidate[], updates: Candidate[], slices: Slice[]): void {
 		const lossy = this.lossy;
 		const entries: SentEntry[] | undefined = lossy ? [] : undefined;
 		const apply = (cand: Candidate) => {
@@ -1219,8 +1562,12 @@ export class IgeNetViewer {
 		for (const cand of creates) apply(cand);
 		for (const cand of updates) apply(cand);
 		if (lossy) {
-			this._packets.set(seq, { seq, epoch, entries: entries!, destroys });
-			if (this._packets.size > 128) this._packets.delete(this._packets.keys().next().value!);
+			this._packets.set(seq, { seq, epoch, entries: entries!, destroys, slices: slices.length ? slices.slice() : undefined });
+			if (this._packets.size > 128) {
+				const oldest = this._packets.keys().next().value!;
+				this._lost(this._packets.get(oldest)!);
+				this._packets.delete(oldest);
+			}
 		} else {
 			for (const handle of destroys) {
 				this._destroys.delete(handle);
@@ -1240,6 +1587,12 @@ export interface IgeNetReplicatorStats {
 	/** Payloads reused for another viewer in the same round, and payloads encoded. */
 	cacheHits: number;
 	cacheMisses: number;
+	/** Json fields sent as a patch, and sent whole (creates included). */
+	jsonPatches: number;
+	jsonWhole: number;
+	/** Entries sent in slices (begun), and slices sent. */
+	transfers: number;
+	slices: number;
 	/** Milliseconds spent in flush() in all, and the last. */
 	flushMs: number;
 	lastFlushMs: number;
@@ -1276,6 +1629,17 @@ export interface IgeNetReplicatorOptions {
 	hysteresis?: number;
 	/** How many rounds of unused bandwidth are kept for a big entry (default 2). */
 	carry?: number;
+	/**
+	 * With a bandwidth budget, an entry bigger than this many bytes (a big record's create, a large
+	 * change) goes in slices of at most this size over the next rounds instead of all at once, so it
+	 * never holds the rest up; the machine applies it when the last slice is in. Default 512; 0: never.
+	 */
+	sliceBytes?: number;
+	/**
+	 * The part of each round's budget kept for slices while any are waiting (0 to 1). Default 0: they
+	 * have only what nothing else wants. A viewer's own objects (owner) always get a slice first.
+	 */
+	sliceShare?: number;
 	/** Lossy transports: rounds to wait before sending the same unacknowledged change again (default 0 without a bandwidth budget, else a sixth of a second's worth). */
 	resendAfter?: number;
 	/** Multipliers on the priority of an object's changes: when the viewer focuses on it, when it's the viewer's own private object, when it's a create. */
@@ -1317,7 +1681,7 @@ export class IgeNetReplicator {
 	/** The authority's tick, put in each packet. The host sets it before the game steps. */
 	tick = 0;
 	readonly stats: IgeNetReplicatorStats = {
-		bytes: 0, packets: 0, creates: 0, updates: 0, destroys: 0, cacheHits: 0, cacheMisses: 0, flushMs: 0, lastFlushMs: 0, flushes: 0
+		bytes: 0, packets: 0, creates: 0, updates: 0, destroys: 0, cacheHits: 0, cacheMisses: 0, jsonPatches: 0, jsonWhole: 0, transfers: 0, slices: 0, flushMs: 0, lastFlushMs: 0, flushes: 0
 	};
 	sendRate: number;
 	bandwidth: number;
@@ -1327,6 +1691,8 @@ export class IgeNetReplicator {
 	cellSize: number;
 	hysteresis: number;
 	carry: number;
+	sliceBytes: number;
+	sliceShare: number;
 	weights: { focus: number; owner: number; create: number };
 	_resend: number;
 	_objects: Map<string, IgeNetObject> = new Map();
@@ -1338,6 +1704,13 @@ export class IgeNetReplicator {
 	_round = 0;
 	_arena = new IgeNetBitWriter(1 << 16);
 	_msg = new IgeNetBitWriter(1 << 12);
+	/** Where json patches are encoded (copied out as bytes, kept for the round). */
+	_jsonScratch = new IgeNetBitWriter(1 << 12);
+	/** The object being encoded, and its json fields' base versions (update payloads). */
+	_jwObj?: IgeNetObject;
+	_jwBases?: (JsonVersion | undefined)[];
+	_bases: (JsonVersion | undefined)[] = [];
+	_jwFn: IgeNetJsonWriter = (w, index) => this._writeJson(w, index);
 	_now: () => number;
 	_rates: IgeNetReplicatorRates = { bytesPerSecond: 0, flushMsPerSecond: 0, packetsPerSecond: 0 };
 	_windowStart = 0;
@@ -1358,6 +1731,8 @@ export class IgeNetReplicator {
 		this.cellSize = options.cellSize ?? 1000;
 		this.hysteresis = options.hysteresis ?? 0.1;
 		this.carry = options.carry ?? 2;
+		this.sliceBytes = options.sliceBytes ?? 512;
+		this.sliceShare = Math.max(0, Math.min(1, options.sliceShare ?? 0));
 		this._resend = options.resendAfter ?? (Number.isFinite(this.bandwidth) ? Math.max(1, Math.ceil(this.sendRate / 6)) : 0);
 		this.weights = { focus: options.weights?.focus ?? 8, owner: options.weights?.owner ?? 10, create: options.weights?.create ?? 4 };
 	}
@@ -1537,6 +1912,56 @@ export class IgeNetReplicator {
 		obj._updates.clear();
 		obj._masks.clear();
 		obj._cm = undefined;
+		obj._jd = undefined;
+	}
+
+	/** The version of a json field current at `epoch` (what a viewer whose copy is of that epoch has), or undefined if it's no longer kept. */
+	_jsonBase (obj: IgeNetObject, index: number, epoch: number): JsonVersion | undefined {
+		const hist = obj._jh[index]!;
+		for (let k = hist.length - 1; k >= 0; k--) if (hist[k].epoch <= epoch) return hist[k];
+		return undefined;
+	}
+
+	/** Writes json field `index` of the object being encoded: a patch against its base version when that's smaller, else whole. */
+	_writeJson (w: IgeNetBitWriter, index: number): void {
+		const obj = this._jwObj!;
+		const hist = obj._jh[index]!;
+		const cur = hist[hist.length - 1];
+		const base = this._jwBases?.[index];
+		if (base && base.ver !== cur.ver && base.text !== undefined && cur.text !== undefined) {
+			const patch = this._jsonPatch(obj, index, base, cur);
+			if (patch) {
+				w.writeVarUint(cur.ver);
+				w.writeBits(1, 1);
+				w.writeVarUint(cur.ver - base.ver);
+				w.writeBitsFrom(patch.bytes, 0, patch.bits);
+				this.stats.jsonPatches++;
+				return;
+			}
+		}
+		igeNetWriteJsonWhole(w, cur.ver, cur.text);
+		this.stats.jsonWhole++;
+	}
+
+	/** The patch from one version of a field to another, encoded (once a round per pair), or null when whole is no bigger. */
+	_jsonPatch (obj: IgeNetObject, index: number, base: JsonVersion, cur: JsonVersion): { bytes: Uint8Array; bits: number } | null {
+		const key = `${index}:${base.ver}:${cur.ver}`;
+		const cache = (obj._jd ??= new Map());
+		const cached = cache.get(key);
+		if (cached !== undefined) return cached;
+		let out: { bytes: Uint8Array; bits: number } | null = null;
+		const patch = igeNetJsonDiff(parsedOf(base), parsedOf(cur));
+		// (A top-level replace is the whole value)
+		if (patch && patch.t !== 0) {
+			const sw = this._jsonScratch;
+			sw.reset();
+			igeNetWriteJsonPatch(sw, patch);
+			const text = cur.text!;
+			const wholeBits = 8 * (varBytes(text.length) + text.length);
+			if (sw.bitLength + 8 * varBytes(cur.ver - base.ver) < wholeBits) out = { bytes: sw.toBytes(), bits: sw.bitLength };
+		}
+		cache.set(key, out);
+		return out;
 	}
 
 	_createPayload (obj: IgeNetObject, full = true): Payload {
@@ -1553,12 +1978,16 @@ export class IgeNetReplicator {
 		if (full) {
 			arena.writeBits(this.schemas.kinds.indexOf(obj.schema), this.schemas.kindBits);
 			arena.writeString(obj.id);
-			obj.schema.writeAll(arena, obj.values, obj._json);
+			this._jwObj = obj;
+			this._jwBases = undefined;
+			obj.schema.writeAll(arena, obj.values, obj._json, obj.schema.jsonIdx.length ? this._jwFn : undefined);
 		} else {
 			// An anonymous contact: not the id, not the kind, only the shape of a blip and its fields
 			arena.writeBits(this.schemas.kinds.length, this.schemas.kindBits);
 			arena.writeBits(obj.schema.blipLayout, this.schemas.layoutBits);
-			obj.schema.writeBlip(arena, obj.values, obj._json);
+			this._jwObj = obj;
+			this._jwBases = undefined;
+			obj.schema.writeBlip(arena, obj.values, obj._json, obj.schema.jsonIdx.length ? this._jwFn : undefined);
 		}
 		const payload = { byte: start >> 3, bits: arena.bitLength - start };
 		if (full) obj._create = payload;
@@ -1578,15 +2007,28 @@ export class IgeNetReplicator {
 		const arena = this._arena;
 		arena.align();
 		const start = arena.bitLength;
-		obj.schema.writeBlip(arena, obj.values, obj._json);
+		this._jwObj = obj;
+		this._jwBases = undefined;
+		obj.schema.writeBlip(arena, obj.values, obj._json, obj.schema.jsonIdx.length ? this._jwFn : undefined);
 		payload = { byte: start >> 3, bits: arena.bitLength - start };
 		obj._updates.set("blip", payload);
 		return payload;
 	}
 
-	_updatePayload (obj: IgeNetObject, mask: IgeNetMask): Payload {
+	/** The changed fields in `mask`, json ones as patches against what `state`'s viewer has (shared by viewers with the same). */
+	_updatePayload (obj: IgeNetObject, mask: IgeNetMask, state?: IgeNetViewState): Payload {
 		this._roundOf(obj);
-		const key = igeNetMaskKey(mask);
+		let key = igeNetMaskKey(mask);
+		const schema = obj.schema;
+		let bases: (JsonVersion | undefined)[] | undefined;
+		if (schema.jsonIdx.length && state) {
+			for (const i of schema.jsonIdx) {
+				if (!(typeof mask === "number" ? (mask >>> i) & 1 : (mask[i >> 5] >>> (i & 31)) & 1)) continue;
+				const base = this._jsonBase(obj, i, state.acked[schema.classOf[i]]);
+				(bases = this._bases)[i] = base;
+				key = `${key}|${i}:${base ? base.ver : 0}`;
+			}
+		}
 		let payload = obj._updates.get(key);
 		if (payload) {
 			this.stats.cacheHits++;
@@ -1596,7 +2038,9 @@ export class IgeNetReplicator {
 		const arena = this._arena;
 		arena.align();
 		const start = arena.bitLength;
-		obj.schema.writeMasked(arena, mask, obj.values, obj._json);
+		this._jwObj = obj;
+		this._jwBases = bases;
+		schema.writeMasked(arena, mask, obj.values, obj._json, schema.jsonIdx.length ? this._jwFn : undefined);
 		payload = { byte: start >> 3, bits: arena.bitLength - start };
 		obj._updates.set(key, payload);
 		return payload;

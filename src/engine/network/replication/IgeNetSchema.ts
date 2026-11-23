@@ -54,8 +54,10 @@ export interface IgeNetFloatField extends IgeNetFieldCommon {
 }
 
 /**
- * Any JSON value, for rare complex data (a market table). It's compared as JSON text only when
- * written (or touched), encoded once when it changes, and sent whole.
+ * Any JSON value, for complex data (a market table, a crew record). It's compared as JSON text only
+ * when written (or touched). Replicated objects send a change as a patch of what changed inside it
+ * (keys, array items) against the version the viewer has, or whole when that's smaller
+ * (igeNetJsonDelta.ts); an input's json fields go whole.
  */
 export interface IgeNetJsonField extends IgeNetFieldCommon {
 	type: "json";
@@ -262,11 +264,22 @@ export interface IgeNetKindOptions {
 	priority?: number;
 	/** Base priority of a group of fields (multiplies the kind's), by group name. */
 	groupPriority?: Record<string, number>;
+	/**
+	 * Send and acknowledge each group of fields on its own, though none has a rate or priority (those
+	 * that do always are). A big change that goes in slices then holds up only its own group: put a
+	 * record's fast-changing numbers in a group of their own and they never wait behind it.
+	 */
+	separateGroups?: boolean;
 	/** The most sends per second of the object as a whole, per viewer. */
 	maxRate?: number;
 	/** The most sends per second of each group of fields, per viewer, by group name. */
 	groupRates?: Record<string, number>;
 }
+
+/** Writes json field `index` of the object being encoded (the replicator's versioned, patched form). */
+export type IgeNetJsonWriter = (w: IgeNetBitWriter, index: number) => void;
+/** Reads a json field written by an IgeNetJsonWriter. */
+export type IgeNetJsonReader = (r: IgeNetBitReader) => unknown;
 
 /** The most fields one kind may have. */
 export const IGE_NET_MAX_FIELDS = 1024;
@@ -324,6 +337,8 @@ export class IgeNetSchema {
 	blipLayout = -1;
 	/** Field indexes of the position (two or three). */
 	readonly positionIdx: number[] = [];
+	/** Indexes of the json fields. */
+	readonly jsonIdx: number[] = [];
 	/**
 	 * Fields are sorted into classes that are sent and acknowledged on their own: the blip class
 	 * (first, when the kind has one), a class per other group, the ungrouped rest. A kind that needs
@@ -351,6 +366,7 @@ export class IgeNetSchema {
 		this.fields = names.map((n, i) => new IgeNetField(n, i, defs[n]));
 		for (const field of this.fields) {
 			this.byName.set(field.name, field);
+			if (field.type === "json") this.jsonIdx.push(field.index);
 			if (field.group) {
 				const list = this.groups.get(field.group) ?? [];
 				list.push(field.index);
@@ -371,7 +387,7 @@ export class IgeNetSchema {
 			}
 		}
 		if (this.leveled && this.positionIdx.length < 2) throw new Error(`${name}: a spatial kind needs a position`);
-		const useClasses = this.blips || !!options.groupRates || !!options.groupPriority;
+		const useClasses = this.blips || !!options.groupRates || !!options.groupPriority || (!!options.separateGroups && this.groups.size > 0);
 		this.classOf = new Array(names.length).fill(-1);
 		let blipClass = -1;
 		if (useClasses) {
@@ -475,13 +491,16 @@ export class IgeNetSchema {
 	}
 
 	/** Writes the fields of the blip class (no mask: both ends know which they are). */
-	writeBlip (w: IgeNetBitWriter, values: Record<string, unknown>, json?: (string | undefined)[]): void {
-		for (const i of this.classFields[this.blipClass]) this.fields[i].write(w, values[this.fields[i].name], json?.[i]);
+	writeBlip (w: IgeNetBitWriter, values: Record<string, unknown>, json?: (string | undefined)[], jw?: IgeNetJsonWriter): void {
+		for (const i of this.classFields[this.blipClass]) {
+			if (jw && this.fields[i].type === "json") jw(w, i);
+			else this.fields[i].write(w, values[this.fields[i].name], json?.[i]);
+		}
 	}
 
-	readBlip (r: IgeNetBitReader): Record<string, unknown> {
+	readBlip (r: IgeNetBitReader, jr?: IgeNetJsonReader): Record<string, unknown> {
 		const out: Record<string, unknown> = {};
-		for (const i of this.classFields[this.blipClass]) out[this.fields[i].name] = this.fields[i].read(r);
+		for (const i of this.classFields[this.blipClass]) out[this.fields[i].name] = jr && this.fields[i].type === "json" ? jr(r) : this.fields[i].read(r);
 		return out;
 	}
 
@@ -496,40 +515,47 @@ export class IgeNetSchema {
 		return out;
 	}
 
-	/** Writes every field. */
-	writeAll (w: IgeNetBitWriter, values: Record<string, unknown>, json?: (string | undefined)[]): void {
-		for (const field of this.fields) field.write(w, values[field.name], json?.[field.index]);
+	/** Writes every field (json fields by `jw` when given: the replicator's versioned form). */
+	writeAll (w: IgeNetBitWriter, values: Record<string, unknown>, json?: (string | undefined)[], jw?: IgeNetJsonWriter): void {
+		for (const field of this.fields) {
+			if (jw && field.type === "json") jw(w, field.index);
+			else field.write(w, values[field.name], json?.[field.index]);
+		}
 	}
 
-	readAll (r: IgeNetBitReader): Record<string, unknown> {
+	readAll (r: IgeNetBitReader, jr?: IgeNetJsonReader): Record<string, unknown> {
 		const out: Record<string, unknown> = {};
-		for (const field of this.fields) out[field.name] = field.read(r);
+		for (const field of this.fields) out[field.name] = jr && field.type === "json" ? jr(r) : field.read(r);
 		return out;
 	}
 
-	/** Writes the mask (a bit per field) and the fields in it. `json` holds fields' JSON text where known. */
-	writeMasked (w: IgeNetBitWriter, mask: IgeNetMask, values: Record<string, unknown>, json?: (string | undefined)[]): void {
+	/** Writes the mask (a bit per field) and the fields in it. `json` holds fields' JSON text where known; `jw` writes json fields instead. */
+	writeMasked (w: IgeNetBitWriter, mask: IgeNetMask, values: Record<string, unknown>, json?: (string | undefined)[], jw?: IgeNetJsonWriter): void {
 		const fields = this.fields;
 		if (typeof mask === "number") {
 			for (let i = 0; i < fields.length; i++) w.writeBits((mask >>> i) & 1, 1);
 			for (let i = 0; i < fields.length; i++) {
-				if ((mask >>> i) & 1) fields[i].write(w, values[fields[i].name], json?.[i]);
+				if (!((mask >>> i) & 1)) continue;
+				if (jw && fields[i].type === "json") jw(w, i);
+				else fields[i].write(w, values[fields[i].name], json?.[i]);
 			}
 			return;
 		}
 		for (let i = 0; i < fields.length; i++) w.writeBits((mask[i >> 5] >>> (i & 31)) & 1, 1);
 		for (let i = 0; i < fields.length; i++) {
-			if ((mask[i >> 5] >>> (i & 31)) & 1) fields[i].write(w, values[fields[i].name], json?.[i]);
+			if (!((mask[i >> 5] >>> (i & 31)) & 1)) continue;
+			if (jw && fields[i].type === "json") jw(w, i);
+			else fields[i].write(w, values[fields[i].name], json?.[i]);
 		}
 	}
 
-	readMasked (r: IgeNetBitReader): Record<string, unknown> {
+	readMasked (r: IgeNetBitReader, jr?: IgeNetJsonReader): Record<string, unknown> {
 		const fields = this.fields;
 		const set: boolean[] = [];
 		for (let i = 0; i < fields.length; i++) set.push(r.readBits(1) === 1);
 		const out: Record<string, unknown> = {};
 		for (let i = 0; i < fields.length; i++) {
-			if (set[i]) out[fields[i].name] = fields[i].read(r);
+			if (set[i]) out[fields[i].name] = jr && fields[i].type === "json" ? jr(r) : fields[i].read(r);
 		}
 		return out;
 	}

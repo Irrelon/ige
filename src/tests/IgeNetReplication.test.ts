@@ -290,7 +290,8 @@ describe("IgeNetReplicator", () => {
 		expect(dot.touch("table")).toBe(true);
 		expect(dot.touch("table")).toBe(false);
 		replicator.flush();
-		expect(a.last().updates[0].values).toEqual({ table: { rows: [1, 2] } });
+		// (As a patch against the first version: an item added to the array)
+		expect(a.last().updates[0].values).toEqual({ table: { ver: 2, from: 1, patch: { t: 1, k: [["rows", { t: 2, n: 2, i: [[1, { t: 0, v: 2 }]] }]] } } });
 		expect(() => dot.touch("x")).toThrow();
 	});
 

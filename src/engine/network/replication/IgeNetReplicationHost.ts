@@ -21,7 +21,8 @@ export interface IgeNetReplicationHostOptions<Input> {
 	/**
 	 * Relevance and budget settings, passed to the replicator (see IgeNetReplicatorOptions):
 	 * `bandwidth` per machine in bytes/s (default 32768 when any kind declares relevance, else no limit),
-	 * `maxPacketBytes`, `nearRadius`, `blipRate`, `cellSize`, `hysteresis`, `carry`, `resendAfter`, `weights`.
+	 * `maxPacketBytes`, `nearRadius`, `blipRate`, `cellSize`, `hysteresis`, `carry`, `resendAfter`, `weights`,
+	 * `sliceBytes` and `sliceShare` (big entries in slices: by default they use only budget nothing else wants).
 	 * Per machine: `machine.viewer.bandwidth`, `.nearRadius`, `.maxPacketBytes`, `addInterest()`, `focus()`.
 	 */
 	relevance?: Omit<IgeNetReplicatorOptions, "now" | "sendRate">;

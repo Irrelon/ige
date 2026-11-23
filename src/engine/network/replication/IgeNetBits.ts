@@ -188,6 +188,19 @@ export class IgeNetBitReader {
 		return scratch32[0];
 	}
 
+	/** `length` bytes as they were written (from any bit position). */
+	readBytes (length: number): Uint8Array {
+		if (this._pos + length * 8 > this._end) throw new RangeError("Read past the end of the message");
+		const out = new Uint8Array(length);
+		if ((this._pos & 7) === 0) {
+			out.set(this._buf.subarray(this._pos >> 3, (this._pos >> 3) + length));
+			this._pos += length * 8;
+			return out;
+		}
+		for (let i = 0; i < length; i++) out[i] = this.readBits(8);
+		return out;
+	}
+
 	readString (): string {
 		const length = this.readVarUint();
 		if (this._pos + length * 8 > this._end) throw new RangeError("Read past the end of the message");

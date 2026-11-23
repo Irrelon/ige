@@ -8,9 +8,11 @@ import {
 	igeNetReadSnapshotBody,
 	igeNetReadSnapshotHeader,
 	igeNetWriteInputPacket,
+	IgeNetSliceAssembly,
 	type IgeNetHandleEntry,
 	type IgeNetInputFrameBinary
 } from "@/engine/network/replication/igeNetReplicationProtocol";
+import { IGE_NET_JSON_MISSING, IgeNetJsonStore, IgeNetJsonWire } from "@/engine/network/replication/igeNetJsonDelta";
 import type { IgeNetConnection } from "@/engine/network/sync/IgeNetTransport";
 import type { IgeNetWelcome } from "@/engine/network/sync/igeNetSyncProtocol";
 
@@ -63,6 +65,8 @@ export interface IgeNetClientObject {
 	held: Record<string, unknown>;
 	/** The newest packet that set each field, so packets arriving out of order never put back older data. */
 	fieldSeq: number[];
+	/** Its json fields' recent versions (patches arrive against one of them). */
+	json?: IgeNetJsonStore;
 	levelSeq: number;
 }
 
@@ -121,6 +125,8 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	/** handle to object, as the packets define them. */
 	_table: Map<number, IgeNetHandleEntry> = new Map();
 	_dead: Map<number, IgeNetHandleEntry> = new Map();
+	/** Big entries arriving in slices. */
+	_slices = new IgeNetSliceAssembly();
 	/** The newest snapshot packet applied, the newest seen (for acks) and the bits before it. */
 	_applied = 0;
 	_recvSeq = 0;
@@ -204,6 +210,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		this.objects.clear();
 		this._table.clear();
 		this._dead.clear();
+		this._slices.clear();
 		this._pending = [];
 		this._ticks.clear();
 		this._applied = this._recvSeq = this._recvBits = this._latestTick = this._priorTick = 0;
@@ -469,7 +476,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		}
 		let packet;
 		try {
-			packet = igeNetReadSnapshotBody(r, header, this.schemas, this._table, this._dead);
+			packet = igeNetReadSnapshotBody(r, header, this.schemas, this._table, this._dead, this._slices);
 		} catch (error) {
 			// Not acknowledged, so the authority sends it again
 			this.emit("error", `Bad packet: ${(error as Error).message}`);
@@ -520,15 +527,45 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			while (states.length - drop > 2 && states[drop + 1].tick <= cutoff) drop++;
 			if (drop) states.splice(0, drop);
 		};
-		/** Applies fields to an object, newest packet winning per field. Returns the new current values. */
-		const apply = (obj: IgeNetClientObject, incoming: Record<string, unknown>, base: Record<string, unknown>) => {
+		/** Applies fields to an object, newest packet winning per field (json fields: newest version). Returns the new current values. */
+		const apply = (obj: IgeNetClientObject, incoming: Record<string, unknown>, base: Record<string, unknown>, at: number) => {
 			const schema = obj.schema;
 			const values = { ...base };
 			for (const name in incoming) {
 				const field = schema.byName.get(name)!;
-				if (seq <= obj.fieldSeq[field.index]) continue;
-				obj.fieldSeq[field.index] = seq;
-				values[name] = incoming[name];
+				let value = incoming[name];
+				if (value instanceof IgeNetJsonWire) {
+					// Kept among the field's versions even when it's not the newest (a later patch may be against it)
+					const store = (obj.json ??= new IgeNetJsonStore());
+					value = store.resolve(field.index, value);
+					if (value === IGE_NET_JSON_MISSING) {
+						this.emit("error", `${obj.id}.${name}: a patch against a version this machine doesn't have`);
+						continue;
+					}
+					if (!store.newest) continue;
+					if (at > obj.fieldSeq[field.index]) obj.fieldSeq[field.index] = at;
+					values[name] = value;
+					continue;
+				}
+				if (at <= obj.fieldSeq[field.index]) continue;
+				obj.fieldSeq[field.index] = at;
+				values[name] = value;
+			}
+			return values;
+		};
+		/** A created object's values, json fields made whole (a create sends them whole). */
+		const made = (obj: { json?: IgeNetJsonStore; schema: IgeNetSchema }, incoming: Record<string, unknown>) => {
+			const values = { ...incoming };
+			const jsonIdx = obj.schema.jsonIdx;
+			if (!jsonIdx.length) return values;
+			obj.json = new IgeNetJsonStore();
+			for (const i of jsonIdx) {
+				const name = obj.schema.fields[i].name;
+				const wire = values[name];
+				if (wire instanceof IgeNetJsonWire) {
+					const value = obj.json.resolve(i, wire);
+					values[name] = value === IGE_NET_JSON_MISSING ? undefined : value;
+				}
 			}
 			return values;
 		};
@@ -538,7 +575,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			const existing = this.objects.get(created.id);
 			if (existing && existing.handle === created.handle && !created.from) {
 				const last = existing.states[existing.states.length - 1];
-				push(existing, apply(existing, created.values, last.values));
+				push(existing, apply(existing, created.values, last.values, created.seq));
 				continue;
 			}
 			const from = created.from ? this.objects.get(created.from) : undefined;
@@ -552,21 +589,22 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 				from.schema = schema;
 				from.anon = false;
 				from.detail = "full";
-				from.fieldSeq = new Array(schema.fields.length).fill(seq);
-				from.levelSeq = seq;
+				from.fieldSeq = new Array(schema.fields.length).fill(created.seq);
+				from.levelSeq = created.seq;
 				const old = this.objects.get(created.id);
 				if (old) this._ticks.delete(created.id);
 				this.objects.set(created.id, from);
-				push(from, { ...created.values });
+				push(from, made(from, created.values));
 				this.emit("revealed", from, anonId);
 				this.emit("detail", from, "full");
 				continue;
 			}
 			// A new object (or the same id under another handle: the old one is replaced)
 			const obj: IgeNetClientObject = {
-				id: created.id, kind: created.kind, schema, handle: created.handle, states: [{ tick: header.tick, values: { ...created.values } }],
-				detail: created.anon ? "blip" : "full", anon: created.anon, held: {}, fieldSeq: new Array(schema.fields.length).fill(seq), levelSeq: seq
+				id: created.id, kind: created.kind, schema, handle: created.handle, states: [],
+				detail: created.anon ? "blip" : "full", anon: created.anon, held: {}, fieldSeq: new Array(schema.fields.length).fill(created.seq), levelSeq: created.seq
 			};
+			obj.states.push({ tick: header.tick, values: made(obj, created.values) });
 			if (existing) this._ticks.delete(created.id);
 			this.objects.set(created.id, obj);
 			this.emit("created", obj);
@@ -576,7 +614,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			const obj = this.objects.get(update.id);
 			if (!obj || obj.handle !== update.handle) continue;
 			const last = obj.states[obj.states.length - 1];
-			push(obj, apply(obj, update.values, last.values), update.still);
+			push(obj, apply(obj, update.values, last.values, update.seq), update.still);
 		}
 		if (fresh) {
 			this._syncClock(header.tick, this.rtt / 2);

@@ -174,6 +174,7 @@ export * from "../engine/network/sync/igeNetWebSocket";
 export * from "../engine/network/sync/IgeNetWebSocketServer";
 export * from "../engine/network/replication/IgeNetBits";
 export * from "../engine/network/replication/IgeNetSchema";
+export * from "../engine/network/replication/igeNetJsonDelta";
 export * from "../engine/network/replication/igeNetReplicationProtocol";
 export * from "../engine/network/replication/IgeNetReplicator";
 export * from "../engine/network/replication/IgeNetReplicationHost";
