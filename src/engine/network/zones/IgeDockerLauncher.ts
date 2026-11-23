@@ -14,6 +14,8 @@ export interface IgeDockerLauncherOptions {
 	urlTemplate?: string;
 	/** Publish each zone's port on the host from this range (local development, no proxy). */
 	publish?: [number, number];
+	/** Publish the UDP port too, for WebTransport (default true). */
+	udp?: boolean;
 	/** The port zones listen on inside their containers (default 8080). */
 	port?: number;
 	/** Extra environment for every zone, and extra `docker run` arguments. */
@@ -60,7 +62,11 @@ export class IgeDockerLauncher implements IgeZoneLauncher {
 		const all: Record<string, string> = { ...o.env, ...env, ZONE_ID: zone, PORT: String(port), ZONE_URL: url };
 		const args = ["run", "-d", "--rm", "--name", this._name(zone)];
 		if (o.network) args.push("--network", o.network, "--network-alias", this._name(zone));
-		if (hostPort) args.push("-p", `${hostPort}:${port}`);
+		if (hostPort) {
+			args.push("-p", `${hostPort}:${port}`);
+			// WebTransport listens on the same number over UDP
+			if (o.udp !== false) args.push("-p", `${hostPort}:${port}/udp`);
+		}
 		for (const [key, value] of Object.entries(all)) args.push("-e", `${key}=${value}`);
 		args.push(...(o.runArgs ?? []), o.image);
 		return { args, url };

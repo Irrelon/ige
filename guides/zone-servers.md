@@ -225,6 +225,23 @@ client.on("transferFailed", () => reconnect());                  // enter again 
   machine's local players in their slots (the new zone gives their ids in its welcome).
 - Don't send inputs while `client.transferring`.
 
+### WebTransport
+
+A zone can also listen for WebTransport on UDP, on the same port number as its WebSocket (see the
+WebTransport section of [replication.md](replication.md)). It tells the directory where
+(`zone.webTransport = { url, certHash }`, or the `webTransport` option; heartbeats repeat it, so a late value or a
+restarted directory is picked up), and the directory returns `webTransport` beside `url` from `/enter` and
+`/zones/ensure`, and `zone.handoff()` returns it. The client passes it on:
+
+```typescript
+const { connection } = await igeNetConnect({ webTransport: entry.webTransport, webSocket: entry.url });
+// ...and on a hand-off
+client.transfer({ url: data.url, ticket: data.ticket, webTransport: data.webTransport });
+```
+
+`IgeChildProcessLauncher` only gives a zone a port that is free over both TCP and UDP, and `IgeDockerLauncher`
+publishes the UDP port beside the TCP one (`udp: false` to leave it out).
+
 ### Reconnecting
 
 A player whose connection drops enters again: `POST /enter` with the same session. `resolveEntry` reads the zone

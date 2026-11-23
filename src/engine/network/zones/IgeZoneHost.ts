@@ -9,6 +9,8 @@ export interface IgeZoneHostOptions {
 	secret: string;
 	/** Where clients reach this zone (what it registers). */
 	url: string;
+	/** Where clients reach this zone over WebTransport and the hash of its self-signed certificate (what it registers beside `url`), once its WebTransport server is up. */
+	webTransport?: { url: string; certHash?: string };
 	/** How many players are here now (sent with each heartbeat; nobody for a while and the directory stops the zone). */
 	players: () => number;
 	/** Who's here (names, for a layered directory placing companions together); sent with each heartbeat if given. */
@@ -59,12 +61,15 @@ export class IgeZoneHost extends IgeEventingClass {
 	_now: () => number;
 	/** The layer this one's being merged into (the directory said), if it is. */
 	draining?: string;
+	/** Where this zone is reached over WebTransport (set before start(), or later: the next heartbeat registers it). */
+	webTransport?: { url: string; certHash?: string };
 
 	constructor (options: IgeZoneHostOptions) {
 		super();
 		if (!options.secret) throw new Error("A zone host needs the zones' secret");
 		this.zone = options.zone;
 		this._options = options;
+		this.webTransport = options.webTransport;
 		this._now = options.now ?? Date.now;
 	}
 
@@ -89,7 +94,7 @@ export class IgeZoneHost extends IgeEventingClass {
 
 	/** Registers with the directory and starts the heartbeats. */
 	async start (): Promise<void> {
-		await this._post("/zones/register", { zone: this.zone, url: this._options.url });
+		await this._post("/zones/register", { zone: this.zone, url: this._options.url, ...(this.webTransport ? { webTransport: this.webTransport } : {}) });
 		this.emit("registered");
 		if (this._timer) return;
 		this._timer = setInterval(() => {
@@ -105,7 +110,7 @@ export class IgeZoneHost extends IgeEventingClass {
 
 	/** Tells the directory this zone's alive, and how many are in it. */
 	async heartbeat (): Promise<void> {
-		const answer = await this._post("/zones/heartbeat", { zone: this.zone, players: this._options.players(), url: this._options.url, ...(this._options.who ? { who: this._options.who() } : {}) }) as { drain?: string };
+		const answer = await this._post("/zones/heartbeat", { zone: this.zone, players: this._options.players(), url: this._options.url, ...(this.webTransport ? { webTransport: this.webTransport } : {}), ...(this._options.who ? { who: this._options.who() } : {}) }) as { drain?: string };
 		const drain = typeof answer.drain === "string" ? answer.drain : undefined;
 		if (drain !== this.draining) {
 			this.draining = drain;
@@ -119,12 +124,12 @@ export class IgeZoneHost extends IgeEventingClass {
 	 * they arrive, their velocity...). Send both to the player's machine;
 	 * it calls IgeNetReplicationClient.transfer with them.
 	 */
-	async handoff (player: string, toZone: string, data?: unknown, options: { place?: boolean; companions?: string[] } = {}): Promise<{ url: string; ticket: string; zone: string }> {
-		const answer = await this._post("/zones/ensure", { zone: toZone, ...(options.place ? { place: true, player, companions: options.companions ?? [] } : {}) }) as { url: string; zone?: string };
+	async handoff (player: string, toZone: string, data?: unknown, options: { place?: boolean; companions?: string[] } = {}): Promise<{ url: string; ticket: string; zone: string; webTransport?: { url: string; certHash?: string } }> {
+		const answer = await this._post("/zones/ensure", { zone: toZone, ...(options.place ? { place: true, player, companions: options.companions ?? [] } : {}) }) as { url: string; zone?: string; webTransport?: { url: string; certHash?: string } };
 		const zone = typeof answer.zone === "string" && answer.zone ? answer.zone : toZone;
 		const ticket = signTicket({ player, zone, data }, this._options.secret, this._options.ticketTtl ?? 30, this._now());
 		this.emit("handoff", player, zone);
-		return { url: answer.url, ticket, zone };
+		return { url: answer.url, ticket, zone, ...(answer.webTransport ? { webTransport: answer.webTransport } : {}) };
 	}
 
 	/**

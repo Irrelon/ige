@@ -9,6 +9,16 @@
  * latency and loss); WebSocket and WebRTC transports follow the same shape.
  */
 export interface IgeNetConnection {
+	/**
+	 * True when unreliable sends really are datagrams (WebTransport): may be lost or arrive out of order.
+	 * The replication host then runs the viewer in lossy mode unless its own `lossy` option says otherwise.
+	 * Undefined or false: every send arrives, in order (WebSocket).
+	 */
+	readonly lossy?: boolean;
+	/** The transport in use ("webtransport", "websocket", ...), for logs. */
+	readonly transport?: string;
+	/** The largest unreliable (binary) message that fits one datagram, when the transport knows it. */
+	maxDatagramSize? (): number | undefined;
 	send (message: unknown, reliable?: boolean): void;
 	onMessage (listener: (message: unknown) => void): void;
 	onClose (listener: () => void): void;
@@ -28,6 +38,16 @@ export interface IgeNetLoopbackOptions {
 	jitter?: number;
 	/** Chance (0-1) that an unreliable message is lost. */
 	loss?: number;
+	/**
+	 * Model TCP: every message is delivered, in order, whatever `reliable` says (a WebSocket). With
+	 * `loss`, a lost message is delivered after a retransmit delay (`retransmitDelay`, default
+	 * 2 x latency + 200 ms) and holds back everything sent after it (head-of-line blocking).
+	 */
+	tcp?: boolean;
+	/** Retransmit delay in ms for a lost message in `tcp` mode (default 2 x latency + 200). */
+	retransmitDelay?: number;
+	/** Mark the connection `lossy` (it reports itself as a datagram transport), default false. */
+	lossy?: boolean;
 	/** Messages are copied through JSON (binary ones byte for byte) like a real network (default true), so nothing is shared by reference. */
 	copy?: boolean;
 }
@@ -46,6 +66,8 @@ export function igeNetLoopback (options: IgeNetLoopbackOptions = {}): { listener
 	const jitter = options.jitter ?? 0;
 	const loss = options.loss ?? 0;
 	const copy = options.copy ?? true;
+	const tcp = options.tcp ?? false;
+	const retransmit = options.retransmitDelay ?? 2 * latency + 200;
 	let onConnection: ((connection: IgeNetConnection) => void) | undefined;
 	const waiting: IgeNetConnection[] = [];
 
@@ -58,16 +80,18 @@ export function igeNetLoopback (options: IgeNetLoopbackOptions = {}): { listener
 			listeners,
 			close: () => { open = false; },
 			deliver: (message: unknown, reliable: boolean) => {
+				if (tcp) reliable = true;
 				if (!open || (!reliable && loss > 0 && Math.random() < loss)) return;
+				const lost = tcp && loss > 0 && Math.random() < loss;
 				const data = !copy ? message : message instanceof Uint8Array ? message.slice() : JSON.parse(JSON.stringify(message));
 				const run = () => {
 					if (open) for (const listener of listeners) listener(data);
 				};
-				if (latency <= 0 && jitter <= 0) {
+				if (latency <= 0 && jitter <= 0 && !lost && lastReliable <= Date.now()) {
 					queueMicrotask(run);
 					return;
 				}
-				let at = Date.now() + latency + Math.random() * jitter;
+				let at = Date.now() + latency + Math.random() * jitter + (lost ? retransmit : 0);
 				if (reliable) {
 					// Reliable messages keep their order
 					at = Math.max(at, lastReliable);
@@ -101,6 +125,8 @@ export function igeNetLoopback (options: IgeNetLoopbackOptions = {}): { listener
 			});
 		};
 		const end = (out: ReturnType<typeof channel>, into: ReturnType<typeof channel>, side: number): IgeNetConnection => ({
+			lossy: options.lossy,
+			transport: "loopback",
 			send: (message, reliable = true) => out.deliver(message, reliable),
 			onMessage: (fn) => { into.listeners.push(fn); },
 			onClose: (fn) => { closeListeners[side].push(fn); },

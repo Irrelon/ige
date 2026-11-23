@@ -468,6 +468,52 @@ describe("Docker zones", () => {
 	});
 });
 
+describe("zones over WebTransport", () => {
+	it("a zone registers its WebTransport address and certificate hash; enter and handoff pass them on", async () => {
+		const fake = fakeLauncher();
+		const dir = new IgeZoneDirectory({ launcher: fake.launcher, secret: SECRET, resolveEntry: () => ({ zone: "valeria" }) });
+		const port = await dir.listen(0);
+		const base = `http://127.0.0.1:${port}`;
+		try {
+			const valeria = new IgeZoneHost({ zone: "valeria", directoryUrl: base, secret: SECRET, url: "ws://v/sync", players: () => 0, heartbeatMs: 60000, webTransport: { url: "https://v:8700/sync", certHash: "ab12" } });
+			await valeria.start();
+			const entered = await (await fetch(`${base}/enter`, { method: "POST", body: JSON.stringify({ player: "ann" }) })).json();
+			expect(entered).toMatchObject({ zone: "valeria", url: "ws://v/sync", webTransport: { url: "https://v:8700/sync", certHash: "ab12" } });
+			// A zone without one says nothing of it, and a hand-off to it carries none
+			const orhaan = new IgeZoneHost({ zone: "orhaan", directoryUrl: base, secret: SECRET, url: "ws://o/sync", players: () => 0, heartbeatMs: 60000 });
+			await orhaan.start();
+			expect(await valeria.handoff("ann", "orhaan")).not.toHaveProperty("webTransport");
+			expect(await orhaan.handoff("ann", "valeria")).toMatchObject({ url: "ws://v/sync", webTransport: { url: "https://v:8700/sync", certHash: "ab12" } });
+			// A new hash set later (its server came up after registering) arrives with the next heartbeat
+			valeria.webTransport = { url: "https://v:8700/sync", certHash: "cd34" };
+			await valeria.heartbeat();
+			expect((await orhaan.handoff("ann", "valeria")).webTransport?.certHash).toBe("cd34");
+		} finally {
+			await dir.close();
+		}
+	});
+
+	it("the Docker launcher publishes the UDP port beside the TCP one", () => {
+		const launcher = new IgeDockerLauncher({ image: "sf", publish: [9000, 9001], exec: async () => "" });
+		const { args } = launcher.runArgs("a", {}, 9000);
+		expect(args).toEqual(expect.arrayContaining(["-p", "9000:8080", "9000:8080/udp"]));
+		expect(new IgeDockerLauncher({ image: "sf", udp: false, exec: async () => "" }).runArgs("a", {}, 9000).args).not.toContain("9000:8080/udp");
+	});
+
+	it("the child process launcher skips a port whose UDP side is taken", async () => {
+		const { createSocket } = await import("node:dgram");
+		const base = 41230;
+		const udp = createSocket("udp4");
+		await new Promise<void>((resolve) => udp.bind(base, resolve));
+		try {
+			const launcher = new IgeChildProcessLauncher({ script: "unused", ports: [base, base + 3], log: false });
+			expect(await launcher._freePort()).toBe(base + 1);
+		} finally {
+			udp.close();
+		}
+	});
+});
+
 describe("moving between zones", () => {
 	type Input = { dx: number };
 	const schemas = { dot: { x: { type: "number", precision: 0.01 }, who: { type: "string" }, zone: { type: "string" } } } as const;

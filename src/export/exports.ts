@@ -164,6 +164,8 @@ export * from "../engine/network/rooms/IgeRoomClient";
 export * from "../engine/network/transport/IgeNetTransport";
 export * from "../engine/network/transport/igeNetWebSocket";
 export * from "../engine/network/transport/IgeNetWebSocketServer";
+export * from "../engine/network/transport/igeNetWebTransport";
+// IgeNetWebTransportServer and igeNetSelfSignedCert are Node-only (like the zone servers): import them by path
 export * from "../engine/network/replication/IgeNetBits";
 export * from "../engine/network/replication/IgeNetSchema";
 export * from "../engine/network/replication/igeNetJsonDelta";

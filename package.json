@@ -51,6 +51,8 @@
 		"websocket": "^1.0.34"
 	},
 	"devDependencies": {
+		"@fails-components/webtransport": "^1.6.12",
+		"@fails-components/webtransport-transport-http3-quiche": "^1.6.12",
 		"@irrelon/fix-paths": "^1.0.7",
 		"@trivago/prettier-plugin-sort-imports": "^4.3.0",
 		"@types/esprima": "^4.0.6",
@@ -104,9 +106,17 @@
 	},
 	"peerDependencies": {
 		"three": "^0.162.0",
-		"jolt-physics": "^1.1.1"
+		"jolt-physics": "^1.1.1",
+		"@fails-components/webtransport": "^1.6.12",
+		"@fails-components/webtransport-transport-http3-quiche": "^1.6.12"
 	},
 	"peerDependenciesMeta": {
+		"@fails-components/webtransport": {
+			"optional": true
+		},
+		"@fails-components/webtransport-transport-http3-quiche": {
+			"optional": true
+		},
 		"jolt-physics": {
 			"optional": true
 		}

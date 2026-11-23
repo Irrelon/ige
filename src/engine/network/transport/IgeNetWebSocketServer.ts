@@ -73,6 +73,7 @@ export class IgeNetWebSocketServer {
 			});
 			socket.on("close", end);
 			const connection: IgeNetConnection = {
+				transport: "websocket",
 				send: (message) => {
 					if (closed || !socket.connected) return;
 					if (message instanceof Uint8Array) socket.sendBytes(Buffer.from(message.buffer, message.byteOffset, message.byteLength));

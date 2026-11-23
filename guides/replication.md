@@ -90,7 +90,7 @@ A game can make its objects before there's a host (a world a test steps with nob
 
 ### Reliable and lossy transports
 
-`lossy: false` (the default, WebSocket): a send counts as delivered, nothing is resent. `lossy: true` (datagram channels, coming in stage 3): each object has a baseline the machine has acknowledged. Every packet carries a sequence number, the machine acks the newest seen plus 32 earlier as bits (riding on its input packets, so it must send inputs every tick), and an update carries everything changed since the acknowledged baseline, so any packet can be lost or arrive late. Creates and destroys repeat until acknowledged and a destroyed object's handle is not reused before. Tests run both modes over `igeNetLoopback({ latency, jitter, loss })`.
+Each connection says whether it is lossy (`IgeNetConnection.lossy`: true for WebTransport, absent for a WebSocket), and the host runs that machine's viewer to match, so WebSocket and WebTransport machines can share one host. The host's `lossy` option, when set, overrides every connection (true or false). In reliable mode (a WebSocket) a send counts as delivered, nothing is resent. In lossy mode (datagrams) each object has a baseline the machine has acknowledged. Every packet carries a sequence number, the machine acks the newest seen plus 32 earlier as bits (riding on its input packets, so it must send inputs every tick), and an update carries everything changed since the acknowledged baseline, so any packet can be lost or arrive late. Creates and destroys repeat until acknowledged and a destroyed object's handle is not reused before. Tests run both modes over `igeNetLoopback({ latency, jitter, loss })`.
 
 ### Stats and debugging
 
@@ -266,8 +266,51 @@ Notes:
 - Record in the same step, after the move, and remember this step's positions aren't recorded until you do: for a lag under one tick blend with the current position.
 - Don't rewind things that steer themselves (missiles that home, point defence) or that don't move (rocks, mines): test them where they are now. Rewind only what a shooter can aim at by what it sees.
 
+## WebTransport (stage 3)
+
+WebTransport (HTTP/3 over QUIC) carries replication packets and inputs as datagrams, and everything else (join, transfer, control messages, events, chat, commands) on one reliable bidirectional stream of the same session, in order. The WebSocket stays as the fallback.
+
+```typescript
+// Server (Node): beside the WebSocket server, the same authority
+const wt = new IgeNetWebTransportServer({ port: 8670 });   // import by path: it's Node-only
+await wt.start();                                           // UDP; wt.certHash for self-signed
+const host = new IgeNetReplicationHost(igeNetMergeListeners(sockets.listen("/sync"), wt), { ... });
+
+// Client: WebTransport where it can, else the WebSocket
+const { connection, transport } = await igeNetConnect({
+	webTransport: { url: "https://zone.example.com:8670/sync", certHash },   // certHash only for a self-signed server
+	webSocket: "wss://zone.example.com/sync"
+});
+const client = new IgeNetReplicationClient(connection, { schemas, inputSchema });
+console.log(client.transport);   // "webtransport" or "websocket"
+```
+
+- Server library: `@fails-components/webtransport` and `@fails-components/webtransport-transport-http3-quiche` (a C++ binding to libquiche; prebuilt binaries for Linux x64/arm64, macOS and Windows), optional peer dependencies loaded on demand, Node only. It accepts both the current and the legacy (`:protocol = webtransport`) token the browsers send.
+- `IgeNetWebTransportServer({ port, host?, path?, cert?, privKey? | certFile?, keyFile? })`: UDP on `port`. Without a certificate it makes a self-signed one at start (ECDSA P-256, valid 13 days: a browser refuses `serverCertificateHashes` certificates valid for 14 days or more) and gives its SHA-256 (hex) as `certHash`; clients pin it. Production uses real certificate files and needs no hash.
+- Framing: reliable sends are frames `[kind u8][length u32][payload]` on the stream (kind 1 JSON, 2 binary), unreliable binary sends are datagrams. An unreliable message bigger than the session's datagram size goes on the stream instead.
+- A lossy viewer's `maxPacketBytes` is held to the session's maximum datagram size (1150 bytes when it isn't known), so one packet is one datagram. Inputs go unreliable every tick, each packet repeating the last 3 frames (`inputRedundancy`), so one lost datagram loses no input.
+- `igeNetConnect()` uses WebTransport when `WebTransport` exists and the page is a secure context (HTTPS or localhost), and falls back to the WebSocket when it's missing, errors or takes more than `timeout` (2 s) to come up. It says which it used (`transport`, and `fallbackReason`). A plain `http` page on a LAN address is not a secure context, so it uses the WebSocket.
+- `client.transfer({ url, ticket, webTransport: { url, certHash } })` connects the same way; `connect(url, target)` replaces it.
+- Zones register their WebTransport address with `IgeZoneHost.webTransport`, the directory returns it from `/enter` and `/zones/ensure`, and `handoff()` returns it (see [zone-servers.md](zone-servers.md)).
+
+### Measured: reliable-ordered against datagrams
+
+`NET_BENCH=1 npx jest --runTestsByPath src/tests/IgeNetLossBench.test.ts`: a moving object, 30 updates a second, 60 ms round trip, 120 s per cell on `igeNetLoopback`, where `tcp: true` models TCP (a lost message arrives after RTT + 200 ms and holds back all behind it) and `lossy: true` datagrams (a lost one is skipped and the next carries the change). "Since last" samples the time since the last fresh update every ms, which is what a renderer sees.
+
+| loss | transport | gap p50 | gap p95 | gap p99 | longest gap | since last p95 | since last p99 | longest freeze |
+|---|---|---|---|---|---|---|---|---|
+| 0% | WebSocket | 33 | 34 | 34 | 34 | 31 | 32 | 33 |
+| 0% | WebTransport | 33 | 34 | 34 | 34 | 31 | 33 | 33 |
+| 1% | WebSocket | 33 | 34 | 34 | 294 | 107 | 255 | 293 |
+| 1% | WebTransport | 33 | 34 | 34 | 67 | 31 | 33 | 66 |
+| 2% | WebSocket | 33 | 34 | 293 | 294 | 206 | 275 | 293 |
+| 2% | WebTransport | 33 | 34 | 67 | 100 | 32 | 51 | 99 |
+| 5% | WebSocket | 33 | 34 | 294 | 294 | 246 | 283 | 293 |
+| 5% | WebTransport | 33 | 34 | 67 | 134 | 33 | 61 | 133 |
+
+(All in ms.) The gap table counts a burst of updates that arrive together after a retransmit as several gaps; the freeze columns show what the player sees: with a WebSocket at 5% loss a quarter of the time the newest state is over 246 ms old, with datagrams it is under 61 ms 99% of the time, and a freeze is at most a few ticks.
+
 ## Coming
 
-- **Stage 3, datagram transport:** WebTransport / WebRTC data channels with the lossy baselines, versioned json patches and slices already in place (and MTU budgeting).
-- Stage 4, lag compensation, is done: see above.
+- Stages 3 (WebTransport) and 4 (lag compensation) are done: see above.
 - Entity streaming on this layer is done: see [entity-streaming.md](entity-streaming.md). The old `IgeObject` streaming (`streamMode`, `streamSections`, the net.io stream commands and the time-stream interpolation) has been removed.

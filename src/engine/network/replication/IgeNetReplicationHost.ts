@@ -5,6 +5,9 @@ import { IgeNetReplicator, type IgeNetReplicatorOptions, type IgeNetViewer } fro
 import { IGE_NET_PACKET_INPUT, igeNetPacketType, igeNetReadInputPacket, type IgeNetClientMessage, type IgeNetMachine } from "@/engine/network/replication/igeNetReplicationProtocol";
 import type { IgeNetConnection, IgeNetListener } from "@/engine/network/transport/IgeNetTransport";
 
+/** The packet size for a lossy connection that doesn't know its datagram size (bytes). */
+const IGE_DATAGRAM_FALLBACK = 1150;
+
 /** A machine connected to a replication host: a machine and what it sees. */
 export interface IgeNetReplicationMachine extends IgeNetMachine {
 	/** Subscribe it to scopes, reveal objects to it, make objects private to it. */
@@ -32,9 +35,11 @@ export interface IgeNetReplicationHostOptions<Input> {
 	sendRate?: number;
 	/**
 	 * The transport loses and reorders packets (a datagram channel): changes are then sent again,
-	 * against the last packet the machine acknowledged, until it acknowledges them. Default false
-	 * (WebSocket: a send counts as delivered). Acknowledgements ride on the machine's input
-	 * packets, so it must send inputs every tick.
+	 * against the last packet the machine acknowledged, until it acknowledges them. Acknowledgements
+	 * ride on the machine's input packets, so it must send inputs every tick.
+	 * Default: each connection says (`connection.lossy`: true for WebTransport, so a machine on
+	 * a WebSocket and one on WebTransport can share a host); true or false here overrides every
+	 * connection. A lossy viewer's `maxPacketBytes` is held to what fits a datagram.
 	 */
 	lossy?: boolean;
 	/**
@@ -245,7 +250,14 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 	}
 
 	_join (connection: IgeNetConnection, message: Extract<IgeNetClientMessage, { t: "join" }>, link: JoinLink<Input>): void | PromiseLike<void> {
-		const viewer = this.replicator.addViewer((bytes) => connection.send(bytes, !this._options.lossy), { lossy: this._options.lossy });
+		const lossy = this._options.lossy ?? connection.lossy ?? false;
+		const viewer = this.replicator.addViewer((bytes) => connection.send(bytes, !lossy), { lossy });
+		if (lossy) {
+			// One packet must fit one datagram (the session's size when it says, else a size that fits any path)
+			const fit = connection.maxDatagramSize?.() ?? IGE_DATAGRAM_FALLBACK;
+			const own = viewer.maxPacketBytes || this.replicator.maxPacketBytes || 0;
+			viewer.maxPacketBytes = own > 0 ? Math.min(own, fit) : fit;
+		}
 		viewer.enabled = false;
 		const machine: IgeNetReplicationMachine = { id: `m${nextMachine++}`, players: [], rtt: 0, data: {}, viewer };
 		const refuse = (error: string): void => {

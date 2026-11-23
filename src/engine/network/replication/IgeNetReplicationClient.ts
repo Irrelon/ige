@@ -16,6 +16,15 @@ import {
 import { IGE_NET_JSON_MISSING, IgeNetJsonStore, IgeNetJsonWire } from "@/engine/network/replication/igeNetJsonDelta";
 import type { IgeNetConnection } from "@/engine/network/transport/IgeNetTransport";
 
+/** Where transfer() goes: the zone's WebSocket url, and optionally its WebTransport address. */
+export interface IgeNetTransferTarget {
+	url: string;
+	ticket?: string;
+	players?: unknown[];
+	/** The zone's WebTransport address and, for a self-signed certificate, its hash (hex). */
+	webTransport?: { url: string; certHash?: string };
+}
+
 export interface IgeNetReplicationClientOptions {
 	/** The kinds of object, the same as the host's. */
 	schemas: IgeNetSchemaSet | Record<string, Record<string, IgeNetFieldDef>>;
@@ -34,8 +43,11 @@ export interface IgeNetReplicationClientOptions {
 	pingInterval?: number;
 	/** Give up on the authority when nothing's been heard for this long, in ms (default 10000; 0 waits forever). */
 	timeout?: number;
-	/** How transfer() connects to another zone's url (default: a WebSocket). */
-	connect?: (url: string) => IgeNetConnection | Promise<IgeNetConnection>;
+	/**
+	 * How transfer() connects to another zone (default: igeNetConnect(): WebTransport when the
+	 * target gives an address and the browser can, else a WebSocket on `url`).
+	 */
+	connect?: (url: string, target: IgeNetTransferTarget) => IgeNetConnection | Promise<IgeNetConnection>;
 }
 
 /** One state of an object at an authority tick. */
@@ -101,6 +113,10 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	classId = "IgeNetReplicationClient";
 	machine?: string;
 	players: string[] = [];
+	/** The transport the connection uses ("webtransport", "websocket", "loopback"). */
+	get transport (): string | undefined {
+		return this._connection.transport;
+	}
 	tickRate = 30;
 	rtt = 0;
 	info: unknown;
@@ -173,7 +189,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	 * connection closes, the new one is joined, and the world starts afresh from its packets (its
 	 * objects, clock and unapplied inputs are dropped).
 	 */
-	async transfer (target: { url: string; ticket?: string; players?: unknown[] }): Promise<IgeNetWelcome> {
+	async transfer (target: IgeNetTransferTarget): Promise<IgeNetWelcome> {
 		this.transferring = true;
 		this.emit("transfer", { url: target.url });
 		const old = this._connection;
@@ -189,8 +205,11 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		}
 		this._reset();
 		try {
-			const connect = this._options.connect ?? (async (url: string) => (await import("@/engine/network/transport/igeNetWebSocket")).igeNetWebSocketConnect(url));
-			this._attach(await connect(target.url));
+			const connect = this._options.connect ?? (async (url: string, to: IgeNetTransferTarget) => {
+				const { igeNetConnect } = await import("@/engine/network/transport/igeNetWebTransport");
+				return (await igeNetConnect({ webTransport: to.webTransport, webSocket: url })).connection;
+			});
+			this._attach(await connect(target.url, target));
 			const ref = ++this._ref;
 			const welcome = await new Promise<IgeNetWelcome>((resolve, reject) => {
 				this._joining = { ref, resolve, reject };

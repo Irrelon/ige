@@ -67,6 +67,18 @@ export interface IgeZoneDirectoryOptions {
 	now?: () => number;
 }
 
+/** A zone's WebTransport address, and the hash (hex) of its certificate when that's self-signed. */
+export interface IgeZoneWebTransport {
+	url: string;
+	certHash?: string;
+}
+
+const webTransportOf = (value: unknown): IgeZoneWebTransport | undefined => {
+	const v = value as { url?: unknown; certHash?: unknown } | undefined;
+	if (!v || typeof v.url !== "string" || !v.url) return undefined;
+	return { url: v.url, ...(typeof v.certHash === "string" && v.certHash ? { certHash: v.certHash } : {}) };
+};
+
 export type IgeZoneState = "starting" | "running";
 
 /** What the directory knows of a zone. */
@@ -74,6 +86,8 @@ export interface IgeZoneRecord {
 	zone: string;
 	state: IgeZoneState;
 	url?: string;
+	/** Where the zone is reached over WebTransport (its address and, for a self-signed certificate, the hash to pin), if it listens for it. */
+	webTransport?: IgeZoneWebTransport;
 	players: number;
 	startedAt: number;
 	lastHeartbeat: number;
@@ -107,7 +121,7 @@ const JSON_HEADERS = { "content-type": "application/json", "cache-control": "no-
  * - `POST /enter { player, ... }`: the game's resolveEntry says which zone;
  *   it's started if need be → `{ zone, url, ticket }`.
  * - `POST /zones/ensure { zone, place?, player?, companions? }`: a zone
- *   handing a player on (with the secret as a bearer token) → `{ url, zone }`
+ *   handing a player on (with the secret as a bearer token) → `{ url, zone, webTransport? }`
  *   once the zone's up (`place`: into one of its layers, as /enter does).
  * - `POST /zones/register { zone, url }` and `POST /zones/heartbeat
  *   { zone, players, url?, who? }`: from zones (with the secret); a
@@ -154,7 +168,7 @@ export class IgeZoneDirectory extends IgeEventingClass {
 	// ---- What the routes do (callable directly too: tests, an in-process game) ----
 
 	/** A player entering the game: their zone, started if need be, and a ticket into it. */
-	async enter (player: string, body: Record<string, unknown> = {}): Promise<{ zone: string; url: string; ticket: string }> {
+	async enter (player: string, body: Record<string, unknown> = {}): Promise<{ zone: string; url: string; ticket: string; webTransport?: IgeZoneWebTransport }> {
 		if (typeof player !== "string" || !player || player.length > 128) throw new IgeZoneError(400, "Who's entering?");
 		const entry = await this._options.resolveEntry(player, body);
 		if (typeof entry === "string") throw new IgeZoneError(403, entry);
@@ -162,7 +176,8 @@ export class IgeZoneDirectory extends IgeEventingClass {
 		const url = await this.ensure(zone);
 		const ticket = signTicket({ player, zone, data: entry.data }, this._options.secret, this._options.ticketTtl ?? 30, this._now());
 		this.emit("enter", player, zone);
-		return { zone, url, ticket };
+		const webTransport = this.zones.get(zone)?.webTransport;
+		return { zone, url, ticket, ...(webTransport ? { webTransport } : {}) };
 	}
 
 	/**
@@ -272,12 +287,13 @@ export class IgeZoneDirectory extends IgeEventingClass {
 	}
 
 	/** A zone is up and ready for players at `url`. */
-	register (zone: string, url: string): IgeZoneRecord {
+	register (zone: string, url: string, webTransport?: IgeZoneWebTransport): IgeZoneRecord {
 		if (!igeZoneIdValid(zone)) throw new IgeZoneError(400, `Not a zone id: ${zone}`);
 		const now = this._now();
 		const record = this.zones.get(zone) ?? { zone, state: "running" as IgeZoneState, players: 0, startedAt: now, lastHeartbeat: now, emptySince: now };
 		record.state = "running";
 		record.url = typeof url === "string" && url ? url : record.url;
+		record.webTransport = webTransportOf(webTransport) ?? record.webTransport;
 		record.lastHeartbeat = now;
 		this.zones.set(zone, record);
 		const starting = this._starting.get(zone);
@@ -295,13 +311,14 @@ export class IgeZoneDirectory extends IgeEventingClass {
 	 * placing companions together). A zone the directory had forgotten is
 	 * taken back, given its url.
 	 */
-	heartbeat (zone: string, players: number, url?: string, who?: string[]): IgeZoneRecord | undefined {
+	heartbeat (zone: string, players: number, url?: string, who?: string[], webTransport?: IgeZoneWebTransport): IgeZoneRecord | undefined {
 		let record = this.zones.get(zone);
 		if (!record) {
 			if (!url) return;
-			record = this.register(zone, url);
+			record = this.register(zone, url, webTransport);
 		}
 		const now = this._now();
+		record.webTransport = webTransportOf(webTransport) ?? record.webTransport;
 		record.lastHeartbeat = now;
 		record.players = Math.max(0, Math.floor(Number(players) || 0));
 		if (Array.isArray(who)) {
@@ -446,12 +463,14 @@ export class IgeZoneDirectory extends IgeEventingClass {
 				const asked = String(body.zone ?? "");
 				const companions = Array.isArray(body.companions) ? body.companions.filter((c): c is string => typeof c === "string").slice(0, 200) : [];
 				const zone = body.place ? this.place(asked, typeof body.player === "string" ? body.player : undefined, companions) : asked;
-				return { url: await this.ensure(zone), zone };
+				const url = await this.ensure(zone);
+				const webTransport = this.zones.get(zone)?.webTransport;
+				return { url, zone, ...(webTransport ? { webTransport } : {}) };
 			}
 			case "/zones/register":
-				return { ok: true, zone: this.register(String(body.zone ?? ""), String(body.url ?? "")).zone };
+				return { ok: true, zone: this.register(String(body.zone ?? ""), String(body.url ?? ""), webTransportOf(body.webTransport)).zone };
 			case "/zones/heartbeat": {
-				const record = this.heartbeat(String(body.zone ?? ""), Number(body.players) || 0, typeof body.url === "string" ? body.url : undefined, Array.isArray(body.who) ? body.who as string[] : undefined);
+				const record = this.heartbeat(String(body.zone ?? ""), Number(body.players) || 0, typeof body.url === "string" ? body.url : undefined, Array.isArray(body.who) ? body.who as string[] : undefined, webTransportOf(body.webTransport));
 				return { ok: !!record, ...(record?.draining ? { drain: record.draining } : {}) };
 			}
 		}

@@ -1,4 +1,5 @@
 import { type ChildProcess, spawn } from "node:child_process";
+import { createSocket } from "node:dgram";
 import { createServer } from "node:net";
 import { igeZoneIdValid, type IgeZoneLauncher } from "@/engine/network/zones/IgeZoneLauncher";
 
@@ -134,7 +135,23 @@ export class IgeChildProcessLauncher implements IgeZoneLauncher {
  * alone would call a port in use by a zone free.
  */
 async function portFree (port: number, host: string): Promise<boolean> {
-	return (await canListen(port)) && canListen(port, host);
+	// TCP (the WebSocket) and UDP (WebTransport, on the same number) are separate: both must be free
+	return (await canListen(port)) && (await canListen(port, host)) && (await canListenUdp(port)) && canListenUdp(port, host);
+}
+
+function canListenUdp (port: number, host?: string): Promise<boolean> {
+	return new Promise((resolve) => {
+		const socket = createSocket("udp4");
+		socket.once("error", () => {
+			try {
+				socket.close();
+			} catch {
+				// Never bound
+			}
+			resolve(false);
+		});
+		socket.bind(port, host, () => socket.close(() => resolve(true)));
+	});
 }
 
 function canListen (port: number, host?: string): Promise<boolean> {

@@ -67,6 +67,7 @@ function socketConnection (socket: WebSocket, wrap: (message: unknown) => unknow
 	const closeListeners: (() => void)[] = [];
 	let closed = false;
 	const connection = {
+		transport: "websocket",
 		send: (message: unknown) => {
 			if (closed || socket.readyState !== 1) return;
 			if (message instanceof Uint8Array) {
