@@ -332,6 +332,15 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		this.replicator.event(data, out);
 	}
 
+	/**
+	 * Sends an event to one machine at once, as a control message outside the replication packets (always reliable, untargeted,
+	 * not counted in the budget): for what must go before the machine is dropped, when no packet will be made for it again.
+	 */
+	eventNow (data: unknown, machine: IgeNetReplicationMachine | string): void {
+		const state = this._machines.get(typeof machine === "string" ? machine : machine.id);
+		if (state) this._send(state.connection, { t: "event", tick: this.tick, data });
+	}
+
 	/** The most a view may lag, in ticks (`maxRewind`). */
 	maxRewindTicks (): number {
 		return ((this._options.maxRewind ?? 250) * this.tickRate) / 1000;

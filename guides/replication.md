@@ -256,6 +256,7 @@ client.on("event", (data, tick) => { /* { t: "boom", x, z, size }, quantised */ 
 - **Declared shapes**: the schema set's third argument (`events:` and `eventKey:`, default `"t"`, on host and client options) declares each event type with the same field types as an object kind. The type is the key, not a field; it costs a few bits. The data arrives as `{ t, ...fields }`, quantised. An event of an undeclared type still goes, as JSON inside the packet (games being ported keep working). The schema hash covers event shapes.
 - **Reliability**: on a reliable transport the packet arrives, so an event goes once. On a lossy one reliable events are sent again (after `eventResendAfter` rounds, default 3) until a packet carrying them is acknowledged, and the client delivers each exactly once, in order (a later one waits for an earlier one still in flight). `reliable: false` goes once and is never resent: lost with its packet.
 - **Order**: the client emits `"event"` (data, tick) after the packet's creates and updates, so an event about an object created in that packet finds it in `client.objects`. The `tick` is the one it was made at, which a resend keeps.
+- **Before a drop**: `host.eventNow(data, machine)` sends one event at once as a control message outside the packets, for what must go before a machine is disconnected (its viewer makes no more packets).
 - **Cost**: `host.stats().eventBytes` / `events`, `viewer.stats.eventBytes`.
 
 ### Removal reasons
