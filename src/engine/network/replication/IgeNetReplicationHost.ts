@@ -1,12 +1,18 @@
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeNetBitReader } from "@/engine/network/replication/IgeNetBits";
-import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions } from "@/engine/network/replication/IgeNetSchema";
-import { IgeNetReplicator, type IgeNetReplicatorOptions, type IgeNetViewer } from "@/engine/network/replication/IgeNetReplicator";
+import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions, type IgeNetEventDefs } from "@/engine/network/replication/IgeNetSchema";
+import { IgeNetReplicator, type IgeNetEventTarget, type IgeNetReplicatorOptions, type IgeNetViewer } from "@/engine/network/replication/IgeNetReplicator";
 import { IGE_NET_PACKET_INPUT, igeNetPacketType, igeNetReadInputPacket, type IgeNetClientMessage, type IgeNetMachine } from "@/engine/network/replication/igeNetReplicationProtocol";
 import type { IgeNetConnection, IgeNetListener } from "@/engine/network/transport/IgeNetTransport";
 
 /** The packet size for a lossy connection that doesn't know its datagram size (bytes). */
 const IGE_DATAGRAM_FALLBACK = 1150;
+
+/** Who a host event is for (see IgeNetReplicationHost.event). */
+export interface IgeNetHostEventTarget extends Omit<IgeNetEventTarget, "to"> {
+	/** One machine or several (or their ids). */
+	to?: IgeNetReplicationMachine | string | (IgeNetReplicationMachine | string)[];
+}
 
 /** A machine connected to a replication host: a machine and what it sees. */
 export interface IgeNetReplicationMachine extends IgeNetMachine {
@@ -19,6 +25,10 @@ export interface IgeNetReplicationHostOptions<Input> {
 	schemas: IgeNetSchemaSet | Record<string, Record<string, IgeNetFieldDef>>;
 	/** Kind options (relevance, position, blip, priorities, rates), by kind, when `schemas` is plain definitions. The clients need the same. */
 	kinds?: Record<string, IgeNetKindOptions>;
+	/** Declared event shapes by event type, when `schemas` is plain definitions (see IgeNetSchemaSet). The clients need the same. */
+	events?: IgeNetEventDefs;
+	/** The field of an event's data that names its type (default "t"). The clients need the same. */
+	eventKey?: string;
 	/**
 	 * Relevance and budget settings, passed to the replicator (see IgeNetReplicatorOptions):
 	 * `bandwidth` per machine in bytes/s (default 32768 when any kind declares relevance, else no limit),
@@ -148,7 +158,7 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		this._options = options;
 		this.tickRate = options.tickRate ?? 30;
 		this.sendRate = Math.min(this.tickRate, options.sendRate ?? 20);
-		this.schemas = options.replicator?.schemas ?? (options.schemas instanceof IgeNetSchemaSet ? options.schemas : new IgeNetSchemaSet(options.schemas, options.kinds));
+		this.schemas = options.replicator?.schemas ?? (options.schemas instanceof IgeNetSchemaSet ? options.schemas : new IgeNetSchemaSet(options.schemas, options.kinds, options.events, options.eventKey));
 		this.inputSchema = options.inputSchema instanceof IgeNetSchema ? options.inputSchema : new IgeNetSchema("input", options.inputSchema ?? {});
 		this.replicator = options.replicator ?? new IgeNetReplicator(this.schemas, { ...options.relevance, now: options.now, sendRate: this.sendRate });
 		if (options.replicator) {
@@ -297,12 +307,50 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		this.emit("join", machine);
 	}
 
-	/** Send a reliable event to every machine, or to one. */
-	event (data: unknown, machine?: IgeNetReplicationMachine | string): void {
-		const id = typeof machine === "string" ? machine : machine?.id;
-		for (const state of this._machines.values()) {
-			if (!id || state.machine.id === id) this._send(state.connection, { t: "event", tick: this.tick, data });
+	/**
+	 * Sends an event, in the replication packets of the viewers it's for (binary when its type is declared in the
+	 * schema set's events, else as JSON inside the packet), stamped with the current tick and counted in their budgets.
+	 * `target`: none, every machine; a machine or machine id, that machine; or options: `to` (machine(s)), `on`
+	 * (viewers holding any of these objects in full detail), `at` (`{ scope, x, z }`: viewers in the scope for whom
+	 * a spatial object there would be full detail), `scope` (every viewer subscribed to it), `reliable` (default true).
+	 * `on`, `at`, `scope` and `to` together reach the union; `reliable: false` sends once and never again.
+	 */
+	event (data: unknown, target?: IgeNetReplicationMachine | string | IgeNetHostEventTarget): void {
+		this.replicator.tick = this.tick;
+		if (target === undefined) {
+			this.replicator.event(data);
+			return;
 		}
+		if (typeof target === "string") {
+			const state = this._machines.get(target);
+			if (state) this.replicator.event(data, { to: state.machine.viewer });
+			return;
+		}
+		if ("viewer" in target && "players" in target) {
+			this.replicator.event(data, { to: target.viewer });
+			return;
+		}
+		const options = target as IgeNetHostEventTarget;
+		const out: IgeNetEventTarget = { on: options.on, at: options.at, scope: options.scope, reliable: options.reliable };
+		if (options.to !== undefined) {
+			const list = Array.isArray(options.to) ? options.to : [options.to];
+			const viewers: IgeNetViewer[] = [];
+			for (const m of list) {
+				const state = this._machines.get(typeof m === "string" ? m : m.id);
+				if (state) viewers.push(state.machine.viewer);
+			}
+			out.to = viewers;
+		}
+		this.replicator.event(data, out);
+	}
+
+	/**
+	 * Sends an event to one machine at once, as a control message outside the replication packets (always reliable, untargeted,
+	 * not counted in the budget): for what must go before the machine is dropped, when no packet will be made for it again.
+	 */
+	eventNow (data: unknown, machine: IgeNetReplicationMachine | string): void {
+		const state = this._machines.get(typeof machine === "string" ? machine : machine.id);
+		if (state) this._send(state.connection, { t: "event", tick: this.tick, data });
 	}
 
 	/** The most a view may lag, in ticks (`maxRewind`). */

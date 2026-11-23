@@ -2,7 +2,7 @@ import { IgeNetBitWriter, igeNetBitsFor } from "@/engine/network/replication/Ige
 import { IgeNetGrid } from "@/engine/network/replication/IgeNetGrid";
 import { igeNetMaskEmpty, igeNetMaskKey, type IgeNetJsonWriter, type IgeNetMask, type IgeNetSchema, type IgeNetSchemaSet } from "@/engine/network/replication/IgeNetSchema";
 import { IGE_NET_JSON_VERSIONS, igeNetJsonDiff, igeNetWriteJsonPatch, igeNetWriteJsonWhole } from "@/engine/network/replication/igeNetJsonDelta";
-import { IGE_NET_PACKET_SNAPSHOT } from "@/engine/network/replication/igeNetReplicationProtocol";
+import { IGE_NET_PACKET_SNAPSHOT, IGE_NET_PACKET_SNAPSHOT_EVENTS, igeNetEventBits, igeNetWriteEvent, type IgeNetEventWire } from "@/engine/network/replication/igeNetReplicationProtocol";
 
 /** Where an object is seen and by whom. */
 export interface IgeNetObjectOptions {
@@ -24,6 +24,8 @@ interface JsonVersion {
 }
 
 const NO_VERSIONS: (JsonVersion[] | undefined)[] = [];
+
+const NO_EVENTS: EventEntry[] = [];
 
 /** The smallest slice worth its header (bytes), unless it finishes its entry. */
 const MIN_SLICE = 32;
@@ -89,6 +91,8 @@ export interface IgeNetViewState {
 	/** A create has been sent, so a destroy is owed when the object goes. */
 	sentEver: boolean;
 	dead: boolean;
+	/** The removal reason (an index in the kind's removeReasons) sent with the destroy, or -1. */
+	reason: number;
 	/** The object is placed in space for this viewer: its detail depends on distance. */
 	spatial: boolean;
 	/** The detail the viewer should have (true: full). Non-spatial objects are always full. */
@@ -289,12 +293,22 @@ export class IgeNetObject {
 	}
 
 	/** Moves the object to another scope: viewers of the old one lose it, viewers of the new one gain it. */
-	moveTo (scope: string | undefined): void {
-		this._rep._moveTo(this, scope);
+	/**
+	 * Moves it to another scope (or none). Viewers that lose it by this and held it in full detail are sent `reason` (one of
+	 * the kind's removeReasons) with the removal, as destroy() does: a ship that jumped out of a system, one that cloaked.
+	 */
+	moveTo (scope: string | undefined, reason?: string): void {
+		let index = -1;
+		if (reason !== undefined) {
+			index = this.schema.options.removeReasons?.indexOf(reason) ?? -1;
+			if (index < 0) throw new Error(`${this.kind}: "${reason}" isn't one of its removeReasons`);
+		}
+		this._rep._moveTo(this, scope, index);
 	}
 
-	destroy (): void {
-		this._rep.destroy(this);
+	/** Removes it; `reason` (one of the kind's removeReasons) goes to viewers that hold it in full detail. */
+	destroy (reason?: string): void {
+		this._rep.destroy(this, reason);
 	}
 
 	_markDirty (epoch: number): void {
@@ -324,6 +338,34 @@ interface SentPacket {
 	entries: SentEntry[];
 	destroys: number[];
 	slices?: Slice[];
+	/** Reliable events it carried (acknowledged with it). */
+	events?: EventEntry[];
+}
+
+/** An event queued for one viewer (the wire form is shared by every viewer it's for). */
+interface EventEntry {
+	wire: IgeNetEventWire;
+	reliable: boolean;
+	/** The viewer's sequence number of a reliable event. */
+	seq: number;
+	/** The round it was last sent in (a lossy transport sends a reliable event again after a gap, until acknowledged). */
+	sentRound: number;
+	/** Acknowledged, or sent for good (unreliable events, and everything on a reliable transport). */
+	done: boolean;
+}
+
+/** Who an event is for (see IgeNetReplicator.event): none of these means every viewer. */
+export interface IgeNetEventTarget {
+	/** Viewers that hold any of these objects in full detail now (or are in range of one that isn't sent yet). Ids work too. */
+	on?: IgeNetObject | string | (IgeNetObject | string)[];
+	/** Viewers in the scope for whom a spatial object at this point would be in full detail (the test relevance uses). */
+	at?: { scope: string; x: number; z: number; y?: number };
+	/** Every viewer subscribed to the scope. */
+	scope?: string;
+	/** These viewers, whatever they see. */
+	to?: IgeNetViewer | IgeNetViewer[];
+	/** Default true: resent on a lossy transport until acknowledged, delivered once and in order. False: sent once, never again. */
+	reliable?: boolean;
 }
 
 /** One thing to put in this round's packets for a viewer. */
@@ -340,6 +382,8 @@ interface Candidate {
 }
 
 export interface IgeNetViewerStats {
+	/** Bytes of events sections sent (they're part of `bytes`). */
+	eventBytes: number;
 	bytes: number;
 	packets: number;
 	/** Bytes by object kind (entries only; headers aren't attributed). */
@@ -443,7 +487,7 @@ export class IgeNetViewer {
 	/** The machine's newest input frame applied, for the packet header. */
 	inputAck = 0;
 	readonly lossy: boolean;
-	stats: IgeNetViewerStats = { bytes: 0, packets: 0, byKind: {}, deferred: 0, oldestPendingAge: 0, entries: 0 };
+	stats: IgeNetViewerStats = { bytes: 0, packets: 0, eventBytes: 0, byKind: {}, deferred: 0, oldestPendingAge: 0, entries: 0 };
 	/** Bytes per second over the last full second. */
 	bytesPerSecond = 0;
 	/** Bytes per second this viewer may be sent (undefined: the replicator's; Infinity or 0: no limit). */
@@ -479,6 +523,10 @@ export class IgeNetViewer {
 	_slots: { period: number; sets: Set<IgeNetViewState>[] }[] = [];
 	_spatialCount = 0;
 	_allow = -1;
+	/** Events waiting to go (reliable ones until acknowledged). */
+	_events: EventEntry[] = [];
+	_eventSeq = 0;
+	_eventMark = 0;
 	/** Entries going out in slices, oldest first. */
 	_xfers: Transfer[] = [];
 	_xferId = 0;
@@ -708,6 +756,58 @@ export class IgeNetViewer {
 		this._rep._viewers.delete(this);
 	}
 
+	/** Whether a spatial point is in full-detail range of one of this viewer's interests. */
+	_nearPoint (x: number, z: number, y: number): boolean {
+		for (const interest of this._interests) {
+			if (!this._where(interest)) continue;
+			const radius = interest.radius ?? this.nearRadius ?? this._rep.nearRadius;
+			const dx = x - this._ix, dz = z - this._iz;
+			let d2 = dx * dx + dz * dz;
+			const dy = y - this._iy;
+			if (dy === dy) d2 += dy * dy;
+			if (d2 <= radius * radius) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Whether the viewer holds the object in full detail (or would at the next send: in range of an interest, focused or
+	 * controlled, even if the object is new). What an event `on` an object is sent by.
+	 */
+	holdsFull (obj: IgeNetObject): boolean {
+		if (obj.destroyed || this._closed) return false;
+		const state = this._states.get(obj);
+		if (!obj._spatial) return !!state;
+		if (state && state.full) return true;
+		if (!state && !obj._revealed.has(this) && !this._rep._scopeSees(obj, this)) return false;
+		if (this._focus.has(obj) || this._controlled.has(obj)) return true;
+		return this._nearPoint(obj._px, obj._pz, obj._py);
+	}
+
+	/** The events to put in this round's packets: new ones, and on a lossy transport reliable ones not acknowledged and not sent lately. */
+	_takeEvents (round: number): EventEntry[] {
+		const out: EventEntry[] = [];
+		const gap = this._rep._eventResend;
+		const list = this._events;
+		let k = 0;
+		for (let i = 0; i < list.length; i++) {
+			const e = list[i];
+			if (e.done) continue;
+			list[k++] = e;
+			if (e.reliable && round - e.sentRound < gap) continue;
+			out.push(e);
+		}
+		list.length = k;
+		return out;
+	}
+
+	/** Queues an event for this viewer (nothing before it's welcomed). */
+	_queueEvent (wire: IgeNetEventWire, reliable: boolean): void {
+		if (this._closed || !this.enabled) return;
+		if (this._events.length > 4096) this._events.splice(0, this._events.length - 4096);
+		this._events.push({ wire, reliable, seq: reliable ? ++this._eventSeq : 0, sentRound: -1e9, done: false });
+	}
+
 	_bandwidth (): number {
 		const value = this.bandwidth ?? this._rep.bandwidth;
 		return value > 0 ? value : Infinity;
@@ -719,7 +819,7 @@ export class IgeNetViewer {
 		const spatial = obj._spatial;
 		const rep = this._rep;
 		const state: IgeNetViewState = {
-			obj, viewer: this, handle, known: false, acked: new Array(schema.classCount).fill(-1), sentEver: false, dead: false,
+			obj, viewer: this, handle, known: false, acked: new Array(schema.classCount).fill(-1), sentEver: false, dead: false, reason: -1,
 			spatial, full: !spatial || !schema.blips, gen: 0, levelSeq: 0, levelRound: -1e9, priority: 0, pendingSince: -1, heldTick: -1, lastRound: -1e9, createRound: -1e9
 		};
 		if (schema.rated || schema.leveled || rep._resend > 0) {
@@ -735,10 +835,12 @@ export class IgeNetViewer {
 		}
 	}
 
-	_remove (obj: IgeNetObject): void {
+	_remove (obj: IgeNetObject, reason = this._rep._removeReason): void {
 		const state = this._states.get(obj);
 		if (!state) return;
 		state.dead = true;
+		// Only a viewer that holds it in full is told why (a blip is anonymous)
+		if (reason >= 0 && state.full) state.reason = reason;
 		this._states.delete(obj);
 		obj._seenBy.delete(this);
 		this._work.delete(state);
@@ -857,6 +959,7 @@ export class IgeNetViewer {
 				for (const handle of packet.destroys) {
 					if (this._destroys.delete(handle)) this._free.push(handle);
 				}
+				if (packet.events) for (const e of packet.events) e.done = true;
 				if (packet.slices) {
 					for (const slice of packet.slices) {
 						const piece = slice.piece!;
@@ -1160,6 +1263,13 @@ export class IgeNetViewer {
 		const limited = Number.isFinite(bandwidth);
 		const handleBits = igeNetBitsFor(this._high + 1);
 		const destroyCount = this._destroys.size;
+		const schemas = rep.schemas;
+		let destroyBits = destroyCount * handleBits;
+		if (schemas.hasReasons && destroyCount) for (const st of this._destroys.values()) destroyBits += 1 + (st.reason >= 0 ? schemas.reasonBits : 0);
+		// Events go first, and what they take is out of the budget the entries have
+		const evs = this._events.length ? this._takeEvents(round) : NO_EVENTS;
+		let eventBits = 0;
+		for (let i = 0; i < evs.length; i++) eventBits += igeNetEventBits(schemas, evs[i].wire, evs[i].reliable, i === 0, tick);
 		const controlled = this._controlled;
 		// Entries too big to send at once go in slices over the next rounds (with a budget to keep to; never what the machine predicts)
 		const sliceBytes = rep.sliceBytes;
@@ -1190,7 +1300,7 @@ export class IgeNetViewer {
 		const perRound = limited ? bandwidth / rep.sendRate : Infinity;
 		if (limited) {
 			this._allow = this._allow < 0 ? perRound * rep.carry : Math.min(this._allow + perRound, perRound * rep.carry);
-			const availBits = (this._allow - 12 - (destroyCount * handleBits) / 8) * 8;
+			const availBits = (this._allow - 12 - destroyBits / 8) * 8 - eventBits;
 			// The machine's own records first: a slice of each
 			for (const x of xfers) if (x.own) sliceBits += this._slice(x, sliceBytes, availBits - sliceBits, round, handleBits);
 			// A share kept for the rest while any wait (none by default: they have what nothing else wants)
@@ -1271,29 +1381,42 @@ export class IgeNetViewer {
 
 		// Packets: destroys first, then entries in priority order, then slices, split where a packet would pass the size limit
 		const maxPacket = this.maxPacketBytes ?? rep.maxPacketBytes;
-		const items = selected.length + destroyCount + slices.length;
+		const items = selected.length + destroyCount + slices.length + evs.length;
 		const destroyHandles = destroyCount ? [...this._destroys.keys()] : [];
 		let total = 0;
 		let next = 0;
 		let nextDestroy = 0;
 		let nextSlice = 0;
+		let nextEvent = 0;
 		const kinds = this.stats.byKind;
 		const arena = rep._arena.buffer;
 		const w = rep._msg;
 		do {
 			const seq = ++this._seq;
 			w.reset();
-			const remaining = items - next - nextDestroy - nextSlice;
+			const remaining = items - next - nextDestroy - nextSlice - nextEvent;
 			let bits = 8 + 8 * (varBytes(seq) + varBytes(tick) + varBytes(this.inputAck)) + 6 + 4 * 8 * varBytes(remaining);
 			const dH: number[] = [];
 			const cE: Candidate[] = [];
 			const uE: Candidate[] = [];
 			const sE: Slice[] = [];
+			const eE: EventEntry[] = [];
 			let count = 0;
-			while (nextDestroy < destroyHandles.length) {
-				if (maxPacket && count > 0 && (bits + handleBits + 7) >> 3 > maxPacket) break;
+			while (nextEvent < evs.length) {
+				const e = evs[nextEvent];
+				const cost = igeNetEventBits(schemas, e.wire, e.reliable, eE.length === 0, tick);
+				if (maxPacket && count > 0 && (bits + cost + 7) >> 3 > maxPacket) break;
+				eE.push(e);
+				bits += cost;
+				nextEvent++;
+				count++;
+			}
+			while (nextEvent >= evs.length && nextDestroy < destroyHandles.length) {
+				const st = this._destroys.get(destroyHandles[nextDestroy])!;
+				const cost = handleBits + (schemas.hasReasons ? 1 + (st.reason >= 0 ? schemas.reasonBits : 0) : 0);
+				if (maxPacket && count > 0 && (bits + cost + 7) >> 3 > maxPacket) break;
 				dH.push(destroyHandles[nextDestroy++]);
-				bits += handleBits;
+				bits += cost;
 				count++;
 			}
 			while (next < selected.length && nextDestroy >= destroyHandles.length) {
@@ -1319,16 +1442,40 @@ export class IgeNetViewer {
 			if (cE.length) flags |= 2;
 			if (uE.length) flags |= 4;
 			if (sE.length) flags |= 8;
-			w.writeBits(IGE_NET_PACKET_SNAPSHOT, 4);
+			w.writeBits(eE.length ? IGE_NET_PACKET_SNAPSHOT_EVENTS : IGE_NET_PACKET_SNAPSHOT, 4);
 			w.writeBits(flags, 4);
 			w.writeVarUint(seq);
 			w.writeVarUint(tick);
 			w.writeVarUint(this.inputAck);
+			if (eE.length) {
+				const before = w.bitLength;
+				w.writeVarUint(eE.length);
+				let prevSeq = 0;
+				for (const e of eE) {
+					igeNetWriteEvent(w, schemas, e.wire, tick, e.reliable, e.seq, prevSeq);
+					if (e.reliable) prevSeq = e.seq;
+				}
+				const eventBytes = (w.bitLength - before) / 8;
+				this.stats.eventBytes += eventBytes;
+				rep.stats.events += eE.length;
+				rep.stats.eventBytes += eventBytes;
+			}
 			if (flags) {
 				w.writeBits(handleBits, 6);
 				if (dH.length) {
 					w.writeVarUint(dH.length);
-					for (const handle of dH) w.writeBits(handle, handleBits);
+					for (const handle of dH) {
+						w.writeBits(handle, handleBits);
+						if (schemas.hasReasons) {
+							const reason = this._destroys.get(handle)!.reason;
+							if (reason >= 0) {
+								w.writeBits(1, 1);
+								w.writeBits(reason, schemas.reasonBits);
+							} else {
+								w.writeBits(0, 1);
+							}
+						}
+					}
 				}
 				if (cE.length) {
 					w.writeVarUint(cE.length);
@@ -1371,7 +1518,7 @@ export class IgeNetViewer {
 					}
 				}
 			}
-			this._sent(seq, epoch, round, dH, cE, uE, sE);
+			this._sent(seq, epoch, round, dH, cE, uE, sE, eE);
 			rep.stats.creates += cE.length;
 			rep.stats.updates += uE.length;
 			rep.stats.destroys += dH.length;
@@ -1384,7 +1531,8 @@ export class IgeNetViewer {
 			this._window += bytes.length;
 			total += bytes.length;
 			this._send(bytes);
-		} while (next < selected.length || nextDestroy < destroyHandles.length || nextSlice < slices.length);
+		} while (next < selected.length || nextDestroy < destroyHandles.length || nextSlice < slices.length || nextEvent < evs.length);
+		if (evs.length) this._events = this._events.filter((e) => !e.done);
 		// Reliable: a transfer whose last byte went is delivered
 		if (!this.lossy) for (const x of xfers) if (!x.done && x.next >= x.bytes.length) this._xferDone(x);
 		if (limited) this._allow = Math.max(-perRound * rep.carry * 2, this._allow - total);
@@ -1523,12 +1671,14 @@ export class IgeNetViewer {
 
 	/** A packet given up on: its slices go again. */
 	_lost (packet: SentPacket): void {
+		// Reliable events it carried go again at once
+		if (packet.events) for (const e of packet.events) if (!e.done) e.sentRound = -1e9;
 		if (!packet.slices) return;
 		for (const slice of packet.slices) if (!slice.piece!.acked) slice.piece!.lost = true;
 	}
 
 	/** Records what a packet carried: acknowledged at once on a reliable transport, remembered until acknowledged on a lossy one. */
-	_sent (seq: number, epoch: number, round: number, destroys: number[], creates: Candidate[], updates: Candidate[], slices: Slice[]): void {
+	_sent (seq: number, epoch: number, round: number, destroys: number[], creates: Candidate[], updates: Candidate[], slices: Slice[], events: EventEntry[] = []): void {
 		const lossy = this.lossy;
 		const entries: SentEntry[] | undefined = lossy ? [] : undefined;
 		const apply = (cand: Candidate) => {
@@ -1561,8 +1711,17 @@ export class IgeNetViewer {
 		};
 		for (const cand of creates) apply(cand);
 		for (const cand of updates) apply(cand);
+		let reliableEvents: EventEntry[] | undefined;
+		for (const e of events) {
+			if (e.reliable && lossy) {
+				e.sentRound = round;
+				(reliableEvents ??= []).push(e);
+			} else {
+				e.done = true;
+			}
+		}
 		if (lossy) {
-			this._packets.set(seq, { seq, epoch, entries: entries!, destroys, slices: slices.length ? slices.slice() : undefined });
+			this._packets.set(seq, { seq, epoch, entries: entries!, destroys, slices: slices.length ? slices.slice() : undefined, events: reliableEvents });
 			if (this._packets.size > 128) {
 				const oldest = this._packets.keys().next().value!;
 				this._lost(this._packets.get(oldest)!);
@@ -1593,6 +1752,9 @@ export interface IgeNetReplicatorStats {
 	/** Entries sent in slices (begun), and slices sent. */
 	transfers: number;
 	slices: number;
+	/** Events sent (counted once per viewer packet they were in, resends included) and the bytes of the events sections. */
+	events: number;
+	eventBytes: number;
 	/** Milliseconds spent in flush() in all, and the last. */
 	flushMs: number;
 	lastFlushMs: number;
@@ -1642,6 +1804,8 @@ export interface IgeNetReplicatorOptions {
 	sliceShare?: number;
 	/** Lossy transports: rounds to wait before sending the same unacknowledged change again (default 0 without a bandwidth budget, else a sixth of a second's worth). */
 	resendAfter?: number;
+	/** Rounds before a reliable event is sent again on a lossy transport while unacknowledged (default 3). */
+	eventResendAfter?: number;
 	/** Multipliers on the priority of an object's changes: when the viewer focuses on it, when it's the viewer's own private object, when it's a create. */
 	weights?: { focus?: number; owner?: number; create?: number };
 }
@@ -1681,7 +1845,7 @@ export class IgeNetReplicator {
 	/** The authority's tick, put in each packet. The host sets it before the game steps. */
 	tick = 0;
 	readonly stats: IgeNetReplicatorStats = {
-		bytes: 0, packets: 0, creates: 0, updates: 0, destroys: 0, cacheHits: 0, cacheMisses: 0, jsonPatches: 0, jsonWhole: 0, transfers: 0, slices: 0, flushMs: 0, lastFlushMs: 0, flushes: 0
+		bytes: 0, packets: 0, creates: 0, updates: 0, destroys: 0, cacheHits: 0, cacheMisses: 0, jsonPatches: 0, jsonWhole: 0, transfers: 0, slices: 0, events: 0, eventBytes: 0, flushMs: 0, lastFlushMs: 0, flushes: 0
 	};
 	sendRate: number;
 	bandwidth: number;
@@ -1695,6 +1859,12 @@ export class IgeNetReplicator {
 	sliceShare: number;
 	weights: { focus: number; owner: number; create: number };
 	_resend: number;
+	/** Rounds before a reliable event is sent again on a lossy transport. */
+	_eventResend: number;
+	_eventMarks = 0;
+	/** The reason a removal in progress (a scope move) carries. */
+	_removeReason = -1;
+	_evw = new IgeNetBitWriter(256);
 	_objects: Map<string, IgeNetObject> = new Map();
 	_viewers: Set<IgeNetViewer> = new Set();
 	_scopes: Map<string, { objects: Set<IgeNetObject>; viewers: Set<IgeNetViewer>; grid?: IgeNetGrid<IgeNetObject>; cellSize?: number }> = new Map();
@@ -1735,6 +1905,7 @@ export class IgeNetReplicator {
 		this.sliceBytes = options.sliceBytes ?? 512;
 		this.sliceShare = Math.max(0, Math.min(1, options.sliceShare ?? 0));
 		this._resend = options.resendAfter ?? (Number.isFinite(this.bandwidth) ? Math.max(1, Math.ceil(this.sendRate / 6)) : 0);
+		this._eventResend = Math.max(1, options.eventResendAfter ?? 3);
 		this.weights = { focus: options.weights?.focus ?? 8, owner: options.weights?.owner ?? 10, create: options.weights?.create ?? 4 };
 	}
 
@@ -1773,6 +1944,57 @@ export class IgeNetReplicator {
 		};
 	}
 
+	/**
+	 * Sends an event (data with the schema set's event key, "t" by default) in the packets of the viewers it's for: see
+	 * IgeNetEventTarget. A declared event goes in its binary shape; any other as JSON. It's stamped with the current
+	 * tick, goes at the next flush ahead of object updates and counts against each viewer's budget.
+	 */
+	event (data: unknown, target: IgeNetEventTarget = {}): void {
+		const reliable = target.reliable !== false;
+		const wire = this._encodeEvent(data);
+		const mark = ++this._eventMarks;
+		const send = (v: IgeNetViewer) => {
+			if (v._eventMark === mark) return;
+			v._eventMark = mark;
+			v._queueEvent(wire, reliable);
+		};
+		if (target.on === undefined && target.at === undefined && target.scope === undefined && target.to === undefined) {
+			for (const v of this._viewers) send(v);
+			return;
+		}
+		if (target.to) for (const v of Array.isArray(target.to) ? target.to : [target.to]) send(v);
+		if (target.scope !== undefined) for (const v of this._scopes.get(target.scope)?.viewers ?? []) send(v);
+		if (target.at) {
+			const { scope, x, z, y } = target.at;
+			for (const v of this._scopes.get(scope)?.viewers ?? []) if (v._nearPoint(x, z, y ?? NaN)) send(v);
+		}
+		if (target.on !== undefined) {
+			for (const item of Array.isArray(target.on) ? target.on : [target.on]) {
+				const obj = typeof item === "string" ? this._objects.get(item) : item;
+				if (!obj || obj.destroyed) continue;
+				for (const v of obj._seenBy.keys()) if (v.holdsFull(obj)) send(v);
+				if (obj._spatial && obj.scope) for (const v of this._scopes.get(obj.scope)?.viewers ?? []) if (v.holdsFull(obj)) send(v);
+			}
+		}
+	}
+
+	_encodeEvent (data: unknown): IgeNetEventWire {
+		const set = this.schemas;
+		const w = this._evw;
+		w.reset();
+		const type = (data as Record<string, unknown> | undefined)?.[set.eventKey];
+		const index = typeof type === "string" ? set.eventIndex.get(type) : undefined;
+		let at: number;
+		if (index !== undefined) {
+			set.events[index].writeEvent(w, data as Record<string, unknown>);
+			at = index;
+		} else {
+			w.writeString(JSON.stringify(data) ?? "null");
+			at = set.events.length;
+		}
+		return { tick: this.tick, type: at, body: w.toBytes(), bits: w.bitLength };
+	}
+
 	/** Sets how a scope's grid is cut (the cell size), before objects are in it or after (they're placed again). */
 	configureScope (scope: string, options: { cellSize?: number }): void {
 		const entry = this._scope(scope);
@@ -1802,9 +2024,18 @@ export class IgeNetReplicator {
 		return obj;
 	}
 
-	destroy (target: IgeNetObject | string): void {
+	/**
+	 * Removes an object. `reason` (one of its kind's `removeReasons`) goes with the destroy to the viewers that hold it in
+	 * full detail; viewers that lose it by going out of range or being unrevealed get no reason.
+	 */
+	destroy (target: IgeNetObject | string, reason?: string): void {
 		const obj = typeof target === "string" ? this._objects.get(target) : target;
 		if (!obj || obj.destroyed) return;
+		let reasonIndex = -1;
+		if (reason !== undefined) {
+			reasonIndex = obj.schema.options.removeReasons?.indexOf(reason) ?? -1;
+			if (reasonIndex < 0) throw new Error(`${obj.kind}: "${reason}" isn't one of its removeReasons`);
+		}
 		obj.destroyed = true;
 		this._objects.delete(obj.id);
 		if (obj.scope) {
@@ -1814,7 +2045,7 @@ export class IgeNetReplicator {
 		}
 		for (const viewer of [...obj._seenBy.keys()]) {
 			viewer._admitted.delete(obj);
-			viewer._remove(obj);
+			viewer._remove(obj, reasonIndex);
 		}
 		obj._revealed.clear();
 		obj._excluded.clear();
@@ -1843,7 +2074,7 @@ export class IgeNetReplicator {
 		this._scopes.get(obj.scope!)?.grid?.move(obj, obj._px, obj._pz);
 	}
 
-	_moveTo (obj: IgeNetObject, scope: string | undefined): void {
+	_moveTo (obj: IgeNetObject, scope: string | undefined, reason = -1): void {
 		if (obj.destroyed || obj.scope === scope) return;
 		const affected = new Set<IgeNetViewer>(obj._seenBy.keys());
 		if (obj.scope) {
@@ -1861,7 +2092,9 @@ export class IgeNetReplicator {
 		}
 		this._place(obj);
 		if (wasSpatial !== obj._spatial) for (const state of obj._seenBy.values()) state.viewer._respace(state);
+		this._removeReason = reason;
 		for (const viewer of affected) this._reconcile(obj, viewer);
+		this._removeReason = -1;
 		// Anyone seeing it must be told its (possibly new) detail
 		for (const state of obj._seenBy.values()) state.viewer._work.add(state);
 	}

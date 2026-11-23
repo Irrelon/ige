@@ -42,6 +42,17 @@ export interface IgeNetAngleField extends IgeNetFieldCommon {
 	bits?: number;
 }
 
+/**
+ * A rotation packed as "smallest three" (entities/igeNetQuat.ts): 2 bits for the index of the largest
+ * component and `bits` (default 12) for each of the other three, in one integer. The value is that
+ * integer (it compares with ===; unpack it with igeNetQuatUnpack). It steps between states: blend it
+ * yourself along the shortest path (IgeNetEntityClient does).
+ */
+export interface IgeNetQuatField extends IgeNetFieldCommon {
+	type: "quat";
+	bits?: number;
+}
+
 /** One of a list of strings, as many bits as the list needs. */
 export interface IgeNetEnumField extends IgeNetFieldCommon {
 	type: "enum";
@@ -67,6 +78,7 @@ export type IgeNetFieldDef =
 	| IgeNetNumberField
 	| IgeNetIntField
 	| IgeNetAngleField
+	| IgeNetQuatField
 	| IgeNetEnumField
 	| IgeNetFloatField
 	| IgeNetJsonField
@@ -165,6 +177,24 @@ export class IgeNetField {
 				this._canon = (v) => (quantise(toNumber(v)) / steps) * TWO_PI;
 				this._write = (w, v) => w.writeBits(quantise(v), bits);
 				this._read = (r) => (r.readBits(bits) / steps) * TWO_PI;
+				break;
+			}
+			case "quat": {
+				const per = def.bits ?? 12;
+				if (per < 2 || per > 16) throw new Error(`Field ${name}: quat bits must be 2 to 16`);
+				const total = 2 + per * 3;
+				const top = total - 32;
+				const span = 2 ** total;
+				this._canon = (v) => Math.max(0, Math.min(span - 1, Math.round(toNumber(v))));
+				this._write = (w, v) => {
+					const hi = Math.floor(v / 4294967296);
+					if (top > 0) w.writeBits(hi, top);
+					w.writeBits(v % 4294967296, Math.min(32, total));
+				};
+				this._read = (r) => {
+					const hi = top > 0 ? r.readBits(top) : 0;
+					return hi * 4294967296 + r.readBits(Math.min(32, total));
+				};
 				break;
 			}
 			case "enum": {
@@ -274,9 +304,19 @@ export interface IgeNetKindOptions {
 	maxRate?: number;
 	/** The most sends per second of each group of fields, per viewer, by group name. */
 	groupRates?: Record<string, number>;
+	/**
+	 * Why an object of this kind can be removed (game-defined, e.g. "destroyed", "jumped"). `destroy(obj, reason)` on
+	 * the authority sends it with the destroy to viewers that hold the object in full detail; the client's "destroyed"
+	 * event gets it. An object leaving a viewer's relevance (out of range, unrevealed) goes with no reason. Part of
+	 * the schema hash.
+	 */
+	removeReasons?: string[];
 }
 
 /** Writes json field `index` of the object being encoded (the replicator's versioned, patched form). */
+/** Declared event shapes, by event type: the same field definitions as an object kind's. The type itself isn't a field (it's the key). */
+export type IgeNetEventDefs = Record<string, Record<string, IgeNetFieldDef>>;
+
 export type IgeNetJsonWriter = (w: IgeNetBitWriter, index: number) => void;
 /** Reads a json field written by an IgeNetJsonWriter. */
 export type IgeNetJsonReader = (r: IgeNetBitReader) => unknown;
@@ -515,6 +555,14 @@ export class IgeNetSchema {
 		return out;
 	}
 
+	/** Writes an event's fields from its data (a missing field takes its default; extra keys, the type among them, are left out). */
+	writeEvent (w: IgeNetBitWriter, data: Record<string, unknown>): void {
+		for (const field of this.fields) {
+			const v = data[field.name];
+			field.write(w, v === undefined ? field.defaultValue : field.canonical(v));
+		}
+	}
+
 	/** Writes every field (json fields by `jw` when given: the replicator's versioned form). */
 	writeAll (w: IgeNetBitWriter, values: Record<string, unknown>, json?: (string | undefined)[], jw?: IgeNetJsonWriter): void {
 		for (const field of this.fields) {
@@ -583,7 +631,19 @@ export class IgeNetSchemaSet {
 	/** Whether any kind declares relevance (the game uses stage 2 of replication). */
 	readonly hasRelevance: boolean;
 
-	constructor (defs: Record<string, Record<string, IgeNetFieldDef>>, kinds: Record<string, IgeNetKindOptions> = {}) {
+	/** Declared events (see IgeNetEventDefs), in an order both ends share: the event's type field picks one. */
+	readonly events: IgeNetSchema[] = [];
+	readonly eventByName: Map<string, IgeNetSchema> = new Map();
+	/** A declared event's number (its place in the order). */
+	readonly eventIndex: Map<string, number> = new Map();
+	/** The field of an event's data that names its type. */
+	readonly eventKey: string;
+	/** Bits of an event's type number: one past the declared events means an undeclared event, sent as JSON. */
+	readonly eventBits: number;
+	/** Bits of a removal reason (0: no kind declares any). */
+	readonly reasonBits: number;
+
+	constructor (defs: Record<string, Record<string, IgeNetFieldDef>>, kinds: Record<string, IgeNetKindOptions> = {}, events: IgeNetEventDefs = {}, eventKey = "t") {
 		for (const name of Object.keys(kinds)) if (!defs[name]) throw new Error(`Options for unknown kind "${name}"`);
 		this.kinds = Object.keys(defs).map((name) => new IgeNetSchema(name, defs[name], kinds[name]));
 		for (const kind of this.kinds) this.byName.set(kind.name, kind);
@@ -604,7 +664,24 @@ export class IgeNetSchemaSet {
 		}
 		this.layoutBits = igeNetBitsFor(this.blipLayouts.length);
 		this.hasRelevance = this.kinds.some((k) => !!k.relevance);
-		this.hash = hashText(JSON.stringify(defs) + this.kinds.map((k) => kindWireText(k.options)).join(""));
+		this.eventKey = eventKey;
+		for (const name of Object.keys(events)) {
+			const schema = new IgeNetSchema(name, events[name]);
+			this.eventIndex.set(name, this.events.length);
+			this.events.push(schema);
+			this.eventByName.set(name, schema);
+		}
+		this.eventBits = igeNetBitsFor(this.events.length + 1);
+		let reasons = 0;
+		for (const kind of this.kinds) reasons = Math.max(reasons, kind.options.removeReasons?.length ?? 0);
+		this.reasonBits = reasons ? igeNetBitsFor(reasons) : 0;
+		this.hash = hashText(JSON.stringify(defs) + this.kinds.map((k) => kindWireText(k.options)).join("")
+			+ (this.events.length ? `/e${eventKey}${JSON.stringify(events)}` : ""));
+	}
+
+	/** Whether any kind declares removal reasons (then every destroy carries a bit saying whether it has one). */
+	get hasReasons (): boolean {
+		return this.reasonBits > 0;
 	}
 
 	kind (name: string): IgeNetSchema {
@@ -616,8 +693,9 @@ export class IgeNetSchemaSet {
 
 /** The part of a kind's options that changes the wire format ("" when none do, so older hashes stay). */
 function kindWireText (options: IgeNetKindOptions): string {
-	if (!options.relevance) return "";
-	return JSON.stringify([options.relevance, options.position, options.blip]);
+	const reasons = options.removeReasons?.length ? JSON.stringify(options.removeReasons) : "";
+	if (!options.relevance) return reasons;
+	return JSON.stringify([options.relevance, options.position, options.blip]) + reasons;
 }
 
 function toNumber (value: unknown): number {

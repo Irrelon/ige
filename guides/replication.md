@@ -58,7 +58,7 @@ const me = client.predict(welcome.players[0], 0, (ship, input, dt) => stepShip(s
 await client.transfer({ url: nextZoneUrl, ticket });           // zone handoff to another authority
 ```
 
-The schema set and the input schema must be the same on both ends (a hash is checked on join). Events (`host.event(data)` / client `"event"`) are reliable JSON.
+The schema set and the input schema must be the same on both ends (a hash is checked on join). Events (`host.event(data, target)` / client `"event"`) travel in the replication packets, see [Events](#events).
 
 ### Fields
 
@@ -236,6 +236,32 @@ What a client can and can't infer from a blip: it learns the position (the blip 
 - `replicator.stats`: `jsonPatches` / `jsonWhole` (json fields sent as patches and whole), `transfers` / `slices`.
 - `replicator.report()` (`host.stats().report`): totals over every viewer (by kind, deferred, worst age, worst budget use, detail counts, grid sizes). `host.stats().machines` lists each machine's report.
 - `viewer.detailOf(obj)`, `viewer.stats.deferred / oldestPendingAge / entries` (last round).
+
+## Events
+
+A game event (a shot, an explosion, a pickup) is part of replication: it goes in the replication packet of each viewer it is for, ahead of that packet's object updates, stamped with its tick, and it counts against the viewer's budget (events go first; updates fill what is left).
+
+```ts
+const events = {
+	boom: { x: { type: "number", precision: 0.1 }, z: { type: "number", precision: 0.1 }, size: { type: "int", min: 0, max: 7 } },
+	shot: { x: { type: "number", precision: 0.1 }, z: { type: "number", precision: 0.1 }, angle: { type: "angle", bits: 9 } }
+};
+const schemas = new IgeNetSchemaSet(defs, kinds, events);         // or events: on the host and client options
+host.event({ t: "boom", x: 10, z: 4, size: 3 }, { at: { scope: "sol", x: 10, z: 4 }, reliable: false });
+host.event({ t: "shot", x, z, angle }, { on: [shooter, victim], at: { scope: "sol", x, z } });
+client.on("event", (data, tick) => { /* { t: "boom", x, z, size }, quantised */ });
+```
+
+- **Targets** (`host.event(data, target?)`, `replicator.event(data, target?)`): none, every machine; a machine or machine id, that machine (as before); or options: `to` (machine or machines), `on` (objects: viewers that hold any of them in full detail, or would at the next send, e.g. an object made this tick; ids work too), `at: { scope, x, z, y? }` (viewers subscribed to the scope for whom a spatial object there would be full detail: within an interest's radius), `scope` (everyone subscribed), and `reliable` (default true). `on`, `at`, `scope` and `to` together reach the union; `on: []` alone reaches nobody. Events about an object destroyed this tick should go before the destroy (a destroyed object has no viewers), or use `at`.
+- **Declared shapes**: the schema set's third argument (`events:` and `eventKey:`, default `"t"`, on host and client options) declares each event type with the same field types as an object kind. The type is the key, not a field; it costs a few bits. The data arrives as `{ t, ...fields }`, quantised. An event of an undeclared type still goes, as JSON inside the packet (games being ported keep working). The schema hash covers event shapes.
+- **Reliability**: on a reliable transport the packet arrives, so an event goes once. On a lossy one reliable events are sent again (after `eventResendAfter` rounds, default 3) until a packet carrying them is acknowledged, and the client delivers each exactly once, in order (a later one waits for an earlier one still in flight). `reliable: false` goes once and is never resent: lost with its packet.
+- **Order**: the client emits `"event"` (data, tick) after the packet's creates and updates, so an event about an object created in that packet finds it in `client.objects`. The `tick` is the one it was made at, which a resend keeps.
+- **Before a drop**: `host.eventNow(data, machine)` sends one event at once as a control message outside the packets, for what must go before a machine is disconnected (its viewer makes no more packets).
+- **Cost**: `host.stats().eventBytes` / `events`, `viewer.stats.eventBytes`.
+
+### Removal reasons
+
+`removeReasons: ["destroyed", "jumped"]` in a kind's options, and `replicator.destroy(obj, "destroyed")` (or `obj.destroy("destroyed")`) sends the reason with the destroy to viewers that hold the object in full detail. `obj.moveTo(scope, reason)` does the same for an object that leaves viewers by moving scope (a ship jumping out of a system). The client's `"destroyed"` event gets `(id, kind, reason, object, tick)`; `object.states` still holds its last values, to place an effect. An object that only leaves a viewer's relevance (out of range, unrevealed, a blip going) arrives with no reason, so a game can tell destroyed or jumped from out of sight. A blip never gets one (it is anonymous). The reasons are part of the schema hash.
 
 ## Lag compensation (stage 4)
 
