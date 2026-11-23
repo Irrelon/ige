@@ -10,5 +10,4 @@ export * from "./IgeInputDeviceMap";
 export * from "./IgeIsometricDepthSortMode";
 export * from "./IgeMountMode";
 export * from "./IgeNetworkConstants";
-export * from "./IgeStreamMode";
 export * from "./IgeTextureRenderMode";

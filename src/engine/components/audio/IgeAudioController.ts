@@ -57,8 +57,7 @@ import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
  *      // concept as the above examples but set the `loop` option to true,
  *      // or you can create an audio entity that gets mounted to the scene
  *      // like any other entity and has all the same properties as a normal
- *      // entity does. This also means that you can create these entities on
- *      // the server and have them auto-stream to connected clients.
+ *      // entity does.
  *
  *      // To use an IgeAudioEntity, simply create an IgeAudioEntity instance
  *      // and mount it:

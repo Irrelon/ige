@@ -5,9 +5,8 @@
  * every method that follows it.
  * @param Class
  * @param methodName
- * @param shouldStreamChange
  */
-export function synthesize<FunctionArgType = any> (Class: any, methodName: string, shouldStreamChange: boolean = false) {
+export function synthesize<FunctionArgType = any> (Class: any, methodName: string) {
 	const privatePropertyName = `_${methodName}`;
 
 	Class.prototype[methodName] = function (val?: FunctionArgType) {
@@ -16,9 +15,6 @@ export function synthesize<FunctionArgType = any> (Class: any, methodName: strin
 		}
 
 		this[privatePropertyName] = val;
-		if (shouldStreamChange) {
-			this.streamProperty(methodName, val);
-		}
 		return this;
 	};
 }

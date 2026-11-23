@@ -9,10 +9,6 @@ import {
 	IGE_NETWORK_LEAVE_ROOM,
 	IGE_NETWORK_REQUEST,
 	IGE_NETWORK_RESPONSE,
-	IGE_NETWORK_STREAM_CREATE,
-	IGE_NETWORK_STREAM_DATA,
-	IGE_NETWORK_STREAM_DESTROY,
-	IGE_NETWORK_STREAM_TIME,
 	IGE_NETWORK_TIME_SYNC
 } from "@/enums";
 import { IgeNetworkConnectionState } from "@/enums/IgeNetworkConnectionState";
@@ -26,11 +22,6 @@ import type {
 	IgeNetworkRequestMessageStructure,
 	IgeNetworkTimeSyncRequestFromServer, IgeNetworkTimeSyncResponseFromClient
 } from "@/types/IgeNetworkMessage";
-import type {
-	IgeStreamCreateMessageData,
-	IgeStreamDestroyMessageData,
-	IgeStreamUpdateMessageData
-} from "@/types/IgeNetworkStream";
 
 /**
  * The client-side net.io component. Handles all client-side
@@ -46,18 +37,6 @@ export class IgeNetIoClientController extends IgeNetIoBaseController implements 
 	_io?: IgeNetIoClient;
 	_id?: string;
 	_url?: string;
-	_renderLatency: number = 100;
-	_streamDataTime: number = 0;
-
-	constructor () {
-		super();
-
-		// Define the network stream commands
-		this.define(IGE_NETWORK_STREAM_CREATE, this._onStreamCreate);
-		this.define(IGE_NETWORK_STREAM_DESTROY, this._onStreamDestroy);
-		this.define(IGE_NETWORK_STREAM_DATA, this._onStreamData);
-		this.define(IGE_NETWORK_STREAM_TIME, this._onStreamTime);
-	}
 
 	isReady () {
 		return Promise.resolve();
@@ -409,32 +388,8 @@ export class IgeNetIoClientController extends IgeNetIoBaseController implements 
 	}
 
 	/**
-	 * Gets /Sets the amount of milliseconds in the past that the renderer will
-	 * show updates from the stream. This allows us to interpolate from a previous
-	 * position to the next position in the stream update. Updates come in and
-	 * are already in the past when they are received so we need to set this
-	 * latency value to something greater than the highest level of acceptable
-	 * network latency. Usually this is a value between 100 and 200ms. If your
-	 * game requires much tighter latency you will have to reduce the number of
-	 * players / network updates / data size in order to compensate. A value of
-	 * 100 in this call is the standard that most triple-A FPS games accept as
-	 * normal render latency and should be OK for your game.
-	 *
-	 * @param latency
-	 */
-	renderLatency (latency?: number) {
-		if (latency !== undefined) {
-			this._renderLatency = latency;
-			return this;
-		}
-
-		return this._renderLatency;
-	}
-
-	/**
 	 * Asks the server to assign us to a room by the room
-	 * id. When assigning a client to a room, any streaming
-	 * entities for that room start to stream to the client.
+	 * id.
 	 *
 	 * A client can be joined to multiple rooms. If you want
 	 * to join a room without leaving the others the client
@@ -454,149 +409,4 @@ export class IgeNetIoClientController extends IgeNetIoBaseController implements 
 	leaveAllRooms () {
 		this.send(IGE_NETWORK_LEAVE_ROOM, "");
 	}
-
-	/**
-	 * Handles receiving the start time of the stream data.
-	 * @param data
-	 * @private
-	 */
-	_onStreamTime = (data: number) => {
-		this._streamDataTime = data;
-	};
-
-	_onStreamCreate = (data: IgeStreamCreateMessageData) => {
-		const classId = data[0];
-		const entityId = data[1];
-		const parentId = data[2];
-		const createDataArgs = data[3] || [];
-		const transformData = data[4];
-		const initialData = data[5];
-		const parent = ige.$(parentId);
-		//console.log("Stream create", data);
-		// Check the required class exists
-		if (parent) {
-			// Check that the entity doesn't already exist
-			if (!ige.$(entityId)) {
-				const ClassConstructor = igeClassStore[classId];
-
-				if (ClassConstructor) {
-					//console.log("Creating ", classId, createDataArgs);
-					// The entity does not currently exist so create it!
-					const entity = new ClassConstructor(...createDataArgs).id(entityId).mount(parent) as IgeEntity;
-
-					// Set the initial transform data so that the newly created entity is in the correctly place
-					entity.streamSectionData("transform", transformData, true);
-
-					// Set the initial data after creation
-					entity.onStreamCreateInitialData(initialData);
-
-					// Set the just created flag which will stop the renderer
-					// from handling this entity until after the first stream
-					// data has been received for it
-					entity._streamJustCreated = true;
-
-					if (entity._streamEmitCreated) {
-						entity.emit("streamCreated");
-					}
-
-					// Since we just created an entity through receiving stream
-					// data, inform any interested listeners
-					this.emit("entityCreated", entity);
-				} else {
-					(ige.network as IgeNetIoClientController).stop();
-					ige.engine.stop();
-
-					this.log(
-						`Network stream cannot create entity with class "${classId}" because the class has not been defined! Please remember to register your isomorphic classes at the end of your class file with \`registerClass(${classId});\``,
-						"error"
-					);
-				}
-			} else {
-				this.log(
-					`Network stream received "create entity" with class "${classId}" and id "${entityId}" but an entity with that id already exists in the scenegraph!`,
-					"warning"
-				);
-			}
-		} else {
-			(ige.network as IgeNetIoClientController).stop();
-			ige.engine.stop();
-
-			this.log(
-				`Cannot properly handle network streamed entity with id "${entityId}" because it's parent with id "${parentId}" does not exist on the scenegraph!`,
-				"warning"
-			);
-		}
-	};
-
-	_onStreamDestroy = (data: IgeStreamDestroyMessageData) => {
-		const entity = ige.$(data[1]) as IgeEntity;
-		//console.log("Stream destroy", data);
-		if (!entity) {
-			return;
-		}
-
-		const destroyDelta = this._renderLatency + (ige.engine._currentTime - data[0]);
-
-		if (destroyDelta > 0) {
-			// Give the entity a lifespan to destroy it in x ms
-			entity.lifeSpan(destroyDelta, () => {
-				this.emit("entityDestroyed", entity);
-			});
-
-			return;
-		}
-
-		// Destroy immediately
-		this.emit("entityDestroyed", entity);
-		entity.destroy();
-	};
-
-	/**
-	 * Called when the client receives data from the stream system.
-	 * Handles decoding the data and calling the relevant entity
-	 * _onStreamData() methods.
-	 * @param data
-	 * @private
-	 */
-	_onStreamData = (data: string) => {
-		// Read the packet data into variables
-		const sectionDataArr = data.split(this._sectionDesignator) as IgeStreamUpdateMessageData;
-		const sectionDataCount = sectionDataArr.length - 1;
-
-		// We know the first section of data will always be the
-		// target entity's ID
-		const entityId = sectionDataArr.shift() as string;
-
-		if (!entityId) {
-			this.log("+++ Stream: Data received without an entity id!");
-			return;
-		}
-
-		// Check if the entity with this ID currently exists
-		const entity = ige.$(entityId) as IgeEntity;
-
-		if (!entity) {
-			//this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
-			//this.stop();
-			//ige.engine.stop();
-			return;
-		}
-
-		// Hold the entity's just created flag
-		const justCreated = entity._streamJustCreated;
-
-		// Get the entity stream section array
-		const sectionArr = entity._streamSections;
-
-		// Now loop the data sections array and compile the rest of the
-		// data string from the data section return data
-		for (let sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
-			// Tell the entity to handle this section's data
-			entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex], justCreated);
-		}
-
-		// Now that the entity has had it's first bit of data
-		// reset the just created flag
-		delete entity._streamJustCreated;
-	};
 }

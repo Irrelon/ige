@@ -26,9 +26,7 @@ export interface IgeAudioEntityProps extends Omit<IgeAudioPlaybackOptions, "rela
  * Creates an audio entity that automatically handles
  * controlling panning / positioning of sound based on
  * where it is located on the screen in relation to
- * the listener / player. Also supports entity streaming
- * so an IgeAudioEntity can be instantiated server-side
- * and then be synced over the network to clients.
+ * the listener / player.
  *
  * If you only want to play audio and don't need to
  * position it in the simulation, an IgeAudioEntity is
@@ -69,56 +67,6 @@ export class IgeAudioEntity extends IgeEntity {
 		this.playOnMount(playOnMount);
 		this.volume(volume);
 		this.loop(loop);
-	}
-
-	/**
-	 * Returns the data sent to each client when the entity
-	 * is created via the network stream.
-	 */
-	streamCreateConstructorArgs (): [IgeAudioEntityProps] {
-		return [{
-			audioId: this._audioSourceId || "",
-			pannerSettings: this._pannerSettings,
-			playOnMount: this._playOnMount,
-			loop: this._loop,
-			volume: this._volume
-		}];
-	}
-
-	onStreamProperty (propName: string, propVal: any): this {
-		super.onStreamProperty(propName, propVal);
-
-		switch (propName) {
-			case "audioId":
-				this.audioSourceId(propVal);
-				break;
-
-			case "pannerSettings":
-				this.pannerSettings(propVal);
-				break;
-
-			case "playOnMount":
-				this.playOnMount(propVal);
-				break;
-
-			case "loop":
-				this.loop(propVal);
-				break;
-
-			case "volume":
-				this.volume(propVal);
-				break;
-
-			case "isPlaying":
-				if (propVal === true) {
-					void this.play();
-				} else {
-					this.stop();
-				}
-				break;
-		}
-
-		return this;
 	}
 
 	/**
@@ -252,11 +200,11 @@ export interface IgeAudioEntity {
 	loop (val?: boolean): this | boolean;
 }
 
-synthesize(IgeAudioEntity, "playOnMount", true);
-synthesize(IgeAudioEntity, "pannerSettings", true);
-synthesize(IgeAudioEntity, "audioSourceId", true);
-synthesize(IgeAudioEntity, "volume", true);
-synthesize(IgeAudioEntity, "loop", true);
-synthesize(IgeAudioEntity, "isPlaying", true);
+synthesize(IgeAudioEntity, "playOnMount");
+synthesize(IgeAudioEntity, "pannerSettings");
+synthesize(IgeAudioEntity, "audioSourceId");
+synthesize(IgeAudioEntity, "volume");
+synthesize(IgeAudioEntity, "loop");
+synthesize(IgeAudioEntity, "isPlaying");
 
 registerClass(IgeAudioEntity);

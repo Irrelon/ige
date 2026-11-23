@@ -1,7 +1,3 @@
-export const IGE_NETWORK_STREAM_CREATE = "_igeStreamCreate";
-export const IGE_NETWORK_STREAM_DESTROY = "_igeStreamDestroy";
-export const IGE_NETWORK_STREAM_DATA = "_igeStreamData";
-export const IGE_NETWORK_STREAM_TIME = "_igeStreamTime";
 export const IGE_NETWORK_REQUEST = "_igeRequest";
 export const IGE_NETWORK_RESPONSE = "_igeResponse";
 export const IGE_NETWORK_TIME_SYNC = "_igeNetTimeSync";

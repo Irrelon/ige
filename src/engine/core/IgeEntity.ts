@@ -12,12 +12,10 @@ import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
-import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
-import { isClient, isServer } from "@/engine/utils/clientServer";
 import { registerClass } from "@/engine/utils/igeClassStore";
 import { degreesToRadians } from "@/engine/utils/maths";
 import { traceSet } from "@/engine/utils/trace";
-import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "@/enums";
+import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode } from "@/enums";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
@@ -27,7 +25,6 @@ import type { IgeInputEventHandler } from "@/types/IgeInputEventHandler";
 import type { IgePoint } from "@/types/IgePoint";
 import type { IgeShapeFunctionality } from "@/types/IgeShapeFunctionality";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "@/types/IgeTimeStream";
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
 import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 import type { IgeRetargetOptions } from "@/engine/webgl/IgeAnimationRetarget";
@@ -101,14 +98,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		super();
 
 		//this._mouseEventTrigger = 0;
-
-		if (isServer) {
-			// Set the stream floating point precision to 2 as default
-			this.streamFloatPrecision(2);
-		}
-
-		// Set the default stream sections as just the transform data
-		this.streamSections(["transform"]);
 	}
 
 	customTriggerPolygon: () => IgeShapeFunctionality = () => new IgeBounds();
@@ -2232,7 +2221,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * method.
 	 */
 	tick (ctx: IgeCanvasRenderingContext2d, dontTransform: boolean = false) {
-		if (!(!this._hidden && this._inView && (!this._parent || this._parent._inView) && !this._streamJustCreated)) {
+		if (!(!this._hidden && this._inView && (!this._parent || this._parent._inView))) {
 			return;
 		}
 
@@ -2267,11 +2256,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			// Render the entity
 			this._renderEntity(ctx);
 		}
-
-		// WEBGPU - Move to postTick?
-		// if (this._streamMode === IgeStreamMode.simple) {
-		// 	this.streamSync();
-		// }
 
 		if (this._compositeCache) {
 			if (this._cacheDirty && this._cacheCtx) {
@@ -3838,234 +3822,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		};
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// INTERPOLATOR
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * Calculates the current value based on the time along the
-	 * value range.
-	 * @param {number} startValue The value that the interpolation started from.
-	 * @param {number} endValue The target value to be interpolated to.
-	 * @param {number} startTime The time the interpolation started.
-	 * @param {number} currentTime The current time.
-	 * @param {number} endTime The time the interpolation will end.
-	 * @return {number} The interpolated value.
-	 */
-	interpolateValue (startValue: number, endValue: number, startTime: number, currentTime: number, endTime: number) {
-		const totalValue = endValue - startValue;
-		const dataDelta = endTime - startTime;
-		const offsetDelta = currentTime - startTime;
-		let deltaTime = offsetDelta / dataDelta;
-
-		// Clamp the current time from 0 to 1
-		if (deltaTime < 0) {
-			deltaTime = 0;
-		} else if (deltaTime > 1) {
-			deltaTime = 1;
-		}
-
-		return totalValue * deltaTime + startValue;
-	}
-
-	/**
-	 * Processes the time stream for the entity.
-	 * @param {number} renderTime The time that the time stream is
-	 * targeting to render the entity at.
-	 * @param {number} maxLerp The maximum lerp before the value
-	 * is assigned directly instead of being interpolated.
-	 * @private
-	 */
-	_processInterpolate (renderTime: number, maxLerp = 200) {
-		// Set the maximum lerp to 200 if none is present
-		if (!maxLerp) {
-			maxLerp = 200;
-		}
-
-		//const maxLerpSquared = maxLerp * maxLerp;
-		const timeStream = this._timeStream;
-		const currentTransform: number[] = [];
-		let previousData: IgeTimeStreamPacket | undefined,
-			nextData: IgeTimeStreamPacket | undefined,
-			dataDelta,
-			offsetDelta,
-			currentTime,
-			previousTransform: IgeTimeStreamParsedTransformData,
-			nextTransform: IgeTimeStreamParsedTransformData,
-			i = 1;
-
-		// TODO: There is a bug here in that if no previous timestream data exists, the update
-		//   will never get actioned.
-		// Find the point in the time stream that is
-		// closest to the render time and assign the
-		// previous and next data points
-		while (timeStream[i]) {
-			if (timeStream[i][0] > renderTime) {
-				// We have previous and next data points from the
-				// time stream so store them
-				previousData = timeStream[i - 1];
-				nextData = timeStream[i];
-				break;
-			}
-			i++;
-		}
-
-		// Check if we have some data to use
-		if (!nextData && !previousData) {
-			// No in-time data was found, check for lagging data
-			if (timeStream.length > 2) {
-				if (timeStream[timeStream.length - 1][0] < renderTime) {
-					// Lagging data is available, use that
-					previousData = timeStream[timeStream.length - 2];
-					nextData = timeStream[timeStream.length - 1];
-					timeStream.shift();
-
-					/**
-					 * Fires when the entity interpolates against old data, usually
-					 * the result of slow processing on the client or too much data
-					 * being sent from the server.
-					 * @event IgeEntity#interpolationLag
-					 */
-					this.emit("interpolationLag");
-				}
-			} else if (timeStream.length === 1) {
-				// Handle the case where there's only one timestream entry
-				const singleData = timeStream[0];
-
-				// Only apply if the timestamp is older than or equal to renderTime
-				// If it's newer, we should wait for more data to interpolate properly
-				if (singleData[0] <= renderTime) {
-					// Apply the transform directly without interpolation
-					const transform = singleData[1].map(parseFloat) as IgeTimeStreamParsedTransformData;
-
-					this.translateTo(transform[0], transform[1], transform[2]);
-					this.scaleTo(transform[3], transform[4], transform[5]);
-					this.rotateTo(transform[6], transform[7], transform[8]);
-
-					// Remove the processed entry
-					timeStream.shift();
-
-					// Record the last update time
-					this._lastUpdate = new Date().getTime();
-					return;
-				}
-				// If the single entry is newer than renderTime, don't process it yet
-				// Wait for more data or let it be processed in a future frame
-			}
-		} else {
-			// TODO: Shouldn't we do this if we find old data as well? e.g. timeStream.length > 2
-			// We have some new data so clear the old data
-			timeStream.splice(0, i - 1);
-		}
-
-		// If we have data to use
-		if (nextData && previousData) {
-			// Check if the previous data has a timestamp and if not,
-			// use the next data's timestamp
-			if (isNaN(previousData[0])) {
-				previousData[0] = nextData[0];
-			}
-
-			// Store the data so outside systems can access them
-			this._timeStreamPreviousData = previousData;
-			this._timeStreamNextData = nextData;
-
-			// Calculate the delta times
-			dataDelta = nextData[0] - previousData[0];
-			offsetDelta = renderTime - previousData[0];
-
-			this._timeStreamDataDelta = Math.floor(dataDelta);
-			this._timeStreamOffsetDelta = Math.floor(offsetDelta);
-
-			// Calculate the current time between the two data points
-			currentTime = offsetDelta / dataDelta;
-
-			this._timeStreamCurrentInterpolateTime = currentTime;
-
-			// Clamp the current time from 0 to 1
-			//if (currentTime < 0) { currentTime = 0.0; } else if (currentTime > 1) { currentTime = 1.0; }
-
-			// Set variables up to store the previous and next data
-			previousTransform = previousData[1].map(parseFloat) as IgeTimeStreamParsedTransformData;
-			nextTransform = nextData[1].map(parseFloat) as IgeTimeStreamParsedTransformData;
-
-			// Translate
-			currentTransform[0] = this.interpolateValue(
-				previousTransform[0],
-				nextTransform[0],
-				previousData[0],
-				renderTime,
-				nextData[0]
-			);
-			currentTransform[1] = this.interpolateValue(
-				previousTransform[1],
-				nextTransform[1],
-				previousData[0],
-				renderTime,
-				nextData[0]
-			);
-			currentTransform[2] = this.interpolateValue(
-				previousTransform[2],
-				nextTransform[2],
-				previousData[0],
-				renderTime,
-				nextData[0]
-			);
-			// Scale
-			currentTransform[3] = this.interpolateValue(
-				previousTransform[3],
-				nextTransform[3],
-				previousData[0],
-				renderTime,
-				nextData[0]
-			);
-			currentTransform[4] = this.interpolateValue(
-				previousTransform[4],
-				nextTransform[4],
-				previousData[0],
-				renderTime,
-				nextData[0]
-			);
-			currentTransform[5] = this.interpolateValue(
-				previousTransform[5],
-				nextTransform[5],
-				previousData[0],
-				renderTime,
-				nextData[0]
-			);
-			// Rotate
-			currentTransform[6] = this.interpolateValue(
-				previousTransform[6],
-				nextTransform[6],
-				previousData[0],
-				renderTime,
-				nextData[0]
-			);
-			currentTransform[7] = this.interpolateValue(
-				previousTransform[7],
-				nextTransform[7],
-				previousData[0],
-				renderTime,
-				nextData[0]
-			);
-			currentTransform[8] = this.interpolateValue(
-				previousTransform[8],
-				nextTransform[8],
-				previousData[0],
-				renderTime,
-				nextData[0]
-			);
-
-			this.translateTo(currentTransform[0], currentTransform[1], currentTransform[2]);
-			this.scaleTo(currentTransform[3], currentTransform[4], currentTransform[5]);
-			this.rotateTo(currentTransform[6], currentTransform[7], currentTransform[8]);
-
-			// Record the last time we updated the entity, so we can disregard any updates
-			// that arrive and are before this timestamp (not applicable in TCP but will
-			// apply if we ever get UDP in websockets)
-			this._lastUpdate = new Date().getTime();
-		}
-	}
-
 	_highlightToGlobalCompositeOperation (val: boolean): string | undefined {
 		if (val) {
 			return "lighter";
@@ -4098,9 +3854,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		// Check that the entity has been born
 		if (ige.engine._currentTime >= this._bornTime) {
-			// Remove the stream data cache
-			this._streamDataCache = "";
-
 			// Process any behaviours assigned to the entity
 			this._processBehaviours(IgeBehaviourType.preUpdate, tickDelta);
 
@@ -4108,13 +3861,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			if (this._velocity.x || this._velocity.y) {
 				this._translate.x += (this._velocity.x / 16) * tickDelta;
 				this._translate.y += (this._velocity.y / 16) * tickDelta;
-			}
-
-			if (this._timeStream.length) {
-				// Process any interpolation
-				this._processInterpolate(
-					ige.engine._tickStart - (ige.network as IgeNetIoClientController)._renderLatency
-				);
 			}
 
 			// Check for changes to the transform values
@@ -4136,10 +3882,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			// which allows us to determine if we are still on the
 			// same frame
 			this._frameAlternatorCurrent = ige.engine._frameAlternator;
-
-			if (this._streamMode === IgeStreamMode.simple) {
-				this.streamSync();
-			}
 		} else {
 			// The entity is not yet born, unmount it and add to the spawn queue
 			this._birthMount = this._parent?.id();
@@ -4166,95 +3908,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 					this._handleMouseOut(input.pointerMove);
 				}
 			}
-		}
-	}
-
-	/**
-	 * Gets / sets the data for the specified data section id. This method
-	 * is usually not called directly and instead is part of the network
-	 * stream system. General use case is to write your own custom streamSectionData
-	 * method in a class that extends IgeEntity so that you can control the
-	 * data that the entity will send and receive over the network stream.
-	 * @param {String} sectionId A string identifying the section to
-	 * handle data get / set for.
-	 * @param {*=} data If present, this is the data that has been sent
-	 * from the server to the client for this entity. If not present then
-	 * we should return the data to be sent over the network.
-	 * @param {Boolean=} bypassTimeStream If true, will assign transform
-	 * directly to entity instead of adding the values to the time stream.
-	 * @param {Boolean=} bypassChangeDetection If set to true, bypasses
-	 * any change detection on stream data (useful especially when we are
-	 * sending stream data to a client for the first time even if the data
-	 * has existed on the server for a while - ensuring that even unchanged
-	 * data makes it to the new client).
-	 * @return {*} "this" when a data argument is passed to allow method
-	 * chaining or the current value if no data argument is specified.
-	 */
-	streamSectionData (
-		sectionId: string,
-		data?: string,
-		bypassTimeStream: boolean = false,
-		bypassChangeDetection: boolean = false
-	): string | undefined {
-		switch (sectionId) {
-			case "bounds2d":
-				if (data !== undefined) {
-					if (isClient) {
-						const geom = data.split(",");
-						this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
-					}
-				} else {
-					return String(this._bounds2d.x + "," + this._bounds2d.y);
-				}
-				break;
-
-			case "bounds3d":
-				if (data !== undefined) {
-					if (isClient) {
-						const geom = data.split(",");
-						this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
-					}
-				} else {
-					return String(this._bounds3d.x + "," + this._bounds3d.y + "," + this._bounds3d.z);
-				}
-				break;
-
-			case "hidden":
-				if (data !== undefined) {
-					if (isClient) {
-						if (data === "true") {
-							this.hide();
-						} else {
-							this.show();
-						}
-					}
-				} else {
-					return String(this.isHidden());
-				}
-				break;
-
-			case "width":
-				if (data !== undefined) {
-					if (isClient) {
-						this.width(parseInt(data));
-					}
-				} else {
-					return String(this.width());
-				}
-				break;
-
-			case "height":
-				if (data !== undefined) {
-					if (isClient) {
-						this.height(parseInt(data));
-					}
-				} else {
-					return String(this.height());
-				}
-				break;
-
-			default:
-				return super.streamSectionData(sectionId, data, bypassTimeStream, bypassChangeDetection);
 		}
 	}
 }

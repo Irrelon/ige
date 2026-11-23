@@ -241,4 +241,4 @@ What a client can and can't infer from a blip: it learns the position (the blip 
 
 - **Stage 3, datagram transport:** WebTransport / WebRTC data channels with the lossy baselines, versioned json patches and slices already in place (and MTU budgeting).
 - **Stage 4, lag compensation:** server history of positions to rewind for hit checks.
-- Later: the author's `IgeObject` streaming rebuilt on this, and Starflight and the zombie game ported.
+- Later: entity streaming rebuilt on this. The old `IgeObject` streaming (`streamMode`, `streamSections`, the net.io stream commands and the time-stream interpolation) has been removed; until the rebuild, replicate game state with `IgeNetReplicator` objects.

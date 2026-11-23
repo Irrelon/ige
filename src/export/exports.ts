@@ -42,7 +42,6 @@ export * from "../types/IgeIsReadyPromise";
 export * from "../types/IgeMixin";
 export * from "../types/IgeNetworkChat";
 export * from "../types/IgeNetworkMessage";
-export * from "../types/IgeNetworkStream";
 export * from "../types/IgeObjectWithValueProperty";
 export * from "../types/IgePathFinderComparisonCallback";
 export * from "../types/IgePathFinderFunctionality";
@@ -54,12 +53,10 @@ export * from "../types/IgeSceneGraphDataEntry";
 export * from "../types/IgeShapeFunctionality";
 export * from "../types/IgeSmartFilter";
 export * from "../types/IgeSmartTexture";
-export * from "../types/IgeStreaming";
 export * from "../types/IgeSyncEntry";
 export * from "../types/IgeTextureAnimation";
 export * from "../types/IgeTextureCell";
 export * from "../types/IgeTextureCellArray";
-export * from "../types/IgeTimeStream";
 export * from "../types/IgeTriggerPolygonFunctionName";
 export * from "../types/IgeUiStyleModifier";
 export * from "../types/IgeUiStyleObject";
@@ -71,7 +68,6 @@ export * from "../types/IgeVec6";
 // Enums
 //////////////////////////////////////////////////////////////////////
 export * from "../enums/IgeTextureRenderMode";
-export * from "../enums/IgeStreamMode";
 export * from "../enums/IgeNetworkConstants";
 export * from "../enums/IgeMountMode";
 export * from "../enums/IgeIsometricDepthSortMode";

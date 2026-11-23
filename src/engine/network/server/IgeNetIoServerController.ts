@@ -9,10 +9,6 @@ import {
 	IGE_NETWORK_LEAVE_ROOM,
 	IGE_NETWORK_REQUEST,
 	IGE_NETWORK_RESPONSE,
-	IGE_NETWORK_STREAM_CREATE,
-	IGE_NETWORK_STREAM_DATA,
-	IGE_NETWORK_STREAM_DESTROY,
-	IGE_NETWORK_STREAM_TIME,
 	IGE_NETWORK_TIME_SYNC,
 	IgeEventReturnFlag
 } from "@/enums";
@@ -36,22 +32,6 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	_port: number = 8000;
 	_acceptConnections: boolean = false;
 	_io?: IgeNetIoServer;
-	_streamTimer?: number; // The timer / interval handle
-	_streamInterval: number = 50;
-	_queuedData: Record<string, [string, string[]]> = {}; // Define the object that will hold the stream data queue
-	_streamClientData: Record<string, Record<string, string>> = {}; // Set some stream data containers
-	_streamClientCreated: Record<string, Record<string, boolean>> = {}; // Set some stream data containers
-	_streamPropertyChange: Record<string, Record<string, boolean>> = {}; // Keep track of changes that need to be sent to clients
-
-	constructor () {
-		super();
-
-		// Define the network stream commands
-		this.define(IGE_NETWORK_STREAM_CREATE);
-		this.define(IGE_NETWORK_STREAM_DESTROY);
-		this.define(IGE_NETWORK_STREAM_DATA);
-		this.define(IGE_NETWORK_STREAM_TIME);
-	}
 
 	isReady () {
 		return Promise.resolve();
@@ -94,9 +74,6 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 
 			// Start network sync
 			this.timeSyncStart();
-
-			this.log("Starting delta stream...");
-			this._streamTimer = setInterval(this._sendQueue, this._streamInterval) as unknown as number;
 		});
 	}
 
@@ -543,93 +520,4 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 
 		delete this._socketById[socket._id];
 	}
-
-	/**
-	 * Gets / sets the interval by which updates to the game world are packaged
-	 * and transmitted to connected clients. The greater the value, the fewer
-	 * updates are sent per second.
-	 * @param {number} [ms] The number of milliseconds between stream messages.
-	 */
-	sendInterval (ms: number): this;
-	sendInterval (): number;
-	sendInterval (ms?: number): number | this {
-		if (ms !== undefined) {
-			this.log("Setting delta stream interval to " + ms / ige.engine._timeScale + "ms");
-			this._streamInterval = ms / ige.engine._timeScale;
-			return this;
-		}
-
-		return this._streamInterval;
-	}
-
-	/**
-	 * Stops the stream of world updates to connected clients.
-	 */
-	stop () {
-		this.log("Stopping delta stream...");
-		clearInterval(this._streamTimer);
-
-		return this;
-	}
-
-	/**
-	 * Queues stream data to be sent during the next stream data interval.
-	 * @param {string} entityId The id of the entity that this data belongs to.
-	 * @param {string} data The data queued for delivery to the client.
-	 * @param {string} clientId The client id this data is queued for.
-	 * @return {this}
-	 */
-	queue (entityId: string, data: string, clientId: string[]): this {
-		this._queuedData[entityId] = [data, clientId];
-		return this;
-	}
-
-	/**
-	 * Asks the server to send the data packets for all the queued stream
-	 * data to the specified clients.
-	 * @private
-	 */
-	_sendQueue = () => {
-		const st = new Date().getTime();
-		const queueObj = this._queuedData;
-		const network = ige.network as IgeNetIoServerController;
-		const currentTime = ige.engine._currentTime;
-		const hasSentTimeDataByClientId: Record<string, boolean> = {};
-
-		// Send the stream data
-		for (const entityId in queueObj) {
-			const item = queueObj[entityId];
-
-			item[1].forEach((clientId) => {
-				// Check if we've already sent this client the starting
-				// time of the stream data
-
-				// TODO: Commented this because the receiving client never uses this data at all!
-				if (!hasSentTimeDataByClientId[clientId]) {
-					// Send the stream start time
-					network.send(IGE_NETWORK_STREAM_TIME, currentTime, clientId);
-					hasSentTimeDataByClientId[clientId] = true;
-				}
-
-				network.send(IGE_NETWORK_STREAM_DATA, item[0], clientId);
-
-				// Store the new data for later comparison
-				this._streamClientData[entityId][clientId] = item[0];
-			});
-
-			delete queueObj[entityId];
-
-			if (this._streamPropertyChange) {
-				delete this._streamPropertyChange[entityId];
-			}
-
-			const ct = new Date().getTime();
-			const dt = ct - st;
-
-			if (dt > this._streamInterval) {
-				console.log("WARNING, Stream send is taking too long: " + dt + "ms");
-				break;
-			}
-		}
-	};
 }

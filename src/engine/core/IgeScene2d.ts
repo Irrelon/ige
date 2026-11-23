@@ -25,53 +25,7 @@ export class IgeScene2d extends IgeEntity {
 		this._bounds2d.x = ige.engine._bounds2d.x;
 		this._bounds2d.y = ige.engine._bounds2d.y;
 
-		this.streamSections(["transform", "ignoreCamera"]);
 	}
-
-	/**
-	 * Gets / sets the stream room id. If set, any streaming entities that
-	 * are mounted to this scene will only sync with clients that have been
-	 * assigned to this room id.
-	 *
-	 * @param {string} id The id of the room.
-	 * @returns {*}
-	 */
-	streamRoomId = (id?: string) => {
-		if (id !== undefined) {
-			this._streamRoomId = id;
-			return this;
-		}
-
-		return this._streamRoomId;
-	};
-
-	/**
-	 * Overrides the default entity stream sections to also stream important
-	 * data about scenes to the client.
-	 * @param sectionId
-	 * @param data
-	 * @returns {string | undefined}
-	 */
-	streamSectionData = (sectionId: string, data: string): string | undefined => {
-		switch (sectionId) {
-			case "ignoreCamera":
-				if (data === undefined) {
-					// Getter
-					return String(this._ignoreCamera);
-				}
-
-				// Setter
-				if (data === "false") {
-					this.ignoreCamera(false);
-				} else {
-					this.ignoreCamera(true);
-				}
-				return;
-
-			default:
-				return super.streamSectionData(sectionId, data);
-		}
-	};
 
 	/**
 	 * Gets / sets the auto-size property. If set to true, the scene will

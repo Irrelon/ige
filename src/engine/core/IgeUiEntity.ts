@@ -153,7 +153,7 @@ export class IgeUiEntity extends IgeEntity {
 	}
 
 	tick (ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
-		if (!this._hidden && this._inView && (!this._parent || this._parent._inView) && !this._streamJustCreated) {
+		if (!this._hidden && this._inView && (!this._parent || this._parent._inView)) {
 			if (!dontTransform) {
 				this._transformContext(ctx);
 			}
