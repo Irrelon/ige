@@ -15,7 +15,7 @@ import { IgeWebGlGeometryManager } from "@/engine/webgl/IgeWebGlGeometryManager"
 import { IgeWebGlCameraController } from "@/engine/webgl/IgeWebGlCameraController";
 import { IgeWebGlStateManager } from "@/engine/webgl/IgeWebGlStateManager";
 import { IgeWebGlLightManager } from "@/engine/webgl/IgeWebGlLightManager";
-import { IgeWebGlShadowManager } from "@/engine/webgl/IgeWebGlShadowManager";
+import { IgeShadowSignature, IgeWebGlShadowManager, igeShadowCasterIsStatic } from "@/engine/webgl/IgeWebGlShadowManager";
 import { IgeWebGlSkeletonManager } from "@/engine/webgl/IgeWebGlSkeletonManager";
 import { IgeShaderLibrary } from "@/engine/shaders/webgl/shaderLibrary";
 import type { IgeObject } from "@/engine/core/IgeObject";
@@ -48,6 +48,7 @@ import type { IgeRaycastHit, IgeRaycastOptions } from "@/engine/webgl/IgeRaycast
 import { raycastEntities } from "@/engine/webgl/IgeRaycast";
 import { takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
 import type { IgeHeightfieldRayOptions } from "@/engine/webgl/IgeHeightfieldRay";
+import { IgeDynamicResolution, IgeGpuFrameTimer, type IgeDynamicResolutionSettings } from "@/engine/webgl/IgeDynamicResolution";
 import { IGE_POST_PROCESS_DEFAULTS, igePictureEffectsOn, IgeWebGlPostProcess, type IgePostProcessSettings } from "@/engine/webgl/IgeWebGlPostProcess";
 import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
 import { type IgeUiSettings, type IgeUiView, placeUi } from "@/engine/webgl/IgeUiLayout";
@@ -225,6 +226,10 @@ export interface IgeWebGlRenderStats {
 	triangles: number;
 	/** Times the cached static shadow casters were redrawn (see shadowCaching()). */
 	shadowCacheRebuilds: number;
+	/** Shadow draw calls for the casters drawn over the cached static map (moving, skinned or flagged dynamic). */
+	dynamicShadowDraws: number;
+	/** Times the cached static map was copied into the live shadow map. */
+	shadowCacheCopies: number;
 	viewports: number;
 }
 
@@ -251,11 +256,6 @@ interface IgeWebGlInstanceSource {
 /** Floats per particle in IgeParticleSystem3d.renderData(). */
 const PARTICLE_FLOATS = 8;
 
-/**
- * Frames an entity's transform must stay unchanged before it is treated as
- * a static shadow caster (see shadowCaching()).
- */
-const SHADOW_STATIC_FRAMES = 30;
 
 /** Fraction of the shadow frustum's half-size the cached frustum re-centres by. */
 const SHADOW_RECENTER_STEP = 0.125;
@@ -541,6 +541,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/** Full-screen post-processing (WebGL 2), created when first enabled. */
 	protected _postProcess: IgeWebGlPostProcess | null = null;
 	protected _postSettings: IgePostProcessSettings = { ...IGE_POST_PROCESS_DEFAULTS };
+	/** The fixed render scale (used while dynamic resolution is off), and the controller that picks it while it's on. */
+	protected _fixedScale = 1;
+	protected _dynamicRes = new IgeDynamicResolution();
+	protected _gpuTimer: IgeGpuFrameTimer | null = null;
+	protected _rafHandle = 0;
+	/** The scale this frame's scene is drawn at (1 when it isn't drawn offscreen). */
+	protected _frameScale = 1;
 	protected _fog: IgeWebGlFogSettings = {
 		mode: "none",
 		color: { r: 0, g: 0, b: 0 },
@@ -559,6 +566,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		lodItems: 0,
 		triangles: 0,
 		shadowCacheRebuilds: 0,
+		dynamicShadowDraws: 0,
+		shadowCacheCopies: 0,
 		viewports: 0
 	};
 
@@ -572,6 +581,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _shadowCaching: boolean = false;
 	protected _staticDepthBatcher: IgeWebGlItemBatcher = new IgeWebGlItemBatcher();
 	protected _shadowMapHoldsCache: boolean = false;
+	protected _shadowSignature = new IgeShadowSignature();
 	protected _directionalPassesThisFrame: number = 0;
 	protected _directionalPassesLastFrame: number = 0;
 
@@ -812,6 +822,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// (Without preventDefault the browser never gives the context back)
 		event.preventDefault();
 		this._contextLost = true;
+		this._gpuTimer?.contextLost();
+		this._gpuTimer = null;
 		this._postProcess?.contextLost();
 		this._outlinePass?.contextLost();
 		this._outlinePass = undefined;
@@ -963,13 +975,76 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		return this;
 	}
 
+	/**
+	 * Gets / sets dynamic resolution: the 3D scene (and its post-processing) is drawn offscreen at a fraction of the
+	 * canvas's size and upscaled to it, linear, while the UI layer, panels, outlines and overlays stay at the canvas's
+	 * own resolution. With it on, the scale steps down (about 10% at a time) when frames miss the display's refresh
+	 * interval (or the interval `ige.engine.maxRenderRate()` allows, when longer) and back up when there's room.
+	 * Scales are fractions of the canvas's size, which is already capped by `maxPixelRatio()`. Off by default.
+	 * @example #Let the renderer hold the frame rate; never below two thirds of the canvas's size
+	 *     renderer.dynamicResolution({ enabled: true, minScale: 0.67, maxScale: 1 });
+	 */
+	dynamicResolution(): IgeDynamicResolutionSettings;
+	dynamicResolution(settings: Partial<IgeDynamicResolutionSettings>): this;
+	dynamicResolution(settings?: Partial<IgeDynamicResolutionSettings>): IgeDynamicResolutionSettings | this {
+		if (settings === undefined) return { ...this._dynamicRes.settings };
+		const wasEnabled = this._dynamicRes.settings.enabled;
+		this._dynamicRes.configure(settings);
+		if (this._dynamicRes.settings.enabled && !wasEnabled) this._startRefreshSampling();
+		else if (!this._dynamicRes.settings.enabled && wasEnabled) this._stopRefreshSampling();
+		this._renderOnDemandWake();
+		return this;
+	}
+
+	/**
+	 * Gets the scale the 3D scene is drawn at (1 = the canvas's own size); sets a fixed scale (0.25 to 1) while dynamic
+	 * resolution is off. Below 1 the scene goes offscreen even with post-processing off.
+	 * @example #Draw the scene at 70% and upscale it
+	 *     renderer.renderScale(0.7);
+	 */
+	renderScale(): number;
+	renderScale(scale: number): this;
+	renderScale(scale?: number): number | this {
+		if (scale === undefined) return this._renderScale();
+		this._fixedScale = Math.min(1, Math.max(0.25, scale));
+		this._renderOnDemandWake();
+		return this;
+	}
+
+	protected _renderScale(): number {
+		return this._dynamicRes?.settings.enabled ? this._dynamicRes.scale : this._fixedScale ?? 1;
+	}
+
+	/** With render-on-demand a changed scale needs a frame to show. */
+	protected _renderOnDemandWake(): void {
+		const eng = ige.engine;
+		if (eng && (eng._renderOnDemand || eng._useManualRender)) eng.manualRender();
+	}
+
+	protected _startRefreshSampling(): void {
+		if (this._rafHandle || typeof requestAnimationFrame !== "function") return;
+		this._dynamicRes.rafSample(performance.now());
+		const loop = (ts: number) => {
+			this._dynamicRes.rafSample(ts);
+			this._rafHandle = this._dynamicRes.settings.enabled ? requestAnimationFrame(loop) : 0;
+		};
+		this._rafHandle = requestAnimationFrame(loop);
+	}
+
+	protected _stopRefreshSampling(): void {
+		if (this._rafHandle && typeof cancelAnimationFrame === "function") cancelAnimationFrame(this._rafHandle);
+		this._rafHandle = 0;
+		this._dynamicRes.resetTiming();
+	}
+
 	/** The post-processor for this frame, created on first use (null on WebGL 1, or when off and no picture effect's set). */
 	protected _postProcessor(): IgeWebGlPostProcess | null {
-		if ((!this._postSettings.enabled && !igePictureEffectsOn(this._postSettings)) || this._webglVersion !== 2 || !this._canvasContext) return null;
+		if ((!this._postSettings.enabled && !igePictureEffectsOn(this._postSettings) && this._renderScale() >= 1) || this._webglVersion !== 2 || !this._canvasContext) return null;
 		if (!this._postProcess) {
 			this._postProcess = new IgeWebGlPostProcess(this._device!, this._postSettings);
 		}
 		this._postProcess.settings = this._postSettings;
+		this._postProcess.renderScale = this._renderScale();
 		return this._postProcess;
 	}
 
@@ -1947,6 +2022,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		stats.lodItems = 0;
 		stats.triangles = 0;
 		stats.shadowCacheRebuilds = 0;
+		stats.dynamicShadowDraws = 0;
+		stats.shadowCacheCopies = 0;
 		this._directionalPassesLastFrame = this._directionalPassesThisFrame;
 		this._directionalPassesThisFrame = 0;
 		stats.viewports = viewports ? viewports.length : 0;
@@ -1955,9 +2032,22 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const cc = this._clearColor;
 		this._stateManager.reset();
 		this._stateManager.setScissorTest(false);
+		// Dynamic resolution: the scale for this frame, from how recent frames went
+		if (this._dynamicRes?.settings.enabled) {
+			if (!this._gpuTimer) this._gpuTimer = new IgeGpuFrameTimer(gl as WebGL2RenderingContext);
+			const eng = ige.engine;
+			const cap = eng?._maxRenderRate > 0 ? 1000 / eng._maxRenderRate : 0;
+			const continuous = !(eng?._useManualRender || eng?._renderOnDemand);
+			this._dynamicRes.frame({ now: performance.now(), gpuMs: this._gpuTimer?.poll() ?? null, continuous, capMs: cap });
+		}
 		const post = this._postProcessor();
 		const postActive = !!post && post.begin(this._canvasElement!.width, this._canvasElement!.height);
-		gl.viewport(0, 0, this._canvasElement!.width, this._canvasElement!.height);
+		this._frameScale = postActive ? post!.renderScale ?? 1 : 1;
+		if (this._dynamicRes?.settings.enabled) this._gpuTimer?.begin();
+		const size = this._frameScale < 1
+			? { width: Math.max(1, Math.round(this._canvasElement!.width * this._frameScale)), height: Math.max(1, Math.round(this._canvasElement!.height * this._frameScale)) }
+			: { width: this._canvasElement!.width, height: this._canvasElement!.height };
+		gl.viewport(0, 0, size.width, size.height);
 		gl.clearColor(cc.r, cc.g, cc.b, cc.a);
 		gl.depthMask(true);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -2029,6 +2119,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			post!.end();
 			this._stateManager.reset();
 		}
+		this._gpuTimer?.end();
+		this._frameScale = 1;
 
 		// Outlines round what's marked (IgeEntity.outline()), crisp over the finished frame
 		this._renderOutlines();
@@ -2668,11 +2760,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		// Get viewport dimensions in CSS pixels and convert to device pixels.
+		// (The scene's offscreen target may be smaller than the canvas: its viewports shrink with it. Panels draw into
+		// their own targets, and outlines onto the canvas, at its full resolution)
 		const dpr = this._devicePixelRatio;
-		let vpX = Math.floor((viewport._translate?.x || 0) * dpr);
-		let vpY = Math.floor((viewport._translate?.y || 0) * dpr);
-		const vpWidth = Math.floor(viewport._bounds2d.x * dpr);
-		const vpHeight = Math.floor(viewport._bounds2d.y * dpr);
+		const sdpr = inPanel ? dpr : dpr * this._frameScale;
+		let vpX = Math.floor((viewport._translate?.x || 0) * sdpr);
+		let vpY = Math.floor((viewport._translate?.y || 0) * sdpr);
+		const vpWidth = Math.floor(viewport._bounds2d.x * sdpr);
+		const vpHeight = Math.floor(viewport._bounds2d.y * sdpr);
 
 		const camera = viewport.camera;
 		const scene = viewport._scene;
@@ -2913,7 +3008,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		// Outlined items: drawn round once the frame's finished (and post-processed)
-		if (outlined && !inPanel) (this._outlineJobs ??= []).push({ items: outlined, matrices, view: { x0: vpX, y0: vpY, x1: vpX + vpWidth, y1: vpY + vpHeight } });
+		if (outlined && !inPanel) (this._outlineJobs ??= []).push({ items: outlined, matrices, view: this._frameScale === 1 ? { x0: vpX, y0: vpY, x1: vpX + vpWidth, y1: vpY + vpHeight } : { x0: Math.floor((viewport._translate?.x || 0) * dpr), y0: Math.floor((viewport._translate?.y || 0) * dpr), x1: Math.floor((viewport._translate?.x || 0) * dpr) + Math.floor(viewport._bounds2d.x * dpr), y1: Math.floor((viewport._translate?.y || 0) * dpr) + Math.floor(viewport._bounds2d.y * dpr) } });
 
 		// Keep only the queued lines for the next viewport
 		if (!inPanel) this._debugLineVertices = this._debugLinesQueued;
@@ -3546,7 +3641,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		batcher.begin();
 		staticBatcher.begin();
 		const frameId = this._frameId;
-		let signatureA = 0, signatureB = 0, staticCount = 0, movingCount = 0;
+		const signature = this._shadowSignature;
+		signature.reset();
+		let movingCount = 0;
 
 		const models = data.models;
 		for (let i = 0; i < models.length; i++) {
@@ -3567,20 +3664,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			}
 
 			if (cache) {
-				// New casters start out static (one extra rebuild if they turn
-				// out to move); casters that moved wait until they settle
-				if (entity._transformVersion !== entity._shadowSeenVersion) {
-					entity._shadowStableSince = entity._shadowSeenVersion === -1 ? -SHADOW_STATIC_FRAMES : frameId;
-					entity._shadowSeenVersion = entity._transformVersion;
-				}
-				if (!item.skeleton && frameId - entity._shadowStableSince >= SHADOW_STATIC_FRAMES) {
+				if (igeShadowCasterIsStatic(entity, frameId, !!item.skeleton)) {
 					if (!entity._renderUid) entity._renderUid = nextRenderUid++;
-					// Order-independent checksum of (entity, mesh, transform)
-					let h = Math.imul(entity._renderUid, 0x9e3779b1) ^ Math.imul(geometry.uid, 0x85ebca6b) ^ Math.imul(entity._transformVersion + 1, 0xc2b2ae35);
-					h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
-					signatureA = (signatureA + h) | 0;
-					signatureB ^= Math.imul(h ^ (h >>> 13), 0x297a2d39);
-					staticCount++;
+					signature.add(entity._renderUid, geometry.uid, entity._transformVersion);
 					staticBatcher.add(item, key, geometry);
 					continue;
 				}
@@ -3596,7 +3682,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		this._gpuBegin();
 		try {
-			this._directionalPasses(cache, batcher, staticBatcher, shared, signatureA, signatureB, staticCount, movingCount, m);
+			this._directionalPasses(cache, batcher, staticBatcher, shared, signature, movingCount, m);
 		} finally {
 			this._gpuEnd();
 		}
@@ -3608,9 +3694,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		batcher: IgeWebGlItemBatcher,
 		staticBatcher: IgeWebGlItemBatcher,
 		shared: (block: Float32Array, at: Readonly<Record<string, number>>) => void,
-		signatureA: number,
-		signatureB: number,
-		staticCount: number,
+		signature: IgeShadowSignature,
 		movingCount: number,
 		m: Float32Array
 	): void {
@@ -3629,8 +3713,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// Redraw the cache only when the static casters or the frustum changed
 		let sameMatrix = cache.valid;
 		for (let k = 0; sameMatrix && k < 16; k++) sameMatrix = cache.matrix[k] === m[k];
-		const cacheCurrent = sameMatrix && cache.count === staticCount &&
-			cache.signatureA === signatureA && cache.signatureB === signatureB;
+		const cacheCurrent = sameMatrix && signature.matches(cache);
 
 		if (!cacheCurrent) {
 			const pass = shadowManager.beginShadowCachePass(lightId);
@@ -3639,9 +3722,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				shadowManager.endShadowPass(pass);
 			}
 			cache.matrix.set(m);
-			cache.count = staticCount;
-			cache.signatureA = signatureA;
-			cache.signatureB = signatureB;
+			cache.count = signature.count;
+			cache.signatureA = signature.a;
+			cache.signatureB = signature.b;
 			cache.valid = true;
 			this._shadowMapHoldsCache = false;
 			this._stats.shadowCacheRebuilds++;
@@ -3650,10 +3733,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// Nothing moving and the map already holds the cache: reuse it as is
 		if (movingCount === 0 && this._shadowMapHoldsCache) return;
 
-		shadowManager.copyShadowCache(lightId);
+		if (shadowManager.copyShadowCache(lightId)) this._stats.shadowCacheCopies++;
 		const pass = movingCount > 0 ? shadowManager.beginShadowPass(lightId, false) : null;
 		if (pass) {
+			const before = this._stats.shadowDrawCalls;
 			this._drawDepthBatches(pass, batcher.batches, "shadow", "skinned_shadow", shared);
+			this._stats.dynamicShadowDraws += this._stats.shadowDrawCalls - before;
 			shadowManager.endShadowPass(pass);
 		}
 		this._shadowMapHoldsCache = movingCount === 0;
@@ -4366,6 +4451,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._instanceBuffer?.destroy();
 		this._bonePalette?.destroy();
 		if (this._gpuInstances) this._device?.destroyBuffer(this._gpuInstances);
+		this._stopRefreshSampling();
 		this._postProcess?.dispose();
 		this._postProcess = null;
 		this._panelTargets?.dispose();
