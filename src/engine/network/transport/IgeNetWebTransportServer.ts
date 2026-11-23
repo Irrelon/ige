@@ -26,10 +26,12 @@ export interface IgeNetWebTransportServerOptions {
 /** How to import a package: the library is ESM-only, so a CommonJS build needs a real dynamic import. */
 export type IgeNetImporter = (name: string) => Promise<any>;
 
-const nativeImport: IgeNetImporter = (name) => {
+const nativeImport: IgeNetImporter = async (name) => {
 	try {
-		return (new Function("n", "return import(n)") as IgeNetImporter)(name);
-	} catch {
+		return await (new Function("n", "return import(n)") as IgeNetImporter)(name);
+	} catch (error) {
+		// Where a real dynamic import isn't allowed (a module runner such as vite-node, a bundler): the runner's own
+		if (!/dynamic import callback|vm-modules|Cannot use import/i.test((error as Error).message)) throw error;
 		return import(/* webpackIgnore: true */ name);
 	}
 };
