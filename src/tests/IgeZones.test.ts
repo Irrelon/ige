@@ -1,6 +1,6 @@
 import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
 import { IgeNetReplicationHost, type IgeNetReplicationMachine } from "@/engine/network/replication/IgeNetReplicationHost";
-import { igeNetLoopback } from "@/engine/network/sync/IgeNetTransport";
+import { igeNetLoopback } from "@/engine/network/transport/IgeNetTransport";
 import { IgeChildProcessLauncher } from "@/engine/network/zones/IgeChildProcessLauncher";
 import { IgeDockerLauncher } from "@/engine/network/zones/IgeDockerLauncher";
 import { IgeZoneDirectory } from "@/engine/network/zones/IgeZoneDirectory";

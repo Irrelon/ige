@@ -1,10 +1,10 @@
 # Replication
 
-`IgeNetReplicationHost` and `IgeNetReplicationClient` (`src/engine/network/replication/`) are the engine's real-time state replication. They do what `IgeNetSyncHost` / `IgeNetSyncClient` do (a fixed-rate authority, inputs from machines, prediction, interpolation, zone transfers) without the game handing the engine its whole world for every connection on every send. This is stages 1 and 2 of the one replication system IGE will use everywhere (stage 2: relevance, detail levels, priority and a bandwidth budget, below); the sync classes and `IgeObject` streaming stay as they are until games move over.
+`IgeNetReplicationHost` and `IgeNetReplicationClient` (`src/engine/network/replication/`) are the engine's real-time state replication. They are a fixed-rate authority with inputs from machines, prediction, interpolation and zone transfers, without the game handing the engine its whole world for every connection on every send. This is stages 1 and 2 of the one replication system IGE will use everywhere (stage 2: relevance, detail levels, priority and a bandwidth budget, below). It replaced the old sync snapshot API (`IgeNetSyncHost` / `IgeNetSyncClient`), which has been removed.
 
 ## Why it's cheaper
 
-The sync host asks the game for a snapshot per machine, diffs every field of every entity against that machine's last acknowledged copy (JSON comparisons for objects) and deep-copies it all for next time: entities x connections of work, whatever changed. Replication turns that round:
+The old sync host (removed) asked the game for a snapshot per machine, diffs every field of every entity against that machine's last acknowledged copy (JSON comparisons for objects) and deep-copies it all for next time: entities x connections of work, whatever changed. Replication turns that round:
 
 - **Changes are found where they happen.** `obj.write({ x: 12 })` compares each field with the current value once (not per connection) and stamps what changed with the current epoch. Nothing is compared or copied per connection. An object nobody writes is never visited again after its create: a rock costs nothing per send.
 - **Visibility is incremental.** Scopes, owners and reveals are applied when things are created, destroyed, subscribed or revealed, not rediscovered each send.
@@ -55,7 +55,7 @@ const welcome = await client.join([{ name: "Ann" }]);
 client.sendInput([{ turn: 0.5, thrust: true }]);               // every tick
 const world = client.interpolated();                           // every frame: id -> fields, a little in the past
 const me = client.predict(welcome.players[0], 0, (ship, input, dt) => stepShip(ship, input, dt), { between });
-await client.transfer({ url: nextZoneUrl, ticket });           // zone handoff, as with IgeNetSyncClient
+await client.transfer({ url: nextZoneUrl, ticket });           // zone handoff to another authority
 ```
 
 The schema set and the input schema must be the same on both ends (a hash is checked on join). Events (`host.event(data)` / client `"event"`) are reliable JSON.
@@ -98,11 +98,11 @@ A game can make its objects before there's a host (a world a test steps with nob
 
 ## Transports
 
-`IgeNetConnection.send()` takes a JSON-able object or a `Uint8Array`; binary goes as a binary WebSocket frame (`igeNetWebSocketConnect`, `IgeNetWebSocketServer.listen`) or byte for byte over `igeNetLoopback`. The browser-host relay (`igeNetRelayHost` / `igeNetRelayJoin` / `IgeNetWebSocketServer.relay()`) carries binary too, as binary frames with no JSON or base64 around them: a joiner's packet reaches the host with a header of one byte (the machine id's length) and the id, which the relay adds; the host's frames to a machine carry the same header, which the relay strips before passing the packet on. Not carried: the IgeNetIo adapter (`igeNetIoSyncTransport`) stays JSON only, because IgeNetIo commands serialise their data as JSON; use the WebSocket transports for replication.
+`IgeNetConnection.send()` takes a JSON-able object or a `Uint8Array`; binary goes as a binary WebSocket frame (`igeNetWebSocketConnect`, `IgeNetWebSocketServer.listen`) or byte for byte over `igeNetLoopback`. The browser-host relay (`igeNetRelayHost` / `igeNetRelayJoin` / `IgeNetWebSocketServer.relay()`) carries binary too, as binary frames with no JSON or base64 around them: a joiner's packet reaches the host with a header of one byte (the machine id's length) and the id, which the relay adds; the host's frames to a machine carry the same header, which the relay strips before passing the packet on. Replication runs over the WebSocket transports and `igeNetLoopback`; it has no IgeNetIo adapter, because IgeNetIo commands serialise their data as JSON.
 
 ## Measured
 
-`NET_BENCH=1 npx jest src/tests/IgeNetBench.test.ts`: 140 static rocks, 5 stations with a 40-row market, N moving ships, N connections, 30 sends/s, old sync host against this (CPU ms per second of `update()` including the game's writes; bytes per connection per second).
+`NET_BENCH=1 npx jest src/tests/IgeNetBench.test.ts`: 140 static rocks, 5 stations with a 40-row market, N moving ships, N connections, 30 sends/s (CPU ms per second of `update()` including the game's writes; bytes per connection per second). "Old" is the sync host this replaced, measured before it was removed.
 
 | N | old CPU | new CPU | old bytes | new bytes |
 |---|---|---|---|---|

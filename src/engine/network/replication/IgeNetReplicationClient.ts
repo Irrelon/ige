@@ -10,11 +10,11 @@ import {
 	igeNetWriteInputPacket,
 	IgeNetSliceAssembly,
 	type IgeNetHandleEntry,
-	type IgeNetInputFrameBinary
+	type IgeNetInputFrameBinary,
+	type IgeNetWelcome
 } from "@/engine/network/replication/igeNetReplicationProtocol";
 import { IGE_NET_JSON_MISSING, IgeNetJsonStore, IgeNetJsonWire } from "@/engine/network/replication/igeNetJsonDelta";
-import type { IgeNetConnection } from "@/engine/network/sync/IgeNetTransport";
-import type { IgeNetWelcome } from "@/engine/network/sync/igeNetSyncProtocol";
+import type { IgeNetConnection } from "@/engine/network/transport/IgeNetTransport";
 
 export interface IgeNetReplicationClientOptions {
 	/** The kinds of object, the same as the host's. */
@@ -74,8 +74,7 @@ const UNANSWERED_PINGS = 3;
 const RESYNC_MS = 500;
 
 /**
- * A machine in a real-time game run by an IgeNetReplicationHost: what IgeNetSyncClient is for
- * IgeNetSyncHost, on binary packets. It joins with its local players, sends their inputs every
+ * A machine in a real-time game run by an IgeNetReplicationHost. It joins with its local players, sends their inputs every
  * tick (quantised, the last few frames repeated, acknowledging the newest packets it has seen) and
  * keeps the objects the authority tells it of: created, updated field by field, destroyed. Each
  * object keeps its recent states, so:
@@ -168,7 +167,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	}
 
 	/**
-	 * Moves to another zone's authority with a ticket (see IgeNetSyncClient.transfer): the old
+	 * Moves to another zone's authority with a ticket: the old
 	 * connection closes, the new one is joined, and the world starts afresh from its packets (its
 	 * objects, clock and unapplied inputs are dropped).
 	 */
@@ -188,7 +187,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		}
 		this._reset();
 		try {
-			const connect = this._options.connect ?? (async (url: string) => (await import("@/engine/network/sync/igeNetWebSocket")).igeNetWebSocketConnect(url));
+			const connect = this._options.connect ?? (async (url: string) => (await import("@/engine/network/transport/igeNetWebSocket")).igeNetWebSocketConnect(url));
 			this._attach(await connect(target.url));
 			const ref = ++this._ref;
 			const welcome = await new Promise<IgeNetWelcome>((resolve, reject) => {

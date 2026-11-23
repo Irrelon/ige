@@ -6,7 +6,7 @@
  */
 import http from "node:http";
 import { IgeNetReplicationHost } from "@/engine/network/replication/IgeNetReplicationHost";
-import { IgeNetWebSocketServer } from "@/engine/network/sync/IgeNetWebSocketServer";
+import { IgeNetWebSocketServer } from "@/engine/network/transport/IgeNetWebSocketServer";
 import { IgeZoneHost } from "@/engine/network/zones/IgeZoneHost";
 import type { IgeZoneTicket } from "@/engine/network/zones/igeZoneTicket";
 import {

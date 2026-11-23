@@ -1,13 +1,13 @@
 import type http from "http";
 import websocket from "websocket";
-import type { IgeNetConnection, IgeNetListener } from "@/engine/network/sync/IgeNetTransport";
-import { IGE_RELAY_CODE_CHARS } from "@/engine/network/sync/igeNetWebSocket";
+import type { IgeNetConnection, IgeNetListener } from "@/engine/network/transport/IgeNetTransport";
+import { IGE_RELAY_CODE_CHARS } from "@/engine/network/transport/igeNetWebSocket";
 
 /**
  * The server side of the sync layer's WebSocket transports (Node only), on
  * an HTTP server of your own. Each path does one job:
  *
- * - listen(path): an authority on this server (IgeNetSyncHost), e.g. a
+ * - listen(path): an authority on this server (IgeNetReplicationHost), e.g. a
  *   dedicated server's game. Machines join with igeNetWebSocketConnect().
  * - relay(path): browser-hosted games. A host (igeNetRelayHost()) gets a
  *   short join code; machines joining with that code (igeNetRelayJoin())
@@ -20,7 +20,7 @@ import { IGE_RELAY_CODE_CHARS } from "@/engine/network/sync/igeNetWebSocket";
  * @example #A dedicated server that also relays browser-hosted games
  *     const server = http.createServer();
  *     const sockets = new IgeNetWebSocketServer(server);
- *     const host = new IgeNetSyncHost(sockets.listen("/sync"), { ... });
+ *     const host = new IgeNetReplicationHost(sockets.listen("/sync"), { ... });
  *     sockets.relay("/relay");
  *     server.listen(8670);
  *     host.start();
@@ -45,7 +45,7 @@ export class IgeNetWebSocketServer {
 		});
 	}
 
-	/** Listen for machines joining an authority on this server (IgeNetSyncHost's listener). */
+	/** Listen for machines joining an authority on this server (IgeNetReplicationHost's listener). */
 	listen (path = "/sync"): IgeNetListener {
 		let onConnection: ((connection: IgeNetConnection) => void) | undefined;
 		this._routes.set(path, (socket) => {

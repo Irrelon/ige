@@ -4,7 +4,7 @@ import { IgeNetReplicator } from "@/engine/network/replication/IgeNetReplicator"
 import { IgeNetReplicationHost, type IgeNetReplicationMachine } from "@/engine/network/replication/IgeNetReplicationHost";
 import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
 import { IgeNetPacketInspector } from "@/engine/network/replication/igeNetReplicationProtocol";
-import { igeNetLoopback, type IgeNetConnection, type IgeNetLoopbackOptions } from "@/engine/network/sync/IgeNetTransport";
+import { igeNetLoopback, type IgeNetConnection, type IgeNetLoopbackOptions } from "@/engine/network/transport/IgeNetTransport";
 
 const defs: Record<string, Record<string, IgeNetFieldDef>> = {
 	dot: {

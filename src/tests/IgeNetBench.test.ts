@@ -1,6 +1,6 @@
 import { IgeNetReplicationHost } from "@/engine/network/replication/IgeNetReplicationHost";
 import type { IgeNetFieldDef } from "@/engine/network/replication/IgeNetSchema";
-import type { IgeNetConnection, IgeNetListener } from "@/engine/network/sync/IgeNetTransport";
+import type { IgeNetConnection, IgeNetListener } from "@/engine/network/transport/IgeNetTransport";
 
 /**
  * The replication host on a synthetic world (Starflight-shaped): one scope with 140 static

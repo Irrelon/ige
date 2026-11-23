@@ -6,8 +6,8 @@
  *     node --experimental-transform-types --import ./src/examples/zones/server/register.mjs src/examples/zones/server/probe.ts [directory url]
  */
 import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
-import type { IgeNetWelcome } from "@/engine/network/sync/igeNetSyncProtocol";
-import { igeNetWebSocketConnect } from "@/engine/network/sync/igeNetWebSocket";
+import type { IgeNetWelcome } from "@/engine/network/replication/igeNetReplicationProtocol";
+import { igeNetWebSocketConnect } from "@/engine/network/transport/igeNetWebSocket";
 import { ZONES_INPUT_SCHEMA, ZONES_SCHEMAS, type ZonesInfo, type ZonesInput, type ZonesTransferEvent } from "../shared";
 
 const directoryUrl = process.argv[2] ?? "http://127.0.0.1:8810";

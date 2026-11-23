@@ -3,9 +3,9 @@ import type { AddressInfo } from "net";
 import websocket from "websocket";
 import { IgeNetReplicationHost, type IgeNetReplicationMachine } from "@/engine/network/replication/IgeNetReplicationHost";
 import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
-import { igeNetLoopback, type IgeNetListener } from "@/engine/network/sync/IgeNetTransport";
-import { igeNetMergeListeners, igeNetRelayHost, igeNetRelayJoin, igeNetWebSocketConnect, type IgeWebSocketClass } from "@/engine/network/sync/igeNetWebSocket";
-import { IgeNetWebSocketServer } from "@/engine/network/sync/IgeNetWebSocketServer";
+import { igeNetLoopback, type IgeNetListener } from "@/engine/network/transport/IgeNetTransport";
+import { igeNetMergeListeners, igeNetRelayHost, igeNetRelayJoin, igeNetWebSocketConnect, type IgeWebSocketClass } from "@/engine/network/transport/igeNetWebSocket";
+import { IgeNetWebSocketServer } from "@/engine/network/transport/IgeNetWebSocketServer";
 
 /** Node's own WebSocket where the test environment has one, else the websocket package's browser-style class. */
 const WebSocketClass = ((globalThis as { WebSocket?: IgeWebSocketClass }).WebSocket ?? websocket.w3cwebsocket) as unknown as IgeWebSocketClass;
@@ -135,7 +135,7 @@ describe("Replication over WebSockets", () => {
 		sockets.relay("/relay");
 		const hosting = await igeNetRelayHost(`${base}/relay`, { WebSocket: WebSocketClass });
 		const heard: Record<string, Uint8Array[]> = {};
-		const connections: Record<string, import("@/engine/network/sync/IgeNetTransport").IgeNetConnection> = {};
+		const connections: Record<string, import("@/engine/network/transport/IgeNetTransport").IgeNetConnection> = {};
 		hosting.listener.onConnection((connection) => {
 			const key = `m${Object.keys(connections).length}`;
 			connections[key] = connection;

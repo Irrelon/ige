@@ -1,4 +1,4 @@
-import type { IgeNetConnection, IgeNetListener } from "@/engine/network/sync/IgeNetTransport";
+import type { IgeNetConnection, IgeNetListener } from "@/engine/network/transport/IgeNetTransport";
 
 /**
  * Sync transports over plain WebSockets (JSON messages), for browsers and
@@ -98,7 +98,7 @@ function socketConnection (socket: WebSocket, wrap: (message: unknown) => unknow
 /**
  * Join an authority listening on a WebSocket server (IgeNetWebSocketServer.listen()).
  * @example #Join a dedicated server
- *     const client = new IgeNetSyncClient(await igeNetWebSocketConnect("ws://my-server:8670/sync"));
+ *     const client = new IgeNetReplicationClient(await igeNetWebSocketConnect("ws://my-server:8670/sync"));
  */
 export async function igeNetWebSocketConnect (url: string, options: IgeNetWebSocketOptions = {}): Promise<IgeNetConnection> {
 	const socket = await openSocket(url, options);
@@ -123,7 +123,7 @@ function toBytes (data: unknown): Uint8Array {
 	return data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
 }
 
-/** A browser-hosted game on a relay: its join code, the listener for IgeNetSyncHost, and how to stop hosting. */
+/** A browser-hosted game on a relay: its join code, the listener for IgeNetReplicationHost, and how to stop hosting. */
 export interface IgeNetRelayHosting {
 	code: string;
 	listener: IgeNetListener;
@@ -136,7 +136,7 @@ export interface IgeNetRelayHosting {
  * @example #Host in the browser
  *     const hosting = await igeNetRelayHost("ws://my-server:8670/relay");
  *     const local = igeNetLoopback();
- *     const host = new IgeNetSyncHost(igeNetMergeListeners(local.listener, hosting.listener), { ... });
+ *     const host = new IgeNetReplicationHost(igeNetMergeListeners(local.listener, hosting.listener), { ... });
  *     showCode(hosting.code);
  */
 export async function igeNetRelayHost (url: string, options: IgeNetWebSocketOptions & { code?: string } = {}): Promise<IgeNetRelayHosting> {
@@ -201,7 +201,7 @@ export async function igeNetRelayHost (url: string, options: IgeNetWebSocketOpti
 /**
  * Join a browser-hosted game through a relay by its code.
  * @example #Join a friend's game
- *     const client = new IgeNetSyncClient(await igeNetRelayJoin("ws://my-server:8670/relay", "KX7QD"));
+ *     const client = new IgeNetReplicationClient(await igeNetRelayJoin("ws://my-server:8670/relay", "KX7QD"));
  */
 export async function igeNetRelayJoin (url: string, code: string, options: IgeNetWebSocketOptions = {}): Promise<IgeNetConnection> {
 	const socket = await openSocket(url, options);

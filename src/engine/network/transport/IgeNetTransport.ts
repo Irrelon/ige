@@ -38,8 +38,8 @@ export interface IgeNetLoopbackOptions {
  * simulated latency, jitter and loss.
  * @example #Host and play in one page
  *     const net = igeNetLoopback();
- *     const host = new IgeNetSyncHost(net.listener, { ... });
- *     const client = new IgeNetSyncClient(net.connect());
+ *     const host = new IgeNetReplicationHost(net.listener, { ... });
+ *     const client = new IgeNetReplicationClient(net.connect());
  */
 export function igeNetLoopback (options: IgeNetLoopbackOptions = {}): { listener: IgeNetListener; connect: () => IgeNetConnection } {
 	const latency = options.latency ?? 0;

@@ -2,12 +2,10 @@ import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeNetBitReader } from "@/engine/network/replication/IgeNetBits";
 import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions } from "@/engine/network/replication/IgeNetSchema";
 import { IgeNetReplicator, type IgeNetReplicatorOptions, type IgeNetViewer } from "@/engine/network/replication/IgeNetReplicator";
-import { IGE_NET_PACKET_INPUT, igeNetPacketType, igeNetReadInputPacket } from "@/engine/network/replication/igeNetReplicationProtocol";
-import type { IgeNetMachine } from "@/engine/network/sync/IgeNetSyncHost";
-import type { IgeNetConnection, IgeNetListener } from "@/engine/network/sync/IgeNetTransport";
-import type { IgeNetClientMessage } from "@/engine/network/sync/igeNetSyncProtocol";
+import { IGE_NET_PACKET_INPUT, igeNetPacketType, igeNetReadInputPacket, type IgeNetClientMessage, type IgeNetMachine } from "@/engine/network/replication/igeNetReplicationProtocol";
+import type { IgeNetConnection, IgeNetListener } from "@/engine/network/transport/IgeNetTransport";
 
-/** A machine connected to a replication host: the sync layer's machine, and what it sees. */
+/** A machine connected to a replication host: a machine and what it sees. */
 export interface IgeNetReplicationMachine extends IgeNetMachine {
 	/** Subscribe it to scopes, reveal objects to it, make objects private to it. */
 	viewer: IgeNetViewer;
@@ -43,7 +41,7 @@ export interface IgeNetReplicationHostOptions<Input> {
 	 * A machine wants to join with these players (game-defined descriptions). Return the id the
 	 * game gives each one, in order (they key the step's inputs), or an error message to turn it
 	 * away; a Promise of either works. Subscribe `machine.viewer` to its scopes here (or later) and
-	 * create its private objects. As in IgeNetSyncHost, a machine arriving with a zone ticket has
+	 * create its private objects. A machine arriving with a zone ticket has
 	 * had it checked by `acceptTicket`, and `ticket` is what that made of it.
 	 */
 	join: (machine: IgeNetReplicationMachine, players: unknown[], ticket?: unknown) => string[] | string | Promise<string[] | string>;
@@ -91,7 +89,7 @@ function after<T, R> (value: T | PromiseLike<T>, next: (value: T) => R | Promise
 }
 
 /**
- * The authority of a real-time game on the replication layer. Like IgeNetSyncHost it runs a fixed
+ * The authority of a real-time game on the replication layer. It runs a fixed
  * tick loop, queues each player's inputs (one applied per step, the last held), and welcomes
  * machines (with zone tickets as well as player descriptions). Unlike it, the game doesn't hand
  * over a snapshot per machine: it keeps replicated objects on `host.replicator`, writes them as the
@@ -203,7 +201,7 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		});
 	}
 
-	/** Disconnects one machine at once (see IgeNetSyncHost.disconnect). */
+	/** Disconnects one machine at once. */
 	disconnect (machine: IgeNetReplicationMachine | string): void {
 		const state = this._machines.get(typeof machine === "string" ? machine : machine.id);
 		if (!state) return;

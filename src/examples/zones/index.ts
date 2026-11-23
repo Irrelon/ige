@@ -5,8 +5,8 @@
  * (default http://localhost:8810), ?name=<name> picks the player's name.
  */
 import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
-import type { IgeNetWelcome } from "@/engine/network/sync/igeNetSyncProtocol";
-import { igeNetWebSocketConnect } from "@/engine/network/sync/igeNetWebSocket";
+import type { IgeNetWelcome } from "@/engine/network/replication/igeNetReplicationProtocol";
+import { igeNetWebSocketConnect } from "@/engine/network/transport/igeNetWebSocket";
 import { moveDot, ZONE_HEIGHT, ZONE_WIDTH, ZONES_INPUT_SCHEMA, ZONES_SCHEMAS, type ZonesDot, type ZonesInfo, type ZonesInput, type ZonesTransferEvent } from "./shared";
 
 const params = new URLSearchParams(location.search);

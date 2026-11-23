@@ -38,6 +38,45 @@ import { IgeNetJsonWire, igeNetReadJsonWire } from "@/engine/network/replication
  *     8 bits  frame count         then each frame, oldest first: varuint (newest - seq),
  *                                 then each local player's input, every field in order
  */
+/** Fields of one object as the machine has it: plain values (numbers, strings, booleans, arrays, objects). */
+export type IgeNetEntityState = Record<string, unknown>;
+
+/** Objects by id (what `IgeNetReplicationClient.interpolated()` returns). */
+export type IgeNetEntities = Record<string, IgeNetEntityState>;
+
+/** A machine connected to the authority, with its local players. */
+export interface IgeNetMachine {
+	id: string;
+	/** The ids the game gave this machine's players, in slot order. */
+	players: string[];
+	/** Round-trip time in ms, from the machine's pings. */
+	rtt: number;
+	/** Anything the game wants to keep per machine. */
+	data: Record<string, unknown>;
+}
+
+/** The JSON control messages a machine sends (its inputs go as binary packets). */
+export type IgeNetClientMessage =
+	/** Join with these players, or (arriving from another zone, IgeNetReplicationClient.transfer) with a ticket the host checks instead. */
+	| { t: "join"; ref: number; players: unknown[]; ticket?: string }
+	| { t: "ping"; time: number }
+	| { t: "leave" };
+
+/** The authority's answer to a join. */
+export interface IgeNetWelcome {
+	t: "welcome";
+	ref: number;
+	/** This machine's id. */
+	machine: string;
+	/** The id the game gave each local player, in slot order. */
+	players: string[];
+	/** The authority's tick and tick rate when the machine joined. */
+	tick: number;
+	tickRate: number;
+	/** Game-defined information (the seed, the level...). */
+	info?: unknown;
+}
+
 export const IGE_NET_PACKET_SNAPSHOT = 1;
 export const IGE_NET_PACKET_INPUT = 2;
 
