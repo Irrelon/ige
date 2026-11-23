@@ -106,8 +106,9 @@ function paths (count: number): TumblerPath[] {
 		const axis: [number, number, number] = [next() - 0.5, next() - 0.5, next() - 0.5];
 		const length = Math.hypot(...axis) || 1;
 		out.push({
-			cx: (next() - 0.5) * (WORLD - 200),
-			cz: (next() - 0.5) * (WORLD - 200),
+			// Most start near the pilots' spawn ring (so several are in range from the start and drift in and out); the rest are spread over the world
+			cx: (next() - 0.5) * (i < count * 0.6 ? 640 : WORLD - 200),
+			cz: (next() - 0.5) * (i < count * 0.6 ? 640 : WORLD - 200),
 			radius: 40 + next() * 120,
 			speed: (0.2 + next() * 0.5) * (next() < 0.5 ? -1 : 1),
 			phase: next() * Math.PI * 2,
