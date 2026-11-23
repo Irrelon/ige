@@ -39,7 +39,9 @@
 	<canvas id="view"></canvas>
 	<div id="panel">
 		<b>Entity streaming</b>: a host and two clients in this page, over a simulated link.
-		Left: A steers with WASD. Right: B steers with the arrow keys. G toggles the host's own entities (outlines).<br />
+		Fly in 3D: W/S pitch, A/D yaw, Q/E roll, Space thrust (pad: left stick pitch/yaw, LB/RB roll, RT thrust).
+		Left: A takes the keyboard and the first pad. Right: B takes a second pad if there is one, otherwise it flies a scripted loop.
+		The faint outline on your own ship is the server's last state. G toggles the host's own entities (outlines).<br />
 		<label>latency <input id="latency" type="range" min="0" max="400" value="60" /> <span id="latencyValue"></span></label>
 		<label>jitter <input id="jitter" type="range" min="0" max="200" value="20" /> <span id="jitterValue"></span></label>
 		<label>loss <input id="loss" type="range" min="0" max="60" value="5" /> <span id="lossValue"></span></label>

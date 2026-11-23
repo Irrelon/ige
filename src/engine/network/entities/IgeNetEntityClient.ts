@@ -149,7 +149,7 @@ export class IgeNetEntityClient {
 			if (!made.entity._alive) continue;
 			let values = world[id];
 			const control = this._controls.get(id);
-			if (control) values = client.predict(id, control.slot, control.apply, { between }) ?? values;
+			if (control) values = client.predict(id, control.slot, control.apply, { between, quats: made.net.rotation === "quaternion" ? ["q"] : undefined }) ?? values;
 			if (!values) continue;
 			this._follow(made, values);
 			this._setFields(made, values, true);
@@ -201,6 +201,8 @@ export class IgeNetEntityClient {
 	 * done here). Falls back to the packed value in `values`.
 	 */
 	_quaternionOf (made: Made, values: Record<string, unknown>): IgeNetQuat | undefined {
+		// A predicted entity has its quaternion already (unpacked and blended by predict)
+		if (values.q && typeof values.q === "object") return values.q as IgeNetQuat;
 		const states = made.source.states;
 		const tick = this.client._viewTick;
 		if (tick !== undefined && states.length > 1) {

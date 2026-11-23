@@ -138,6 +138,20 @@ That entity takes `client.predict()` each frame instead of the interpolated valu
 
 On the server, call `viewer.control(entities.objectOf(hero))`. A controlled object's changes are never held back by the budget or rates, which the client's prediction needs. `entities.uncontrol(id)` stops predicting.
 
+### Predicting a quaternion
+
+If the controlled entity's kind has `rotation: "quaternion"`, its rotation is predicted too. Your rule sees it as `values.q`, an `{ x, y, z, w }` object (not the packed number), and returns it the same way; the engine unpacks and packs around it:
+
+```ts
+entities.control(shipId, 0, (state, input, dt) => ({
+	...state,
+	q: turn(state.q, input, dt), // multiply by a small turn about the ship's own axes, normalise
+	x: state.x + nose(state.q)[0] * input.thrust * SPEED * dt
+}));
+```
+
+The drawn rotation is blended between the last two predicted ticks with a slerp along the shortest path (so `q` and `-q` are no problem), like position is blended. Corrections work as they do for position: each frame the newest server state is taken as the base and the unacked inputs are replayed on it, so a server state that disagrees with what was predicted replaces the base at once, and only the tick-to-tick blend smooths it over. The replay starts from the server's 38-bit value; that small error (under 0.1 degree) is not corrected for. Entities that aren't controlled keep the interpolated rotation. The `steerable ship` in the examples is a worked case (`flyShip` in `src/examples/entityStream/shared.ts`).
+
 ## From the old API
 
 | old | new |
@@ -152,9 +166,9 @@ On the server, call `viewer.control(entities.objectOf(hero))`. A controlled obje
 
 ## Examples
 
-Both use the same entity classes and game (`src/examples/entityStream/shared.ts`): pilots (a steered ship, heading in `ry`, a `hue` and a `callsign`) and tumblers (drifting blocks turning over in 3D, `rotation: "quaternion"`). Both kinds are spatial, so a machine sees only what is within `RANGE` (360 units) of its own pilot (`viewer.addInterest(pilot, { radius })`); its own pilot is predicted with `entities.control()` and everything else is interpolated.
+Both use the same entity classes and game (`src/examples/entityStream/shared.ts`): ships (flown in 3D with pitch, yaw, roll and thrust, rotation as a quaternion, a `hue` and a `callsign`) and tumblers (drifting blocks turning over in 3D, `rotation: "quaternion"`). Both kinds are spatial, so a machine sees only what is within `RANGE` (360 units) of its own pilot (`viewer.addInterest(pilot, { radius })`); its own ship is predicted (position and rotation) with `entities.control()` and everything else is interpolated.
 
-**`entityStream`: a host and two clients in one page.** No Node process. Two views side by side, each a client of the host over `igeNetLoopback`, with sliders for latency, jitter and loss (the host sends lossy, so what the slider drops really is lost). Client A steers with WASD, client B with the arrow keys; G draws the host's own entities as outlines, so you can see what is out of range and how far behind the interpolated picture is. The dashed ellipse is a client's range: entities leave and enter as they cross it.
+**`entityStream`: a host and two clients in one page.** No Node process. Two views side by side, each a client of the host over `igeNetLoopback`, with sliders for latency, jitter and loss (the host sends lossy, so what the slider drops really is lost). Fly with W/S pitch, A/D yaw, Q/E roll and Space thrust (pad: left stick pitch and yaw, LB/RB roll, RT thrust). Client A takes the keyboard and the first pad; client B takes a second pad if there is one, otherwise it flies a gentle scripted loop. The faint outline on your own ship is the server's last (interpolated) state, so the sliders show prediction against the server. G draws the host's own entities as outlines, so you can see what is out of range and how far behind the interpolated picture is. The dashed ellipse is a client's range: entities leave and enter as they cross it.
 
 Build the examples (`npm run build-examples`, or one: `npx webpack --config ./config/webpack.config.cjs --config-name entityStream`), serve `dist/esm/examples` with any static server, and open `entityStream/index.html`.
 

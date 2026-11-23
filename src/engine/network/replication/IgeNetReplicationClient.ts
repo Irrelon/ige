@@ -1,4 +1,5 @@
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { igeNetQuatSlerp, igeNetQuatUnpack, type IgeNetQuat } from "@/engine/network/entities/igeNetQuat";
 import { IgeNetBitReader, IgeNetBitWriter } from "@/engine/network/replication/IgeNetBits";
 import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions, type IgeNetEventDefs } from "@/engine/network/replication/IgeNetSchema";
 import {
@@ -360,19 +361,23 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	 * One of this machine's own players, predicted: its newest state with every input the
 	 * authority hasn't applied yet replayed through `apply` (the game's own movement rules). With
 	 * `between` (how far this frame is into the next tick, 0 to 1) the state is blended from the
-	 * previous tick's prediction to this one, smooth at any frame rate.
+	 * previous tick's prediction to this one, smooth at any frame rate. `quats` names packed quaternion
+	 * fields: `apply` sees and returns them as `{ x, y, z, w }`, and they are blended with a slerp.
 	 */
 	predict<State extends Record<string, unknown>> (
 		id: string,
 		slot: number,
 		apply: (state: State, input: Input, dt: number) => State,
-		options: { between?: number } = {}
+		options: { between?: number; quats?: string[] } = {}
 	): State | undefined {
 		const obj = this.objects.get(id);
 		if (!obj) return;
 		const base = obj.states[obj.states.length - 1].values as State;
 		const dt = 1 / this.tickRate;
 		let state = { ...base };
+		// Packed quaternion fields are replayed as { x, y, z, w } objects
+		const quats = options.quats;
+		if (quats) for (const name of quats) if (typeof state[name] === "number") (state as Record<string, unknown>)[name] = igeNetQuatUnpack(state[name] as number);
 		for (const frame of this._pending) {
 			const input = frame.inputs[slot];
 			if (input !== undefined) state = apply(state, input, dt);
@@ -387,7 +392,16 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			ticks.seq = this._seq;
 		}
 		ticks.current = state;
-		return blendValues(obj.schema, ticks.previous, state, Math.max(0, Math.min(1, options.between))) as State;
+		const f = Math.max(0, Math.min(1, options.between));
+		const blended = blendValues(obj.schema, ticks.previous, state, f);
+		// Quaternions blend along the shortest path, not component by component
+		if (quats) {
+			for (const name of quats) {
+				const qa = ticks.previous[name] as IgeNetQuat | undefined, qb = state[name] as IgeNetQuat | undefined;
+				if (qa && qb && typeof qa === "object" && typeof qb === "object") blended[name] = igeNetQuatSlerp(qa, qb, f);
+			}
+		}
+		return blended as State;
 	}
 
 	destroy (): this {

@@ -5,7 +5,8 @@ import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetRepl
 import { IgeNetSchemaSet } from "@/engine/network/replication/IgeNetSchema";
 import { igeNetWebSocketConnect } from "@/engine/network/transport/igeNetWebSocket";
 import type { IgeCanInit } from "@/types/IgeCanInit";
-import { ENTITY_CLASSES, ENTITY_SCHEMAS, INPUT_SCHEMA, movePilot, SCENE_ID, type PilotInput, type PilotState } from "../entityStream/shared";
+import { connectedPads, shipInput } from "../entityStream/controls";
+import { ENTITY_CLASSES, ENTITY_SCHEMAS, flyShip, SCENE_ID, SHIP_INPUT_SCHEMA, type ShipInput, type ShipState } from "../entityStream/shared";
 import { drawView } from "../entityStream/view";
 
 /**
@@ -28,12 +29,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 		const status = document.getElementById("status") as HTMLElement;
 
-		let client: IgeNetReplicationClient<PilotInput>;
+		let client: IgeNetReplicationClient<ShipInput>;
 		let me: string;
 		try {
-			client = new IgeNetReplicationClient<PilotInput>(await igeNetWebSocketConnect(url), {
+			client = new IgeNetReplicationClient<ShipInput>(await igeNetWebSocketConnect(url), {
 				schemas: new IgeNetSchemaSet(ENTITY_SCHEMAS.defs, ENTITY_SCHEMAS.kinds),
-				inputSchema: INPUT_SCHEMA
+				inputSchema: SHIP_INPUT_SCHEMA
 			});
 			me = (await client.join([{ callsign: name }])).players[0];
 		} catch (error) {
@@ -47,16 +48,15 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		const scene = new IgeScene2d().id(SCENE_ID);
 		const entities = new IgeNetEntityClient(client, ENTITY_CLASSES);
-		entities.control<PilotState, PilotInput>(me, 0, movePilot);
+		entities.control<ShipState, ShipInput>(me, 0, flyShip);
 
 		const pressed = new Set<string>();
 		addEventListener("keydown", (event) => {
 			pressed.add(event.code);
-			if (event.code.startsWith("Arrow")) event.preventDefault();
+			if (event.code === "Space") event.preventDefault();
 		});
 		addEventListener("keyup", (event) => pressed.delete(event.code));
 		addEventListener("blur", () => pressed.clear());
-		const held = (...codes: string[]) => (codes.some((code) => pressed.has(code)) ? 1 : 0);
 
 		const tickMs = 1000 / client.tickRate;
 		let last = performance.now();
@@ -67,7 +67,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			accumulator += ms;
 			while (accumulator >= tickMs) {
 				accumulator -= tickMs;
-				client.sendInput([{ dx: held("KeyD", "ArrowRight") - held("KeyA", "ArrowLeft"), dz: held("KeyS", "ArrowDown") - held("KeyW", "ArrowUp") }]);
+				client.sendInput([shipInput(pressed, connectedPads()[0])]);
 			}
 			entities.update(undefined, accumulator / tickMs);
 

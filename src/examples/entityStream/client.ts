@@ -5,7 +5,8 @@ import { IgeNetEntityClient } from "@/engine/network/entities/IgeNetEntityClient
 import { IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
 import { igeNetLoopback, type IgeNetConnection, type IgeNetListener } from "@/engine/network/transport/IgeNetTransport";
 import type { IgeCanInit } from "@/types/IgeCanInit";
-import { createEntityGame, ENTITY_CLASSES, INPUT_SCHEMA, movePilot, SCENE_ID, type PilotInput, type PilotState } from "./shared";
+import { connectedPads, scriptedShipInput, shipInput } from "./controls";
+import { createEntityGame, ENTITY_CLASSES, flyShip, SCENE_ID, SHIP_INPUT_SCHEMA, type ShipInput, type ShipState } from "./shared";
 import { drawView } from "./view";
 
 /** The simulated link: sliders change it while it runs. Latency and jitter are one way, in ms. */
@@ -42,11 +43,16 @@ function lagged (connection: IgeNetConnection, link: Link): IgeNetConnection {
 
 interface Player {
 	name: string;
-	client: IgeNetReplicationClient<PilotInput>;
+	client: IgeNetReplicationClient<ShipInput>;
 	entities: IgeNetEntityClient;
 	scene: IgeScene2d;
 	me: string;
-	keys: { left: string[]; right: string[]; up: string[]; down: string[] };
+	/** Takes the keyboard (client A). */
+	keyboard: boolean;
+	/** Which connected pad (0 first, 1 second) it takes. */
+	pad: number;
+	/** Flown by the script when it has no pad. */
+	scripted: boolean;
 	tickAccumulator: number;
 	bytesAt: number;
 	rate: number;
@@ -55,7 +61,7 @@ interface Player {
 /**
  * Entity streaming (guides/entity-streaming.md): the authority and two clients in one page, connected by
  * igeNetLoopback through a link with latency, jitter and loss sliders. Each half of the window is one client's
- * view of its own copy of the world: it steers its pilot (predicted, so it answers at once whatever the
+ * view of its own copy of the world: it flies its ship (predicted, position and rotation, so it answers at once whatever the
  * latency), sees only what is within its range (the dashed circle: other things are not sent, and come
  * and go as they cross it), and sees everyone else interpolated a little in the past. The tumbling blocks
  * are replicated as packed quaternions.
@@ -94,10 +100,10 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		// The host isn't started: the frame loop below drives it with update(ms)
 
 		const players: Player[] = [];
-		const join = async (name: string, keys: Player["keys"]) => {
-			const client = new IgeNetReplicationClient<PilotInput>(lagged(net.connect(), link), {
+		const join = async (name: string, keyboard: boolean, pad: number) => {
+			const client = new IgeNetReplicationClient<ShipInput>(lagged(net.connect(), link), {
 				schemas: game.replicator.schemas,
-				inputSchema: INPUT_SCHEMA
+				inputSchema: SHIP_INPUT_SCHEMA
 			});
 			const prefix = `${name}:`;
 			const scene = new IgeScene2d().id(`${prefix}${SCENE_ID}`);
@@ -105,22 +111,21 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			const entities = new IgeNetEntityClient(client, ENTITY_CLASSES, { idOf: (id) => `${prefix}${id}` });
 			const welcome = await client.join([{ callsign: name }]);
 			const me = welcome.players[0];
-			entities.control<PilotState, PilotInput>(me, 0, movePilot);
-			players.push({ name, client, entities, scene, me, keys, tickAccumulator: 0, bytesAt: 0, rate: 0 });
+			entities.control<ShipState, ShipInput>(me, 0, flyShip);
+			players.push({ name, client, entities, scene, me, keyboard, pad, scripted: false, tickAccumulator: 0, bytesAt: 0, rate: 0 });
 		};
-		await join("A", { left: ["KeyA"], right: ["KeyD"], up: ["KeyW"], down: ["KeyS"] });
-		await join("B", { left: ["ArrowLeft"], right: ["ArrowRight"], up: ["ArrowUp"], down: ["ArrowDown"] });
+		await join("A", true, 0);
+		await join("B", false, 1);
 
 		const pressed = new Set<string>();
 		let ghosts = false;
 		addEventListener("keydown", (event) => {
 			pressed.add(event.code);
 			if (event.code === "KeyG") ghosts = !ghosts;
-			if (event.code.startsWith("Arrow")) event.preventDefault();
+			if (event.code === "Space") event.preventDefault();
 		});
 		addEventListener("keyup", (event) => pressed.delete(event.code));
 		addEventListener("blur", () => pressed.clear());
-		const held = (codes: string[]) => (codes.some((code) => pressed.has(code)) ? 1 : 0);
 
 		let last = performance.now();
 		let rateAt = last;
@@ -129,6 +134,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			last = now;
 			game.host.update(ms);
 
+			const pads = connectedPads();
 			const machines = game.host.machines();
 			const sample = now - rateAt >= 1000;
 			for (const player of players) {
@@ -137,8 +143,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				player.tickAccumulator += ms;
 				while (player.tickAccumulator >= tickMs) {
 					player.tickAccumulator -= tickMs;
-					const k = player.keys;
-					player.client.sendInput([{ dx: held(k.right) - held(k.left), dz: held(k.down) - held(k.up) }]);
+					const pad = pads[player.pad];
+					player.scripted = !player.keyboard && !pad;
+					player.client.sendInput([player.scripted ? scriptedShipInput(now / 1000) : shipInput(player.keyboard ? pressed : undefined, pad)]);
 				}
 				player.entities.update(undefined, player.tickAccumulator / tickMs);
 				if (sample) {
@@ -151,6 +158,15 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			if (sample) rateAt = now;
 			draw(ghosts);
 			requestAnimationFrame(frame);
+		};
+
+		/** The player's own ship as the server last had it: the interpolated position and rotation. */
+		const serverShip = (player: Player, mine?: IgeEntity) => {
+			const values = player.client.interpolated()[player.me];
+			const made = player.entities._made.get(player.me);
+			if (!mine || !values || !made) return undefined;
+			const q = player.entities._quaternionOf(made, values);
+			return q ? { x: values.x as number, y: values.y as number, z: values.z as number, q: { ...q } } : undefined;
 		};
 
 		const draw = (showGhosts: boolean) => {
@@ -166,14 +182,15 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				const mine = player.entities.entityOf(player.me);
 				const all = player.entities.all();
 				drawView(ctx, i * half + (i ? 2 : 0), 0, half - 2, height, {
-					title: `Client ${player.name} (${i ? "arrow keys" : "WASD"})`,
+					title: `Client ${player.name} (${player.keyboard ? "keyboard and first pad" : player.scripted ? "flies a scripted loop" : "second pad"})`,
 					lines: [
 						`${all.length} of ${truth.length || game.tumblers.length + game.pilots.size} entities in range`,
 						`round trip ${Math.round(player.client.rtt)} ms, ${(player.rate / 1024).toFixed(1)} KB/s down`,
-						`own pilot predicted; the rest drawn ${player.client._options.interpolationDelay ?? 100} ms behind`
+						`own ship predicted (white outline: server state); the rest drawn ${player.client._options.interpolationDelay ?? 100} ms behind`
 					],
 					entities: all,
 					me: mine,
+					serverShip: serverShip(player, mine),
 					ghosts: truth
 				});
 			});

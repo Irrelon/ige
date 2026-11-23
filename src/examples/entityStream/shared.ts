@@ -11,6 +11,7 @@ import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeNetEntityHost } from "@/engine/network/entities/IgeNetEntityHost";
 import { igeNetEntity, igeNetEntitySchemas } from "@/engine/network/entities/igeNetEntity";
+import type { IgeNetQuat } from "@/engine/network/entities/igeNetQuat";
 import { IgeNetReplicationHost, type IgeNetReplicationMachine } from "@/engine/network/replication/IgeNetReplicationHost";
 import { IgeNetReplicator } from "@/engine/network/replication/IgeNetReplicator";
 import { IgeNetSchemaSet } from "@/engine/network/replication/IgeNetSchema";
@@ -48,7 +49,18 @@ export class Tumbler extends IgeEntity {
 	shape = 0;
 }
 
-export const ENTITY_CLASSES = [Pilot, Tumbler];
+/** A player's ship: flown in 3D, replicated with a quaternion rotation (the player's own is predicted). */
+export class Ship extends IgeEntity {
+	static net = igeNetEntity(
+		"ship",
+		{ hue: { type: "int", min: 0, max: 7 }, callsign: { type: "string" } },
+		{ transform: { precision: 0.05 }, rotation: "quaternion" }
+	);
+	hue = 0;
+	callsign = "";
+}
+
+export const ENTITY_CLASSES = [Pilot, Ship, Tumbler];
 export const ENTITY_SCHEMAS = igeNetEntitySchemas(ENTITY_CLASSES);
 
 export interface PilotInput {
@@ -60,6 +72,26 @@ export const INPUT_SCHEMA = {
 	dx: { type: "number", precision: 0.01, min: -1, max: 1 },
 	dz: { type: "number", precision: 0.01, min: -1, max: 1 }
 } as const;
+
+/** What a ship's pilot asks for: pitch, yaw and roll (-1 to 1, about the ship's own axes) and thrust (0 to 1, along its nose). */
+export interface ShipInput {
+	pitch: number;
+	yaw: number;
+	roll: number;
+	thrust: number;
+}
+
+export const SHIP_INPUT_SCHEMA = {
+	pitch: { type: "number", precision: 0.01, min: -1, max: 1 },
+	yaw: { type: "number", precision: 0.01, min: -1, max: 1 },
+	roll: { type: "number", precision: 0.01, min: -1, max: 1 },
+	thrust: { type: "number", precision: 0.01, min: 0, max: 1 }
+} as const;
+
+/** Radians per second at full deflection. */
+export const TURN_RATE = 2;
+/** Ships fly between the ground and this height. */
+export const CEILING = 500;
 
 /** The replicated values the movement rule reads and writes. */
 export interface PilotState {
@@ -80,6 +112,58 @@ export function movePilot (state: PilotState, input: PilotInput, dt: number): Pi
 		x: Math.max(-half, Math.min(half, state.x + input.dx * scale)),
 		z: Math.max(-half, Math.min(half, state.z + input.dz * scale)),
 		ry: Math.atan2(input.dx, input.dz)
+	};
+}
+
+/** The replicated values a ship's rule reads and writes (`q` is an unpacked quaternion). */
+export interface ShipState {
+	[key: string]: unknown;
+	x: number;
+	y: number;
+	z: number;
+	q: IgeNetQuat;
+}
+
+/** a * b: the turn b, then the turn a. */
+export function quatMultiply (a: IgeNetQuat, b: IgeNetQuat): IgeNetQuat {
+	return {
+		x: a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+		y: a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+		z: a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+		w: a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
+	};
+}
+
+/** The ship's nose (its local +z) in world space. */
+export function shipNose (q: IgeNetQuat): [number, number, number] {
+	return [2 * (q.x * q.z + q.w * q.y), 2 * (q.y * q.z - q.w * q.x), 1 - 2 * (q.x * q.x + q.y * q.y)];
+}
+
+/**
+ * One step of a ship: pitch (about its own x), yaw (y) and roll (z) turn it, thrust moves it along its nose.
+ * The authority runs it, and the client predicts its own ship with it.
+ */
+export function flyShip (state: ShipState, input: ShipInput, dt: number): ShipState {
+	const hx = (input.pitch * TURN_RATE * dt) / 2, hy = (input.yaw * TURN_RATE * dt) / 2, hz = (input.roll * TURN_RATE * dt) / 2;
+	const dq = quatMultiply(
+		quatMultiply({ x: Math.sin(hx), y: 0, z: 0, w: Math.cos(hx) }, { x: 0, y: Math.sin(hy), z: 0, w: Math.cos(hy) }),
+		{ x: 0, y: 0, z: Math.sin(hz), w: Math.cos(hz) }
+	);
+	const q = quatMultiply(state.q, dq);
+	const length = Math.hypot(q.x, q.y, q.z, q.w) || 1;
+	q.x /= length;
+	q.y /= length;
+	q.z /= length;
+	q.w /= length;
+	const nose = shipNose(q);
+	const move = input.thrust * SPEED * dt;
+	const half = WORLD / 2;
+	return {
+		...state,
+		x: Math.max(-half, Math.min(half, state.x + nose[0] * move)),
+		y: Math.max(0, Math.min(CEILING, state.y + nose[1] * move)),
+		z: Math.max(-half, Math.min(half, state.z + nose[2] * move)),
+		q
 	};
 }
 
@@ -126,14 +210,7 @@ function axisAngle (axis: [number, number, number], angle: number): { x: number;
 	return { x: axis[0] * s, y: axis[1] * s, z: axis[2] * s, w: Math.cos(angle / 2) };
 }
 
-function multiply (a: { x: number; y: number; z: number; w: number }, b: { x: number; y: number; z: number; w: number }) {
-	return {
-		x: a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
-		y: a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
-		z: a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
-		w: a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
-	};
-}
+const multiply = quatMultiply;
 
 /** Puts a tumbler where its path says at `time` (seconds), turned over. */
 export function placeTumbler (tumbler: Tumbler, path: TumblerPath, time: number): void {
@@ -163,7 +240,7 @@ export function createEntityGame (listener: IgeNetListener, options: EntityGameO
 	const replicator = new IgeNetReplicator(new IgeNetSchemaSet(ENTITY_SCHEMAS.defs, ENTITY_SCHEMAS.kinds), { sendRate });
 	const entities = new IgeNetEntityHost(replicator, ENTITY_CLASSES);
 	const scene = new IgeScene2d().id(SCENE_ID);
-	const pilots = new Map<string, Pilot>();
+	const pilots = new Map<string, Ship>();
 	const tumblerPaths = paths(options.tumblers ?? TUMBLER_COUNT);
 	const tumblers = tumblerPaths.map((path, i) => {
 		const tumbler = new Tumbler().id(`tumbler${i}`).mount(scene) as Tumbler;
@@ -174,10 +251,10 @@ export function createEntityGame (listener: IgeNetListener, options: EntityGameO
 	});
 	let joined = 0;
 
-	const host = new IgeNetReplicationHost<PilotInput>(listener, {
+	const host = new IgeNetReplicationHost<ShipInput>(listener, {
 		schemas: replicator.schemas,
 		replicator,
-		inputSchema: INPUT_SCHEMA,
+		inputSchema: SHIP_INPUT_SCHEMA,
 		tickRate: TICK_RATE,
 		sendRate,
 		lossy: options.lossy,
@@ -185,10 +262,12 @@ export function createEntityGame (listener: IgeNetListener, options: EntityGameO
 			const callsign = String((players[0] as { callsign?: string } | undefined)?.callsign ?? `pilot${joined + 1}`);
 			machine.viewer.subscribe(scene.id());
 			const angle = (joined * Math.PI * 2) / 5;
-			const pilot = new Pilot().id(`pilot:${machine.id}`).mount(scene) as Pilot;
+			const pilot = new Ship().id(`pilot:${machine.id}`).mount(scene) as Ship;
 			pilot.hue = joined % 8;
 			pilot.callsign = callsign;
-			pilot.translateTo(Math.cos(angle) * 160, 0, Math.sin(angle) * 160);
+			// In the air, nose along the ring
+			pilot.translateTo(Math.cos(angle) * 160, 120, Math.sin(angle) * 160);
+			pilot.quaternion({ x: 0, y: Math.sin(-angle / 2), z: 0, w: Math.cos(-angle / 2) });
 			joined++;
 			pilots.set(pilot.id(), pilot);
 			pilot.replicate({ host: entities });
@@ -210,8 +289,8 @@ export function createEntityGame (listener: IgeNetListener, options: EntityGameO
 				const pilot = pilots.get(id);
 				if (!pilot || !pilot._alive) return;
 				const t = pilot._translate;
-				const moved = movePilot({ x: t.x, z: t.z, ry: pilot._rotate.y }, input, dt);
-				pilot.translateTo(moved.x, 0, moved.z).rotateTo(0, moved.ry, 0);
+				const moved = flyShip({ x: t.x, y: t.y, z: t.z, q: pilot._quaternion ?? { x: 0, y: 0, z: 0, w: 1 } }, input, dt);
+				pilot.translateTo(moved.x, moved.y, moved.z).quaternion(moved.q);
 			});
 			const time = tick / TICK_RATE;
 			tumblerPaths.forEach((path, i) => placeTumbler(tumblers[i], path, time));

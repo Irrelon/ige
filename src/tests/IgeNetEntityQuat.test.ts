@@ -13,7 +13,7 @@ import { IgeNetReplicationHost } from "@/engine/network/replication/IgeNetReplic
 import { IgeNetReplicator } from "@/engine/network/replication/IgeNetReplicator";
 import { IgeNetSchema, IgeNetSchemaSet } from "@/engine/network/replication/IgeNetSchema";
 import { igeNetLoopback, type IgeNetLoopbackOptions } from "@/engine/network/transport/IgeNetTransport";
-import { createEntityGame, ENTITY_CLASSES, ENTITY_SCHEMAS, INPUT_SCHEMA, Pilot, Tumbler } from "../examples/entityStream/shared";
+import { createEntityGame, ENTITY_CLASSES, ENTITY_SCHEMAS, INPUT_SCHEMA, Pilot, SHIP_INPUT_SCHEMA, Ship, Tumbler } from "../examples/entityStream/shared";
 
 const DEG = 180 / Math.PI;
 
@@ -395,11 +395,11 @@ describe("the entity streaming examples", () => {
 	it("run as a game: a machine joins, gets its pilot predicted and sees tumblers turning", async () => {
 		const net = igeNetLoopback();
 		const game = createEntityGame(net.listener, { tumblers: 6 });
-		const client = new IgeNetReplicationClient<{ dx: number; dz: number }>(net.connect(), { schemas: game.replicator.schemas, inputSchema: INPUT_SCHEMA, interpolationDelay: 0, pingInterval: 0, now: () => 0 });
+		const client = new IgeNetReplicationClient<{ pitch: number; yaw: number; roll: number; thrust: number }>(net.connect(), { schemas: game.replicator.schemas, inputSchema: SHIP_INPUT_SCHEMA, interpolationDelay: 0, pingInterval: 0, now: () => 0 });
 		const scene = new IgeScene2d().id("c:world");
 		const entities = new IgeNetEntityClient(client, ENTITY_CLASSES, { idOf: (id) => `c:${id}` });
 		const joined = await client.join([{ callsign: "tester" }]);
-		client.sendInput([{ dx: 1, dz: 0 }]);
+		client.sendInput([{ pitch: 0, yaw: 0, roll: 0, thrust: 1 }]);
 		for (let i = 0; i < 6; i++) {
 			game.host.update(TICK);
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -407,8 +407,8 @@ describe("the entity streaming examples", () => {
 		client._offset = 0;
 		(client as unknown as { _now: () => number })._now = () => client.latestTick() * TICK;
 		entities.update();
-		const mine = entities.entityOf(joined.players[0]) as Pilot;
-		expect(mine).toBeInstanceOf(Pilot);
+		const mine = entities.entityOf(joined.players[0]) as Ship;
+		expect(mine).toBeInstanceOf(Ship);
 		expect(mine.callsign).toBe("tester");
 		const tumblers = entities.all().filter((e) => e instanceof Tumbler);
 		expect(tumblers.length).toBeGreaterThan(0);

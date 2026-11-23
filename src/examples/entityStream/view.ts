@@ -6,7 +6,8 @@
  * transform.
  */
 import type { IgeEntity } from "@/engine/core/IgeEntity";
-import { Pilot, RANGE, Tumbler, WORLD } from "./shared";
+import type { IgeNetQuat } from "@/engine/network/entities/igeNetQuat";
+import { Pilot, RANGE, Ship, Tumbler, WORLD } from "./shared";
 
 export const HUES = ["#ffd166", "#4cc9f0", "#ef476f", "#06d6a0", "#c58bff", "#ff9f43", "#9bde4a", "#f78fb3"];
 
@@ -23,6 +24,8 @@ export interface ViewOptions {
 	me?: IgeEntity;
 	/** The authority's entities, drawn as faint outlines. */
 	ghosts?: IgeEntity[];
+	/** The player's own ship as the server last had it (interpolated), drawn as a faint outline to compare with the predicted one. */
+	serverShip?: { x: number; y: number; z: number; q: IgeNetQuat };
 	/** Pixels per world unit (default: the range fits the shorter side). */
 	scale?: number;
 }
@@ -92,7 +95,12 @@ export function drawView (ctx: CanvasRenderingContext2D, left: number, top: numb
 		const sorted = [...list].sort((a, b) => a._translate.z - b._translate.z);
 		for (const entity of sorted) {
 			if (entity instanceof Tumbler) drawTumbler(ctx, entity, sx, sy, scale, ghost);
-			else if (entity instanceof Pilot) drawPilot(ctx, entity, sx, sy, scale, ghost, entity === view.me);
+			else if (entity instanceof Ship) {
+				const t = entity._translate;
+				const own = entity === view.me;
+				if (own && view.serverShip) drawShip(ctx, view.serverShip, "#fff", true, sx, sy, scale);
+				drawShip(ctx, { x: t.x, y: t.y, z: t.z, q: entity._quaternion ?? { x: 0, y: 0, z: 0, w: 1 } }, HUES[entity.hue % HUES.length], ghost, sx, sy, scale, own, entity.callsign);
+			} else if (entity instanceof Pilot) drawPilot(ctx, entity, sx, sy, scale, ghost, entity === view.me);
 		}
 	};
 	if (view.ghosts) draw(view.ghosts, true);
@@ -165,4 +173,88 @@ function drawTumbler (ctx: CanvasRenderingContext2D, tumbler: Tumbler, sx: (x: n
 		ctx.lineTo(points[b][0], points[b][1]);
 	}
 	ctx.stroke();
+}
+
+/** A ship: a wedge with a nose, two rear wings and a fin on top, in its own space (+z nose, +y up). */
+const SHIP_POINTS: [number, number, number][] = [
+	[0, 0, 2.4], // nose
+	[-1.3, 0, -1.2], // left wing
+	[1.3, 0, -1.2], // right wing
+	[0, 0.9, -1] // fin
+];
+/** Faces as point indices, wound so the normal points out. */
+const SHIP_FACES: [number, number, number][] = [
+	[0, 3, 1], // top left
+	[0, 2, 3], // top right
+	[0, 1, 2], // underside
+	[1, 3, 2] // back
+];
+const LIGHT = [0.35, 0.85, 0.4];
+
+function shade (hex: string, amount: number): string {
+	const n = parseInt(hex.slice(1), 16);
+	const f = Math.max(0, Math.min(1.2, amount));
+	return `rgb(${Math.min(255, Math.round(((n >> 16) & 255) * f))},${Math.min(255, Math.round(((n >> 8) & 255) * f))},${Math.min(255, Math.round((n & 255) * f))})`;
+}
+
+function drawShip (
+	ctx: CanvasRenderingContext2D,
+	ship: { x: number; y: number; z: number; q: IgeNetQuat },
+	colour: string,
+	outline: boolean,
+	sx: (x: number) => number,
+	sy: (z: number, y: number) => number,
+	scale: number,
+	mine = false,
+	label?: string
+): void {
+	const size = 20;
+	const world = SHIP_POINTS.map(([x, y, z]) => rotate(ship.q, x * size, y * size, z * size));
+	const point = world.map(([x, y, z]) => [sx(ship.x + x), sy(ship.z + z, ship.y + y)] as const);
+	if (!outline) {
+		ctx.fillStyle = "rgba(0,0,0,0.35)";
+		ctx.beginPath();
+		ctx.ellipse(sx(ship.x), sy(ship.z, 0), size * scale, size * TILT * scale * 0.8, 0, 0, Math.PI * 2);
+		ctx.fill();
+	}
+	// Far to near: the view looks from +z and above
+	const depth = (face: [number, number, number]) => face.reduce((sum, i) => sum + world[i][1] * LIFT + world[i][2], 0);
+	const faces = [...SHIP_FACES].sort((a, b) => depth(a) - depth(b));
+	ctx.lineJoin = "round";
+	for (const face of faces) {
+		const [a, b, c] = face.map((i) => world[i]);
+		const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+		const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+		const length = Math.hypot(n[0], n[1], n[2]) || 1;
+		const lit = (n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]) / length;
+		ctx.beginPath();
+		ctx.moveTo(point[face[0]][0], point[face[0]][1]);
+		ctx.lineTo(point[face[1]][0], point[face[1]][1]);
+		ctx.lineTo(point[face[2]][0], point[face[2]][1]);
+		ctx.closePath();
+		if (outline) {
+			ctx.strokeStyle = "rgba(255,255,255,0.3)";
+			ctx.lineWidth = 1;
+			ctx.stroke();
+		} else {
+			ctx.fillStyle = shade(colour, 0.55 + 0.5 * lit);
+			ctx.fill();
+			ctx.strokeStyle = "rgba(0,0,0,0.45)";
+			ctx.lineWidth = 1;
+			ctx.stroke();
+		}
+	}
+	if (outline) return;
+	// The nose: a bright dot, so the heading reads at any angle
+	ctx.fillStyle = "#fff";
+	ctx.beginPath();
+	ctx.arc(point[0][0], point[0][1], mine ? 3 : 2.2, 0, Math.PI * 2);
+	ctx.fill();
+	if (label) {
+		ctx.fillStyle = "#c7d0e0";
+		ctx.font = "12px monospace";
+		ctx.textAlign = "center";
+		ctx.fillText(label, sx(ship.x), sy(ship.z, ship.y) - 30 * Math.max(0.8, scale));
+		ctx.textAlign = "left";
+	}
 }
