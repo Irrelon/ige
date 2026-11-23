@@ -20,9 +20,11 @@ import("@/engine/core/IgeTween").then((module) => {
 export class IgePoint3d {
 	classId = "IgePoint3d";
 
-	x = 0;
-	y = 0;
-	z = 0;
+	// Declared only (assigned in the constructor) so that IgeTrackedPoint3d can
+	// replace them with accessors
+	declare x: number;
+	declare y: number;
+	declare z: number;
 	x2 = 0;
 	y2 = 0;
 	z2 = 0;

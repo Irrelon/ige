@@ -34,6 +34,8 @@ export class IgeCamera extends IgeEntity {
 
 	constructor (viewport: IgeViewport) {
 		super();
+		// Rebuilds or alters its own matrices every frame
+		this._tfNoFast = true;
 
 		this._trackRotateTarget = undefined;
 		this._trackTranslateTarget = undefined;

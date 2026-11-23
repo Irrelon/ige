@@ -44,6 +44,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 
 	constructor (options?: IgeViewportOptions) {
 		super();
+		// Rebuilds or alters its own matrices every frame
+		this._tfNoFast = true;
 
 		let width, height;
 		this._alwaysInView = true;

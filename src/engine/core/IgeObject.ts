@@ -7,6 +7,7 @@ import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
 import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeTrackedPoint2d, IgeTrackedPoint3d } from "@/engine/core/IgeTrackedPoint";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
 import { newIdHex } from "@/engine/utils/ids";
 import { toIso } from "@/engine/utils/maths";
@@ -101,10 +102,40 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_rotate: IgePoint3d;
 	_scale: IgePoint3d;
 	_origin: IgePoint3d;
-	_bounds2d: IgePoint2d;
+	_b2d!: IgeTrackedPoint2d;
+	_b3d!: IgeTrackedPoint3d;
+	/**
+	 * True when something that feeds this object's transform (translate,
+	 * rotate, scale, origin, bounds) may have been written since the last
+	 * rebuild. The tracked points set it on every changing write, even a
+	 * direct one like `_translate.x = 5`. While it is false (and the parent
+	 * hasn't changed) updateTransform() needs no value comparison at all.
+	 * Set it yourself after changing a matrix or anything else in a way the
+	 * tracked points can't see.
+	 */
+	_tfDirty: boolean = true;
+	/** True for objects that rebuild or alter their own matrices every frame (viewports, cameras). */
+	_tfNoFast: boolean = false;
 	_oldBounds2d: IgePoint2d;
-	_bounds3d: IgePoint3d;
 	_oldBounds3d: IgePoint3d;
+
+	/** 2d bounds. Assigning a point stores a tracked copy of it. */
+	get _bounds2d (): IgePoint2d { return this._b2d; }
+	set _bounds2d (v: IgePoint2d) {
+		const t = new IgeTrackedPoint2d(v.x, v.y);
+		t.owner = this;
+		this._b2d = t;
+		this._tfDirty = true;
+	}
+
+	/** 3d bounds. Assigning a point stores a tracked copy of it. */
+	get _bounds3d (): IgePoint3d { return this._b3d; }
+	set _bounds3d (v: IgePoint3d) {
+		const t = new IgeTrackedPoint3d(v.x, v.y, v.z);
+		t.owner = this;
+		this._b3d = t;
+		this._tfDirty = true;
+	}
 	_highlight: boolean;
 	_pointerEventsActive: boolean;
 	_pointerStateDown: boolean = false;
@@ -206,11 +237,11 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 		this._deathTime = undefined;
 
-		this._translate = new IgePoint3d(0, 0, 0);
+		this._translate = this._trackedPoint(0, 0, 0);
 		this._oldTranslate = new IgePoint3d(0, 0, 0);
-		this._rotate = new IgePoint3d(0, 0, 0);
-		this._scale = new IgePoint3d(1, 1, 1);
-		this._origin = new IgePoint3d(0.5, 0.5, 0.5);
+		this._rotate = this._trackedPoint(0, 0, 0);
+		this._scale = this._trackedPoint(1, 1, 1);
+		this._origin = this._trackedPoint(0.5, 0.5, 0.5);
 
 		this._bounds2d = new IgePoint2d(40, 40);
 		this._bounds3d = new IgePoint3d(0, 0, 0);
@@ -499,6 +530,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		if (this._adjustmentMatrix) {
 			// Apply the optional adjustment matrix
 			this._worldMatrix.multiply(this._adjustmentMatrix);
+			// The world matrix no longer matches its inputs: rebuild it next update
+			this._tfDirty = true;
 		}
 
 		if (!inverse) {
@@ -607,6 +640,12 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		}
 
 		return this._bounds3dPolygon;
+	}
+
+	_trackedPoint (x: number, y: number, z: number): IgePoint3d {
+		const p = new IgeTrackedPoint3d(x, y, z);
+		p.owner = this;
+		return p;
 	}
 
 	statStart (funcName: string, statType: string): number {

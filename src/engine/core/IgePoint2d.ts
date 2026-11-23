@@ -6,8 +6,10 @@ import type { IgePoint3d } from "@/engine/core/IgePoint3d";
  */
 export class IgePoint2d {
 	classId = "IgePoint2d";
-	x: number = 0;
-	y: number = 0;
+	// Declared only (assigned in the constructor) so that IgeTrackedPoint2d can
+	// replace them with accessors
+	declare x: number;
+	declare y: number;
 	x2: number = 0;
 	y2: number = 0;
 

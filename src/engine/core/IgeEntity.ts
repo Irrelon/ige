@@ -84,6 +84,20 @@ export interface IgeEntityTransformAccessor {
 	z: (val?: number) => number | IgeEntity;
 }
 
+// Whether the engine's renderer is the WebGL one, looked up again only when
+// the renderer object changes (a classId never changes on an instance)
+let cachedRenderer: unknown = undefined;
+let cachedWebGl = false;
+
+function engineUsesWebGl (): boolean {
+	const renderer = ige.engine.renderer();
+	if (renderer !== cachedRenderer) {
+		cachedRenderer = renderer;
+		cachedWebGl = renderer?.classId === "IgeWebGlRenderer";
+	}
+	return cachedWebGl;
+}
+
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -239,9 +253,32 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * frame almost free.
 	 */
 	updateTransform () {
-		const webGl = ige.engine.renderer()?.classId === "IgeWebGlRenderer";
+		const webGl = engineUsesWebGl();
+
+		// Fast path: no tracked input was written (see _tfDirty), the parent
+		// hasn't changed and nothing here moves by itself. A handful of
+		// compares instead of the full value check.
+		if (!this._tfDirty && !this._tfNoFast && this._tfInputs !== undefined) {
+			const parent = this._parent;
+			if (
+				this._quaternion === null &&
+				this._tfInputs[22] === 2 &&
+				this._attachBone === undefined &&
+				parent === this._tfParent &&
+				webGl === this._tfWebGl &&
+				this._renderMode === this._tfInputs[17] &&
+				(parent
+					? parent._transformVersion === this._tfParentVersion && parent._bounds3d.z === this._tfInputs[18]
+					: true) &&
+				(!webGl || this._worldMatrix4 !== undefined)
+			) {
+				this._transformChanged = false;
+				return this;
+			}
+		}
 
 		if (this._transformInputsUnchanged(webGl)) {
+			this._tfDirty = false;
 			this._transformChanged = false;
 			return this;
 		}
@@ -377,6 +414,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		this._recordTransformInputs(webGl);
+		this._tfDirty = false;
 
 		return this;
 	}
