@@ -260,7 +260,7 @@ client.on("event", (data, tick) => { /* { t: "boom", x, z, size }, quantised */ 
 
 ### Removal reasons
 
-`removeReasons: ["destroyed", "jumped"]` in a kind's options, and `replicator.destroy(obj, "destroyed")` (or `obj.destroy("destroyed")`) sends the reason with the destroy to viewers that hold the object in full detail. The client's `"destroyed"` event gets `(id, kind, reason, object)`; `object.states` still holds its last values, to place an effect. An object that only leaves a viewer's relevance (out of range, unrevealed, a blip going) arrives with no reason, so a game can tell destroyed or jumped from out of sight. A blip never gets one (it is anonymous). The reasons are part of the schema hash.
+`removeReasons: ["destroyed", "jumped"]` in a kind's options, and `replicator.destroy(obj, "destroyed")` (or `obj.destroy("destroyed")`) sends the reason with the destroy to viewers that hold the object in full detail. `obj.moveTo(scope, reason)` does the same for an object that leaves viewers by moving scope (a ship jumping out of a system). The client's `"destroyed"` event gets `(id, kind, reason, object, tick)`; `object.states` still holds its last values, to place an effect. An object that only leaves a viewer's relevance (out of range, unrevealed, a blip going) arrives with no reason, so a game can tell destroyed or jumped from out of sight. A blip never gets one (it is anonymous). The reasons are part of the schema hash.
 
 ## Lag compensation (stage 4)
 

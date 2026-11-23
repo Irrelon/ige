@@ -165,6 +165,19 @@ describe("events in replication packets", () => {
 		expect(jumper.destroyed).toBe(false);
 		expect(() => rep.destroy("j", "nonsense")).toThrow(/removeReasons/);
 	});
+
+	it("carries a reason on a scope move to the viewers that held the object in full", () => {
+		const rep = make();
+		const near = watch(rep, { x: 0, z: 0 });
+		const far = watch(rep, { x: 3000, z: 0 });
+		const ship = rep.create("ship", "s", { x: 5, z: 0, name: "s" }, { scope: "sol" });
+		for (let i = 0; i < 3; i++) rep.flush();
+		const marks = [near.described.length, far.described.length];
+		ship.moveTo("elsewhere", "jumped");
+		rep.flush();
+		expect(near.described.slice(marks[0]).flatMap((d) => d.destroys)).toEqual([expect.objectContaining({ id: "s", reason: "jumped" })]);
+		for (const d of far.described.slice(marks[1]).flatMap((d) => d.destroys)) expect(d.reason).toBeUndefined();
+	});
 });
 
 describe("events over a network", () => {

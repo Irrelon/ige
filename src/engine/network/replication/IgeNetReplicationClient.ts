@@ -91,9 +91,9 @@ const RESYNC_MS = 500;
  * Objects that aren't written stay as they were (the authority sends nothing about them), so one
  * with a single state costs nothing to interpolate.
  *
- * Events: "welcome", "snapshot" (tick: after each packet), "created" (object), "destroyed" (id, kind, reason, object:
+ * Events: "welcome", "snapshot" (tick: after each packet), "created" (object), "destroyed" (id, kind, reason, object, tick:
  * the reason is one of the kind's `removeReasons`, or undefined when the object only left this machine's sight; the
- * object still holds its last values in `states`), "event" (data, tick: after the packet's creates and updates, so an
+ * object still holds its last values in `states`; tick is the packet's), "event" (data, tick: after the packet's creates and updates, so an
  * event about an object made in the same packet finds it), "error" (message), "disconnected", "transfer" ({ url }), "transferred"
  * (IgeNetWelcome), "transferFailed" (Error).
  * @example #Join and draw the world
@@ -520,7 +520,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			this.objects.delete(gone.id);
 			this._ticks.delete(gone.id);
 			// The object's last values are still on it (obj.states), to place an effect; the reason is undefined when it left sight
-			this.emit("destroyed", gone.id, obj.kind, gone.reason, obj);
+			this.emit("destroyed", gone.id, obj.kind, gone.reason, obj, header.tick);
 		}
 		const history = this._options.history ?? 32;
 		const push = (obj: IgeNetClientObject, values: Record<string, unknown>, still = 0) => {

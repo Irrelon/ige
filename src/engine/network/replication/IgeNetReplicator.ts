@@ -293,8 +293,17 @@ export class IgeNetObject {
 	}
 
 	/** Moves the object to another scope: viewers of the old one lose it, viewers of the new one gain it. */
-	moveTo (scope: string | undefined): void {
-		this._rep._moveTo(this, scope);
+	/**
+	 * Moves it to another scope (or none). Viewers that lose it by this and held it in full detail are sent `reason` (one of
+	 * the kind's removeReasons) with the removal, as destroy() does: a ship that jumped out of a system, one that cloaked.
+	 */
+	moveTo (scope: string | undefined, reason?: string): void {
+		let index = -1;
+		if (reason !== undefined) {
+			index = this.schema.options.removeReasons?.indexOf(reason) ?? -1;
+			if (index < 0) throw new Error(`${this.kind}: "${reason}" isn't one of its removeReasons`);
+		}
+		this._rep._moveTo(this, scope, index);
 	}
 
 	/** Removes it; `reason` (one of the kind's removeReasons) goes to viewers that hold it in full detail. */
@@ -826,7 +835,7 @@ export class IgeNetViewer {
 		}
 	}
 
-	_remove (obj: IgeNetObject, reason = -1): void {
+	_remove (obj: IgeNetObject, reason = this._rep._removeReason): void {
 		const state = this._states.get(obj);
 		if (!state) return;
 		state.dead = true;
@@ -1853,6 +1862,8 @@ export class IgeNetReplicator {
 	/** Rounds before a reliable event is sent again on a lossy transport. */
 	_eventResend: number;
 	_eventMarks = 0;
+	/** The reason a removal in progress (a scope move) carries. */
+	_removeReason = -1;
 	_evw = new IgeNetBitWriter(256);
 	_objects: Map<string, IgeNetObject> = new Map();
 	_viewers: Set<IgeNetViewer> = new Set();
@@ -2063,7 +2074,7 @@ export class IgeNetReplicator {
 		this._scopes.get(obj.scope!)?.grid?.move(obj, obj._px, obj._pz);
 	}
 
-	_moveTo (obj: IgeNetObject, scope: string | undefined): void {
+	_moveTo (obj: IgeNetObject, scope: string | undefined, reason = -1): void {
 		if (obj.destroyed || obj.scope === scope) return;
 		const affected = new Set<IgeNetViewer>(obj._seenBy.keys());
 		if (obj.scope) {
@@ -2081,7 +2092,9 @@ export class IgeNetReplicator {
 		}
 		this._place(obj);
 		if (wasSpatial !== obj._spatial) for (const state of obj._seenBy.values()) state.viewer._respace(state);
+		this._removeReason = reason;
 		for (const viewer of affected) this._reconcile(obj, viewer);
+		this._removeReason = -1;
 		// Anyone seeing it must be told its (possibly new) detail
 		for (const state of obj._seenBy.values()) state.viewer._work.add(state);
 	}
