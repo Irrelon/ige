@@ -1,8 +1,8 @@
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeNetBitReader, IgeNetBitWriter } from "@/engine/network/replication/IgeNetBits";
-import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions } from "@/engine/network/replication/IgeNetSchema";
+import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions, type IgeNetEventDefs } from "@/engine/network/replication/IgeNetSchema";
 import {
-	IGE_NET_PACKET_SNAPSHOT,
+	igeNetIsSnapshot,
 	type IgeNetDetail,
 	igeNetPacketType,
 	igeNetReadSnapshotBody,
@@ -21,6 +21,10 @@ export interface IgeNetReplicationClientOptions {
 	schemas: IgeNetSchemaSet | Record<string, Record<string, IgeNetFieldDef>>;
 	/** Kind options (relevance, position, blip), when `schemas` is plain definitions: the same as the host's. */
 	kinds?: Record<string, IgeNetKindOptions>;
+	/** Declared event shapes by event type, when `schemas` is plain definitions: the same as the host's. */
+	events?: IgeNetEventDefs;
+	/** The field of an event's data that names its type (default "t"): the same as the host's. */
+	eventKey?: string;
 	/** What one player's input is, the same as the host's. */
 	inputSchema?: IgeNetSchema | Record<string, IgeNetFieldDef>;
 	/** How far behind the newest state other objects are drawn, in ms (default 100). */
@@ -87,8 +91,10 @@ const RESYNC_MS = 500;
  * Objects that aren't written stay as they were (the authority sends nothing about them), so one
  * with a single state costs nothing to interpolate.
  *
- * Events: "welcome", "snapshot" (tick: after each packet), "created" (object), "destroyed" (id, kind),
- * "event" (data, tick), "error" (message), "disconnected", "transfer" ({ url }), "transferred"
+ * Events: "welcome", "snapshot" (tick: after each packet), "created" (object), "destroyed" (id, kind, reason, object:
+ * the reason is one of the kind's `removeReasons`, or undefined when the object only left this machine's sight; the
+ * object still holds its last values in `states`), "event" (data, tick: after the packet's creates and updates, so an
+ * event about an object made in the same packet finds it), "error" (message), "disconnected", "transfer" ({ url }), "transferred"
  * (IgeNetWelcome), "transferFailed" (Error).
  * @example #Join and draw the world
  *     const client = new IgeNetReplicationClient(connection, { schemas, inputSchema });
@@ -130,6 +136,9 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	_slices = new IgeNetSliceAssembly();
 	/** The newest snapshot packet applied, the newest seen (for acks) and the bits before it. */
 	_applied = 0;
+	/** Reliable events: the next sequence number to deliver, and those that arrived ahead of it. */
+	_eventNext = 1;
+	_eventBuffer: Map<number, { data: unknown; tick: number }> = new Map();
 	_recvSeq = 0;
 	_recvBits = 0;
 	_latestTick = 0;
@@ -147,7 +156,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		this._connection = connection;
 		this._options = options;
 		this._now = options.now ?? (() => (typeof performance !== "undefined" ? performance.now() : Date.now()));
-		this.schemas = options.schemas instanceof IgeNetSchemaSet ? options.schemas : new IgeNetSchemaSet(options.schemas, options.kinds);
+		this.schemas = options.schemas instanceof IgeNetSchemaSet ? options.schemas : new IgeNetSchemaSet(options.schemas, options.kinds, options.events, options.eventKey);
 		this.inputSchema = options.inputSchema instanceof IgeNetSchema ? options.inputSchema : new IgeNetSchema("input", options.inputSchema ?? {});
 		this._hash = igeNetSchemaHash(this.schemas, this.inputSchema);
 		this._attach(connection);
@@ -214,6 +223,8 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		this._slices.clear();
 		this._pending = [];
 		this._ticks.clear();
+		this._eventNext = 1;
+		this._eventBuffer.clear();
 		this._applied = this._recvSeq = this._recvBits = this._latestTick = this._priorTick = 0;
 		this._offset = undefined;
 		this._lastHeard = this._now();
@@ -425,7 +436,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		if (data instanceof Uint8Array) {
 			this._lastHeard = this._now();
 			this._unanswered = 0;
-			if (igeNetPacketType(data) === IGE_NET_PACKET_SNAPSHOT) this._onPacket(data);
+			if (igeNetIsSnapshot(igeNetPacketType(data))) this._onPacket(data);
 			return;
 		}
 		const message = data as { t: string } & Record<string, any>;
@@ -508,7 +519,8 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			if (!obj || obj.handle !== gone.handle) continue;
 			this.objects.delete(gone.id);
 			this._ticks.delete(gone.id);
-			this.emit("destroyed", gone.id, obj.kind);
+			// The object's last values are still on it (obj.states), to place an effect; the reason is undefined when it left sight
+			this.emit("destroyed", gone.id, obj.kind, gone.reason, obj);
 		}
 		const history = this._options.history ?? 32;
 		const push = (obj: IgeNetClientObject, values: Record<string, unknown>, still = 0) => {
@@ -621,9 +633,38 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 			const last = obj.states[obj.states.length - 1];
 			push(obj, apply(obj, update.values, last.values, update.seq), update.still);
 		}
+		// Events last, so one about an object made in this packet finds it
+		for (const event of packet.eventList) this._deliver(event);
 		if (fresh) {
 			this._syncClock(header.tick, this.rtt / 2);
 			this.emit("snapshot", header.tick);
+		}
+	}
+
+	/** Hands an event to the game: unreliable ones as they come, reliable ones once each in sequence order (earlier packets' resends are skipped, later ones wait for the gap). */
+	_deliver (event: { data: unknown; tick: number; reliable: boolean; seq?: number }): void {
+		if (!event.reliable || event.seq === undefined) {
+			this.emit("event", event.data, event.tick);
+			return;
+		}
+		if (event.seq < this._eventNext) return;
+		if (event.seq > this._eventNext) {
+			this._eventBuffer.set(event.seq, event);
+			// The authority gave up on one (a viewer too far behind): go on from the oldest held rather than wait for ever
+			if (this._eventBuffer.size > 512) {
+				this._eventNext = Math.min(...this._eventBuffer.keys());
+				const first = this._eventBuffer.get(this._eventNext)!;
+				this._eventBuffer.delete(this._eventNext);
+				this._deliver({ ...first, reliable: true, seq: this._eventNext });
+			}
+			return;
+		}
+		let next: { data: unknown; tick: number } | undefined = event;
+		while (next) {
+			this._eventNext++;
+			this.emit("event", next.data, next.tick);
+			next = this._eventBuffer.get(this._eventNext);
+			if (next) this._eventBuffer.delete(this._eventNext);
 		}
 	}
 }

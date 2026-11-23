@@ -642,7 +642,8 @@ describe("IgeNetReplicationHost / IgeNetReplicationClient", () => {
 			host.event({ n: 1 });
 			host.event({ n: 2 });
 			host.event({ n: 3 });
-			await jest.advanceTimersByTimeAsync(200);
+			// Events go in the next replication packets, so the host has to send
+			await play(host, [{ client, input: [{ dx: 0 }] }], 8);
 			expect(events).toEqual([{ n: 1 }, { n: 2 }, { n: 3 }]);
 			client.destroy();
 			await jest.advanceTimersByTimeAsync(10);

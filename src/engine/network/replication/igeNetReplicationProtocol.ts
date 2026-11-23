@@ -30,6 +30,17 @@ import { IgeNetJsonWire, igeNetReadJsonWire } from "@/engine/network/replication
  *                    the entry it is (without the handle and still) and counts as arriving in the
  *                    newest packet that carried a piece of it.
  *     Json fields of objects are versioned and may be patches (igeNetJsonDelta.ts).
+ *     With a schema set that declares removal reasons, each destroy is its handle then a bit "has a reason" and, if
+ *     set, the reason's number in the kind's list (reasonBits).
+ *
+ * Snapshot packet with events (type 3): the same, with an events section straight after the header and before
+ *     every other section (so events go first and count in the budget):
+ *     varuint count, then per event:
+ *         1 bit reliable?  (reliable: the machine delivers each once, in order, by its sequence number)
+ *         reliable only:   the first of the section: varuint seq; after it: 1 bit "the next number", else varuint (gap)
+ *         1 bit same tick as the packet?, else varuint ticks before the packet's tick
+ *         eventBits type   (a declared event's number, or one past the last: undeclared, JSON)
+ *         the declared event's fields in order, or the JSON text as a string
  *
  * Input packet, machine to authority:
  *     4 bits type (2), 4 spare    varuint newest frame seq
@@ -79,8 +90,12 @@ export interface IgeNetWelcome {
 
 export const IGE_NET_PACKET_SNAPSHOT = 1;
 export const IGE_NET_PACKET_INPUT = 2;
+/** A snapshot packet that carries events (the section described above comes after the header). */
+export const IGE_NET_PACKET_SNAPSHOT_EVENTS = 3;
 
 export interface IgeNetSnapshotHeader {
+	/** The packet has an events section. */
+	events?: boolean;
 	seq: number;
 	tick: number;
 	inputAck: number;
@@ -110,9 +125,21 @@ export function igeNetBlipId (handle: number): string {
 	return `?${handle}`;
 }
 
+/** An event as a packet carried it. */
+export interface IgeNetDecodedEvent {
+	data: unknown;
+	/** The authority tick it was sent at. */
+	tick: number;
+	reliable: boolean;
+	/** Reliable events: the viewer's sequence number (delivered once, in order). */
+	seq?: number;
+}
+
 export interface IgeNetDecodedSnapshot extends IgeNetSnapshotHeader {
-	/** The ids of objects gone, as the table knew them. */
-	destroys: { handle: number; id?: string }[];
+	/** Events, in the order they were made. */
+	eventList: IgeNetDecodedEvent[];
+	/** The ids of objects gone, as the table knew them, and why (a reason of the kind's removeReasons, only for an object the machine held in full). */
+	destroys: { handle: number; id?: string; reason?: string; kind?: string }[];
 	/** `level` is set for kinds with detail levels; `gone` when the object was destroyed already (an old packet arriving late): ignore it. */
 	creates: { handle: number; id: string; kind: string; values: Record<string, unknown>; level?: IgeNetDetail; gone?: boolean; schema?: IgeNetSchema; anon?: boolean; from?: string; seq: number }[];
 	/**
@@ -128,11 +155,84 @@ export function igeNetPacketType (bytes: Uint8Array): number {
 	return bytes.length ? bytes[0] >>> 4 : 0;
 }
 
+/** Whether a packet type is a snapshot (with or without events). */
+export function igeNetIsSnapshot (type: number): boolean {
+	return type === IGE_NET_PACKET_SNAPSHOT || type === IGE_NET_PACKET_SNAPSHOT_EVENTS;
+}
+
 export function igeNetReadSnapshotHeader (r: IgeNetBitReader): IgeNetSnapshotHeader {
 	const type = r.readBits(4);
-	if (type !== IGE_NET_PACKET_SNAPSHOT) throw new RangeError("Not a snapshot packet");
+	if (!igeNetIsSnapshot(type)) throw new RangeError("Not a snapshot packet");
 	const flags = r.readBits(4);
-	return { flags, seq: r.readVarUint(), tick: r.readVarUint(), inputAck: r.readVarUint() };
+	return { flags, events: type === IGE_NET_PACKET_SNAPSHOT_EVENTS, seq: r.readVarUint(), tick: r.readVarUint(), inputAck: r.readVarUint() };
+}
+
+/** An event as the authority has it for one viewer, ready to write: its body is encoded once and shared by every viewer. */
+export interface IgeNetEventWire {
+	/** The authority tick it was made at. */
+	tick: number;
+	/** The declared event's number, or one past the last for an undeclared (JSON) one. */
+	type: number;
+	/** The fields (or the JSON text) already written, from the first bit of a byte. */
+	body: Uint8Array;
+	bits: number;
+}
+
+/** Writes one event of an events section. `prevSeq`: the sequence number of the reliable event before it in the section (0: none). */
+export function igeNetWriteEvent (w: IgeNetBitWriter, schemas: IgeNetSchemaSet, event: IgeNetEventWire, packetTick: number, reliable: boolean, seq: number, prevSeq: number): void {
+	w.writeBits(reliable ? 1 : 0, 1);
+	if (reliable) {
+		if (!prevSeq) {
+			w.writeVarUint(seq);
+		} else if (seq === prevSeq + 1) {
+			w.writeBits(1, 1);
+		} else {
+			w.writeBits(0, 1);
+			w.writeVarUint(seq - prevSeq - 1);
+		}
+	}
+	if (event.tick === packetTick) {
+		w.writeBits(1, 1);
+	} else {
+		w.writeBits(0, 1);
+		w.writeVarUint(Math.max(0, packetTick - event.tick));
+	}
+	w.writeBits(event.type, schemas.eventBits);
+	w.writeBitsFrom(event.body, 0, event.bits);
+}
+
+/** The bits an event takes in a section (a reliable one's sequence number counted as the 1-bit "next" case unless `first`). */
+export function igeNetEventBits (schemas: IgeNetSchemaSet, event: IgeNetEventWire, reliable: boolean, first: boolean, packetTick: number): number {
+	let bits = 1 + schemas.eventBits + event.bits;
+	if (reliable) bits += first ? 16 : 1;
+	bits += event.tick === packetTick ? 1 : 9;
+	return bits;
+}
+
+function readEvents (r: IgeNetBitReader, header: IgeNetSnapshotHeader, schemas: IgeNetSchemaSet, out: IgeNetDecodedEvent[]): void {
+	const count = r.readVarUint();
+	let prevSeq = 0;
+	for (let i = 0; i < count; i++) {
+		const reliable = r.readBits(1) === 1;
+		let seq: number | undefined;
+		if (reliable) {
+			if (!prevSeq) seq = r.readVarUint();
+			else seq = r.readBits(1) ? prevSeq + 1 : prevSeq + 1 + r.readVarUint();
+			prevSeq = seq;
+		}
+		const tick = r.readBits(1) ? header.tick : header.tick - r.readVarUint();
+		const type = r.readBits(schemas.eventBits);
+		let data: unknown;
+		if (type < schemas.events.length) {
+			const schema = schemas.events[type];
+			data = { [schemas.eventKey]: schema.name, ...schema.readAll(r) };
+		} else if (type === schemas.events.length) {
+			data = JSON.parse(r.readString());
+		} else {
+			throw new RangeError("Unknown event type");
+		}
+		out.push({ data, tick, reliable, seq });
+	}
 }
 
 /**
@@ -264,7 +364,8 @@ export function igeNetReadSnapshotBody (
 	dead?: Map<number, IgeNetHandleEntry>,
 	slices?: IgeNetSliceAssembly
 ): IgeNetDecodedSnapshot {
-	const out: IgeNetDecodedSnapshot = { ...header, destroys: [], creates: [], updates: [] };
+	const out: IgeNetDecodedSnapshot = { ...header, eventList: [], destroys: [], creates: [], updates: [] };
+	if (header.events) readEvents(r, header, schemas, out.eventList);
 	if (!header.flags) return out;
 	const seq = header.seq;
 	const handleBits = r.readBits(6);
@@ -272,8 +373,11 @@ export function igeNetReadSnapshotBody (
 		const count = r.readVarUint();
 		for (let i = 0; i < count; i++) {
 			const handle = r.readBits(handleBits);
+			let reasonIndex = -1;
+			if (schemas.hasReasons && r.readBits(1)) reasonIndex = r.readBits(schemas.reasonBits);
 			const entry = table.get(handle);
-			out.destroys.push({ handle, id: entry?.id });
+			const reasons = entry && !entry.anon ? entry.schema.options.removeReasons : undefined;
+			out.destroys.push({ handle, id: entry?.id, kind: entry && !entry.anon ? entry.schema.name : undefined, reason: reasons && reasonIndex >= 0 ? reasons[reasonIndex] : undefined });
 			// Remembered, so a packet from before the destroy arriving late can still be read (and ignored)
 			if (entry && dead) dead.set(handle, { ...entry, seq });
 			table.delete(handle);
@@ -410,10 +514,10 @@ export class IgeNetPacketInspector {
 
 	describe (bytes: Uint8Array, options: { slots?: number } = {}): Record<string, unknown> {
 		const type = igeNetPacketType(bytes);
-		const base = { type: type === IGE_NET_PACKET_SNAPSHOT ? "snapshot" : type === IGE_NET_PACKET_INPUT ? "input" : "unknown", bytes: bytes.length };
+		const base = { type: igeNetIsSnapshot(type) ? "snapshot" : type === IGE_NET_PACKET_INPUT ? "input" : "unknown", bytes: bytes.length };
 		try {
 			const r = new IgeNetBitReader(bytes);
-			if (type === IGE_NET_PACKET_SNAPSHOT) {
+			if (igeNetIsSnapshot(type)) {
 				const header = igeNetReadSnapshotHeader(r);
 				const body = igeNetReadSnapshotBody(r, header, this._schemas, this._table, this._dead, this._slices);
 				// Json fields as their value (or, for a patch, the patch and the version it's against)
