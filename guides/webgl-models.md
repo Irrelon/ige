@@ -274,7 +274,7 @@ const bones = humanoidBones(model.skins![0].skeleton)!;
 |---------|-----|
 | `renderer.maxPixelRatio(1.5)` | Fewer pixels on high-DPI screens; usually the biggest GPU saving in split screen |
 | `renderer.backFaceCulling(true)` | Skip triangles facing away (about a fifth less GPU time in the zombie demo) |
-| `renderer.shadowCaching(true)` | Redraw static shadow casters only when they or the shadow frustum change |
+| `renderer.shadowCaching(true)` | Redraw static shadow casters only when they or the shadow frustum change; moving, skinned and `_shadowDynamic` casters are drawn each frame over a copy of the cached map (`stats().shadowCacheRebuilds`, `dynamicShadowDraws`, `shadowCacheCopies`) |
 | `renderer.shadowSharing(threshold)` | Split-screen views close together share one shadow map |
 | `ige.engine.renderOnDemand(true)` | Draw only when something visible changed (strategy games, menus); setters such as `material()`, `texture()` and `opacity()` count as changes, edits to objects in place need `ige.engine.manualRender()` |
 | `renderer.debugDraw({ bounds, shadowFrustum })`, `debugLine()` | See culling, LOD levels and shadow coverage |

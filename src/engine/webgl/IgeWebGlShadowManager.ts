@@ -51,6 +51,60 @@ export interface IgeShadowCacheData {
 	mapHoldsCache: boolean;
 }
 
+/** Frames a caster's transform must stay unchanged before it joins the static shadow cache. */
+export const SHADOW_STATIC_FRAMES = 30;
+
+/** The per-entity fields the static/dynamic classification reads and keeps. */
+export interface IgeShadowCasterState {
+	_transformVersion: number;
+	_shadowSeenVersion: number;
+	_shadowStableSince: number;
+	/** Caster flagged as always dynamic (never cached). */
+	_shadowDynamic?: boolean;
+}
+
+/**
+ * Whether a shadow caster belongs in the static cache this frame. Static casters have an unchanged transform for
+ * SHADOW_STATIC_FRAMES frames; skinned meshes and casters flagged dynamic never are. A caster seen for the first time
+ * starts out static (one extra rebuild if it turns out to move); one that moves is dynamic until it has settled.
+ */
+export function igeShadowCasterIsStatic(entity: IgeShadowCasterState, frameId: number, skinned: boolean): boolean {
+	if (entity._transformVersion !== entity._shadowSeenVersion) {
+		entity._shadowStableSince = entity._shadowSeenVersion === -1 ? -SHADOW_STATIC_FRAMES : frameId;
+		entity._shadowSeenVersion = entity._transformVersion;
+	}
+	if (skinned || entity._shadowDynamic) return false;
+	return frameId - entity._shadowStableSince >= SHADOW_STATIC_FRAMES;
+}
+
+/**
+ * Order-independent checksum of the static casters (entity, mesh, transform), compared with the cache's to decide
+ * whether it must be redrawn. Only static casters are added, so a moving caster never changes it.
+ */
+export class IgeShadowSignature {
+	a: number = 0;
+	b: number = 0;
+	count: number = 0;
+
+	reset (): void {
+		this.a = 0;
+		this.b = 0;
+		this.count = 0;
+	}
+
+	add (renderUid: number, geometryUid: number, transformVersion: number): void {
+		let h = Math.imul(renderUid, 0x9e3779b1) ^ Math.imul(geometryUid, 0x85ebca6b) ^ Math.imul(transformVersion + 1, 0xc2b2ae35);
+		h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+		this.a = (this.a + h) | 0;
+		this.b ^= Math.imul(h ^ (h >>> 13), 0x297a2d39);
+		this.count++;
+	}
+
+	matches (cache: Pick<IgeShadowCacheData, "signatureA" | "signatureB" | "count">): boolean {
+		return cache.count === this.count && cache.signatureA === this.a && cache.signatureB === this.b;
+	}
+}
+
 /**
  * Point shadow atlas texture format options.
  * - "rgba8": RGBA UNSIGNED_BYTE - fastest on all GPUs, 8-bit depth precision (256 levels)

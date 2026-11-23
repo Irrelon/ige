@@ -15,7 +15,7 @@ import { IgeWebGlGeometryManager } from "@/engine/webgl/IgeWebGlGeometryManager"
 import { IgeWebGlCameraController } from "@/engine/webgl/IgeWebGlCameraController";
 import { IgeWebGlStateManager } from "@/engine/webgl/IgeWebGlStateManager";
 import { IgeWebGlLightManager } from "@/engine/webgl/IgeWebGlLightManager";
-import { IgeWebGlShadowManager } from "@/engine/webgl/IgeWebGlShadowManager";
+import { IgeShadowSignature, IgeWebGlShadowManager, igeShadowCasterIsStatic } from "@/engine/webgl/IgeWebGlShadowManager";
 import { IgeWebGlSkeletonManager } from "@/engine/webgl/IgeWebGlSkeletonManager";
 import { IgeShaderLibrary } from "@/engine/shaders/webgl/shaderLibrary";
 import type { IgeObject } from "@/engine/core/IgeObject";
@@ -225,6 +225,10 @@ export interface IgeWebGlRenderStats {
 	triangles: number;
 	/** Times the cached static shadow casters were redrawn (see shadowCaching()). */
 	shadowCacheRebuilds: number;
+	/** Shadow draw calls for the casters drawn over the cached static map (moving, skinned or flagged dynamic). */
+	dynamicShadowDraws: number;
+	/** Times the cached static map was copied into the live shadow map. */
+	shadowCacheCopies: number;
 	viewports: number;
 }
 
@@ -251,11 +255,6 @@ interface IgeWebGlInstanceSource {
 /** Floats per particle in IgeParticleSystem3d.renderData(). */
 const PARTICLE_FLOATS = 8;
 
-/**
- * Frames an entity's transform must stay unchanged before it is treated as
- * a static shadow caster (see shadowCaching()).
- */
-const SHADOW_STATIC_FRAMES = 30;
 
 /** Fraction of the shadow frustum's half-size the cached frustum re-centres by. */
 const SHADOW_RECENTER_STEP = 0.125;
@@ -559,6 +558,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		lodItems: 0,
 		triangles: 0,
 		shadowCacheRebuilds: 0,
+		dynamicShadowDraws: 0,
+		shadowCacheCopies: 0,
 		viewports: 0
 	};
 
@@ -572,6 +573,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _shadowCaching: boolean = false;
 	protected _staticDepthBatcher: IgeWebGlItemBatcher = new IgeWebGlItemBatcher();
 	protected _shadowMapHoldsCache: boolean = false;
+	protected _shadowSignature = new IgeShadowSignature();
 	protected _directionalPassesThisFrame: number = 0;
 	protected _directionalPassesLastFrame: number = 0;
 
@@ -1947,6 +1949,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		stats.lodItems = 0;
 		stats.triangles = 0;
 		stats.shadowCacheRebuilds = 0;
+		stats.dynamicShadowDraws = 0;
+		stats.shadowCacheCopies = 0;
 		this._directionalPassesLastFrame = this._directionalPassesThisFrame;
 		this._directionalPassesThisFrame = 0;
 		stats.viewports = viewports ? viewports.length : 0;
@@ -3546,7 +3550,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		batcher.begin();
 		staticBatcher.begin();
 		const frameId = this._frameId;
-		let signatureA = 0, signatureB = 0, staticCount = 0, movingCount = 0;
+		const signature = this._shadowSignature;
+		signature.reset();
+		let movingCount = 0;
 
 		const models = data.models;
 		for (let i = 0; i < models.length; i++) {
@@ -3567,20 +3573,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			}
 
 			if (cache) {
-				// New casters start out static (one extra rebuild if they turn
-				// out to move); casters that moved wait until they settle
-				if (entity._transformVersion !== entity._shadowSeenVersion) {
-					entity._shadowStableSince = entity._shadowSeenVersion === -1 ? -SHADOW_STATIC_FRAMES : frameId;
-					entity._shadowSeenVersion = entity._transformVersion;
-				}
-				if (!item.skeleton && frameId - entity._shadowStableSince >= SHADOW_STATIC_FRAMES) {
+				if (igeShadowCasterIsStatic(entity, frameId, !!item.skeleton)) {
 					if (!entity._renderUid) entity._renderUid = nextRenderUid++;
-					// Order-independent checksum of (entity, mesh, transform)
-					let h = Math.imul(entity._renderUid, 0x9e3779b1) ^ Math.imul(geometry.uid, 0x85ebca6b) ^ Math.imul(entity._transformVersion + 1, 0xc2b2ae35);
-					h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
-					signatureA = (signatureA + h) | 0;
-					signatureB ^= Math.imul(h ^ (h >>> 13), 0x297a2d39);
-					staticCount++;
+					signature.add(entity._renderUid, geometry.uid, entity._transformVersion);
 					staticBatcher.add(item, key, geometry);
 					continue;
 				}
@@ -3596,7 +3591,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		this._gpuBegin();
 		try {
-			this._directionalPasses(cache, batcher, staticBatcher, shared, signatureA, signatureB, staticCount, movingCount, m);
+			this._directionalPasses(cache, batcher, staticBatcher, shared, signature, movingCount, m);
 		} finally {
 			this._gpuEnd();
 		}
@@ -3608,9 +3603,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		batcher: IgeWebGlItemBatcher,
 		staticBatcher: IgeWebGlItemBatcher,
 		shared: (block: Float32Array, at: Readonly<Record<string, number>>) => void,
-		signatureA: number,
-		signatureB: number,
-		staticCount: number,
+		signature: IgeShadowSignature,
 		movingCount: number,
 		m: Float32Array
 	): void {
@@ -3629,8 +3622,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// Redraw the cache only when the static casters or the frustum changed
 		let sameMatrix = cache.valid;
 		for (let k = 0; sameMatrix && k < 16; k++) sameMatrix = cache.matrix[k] === m[k];
-		const cacheCurrent = sameMatrix && cache.count === staticCount &&
-			cache.signatureA === signatureA && cache.signatureB === signatureB;
+		const cacheCurrent = sameMatrix && signature.matches(cache);
 
 		if (!cacheCurrent) {
 			const pass = shadowManager.beginShadowCachePass(lightId);
@@ -3639,9 +3631,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				shadowManager.endShadowPass(pass);
 			}
 			cache.matrix.set(m);
-			cache.count = staticCount;
-			cache.signatureA = signatureA;
-			cache.signatureB = signatureB;
+			cache.count = signature.count;
+			cache.signatureA = signature.a;
+			cache.signatureB = signature.b;
 			cache.valid = true;
 			this._shadowMapHoldsCache = false;
 			this._stats.shadowCacheRebuilds++;
@@ -3650,10 +3642,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// Nothing moving and the map already holds the cache: reuse it as is
 		if (movingCount === 0 && this._shadowMapHoldsCache) return;
 
-		shadowManager.copyShadowCache(lightId);
+		if (shadowManager.copyShadowCache(lightId)) this._stats.shadowCacheCopies++;
 		const pass = movingCount > 0 ? shadowManager.beginShadowPass(lightId, false) : null;
 		if (pass) {
+			const before = this._stats.shadowDrawCalls;
 			this._drawDepthBatches(pass, batcher.batches, "shadow", "skinned_shadow", shared);
+			this._stats.dynamicShadowDraws += this._stats.shadowDrawCalls - before;
 			shadowManager.endShadowPass(pass);
 		}
 		this._shadowMapHoldsCache = movingCount === 0;
