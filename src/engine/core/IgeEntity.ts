@@ -1,3 +1,5 @@
+import type { IgeNetEntityAddOptions, IgeNetEntityHost } from "@/engine/network/entities/IgeNetEntityHost";
+import { igeNetLatestEntityHost } from "@/engine/network/entities/igeNetEntityHostRef";
 import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import { markSceneChanged } from "@/engine/utils/sceneChange";
 import { IgeBounds } from "@/engine/core/IgeBounds";
@@ -1133,6 +1135,25 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 */
 	_renderChanged () {
 		if (!this._hidden) markSceneChanged();
+	}
+
+	/**
+	 * Starts replicating this entity to clients through the most recently made IgeNetEntityHost (or
+	 * `options.host`). The entity's class needs `static net` (see igeNetEntity).
+	 * @example #A zombie every client sees
+	 *     new Zombie().mount(scene).translateTo(10, 0, 5).replicate();
+	 */
+	replicate (options: IgeNetEntityAddOptions = {}): this {
+		const host = options.host ?? igeNetLatestEntityHost();
+		if (!host) throw new Error("There's no IgeNetEntityHost to replicate through");
+		host.add(this, options);
+		return this;
+	}
+
+	/** Stops replicating this entity: clients lose it. */
+	unreplicate (host: IgeNetEntityHost | undefined = igeNetLatestEntityHost()): this {
+		host?.remove(this);
+		return this;
 	}
 
 	/**

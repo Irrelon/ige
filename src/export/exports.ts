@@ -171,6 +171,9 @@ export * from "../engine/network/replication/igeNetReplicationProtocol";
 export * from "../engine/network/replication/IgeNetReplicator";
 export * from "../engine/network/replication/IgeNetReplicationHost";
 export * from "../engine/network/replication/IgeNetReplicationClient";
+export * from "../engine/network/entities/igeNetEntity";
+export * from "../engine/network/entities/IgeNetEntityHost";
+export * from "../engine/network/entities/IgeNetEntityClient";
 export * from "../engine/network/chat/IgeChatServer";
 
 export * from "../engine/network/chat/IgeChatClient";

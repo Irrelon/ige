@@ -1699,6 +1699,7 @@ export class IgeNetReplicator {
 	_viewers: Set<IgeNetViewer> = new Set();
 	_scopes: Map<string, { objects: Set<IgeNetObject>; viewers: Set<IgeNetViewer>; grid?: IgeNetGrid<IgeNetObject>; cellSize?: number }> = new Map();
 	_dirty: IgeNetObject[] = [];
+	_beforeFlush: (() => void)[] = [];
 	/** Changes are stamped with the current epoch; flush() sends everything up to it, then moves on. */
 	_epoch = 1;
 	_round = 0;
@@ -1758,6 +1759,18 @@ export class IgeNetReplicator {
 
 	get size (): number {
 		return this._objects.size;
+	}
+
+	/**
+	 * Runs `fn` at the very start of every flush(), before anything is sent: the place to read the
+	 * game's own state into objects (see IgeNetEntityHost). Returns a function that removes it.
+	 */
+	beforeFlush (fn: () => void): () => void {
+		this._beforeFlush.push(fn);
+		return () => {
+			const at = this._beforeFlush.indexOf(fn);
+			if (at >= 0) this._beforeFlush.splice(at, 1);
+		};
 	}
 
 	/** Sets how a scope's grid is cut (the cell size), before objects are in it or after (they're placed again). */
@@ -2052,6 +2065,7 @@ export class IgeNetReplicator {
 	 */
 	flush (): number {
 		const started = this._now();
+		for (const fn of this._beforeFlush.slice()) fn();
 		this._round++;
 		this._arena.reset();
 		const epoch = this._epoch;
