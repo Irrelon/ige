@@ -2458,7 +2458,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			// character. Centre the sphere on the animated joints instead,
 			// padded to cover the body around them.
 			const skeleton = item.skeleton;
-			if (skeleton && skeleton.data.boneCount > 0) {
+			if (skeleton && skeleton.data.boneCount > 0 && !skeleton.data.boundsFromMesh) {
 				const w = skeleton.worldMatrices;
 				let minX = Infinity, minY = Infinity, minZ = Infinity;
 				let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;

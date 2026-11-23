@@ -206,6 +206,33 @@ player.modelParts([...outfit, "Boots_black"]);
 `keep: (x, y, z) => y < 0.1` limits a shell to the triangles whose corners pass the test (rest pose, model space).
 Any other part made in code (a resized copy of a backpack, say) joins a model with `addModelPart(model, part)`.
 
+## Characters made of boxes (procedural skeletons)
+
+A character built from rigid parts (a box for the head, one for each limb segment) doesn't need an entity per part.
+Build one mesh with every vertex weighted 1.0 to its part's bone, give it a skeleton made in code, and write the
+bone matrices yourself each frame:
+
+```typescript
+const skeleton = igeProceduralSkeleton("person", [
+	{ name: "body" },
+	{ name: "armL", rest: translation(-9, 35, 0) },   // where the bone sits with the figure at rest
+	{ name: "armR", rest: translation(9, 35, 0) }
+]);
+// mesh: vertices at rest, boneIndices (4 a vertex) and boneWeights (1, 0, 0, 0), vertex colours for the look
+const person = new IgeEntity().skin(mesh, skeleton).mount(scene);
+
+// every frame: each bone's model-space matrix, 16 floats a bone, column-major
+person.setBonePose(matrices);
+```
+
+The skin matrices are worked out when the frame is collected, so setting the pose costs a copy and nothing is posed
+that isn't drawn. Characters sharing a mesh instance together (the palette holds a row for each character), and
+shadows, outlines, `occludedColor()`, `attachToBone("armR")` and `bonePosition()` work as on a glTF model. Bone
+names come from the skeleton. A mesh needs one material, so a look with parts of different roughness or a glow
+makes one mesh for each and the entities share the skeleton: `skin(secondMesh, firstEntity._skeleton!)` shares its
+pose and its palette row. The character is culled by its mesh's bounds, not its joints, so keep poses within about
+half again the mesh's size. At most 64 bones.
+
 ## Generated and auto-rigged characters
 
 Text- or image-to-3D generators (AssetFurnace, Meshy, Tripo) give each character its own rig, often with numbered

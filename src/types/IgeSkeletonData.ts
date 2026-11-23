@@ -38,6 +38,11 @@ export interface IgeSkeletonData {
 	rootBoneIndices: number[];
 	/** Total number of bones */
 	boneCount: number;
+	/**
+	 * The mesh's vertices are in model space (rest pose), so the renderer bounds the character by its mesh rather than
+	 * by its joints. Set for procedural skeletons (see igeProceduralSkeleton()).
+	 */
+	boundsFromMesh?: boolean;
 }
 
 /**

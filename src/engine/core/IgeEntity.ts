@@ -32,7 +32,8 @@ import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 import type { IgeRetargetOptions } from "@/engine/webgl/IgeAnimationRetarget";
 import { findBoneIndex, retargetClips } from "@/engine/webgl/IgeAnimationRetarget";
 import { clipInPlace } from "@/engine/webgl/IgeAnimationInPlace";
-import type { IgeSkeletonData } from "@/types/IgeSkeletonData";
+import type { IgeSkeleton, IgeSkeletonData } from "@/types/IgeSkeletonData";
+import { igeSetBonePose } from "@/engine/webgl/IgeProceduralSkeleton";
 import type { IgeAnimationClipData } from "@/types/IgeAnimationClipData";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
@@ -1300,6 +1301,40 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this._skeletonData = undefined;
 		}
 
+		this._renderChanged();
+		return this;
+	}
+
+	/**
+	 * Draws a skinned mesh made in code (vertices weighted to the bones of a procedural skeleton,
+	 * `igeProceduralSkeleton()`) and poses it with `setBonePose()`: a character of rigid boxes as one entity, with
+	 * a bone per limb, in place of an entity per box. Pass the skeleton's data (this entity gets its own copy of the
+	 * pose) or a skeleton instance (entities given the same one share its pose and its bone palette row, e.g. the
+	 * matte, shiny and glowing meshes of one character). Entities with the same mesh and material instance together.
+	 * @example #A character drawn from one mesh
+	 *     const data = igeProceduralSkeleton("person", [{ name: "body" }, { name: "armL", rest: shoulderL }]);
+	 *     const person = new IgeEntity().skin(mesh, data).mount(scene);
+	 *     person.setBonePose(matrices); // 16 floats a bone, model space
+	 */
+	skin (geometry: IgeGeometryData3d, skeleton: IgeSkeletonData | IgeSkeleton): this {
+		const instance = "data" in skeleton ? skeleton : createSkeletonInstance(skeleton);
+		this._model = undefined;
+		this._modelParts = undefined;
+		this._geometryData = geometry;
+		this._skeletonData = instance.data;
+		this._skeleton = instance;
+		this._renderChanged();
+		return this;
+	}
+
+	/**
+	 * Sets the pose of a skeleton given to `skin()`: each bone's model-space matrix (column-major, 16 floats a bone).
+	 * Cheap to call every frame; nothing is worked out until the frame is drawn.
+	 */
+	setBonePose (matrices: ArrayLike<number>): this {
+		const skeleton = this._skeleton;
+		if (!skeleton) return this;
+		igeSetBonePose(skeleton, matrices);
 		this._renderChanged();
 		return this;
 	}
