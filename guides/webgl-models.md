@@ -268,6 +268,24 @@ const bones = humanoidBones(model.skins![0].skeleton)!;
   the post-processed frame (exact colours) and costs nothing while nothing is outlined. Several outlined things with
   the same outline share one pass. Model meshes only (not 2D sprites).
 
+## Dynamic resolution
+
+`renderer.dynamicResolution({ enabled: true, minScale: 0.67, maxScale: 1 })` draws the 3D scene (and its
+post-processing) offscreen at a fraction of the canvas's size and upscales it, linear, to the canvas. The UI layer,
+panels, outlines and overlays are still drawn at the canvas's own resolution, so text and HUD stay sharp. Scales are
+fractions of the canvas, which `maxPixelRatio()` already caps: with the cap at 1.5, 0.67 is a pixel ratio of 1.
+`renderer.renderScale()` reads the scale in use; `renderer.renderScale(0.7)` sets a fixed one while dynamic
+resolution is off. Below 1 the scene goes offscreen even with `postProcess` off (a plain target and one blit).
+
+With it on, the renderer steps the scale down about 10% when frames miss the budget and back up when there is room.
+The budget is the display's refresh interval (the median of `requestAnimationFrame` intervals), or the interval of
+`ige.engine.maxRenderRate()` when that is capped and longer. A frame misses when it comes more than 1.5 budgets after
+the last, or when the GPU's time for it (`EXT_disjoint_timer_query_webgl2`, where the browser has it) is over 95% of the
+budget. Three misses in half a second step down (at most every 0.5 s); two seconds with no misses step up (at most
+every 2 s, and only when the GPU time says the next step would fit in 80% of the budget). A step up that misses is
+refused for that level for 30 s, then 60 s and so on, so a steady scene settles instead of hunting. The offscreen
+targets are made again only when the scale changes. See `IgeDynamicResolution`.
+
 ## Performance switches
 
 | Setting | Use |
