@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Entity streaming - Isogenic Engine</title>
+	<script src="./index.bundle.js" type="module"></script>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background: #0b0e14;
+			color: #ccc;
+			font-family: monospace;
+			overflow: hidden;
+		}
+		canvas {
+			display: block;
+			width: 100vw;
+			height: 100vh;
+		}
+		#panel {
+			position: absolute;
+			top: 8px;
+			left: 50%;
+			transform: translateX(-50%);
+			background: rgba(0, 0, 0, 0.75);
+			padding: 8px 12px;
+			border-radius: 4px;
+			line-height: 1.6;
+			font-size: 12px;
+			text-align: center;
+		}
+		#panel label { margin: 0 8px; white-space: nowrap; }
+		#panel input { vertical-align: middle; width: 110px; }
+	</style>
+</head>
+<body>
+	<canvas id="view"></canvas>
+	<div id="panel">
+		<b>Entity streaming</b>: a host and two clients in this page, over a simulated link.
+		Left: A steers with WASD. Right: B steers with the arrow keys. G toggles the host's own entities (outlines).<br />
+		<label>latency <input id="latency" type="range" min="0" max="400" value="60" /> <span id="latencyValue"></span></label>
+		<label>jitter <input id="jitter" type="range" min="0" max="200" value="20" /> <span id="jitterValue"></span></label>
+		<label>loss <input id="loss" type="range" min="0" max="60" value="5" /> <span id="lossValue"></span></label>
+	</div>
+</body>
+</html>

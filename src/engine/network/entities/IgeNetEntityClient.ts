@@ -2,6 +2,7 @@ import type { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeObject } from "@/engine/core/IgeObject";
 import { ige } from "@/engine/instance";
 import { IgeBehaviourType } from "@/enums";
+import { igeNetQuatSlerp, igeNetQuatUnpack, type IgeNetQuat } from "@/engine/network/entities/igeNetQuat";
 import type { IgeNetEntityClass, IgeNetEntityDescription } from "@/engine/network/entities/igeNetEntity";
 import type { IgeNetClientObject, IgeNetReplicationClient } from "@/engine/network/replication/IgeNetReplicationClient";
 
@@ -48,6 +49,7 @@ export class IgeNetEntityClient {
 	_parentOf: (id: string) => IgeObject | undefined;
 	_idOf: (objectId: string) => string;
 	_attachedId?: string;
+	_quat: IgeNetQuat = { x: 0, y: 0, z: 0, w: 1 };
 	_seq = -1;
 	_seqAt = 0;
 
@@ -66,6 +68,13 @@ export class IgeNetEntityClient {
 	/** The client entity of an object id. */
 	entityOf (objectId: string): IgeEntity | undefined {
 		return this._made.get(objectId)?.entity;
+	}
+
+	/** Every entity made and not yet destroyed. */
+	all (): IgeEntity[] {
+		const out: IgeEntity[] = [];
+		for (const made of this._made.values()) if (made.entity._alive) out.push(made.entity);
+		return out;
 	}
 
 	/**
@@ -152,7 +161,13 @@ export class IgeNetEntityClient {
 		const t = entity._translate;
 		const x = values.x as number, y = values.y as number, z = values.z as number;
 		if (t.x !== x || t.y !== y || t.z !== z) entity.translateTo(x, y, z);
-		if (net.rotation !== "none") {
+		if (net.rotation === "quaternion") {
+			const q = this._quaternionOf(made, values);
+			if (q) {
+				const current = entity._quaternion;
+				if (!current || current.x !== q.x || current.y !== q.y || current.z !== q.z || current.w !== q.w) entity.quaternion(q);
+			}
+		} else if (net.rotation !== "none") {
 			const r = entity._rotate;
 			const rx = net.rotation === "xyz" ? (values.rx as number) : r.x;
 			const ry = net.rotation === "xyz" || net.rotation === "y" ? (values.ry as number) : r.y;
@@ -178,6 +193,29 @@ export class IgeNetEntityClient {
 				}
 			}
 		}
+	}
+
+	/**
+	 * The entity's rotation now: the quaternions of the two states either side of the tick the client
+	 * last drew at, blended along the shortest path (replicated packed quaternions step, so this is
+	 * done here). Falls back to the packed value in `values`.
+	 */
+	_quaternionOf (made: Made, values: Record<string, unknown>): IgeNetQuat | undefined {
+		const states = made.source.states;
+		const tick = this.client._viewTick;
+		if (tick !== undefined && states.length > 1) {
+			let i = states.length - 1;
+			while (i >= 0 && states[i].tick > tick) i--;
+			if (i >= 0 && i < states.length - 1) {
+				const a = states[i], b = states[i + 1];
+				const qa = a.values.q, qb = b.values.q;
+				if (typeof qa === "number" && typeof qb === "number") {
+					const f = Math.min(1, (tick - a.tick) / (b.tick - a.tick));
+					return igeNetQuatSlerp(igeNetQuatUnpack(qa), igeNetQuatUnpack(qb), f, this._quat);
+				}
+			}
+		}
+		return typeof values.q === "number" ? igeNetQuatUnpack(values.q, undefined, this._quat) : undefined;
 	}
 
 	_setFields (made: Made, values: Record<string, unknown>, notify: boolean): void {

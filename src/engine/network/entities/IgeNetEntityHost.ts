@@ -1,6 +1,7 @@
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeObject } from "@/engine/core/IgeObject";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { igeNetQuatFromEuler, igeNetQuatPack, type IgeNetQuat } from "@/engine/network/entities/igeNetQuat";
 import type { IgeNetEntityClass, IgeNetEntityDescription } from "@/engine/network/entities/igeNetEntity";
 import { igeNetSetLatestEntityHost } from "@/engine/network/entities/igeNetEntityHostRef";
 import type { IgeNetObject, IgeNetReplicator, IgeNetViewer } from "@/engine/network/replication/IgeNetReplicator";
@@ -117,7 +118,10 @@ export class IgeNetEntityHost {
 		out.z = t.z;
 		if (net.rotation !== "none") {
 			const r = entity._rotate;
-			if (net.rotation === "xyz") {
+			if (net.rotation === "quaternion") {
+				const q = entity._quaternion ?? igeNetQuatFromEuler(r.x, r.y, r.z, scratchQuat);
+				out.q = igeNetQuatPack(q);
+			} else if (net.rotation === "xyz") {
 				out.rx = r.x;
 				out.ry = r.y;
 				out.rz = r.z;
@@ -173,6 +177,8 @@ export class IgeNetEntityHost {
 		}
 	}
 }
+
+const scratchQuat: IgeNetQuat = { x: 0, y: 0, z: 0, w: 1 };
 
 /** The id of an entity's scene: its first IgeScene2d ancestor, or the root of its tree. */
 function sceneIdOf (entity: IgeEntity): string {
