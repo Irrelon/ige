@@ -29,7 +29,7 @@ The page also shows a status line, frame rate and entity count.
 
 ## Running it
 
-Build the examples with `npm run build-examples` (or `npm run build-examples-watch` while editing), serve the repository folder with any static server and open this example's `index.html` in a browser that supports WebGL 2. Textures and models load relative to `src/assets`, so serve from the repo root.
+Build the examples with `npm run build-examples` (or `npm run build-examples-watch` while editing; prefix with `NODE_OPTIONS=--max-old-space-size=8192` if webpack runs out of memory), then `npm run copy-static` to copy the HTML and `src/assets` into `dist/esm`. Serve `dist/esm` with a static server that sends `Cache-Control: no-store` (otherwise the browser can run stale split bundles) and open `examples/webGlRenderer/index.html` in a browser with WebGL 2. Textures and models load from `dist/esm/assets`.
 
 ## Files
 
