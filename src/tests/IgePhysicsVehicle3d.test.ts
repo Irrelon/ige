@@ -3,18 +3,20 @@
  */
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
+import type { IgePhysicsImpact } from "@/engine/physics/IgePhysics3dTypes";
 import type {
 	IgePhysicsVehicle3dApi,
+	IgePhysicsVehicleLanding,
 	IgePhysicsVehicleOptions,
 	IgePhysicsVehicleState
 } from "@/engine/physics/IgePhysicsVehicle3dApi";
-import { addFloor, createTestPhysics, run, stubWebGlEngine } from "./support/physics3dTestWorld";
+import { addFloor, createTestPhysics, physicsTestBackends, run, stubWebGlEngine } from "./support/physics3dTestWorld";
 
 /*
  * Vehicles driven headlessly through the engine's vehicle API
- * (IgePhysicsVehicle3dApi), so the same tests can run against another
- * physics backend: only createTestPhysics() knows which one it is.
- * One IGE unit is a centimetre here (unitsPerMetre 100).
+ * (IgePhysicsVehicle3dApi), once per physics backend (see
+ * physicsTestBackends()). One IGE unit is a centimetre here (unitsPerMetre
+ * 100).
  */
 
 const U = 100;
@@ -33,11 +35,11 @@ function heading (vehicle: IgePhysicsVehicle3dApi): number {
 	return (Math.atan2(f.x, f.z) * 180) / Math.PI;
 }
 
-describe("IgePhysics3d vehicles", () => {
+describe.each(physicsTestBackends())("IgePhysics3d vehicles on $name", (backend) => {
 	let physics: IgePhysics3d;
 
 	beforeEach(async () => {
-		physics = await createTestPhysics();
+		physics = await createTestPhysics({}, backend);
 		addFloor(physics, 200000);
 	});
 
@@ -214,10 +216,10 @@ describe("IgePhysics3d vehicles", () => {
 		const json = JSON.parse(JSON.stringify(state)) as IgePhysicsVehicleState;
 		expect(json).toEqual(state);
 		expect(state.wheelSpin).toHaveLength(4);
-		expect(state.input).toEqual({ forward: 1, right: 0.3, brake: 0, handbrake: 0 });
+		expect(state.input).toEqual({ forward: 1, right: 0.3, brake: 0, handbrake: 0, pitch: 0, roll: 0 });
 
 		// The same car in another world, put in that state, matches it...
-		const other = await createTestPhysics();
+		const other = await createTestPhysics({}, backend);
 		addFloor(other, 200000);
 		const copyEntity = new IgeEntity();
 		const copy = other.addVehicle(copyEntity);
@@ -401,5 +403,215 @@ describe("IgePhysics3d vehicles", () => {
 		vehicle.enabled(true);
 		run(physics, 2, () => vehicle.drive({ forward: 1 }));
 		expect(vehicle.speedKmh()).toBeGreaterThan(20);
+	});
+
+	/** A static wall (IGE units, centre and half sizes). */
+	function addWall (x: number, y: number, z: number, hx: number, hy: number, hz: number) {
+		const entity = new IgeEntity().translateTo(x, y, z);
+		physics.addBody(entity, { type: "static", shape: { type: "box", halfExtents: { x: hx, y: hy, z: hz } } });
+		return entity;
+	}
+
+	/** A rotation of `degrees` about an axis. */
+	function turn (axis: { x: number; y: number; z: number }, degrees: number) {
+		const s = Math.sin((degrees * Math.PI) / 360);
+		return { x: axis.x * s, y: axis.y * s, z: axis.z * s, w: Math.cos((degrees * Math.PI) / 360) };
+	}
+
+	it("reports impacts with what it hit, and none while just driving", () => {
+		const { vehicle } = addVehicle({ impacts: true }, 0, -6000);
+		const wall = addWall(0, 150, 1500, 1000, 150, 50);
+		const impacts: IgePhysicsImpact[] = [];
+		vehicle.on("impact", (impact: IgePhysicsImpact) => { impacts.push(impact); });
+
+		// Pulling away, braking hard, turning and a handbrake slide on open ground
+		run(physics, 1);
+		run(physics, 3, () => vehicle.drive({ forward: 1 }));
+		run(physics, 1, () => vehicle.drive({ brake: 1 }));
+		run(physics, 1.5, () => vehicle.drive({ forward: 1, right: 1 }));
+		run(physics, 1, () => vehicle.drive({ right: -1, handbrake: 1 }));
+		expect(impacts).toEqual([]);
+
+		// Into the wall at about 40 km/h
+		vehicle.setState({ position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0, w: 1 }, velocity: { x: 0, y: 0, z: 11 * U }, angularVelocity: { x: 0, y: 0, z: 0 } });
+		run(physics, 2, () => vehicle.drive({ forward: 0.3 }));
+		expect(impacts.length).toBeGreaterThanOrEqual(1);
+		const hit = impacts.reduce((a, b) => (b.speed > a.speed ? b : a));
+		expect(hit.speed).toBeGreaterThan(5 * U);
+		expect(hit.impulse).toBeCloseTo(hit.speed * 1300, -2);
+		expect(hit.others.map((b) => b.entity)).toContain(wall);
+	});
+
+	it("knocks people over, who report the vehicle that hit them", () => {
+		const { entity, vehicle } = addVehicle({}, 0, -3000);
+		const person = new IgeEntity().translateTo(0, 0, 0);
+		const body = physics.addBody(person, {
+			shape: { type: "capsule", radius: 30, halfHeight: 55 }, offset: { x: 0, y: 85, z: 0 }, density: 1000, impacts: 300
+		});
+		const hits: IgePhysicsImpact[] = [];
+		body.on("impact", (impact: IgePhysicsImpact) => { hits.push(impact); });
+		run(physics, 1);
+		speedUp(vehicle, 30);
+		run(physics, 4, () => vehicle.drive({ forward: 0.5 }));
+
+		const byCar = hits.filter((hit) => hit.others.some((other) => other.entity === entity));
+		expect(byCar.length).toBeGreaterThanOrEqual(1);
+		expect(physics.vehicleOf(byCar[0].others.find((other) => other.entity === entity)!.entity)).toBe(vehicle);
+		expect(Math.hypot(person._translate.x, person._translate.z)).toBeGreaterThan(200);
+	});
+
+	it("keeps its wheels out of a wall it slides into side-on", () => {
+		const { vehicle } = addVehicle({}, 0, 4000);
+		addWall(-250, 100, 4000, 50, 100, 600); // its right side, the wall's face at x = -200
+		run(physics, 1);
+		vehicle.setState({ ...vehicle.getState(), velocity: { x: -6 * U, y: 0, z: 0 } });
+		let deepest = Infinity;
+		run(physics, 1.5, () => {
+			const state = vehicle.getState();
+			for (const z of [135, -130]) {
+				// The right wheels' outer faces (x = -0.78 m - half the width)
+				const face = rotate({ x: -78 - 11, y: 30, z }, state.rotation);
+				deepest = Math.min(deepest, state.position.x + face.x);
+			}
+		});
+		expect(deepest).toBeGreaterThan(-200 - 1);
+	});
+
+	it("knows when it's in the air, and reports landing", () => {
+		const { vehicle } = addVehicle({}, 0, 8000);
+		const landings: IgePhysicsVehicleLanding[] = [];
+		vehicle.on("landed", (landing: IgePhysicsVehicleLanding) => { landings.push(landing); });
+		run(physics, 1);
+		expect(vehicle.airborne()).toBe(false);
+		expect(landings).toEqual([]);
+
+		// Off a 3 m drop at 10 m/s
+		vehicle.setState({ position: { x: 0, y: 300, z: 8000 }, rotation: { x: 0, y: 0, z: 0, w: 1 }, velocity: { x: 0, y: 0, z: 10 * U }, angularVelocity: { x: 0, y: 0, z: 0 } });
+		run(physics, 0.2);
+		expect(vehicle.airborne()).toBe(true);
+		expect(vehicle.grounded()).toBe(false);
+		run(physics, 1.5);
+		expect(vehicle.airborne()).toBe(false);
+		expect(landings.length).toBe(1);
+		expect(landings[0].onWheels).toBe(true);
+		expect(landings[0].speed).toBeGreaterThan(6 * U); // about 7.3 m/s after 2.4 m of fall
+		expect(landings[0].speed).toBeLessThan(8.5 * U);
+		expect(landings[0].velocity.z).toBeGreaterThan(8 * U);
+		expect(landings[0].airTime).toBeGreaterThan(0.6);
+		expect(landings[0].tilt).toBeLessThan(15);
+
+		// Dropped on its roof
+		vehicle.setState({ position: { x: 0, y: 400, z: 12000 }, rotation: turn({ x: 0, y: 0, z: 1 }, 180), velocity: { x: 0, y: 0, z: 0 }, angularVelocity: { x: 0, y: 0, z: 0 } });
+		run(physics, 2);
+		expect(landings.length).toBe(2);
+		expect(landings[1].onWheels).toBe(false);
+		expect(landings[1].tilt).toBeGreaterThan(150);
+		expect(vehicle.airborne()).toBe(false);
+		expect(vehicle.grounded()).toBe(false);
+	});
+
+	it("pitches and rolls in the air with air control", () => {
+		const spins = (input: { pitch?: number; roll?: number }, options: IgePhysicsVehicleOptions = {}) => {
+			const { vehicle } = addVehicle(options, 0, -20000);
+			vehicle.setState({ position: { x: 0, y: 5000, z: -20000 }, rotation: { x: 0, y: 0, z: 0, w: 1 }, velocity: { x: 0, y: 0, z: 0 }, angularVelocity: { x: 0, y: 0, z: 0 } });
+			run(physics, 0.1);
+			run(physics, 0.6, () => vehicle.drive(input));
+			const state = vehicle.getState();
+			vehicle.destroy();
+			return { nose: rotate({ x: 0, y: 0, z: 1 }, state.rotation), left: rotate({ x: 1, y: 0, z: 0 }, state.rotation), spin: Math.hypot(state.angularVelocity.x, state.angularVelocity.y, state.angularVelocity.z) };
+		};
+		const still = spins({});
+		expect(still.nose.y).toBeCloseTo(0, 2);
+		expect(still.spin).toBeLessThan(0.01);
+
+		const noseDown = spins({ pitch: 1 });
+		expect(noseDown.nose.y).toBeLessThan(-0.3); // 20 to 60 degrees down
+		expect(noseDown.nose.y).toBeGreaterThan(-0.9);
+		expect(noseDown.spin).toBeLessThanOrEqual((150 * Math.PI) / 180 + 0.01);
+		expect(spins({ pitch: -1 }).nose.y).toBeGreaterThan(0.3);
+		expect(spins({ roll: 1 }).left.y).toBeGreaterThan(0.3); // right side down: the left side up
+		expect(spins({ pitch: 1 }, { airControl: 0 }).nose.y).toBeCloseTo(0, 2);
+
+		// On the ground, pitch and roll do nothing to a car
+		const { vehicle } = addVehicle({}, 3000, -20000);
+		run(physics, 1);
+		run(physics, 1, () => vehicle.drive({ pitch: 1, roll: 1 }));
+		expect(vehicle.tilt()).toBeLessThan(2);
+	});
+
+	it("rocks itself back onto its wheels from its roof, with a second or two of steering", () => {
+		const { vehicle } = addVehicle({}, 0, 16000);
+		vehicle.setState({ position: { x: 0, y: 200, z: 16000 }, rotation: turn({ x: 0, y: 0, z: 1 }, 180), velocity: { x: 0, y: 0, z: 0 }, angularVelocity: { x: 0, y: 0, z: 0 } });
+		run(physics, 3);
+		expect(vehicle.upsideDown()).toBe(true);
+		run(physics, 0.5, () => vehicle.drive({ right: 1 }));
+		expect(vehicle.upsideDown()).toBe(true); // not at once
+		let time = 0.5;
+		while (vehicle.tilt() > 60 && time < 4) {
+			run(physics, 1 / 60, () => vehicle.drive({ right: 1 }));
+			time += 1 / 60;
+		}
+		expect(time).toBeLessThan(3);
+		run(physics, 2, () => vehicle.drive({}));
+		expect(vehicle.tilt()).toBeLessThan(10);
+		expect(vehicle.grounded()).toBe(true);
+
+		// Not while moving, nor with self-righting off
+		const { vehicle: other } = addVehicle({ selfRighting: 0 }, 3000, 16000);
+		other.setState({ position: { x: 3000, y: 200, z: 16000 }, rotation: turn({ x: 0, y: 0, z: 1 }, 180), velocity: { x: 0, y: 0, z: 0 }, angularVelocity: { x: 0, y: 0, z: 0 } });
+		run(physics, 6, () => other.drive({ right: 1, roll: 1 }));
+		expect(other.upsideDown()).toBe(true);
+	});
+
+	it("keeps a motorcycle upright until let go, when it falls over; upright again once stood up", () => {
+		const { vehicle } = addVehicle({ type: "motorcycle" }, 0, 20000);
+		run(physics, 3);
+		expect(vehicle.upright()).toBe(true);
+		expect(vehicle.tilt()).toBeLessThan(10);
+
+		vehicle.upright(false);
+		expect(vehicle.getState().upright).toBe(false);
+		run(physics, 4);
+		expect(vehicle.tilt()).toBeGreaterThan(60);
+
+		// Stood back up and ridden away
+		vehicle.setState({ position: { x: 0, y: 20, z: 20000 }, rotation: { x: 0, y: 0, z: 0, w: 1 }, velocity: { x: 0, y: 0, z: 0 }, angularVelocity: { x: 0, y: 0, z: 0 }, upright: true });
+		expect(vehicle.upright()).toBe(true);
+		run(physics, 3);
+		expect(vehicle.tilt()).toBeLessThan(10);
+		run(physics, 2, () => vehicle.drive({ forward: 1 }));
+		expect(vehicle.speedKmh()).toBeGreaterThan(20);
+		expect(vehicle.tilt()).toBeLessThan(25);
+	});
+
+	it("pulls wheelies leaning back on the throttle, and stoppies leaning forward on the brake", () => {
+		const ride = (z: number, kmh: number, input: { forward?: number; brake?: number; pitch?: number }, seconds: number) => {
+			const { vehicle } = addVehicle({ type: "motorcycle" }, 0, z);
+			run(physics, 1);
+			if (kmh) speedUp(vehicle, kmh);
+			let frontUp = 0, rearUp = 0, most = 0;
+			run(physics, seconds, () => {
+				vehicle.drive(input);
+				if (!vehicle.wheel(0).contact && vehicle.wheel(1).contact) frontUp += 1 / 60;
+				if (!vehicle.wheel(1).contact && vehicle.wheel(0).contact) rearUp += 1 / 60;
+				most = Math.max(most, vehicle.tilt());
+			});
+			expect(vehicle.upsideDown()).toBe(false);
+			return { frontUp, rearUp, most };
+		};
+		const plain = ride(-30000, 15, { forward: 1 }, 1.5);
+		const wheelie = ride(-34000, 15, { forward: 1, pitch: -1 }, 1.5);
+		expect(wheelie.frontUp).toBeGreaterThan(0.3);
+		expect(wheelie.frontUp).toBeGreaterThan(plain.frontUp + 0.2);
+		expect(wheelie.most).toBeGreaterThan(15);
+
+		const braking = ride(-38000, 50, { brake: 1 }, 1);
+		const stoppie = ride(-42000, 50, { brake: 1, pitch: 1 }, 1);
+		expect(stoppie.rearUp).toBeGreaterThan(0.2);
+		expect(stoppie.rearUp).toBeGreaterThan(braking.rearUp + 0.1);
+
+		// Leaning back while stopped doesn't tip it over
+		const standing = ride(-46000, 0, { pitch: -1 }, 2);
+		expect(standing.most).toBeLessThan(40);
 	});
 });

@@ -1,5 +1,7 @@
 import type { IgeEntity } from "@/engine/core/IgeEntity";
-import type { IgePhysicsShape } from "@/engine/physics/IgePhysics3d";
+import type { IgePhysicsImpact, IgePhysicsQuat, IgePhysicsShape, IgePhysicsVec3 } from "@/engine/physics/IgePhysics3dTypes";
+
+export type { IgePhysicsQuat, IgePhysicsVec3 };
 
 /*
  * The public vehicle API, in engine terms only: IGE units, plain objects and
@@ -14,19 +16,6 @@ import type { IgePhysicsShape } from "@/engine/physics/IgePhysics3d";
  * Axes: a vehicle faces +Z of its entity with +Y up, so its left is +X and
  * its right is -X (glTF's convention, which most vehicle models use).
  */
-
-export interface IgePhysicsVec3 {
-	x: number;
-	y: number;
-	z: number;
-}
-
-export interface IgePhysicsQuat {
-	x: number;
-	y: number;
-	z: number;
-	w: number;
-}
 
 /** One wheel. Positions are relative to the vehicle entity's origin. */
 export interface IgePhysicsWheelOptions {
@@ -167,6 +156,33 @@ export interface IgePhysicsVehicleOptions {
 	 * last state's velocity when no new state arrives (default 0.25).
 	 */
 	extrapolate?: number;
+	/**
+	 * Emit "impact" when the vehicle's velocity changes by more than this
+	 * (IGE units per second) in one step, i.e. it hit something or landed
+	 * hard: damage, crash sounds, knocking people down. true uses 1 m/s
+	 * (100 at 100 units per metre). Default: no impact events.
+	 */
+	impacts?: boolean | number;
+	/**
+	 * Air control: how hard `pitch` and `roll` turn the vehicle while it's
+	 * in the air, in degrees per second squared, up to a spin of 150
+	 * degrees a second, so jumps can be landed (default 300; 0: none).
+	 */
+	airControl?: number;
+	/**
+	 * Cars: how hard steering (or `roll`) rocks a car that's on its roof or
+	 * side and nearly stopped back onto its wheels, in degrees per second
+	 * squared (default 600, which takes a second or two of holding; 0:
+	 * never). Motorcycles: none.
+	 */
+	selfRighting?: number;
+	/**
+	 * Motorcycles: how hard `pitch` shifts the rider's weight while the
+	 * wheels are on the ground, in degrees per second squared: back with
+	 * the throttle for a wheelie, forward with the brake for a stoppie
+	 * (default 400; 0: none). Cars: none.
+	 */
+	weightShift?: number;
 }
 
 /** The driver's controls. */
@@ -179,6 +195,29 @@ export interface IgePhysicsVehicleInput {
 	brake: number;
 	/** Handbrake 0..1. */
 	handbrake: number;
+	/**
+	 * Lean forward (1) or back (-1). In the air it pitches the vehicle,
+	 * nose down for 1 (see airControl). A motorcycle on the ground shifts
+	 * its rider's weight: back with the throttle for a wheelie, forward
+	 * with the brake for a stoppie (see weightShift).
+	 */
+	pitch?: number;
+	/** Roll -1..1, 1 to the right (right side down). In the air it rolls the vehicle; a car on its roof or side rolls back onto its wheels (as steering does). */
+	roll?: number;
+}
+
+/** What a "landed" event reports: the vehicle came down after being in the air. */
+export interface IgePhysicsVehicleLanding {
+	/** Seconds it was in the air. */
+	airTime: number;
+	/** How fast it was coming down when it touched (IGE units per second, positive downwards). */
+	speed: number;
+	/** Its velocity just before it touched (IGE units per second). */
+	velocity: IgePhysicsVec3;
+	/** Degrees from upright when it touched: 0 level on its wheels, 90 on its side, 180 on its roof. */
+	tilt: number;
+	/** Whether it came down on its wheels (false: on its body). */
+	onWheels: boolean;
 }
 
 /** What one wheel is doing, after the latest step. */
@@ -231,6 +270,8 @@ export interface IgePhysicsVehicleState {
 	input?: IgePhysicsVehicleInput;
 	/** Each wheel's spin, radians per second, so a moving car doesn't restart with locked wheels. */
 	wheelSpin?: number[];
+	/** Whether it keeps its balance (see upright()); left out, it isn't changed. */
+	upright?: boolean;
 }
 
 /**
@@ -271,6 +312,11 @@ export interface IgePhysicsVehicle3dApi {
 	tilt (): number;
 	/** Whether it's more than 90 degrees from upright. */
 	upsideDown (): boolean;
+	/**
+	 * Whether it's in the air: no wheel on the ground and its body touching
+	 * nothing. (A car on its roof isn't airborne, nor grounded.)
+	 */
+	airborne (): boolean;
 
 	/** The vehicle's state after the latest step, to send or keep. Pass out to fill an existing object. */
 	getState (out?: IgePhysicsVehicleState): IgePhysicsVehicleState;
@@ -291,6 +337,30 @@ export interface IgePhysicsVehicle3dApi {
 	/** Gets / sets whether it takes part in the simulation (e.g. off while parked far away). */
 	enabled (): boolean;
 	enabled (val: boolean): this;
+	/**
+	 * Gets / sets whether it keeps its balance (default true). A ridden
+	 * motorcycle stays upright, even stopped; upright(false) lets go, so
+	 * an empty bike falls over and tumbles like any body (and a car loses
+	 * its maxTilt limit). upright(true) balances it again once it's back on
+	 * its wheels (put it there with setState()).
+	 */
+	upright (): boolean;
+	upright (val: boolean): this;
 	/** Remove the vehicle from the world and free it. */
 	destroy (): void;
+
+	/**
+	 * "impact" (with `impacts` on): it hit something, or something hit it.
+	 * `speed` is how much its velocity changed in the step (IGE units per
+	 * second), `others` the bodies touching its chassis after the step
+	 * (walls, other vehicles' chassis, people's bodies: `other.entity`).
+	 */
+	on (eventName: "impact", listener: (impact: IgePhysicsImpact) => void): this;
+	/**
+	 * "landed": it came down after at least a tenth of a second in the
+	 * air, on its wheels or not, with how fast it was falling and how far
+	 * it was tilted. Whether that throws the rider off is the game's call.
+	 */
+	on (eventName: "landed", listener: (landing: IgePhysicsVehicleLanding) => void): this;
+	off (eventName: "impact" | "landed", listener?: (...args: any[]) => void): this;
 }

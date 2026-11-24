@@ -6,9 +6,8 @@ between physics steps, and it poses its wheels' entities (steering, spin and sus
 as well, so a game server can simulate vehicles.
 
 The API (`IgePhysicsVehicle3dApi` in `src/engine/physics/IgePhysicsVehicle3dApi.ts`) is in engine terms only: IGE
-units, plain numbers and objects, and entities. It runs on Jolt's vehicle constraint today, but another physics backend
-could implement the same calls (see "Backends" at the end). Read [physics-3d.md](physics-3d.md) first for the world,
-units and threads.
+units, plain numbers and objects, and entities. It runs on the world's physics backend (Jolt's vehicle constraint
+today; see "Backends" at the end). Read [physics-3d.md](physics-3d.md) first for the world, units and threads.
 
 ## A car
 
@@ -44,9 +43,12 @@ spring rate is the same number whatever `unitsPerMetre` is.
 | `right` | -1..1 | Steering, positive to the right. |
 | `brake` | 0..1 | Brakes. Held while stopped, it reverses (`reverseOnBrake: false` to stop that). |
 | `handbrake` | 0..1 | Locks the rear wheels. |
+| `pitch` | -1..1 | Lean forward (1, nose down) or back (-1). See "In the air, on the roof and on one wheel". |
+| `roll` | -1..1 | Roll right (1, right side down) or left. |
 
 So a gamepad can drive with the triggers alone: right trigger `forward`, left trigger `brake` (it reverses once
-stopped), left stick `right`, A `handbrake`. The example does this, with WASD and the arrow keys too.
+stopped), left stick `right`, right stick `pitch` and `roll`, A `handbrake`. The example does this, with WASD and the
+arrow keys too, and I K J L for pitch and roll.
 
 Input is shaped to feel like a driving game rather than a simulator:
 
@@ -58,6 +60,48 @@ Input is shaped to feel like a driving game rather than a simulator:
 - **The handbrake** locks the rear wheels, and they keep only `handbrakeGrip` (40%) of their sideways grip, as locked
   tyres do, so the tail swings round.
 - **Gearboxes** are automatic. With `gearbox: { mode: "manual" }` the vehicle stays in the gear you `shift()` it to.
+
+## In the air, on the roof and on one wheel
+
+`pitch` and `roll` turn the vehicle in the ways a driving game expects, each with a strength you can tune:
+
+- **In the air** they pitch and roll it (air control), so a jump can be landed on the wheels. The vehicle spins
+  towards a rate set by the stick (up to 150 degrees a second), at `airControl` (300 degrees per second squared).
+- **A car on its roof or side** that has nearly stopped (under 3 m/s) rocks back onto its wheels while steering (or
+  `roll`) is held. It takes a second or two (`selfRighting`, 1200 degrees per second squared).
+- **A motorcycle on the ground** shifts its rider's weight. Leaning back on the throttle lifts the front into a
+  wheelie, held at up to 35 degrees for full throttle; leaning forward on the brakes lifts the back into a stoppie,
+  up to 25 degrees. Without throttle or brake, leaning only shifts the bike a little. `weightShift` (6000 degrees per
+  second squared) caps how hard the rider can pitch the bike against its springs.
+- On the ground, a car ignores them.
+
+A ridden motorcycle stays upright, even stopped. `bike.upright(false)` lets go: its balance stops, so it falls over
+and tumbles like any body (a car loses its `maxTilt` limit). Stand it back up with `setState()` and call
+`upright(true)` when someone gets back on. Throwing the rider off (a ragdoll) is the game's job:
+
+```typescript
+bike.on("impact", ({ speed }) => { if (speed > 800) throwRiderOff(); });            // over 8 m/s
+bike.on("landed", ({ speed, tilt, onWheels }) => {
+	if (!onWheels || tilt > 45 || speed > 900) throwRiderOff();                    // a bad landing
+});
+
+function throwRiderOff () {
+	bike.upright(false);
+	bike.drive({}); // nobody riding it
+	physics.createRagdoll(rider, { velocity: bike.velocity() });
+}
+```
+
+- `airborne()`: no wheel on the ground and the body touching nothing. A car on its roof is neither airborne nor
+  grounded.
+- `"landed"` fires when it comes down after at least a quarter of a second in the air, on its wheels or not:
+  `{ airTime, speed, velocity, tilt, onWheels }`, with `speed` how fast it was falling (IGE units per second) and
+  `tilt` how far it was from upright (degrees).
+- `"impact"`, with `impacts: true` (or a threshold): `{ speed, impulse, others }`, as for bodies. `speed` is how much
+  its velocity changed in a step, `impulse` that times its mass, `others` the bodies touching its chassis: a wall, a
+  person's body (`other.entity`), another vehicle's chassis (`physics.vehicleOf(other.entity)`). Pulling away,
+  braking hard and sliding stay under the default threshold (1 m/s). Someone it runs into reports it too, if their
+  body has `impacts`.
 
 ## Wheels and their models
 
@@ -118,6 +162,10 @@ anti-roll bar (`antiRoll`, 10,000 N/m; 0 for none).
 | `wheelCast` | `"cylinder"` | How wheels find the ground: `"cylinder"` rolls smoothly over kerbs and edges, `"ray"` is cheaper |
 | `layer` | `"moving"` | Collision layer; wheels touch what it collides with |
 | `extrapolate` | 0.25 s | Kinematic mode, see below |
+| `impacts` | off | `true` (1 m/s) or a velocity change in IGE units per second: "impact" events |
+| `airControl` | 300 | Degrees per second squared; 0 for none |
+| `selfRighting` | 1200 (cars) | Degrees per second squared; 0 for never |
+| `weightShift` | 6000 (motorcycles) | Degrees per second squared; 0 for none |
 
 Grip is measured against ground of the engine's default friction (0.5). Ground with less friction is slippery for
 every vehicle (ice at 0.05), and ground with more is grippier.
@@ -174,6 +222,8 @@ bus.shift(1);
 | `rpm()`, `gear()` | Engine revs; gear 1 and up forward, 0 neutral, -1 and down reverse |
 | `grounded()` | Any wheel on the ground |
 | `tilt()`, `upsideDown()` | Degrees from upright; over 90 |
+| `airborne()` | No wheel down and the body touching nothing |
+| `upright()` | Whether it keeps its balance |
 | `wheel(i)` | `contact`, `compression` (0 extended to 1 compressed), `longitudinalSlip`, `lateralSlip`, `steer`, `spin`, `point`, `normal`, `entity` (what it stands on) |
 
 Slip is how fast the tyre slides over the ground, in IGE units per second: `longitudinalSlip` is positive for
@@ -197,10 +247,10 @@ entity, and `physics.vehicleOf(entity)` finds its vehicle.
 
 `getState()` returns the vehicle as plain numbers, safe to send or keep as JSON: `position` and `rotation` (the
 entity's), `velocity`, `angularVelocity`, `rpm`, `gear`, `steer` (where the steering is now), `input` (the held
-controls) and `wheelSpin`. `setState(state)` puts it back: the body, the drivetrain, the controls and the wheels'
-spin, so a car at 100 km/h carries on rather than restarting with locked wheels. In the tests, a copy put in another
-car's state stays within 25 cm of it half a second later. Vehicles aren't deterministic, though, so keep sending
-states rather than inputs alone.
+controls, with `pitch` and `roll`), `wheelSpin` and `upright`. `setState(state)` puts it back: the body, the
+drivetrain, the controls and the wheels' spin, so a car at 100 km/h carries on rather than restarting with locked
+wheels. In the tests, a copy put in another car's state stays within 25 cm of it half a second later. Vehicles aren't
+deterministic, though, so keep sending states rather than inputs alone.
 
 In **kinematic mode** the simulation stops driving the vehicle, and it goes where the states given to `setState()`
 put it instead. Between states it carries on at the last one's velocity for `extrapolate` seconds (0.25), then holds.
@@ -241,27 +291,35 @@ Apple silicon Mac. Each wheel casts a cylinder (or a ray) down to the ground eve
 
 ## Limits
 
-- Wheels are casts, not bodies. A wheel side-on to a wall can poke into it; the chassis shape is what hits things.
-- Vehicles don't emit `"impact"` events yet. Watch `velocity()` for sudden changes in the meantime.
+- Wheels are casts, not bodies; the chassis shape is what hits things. The default car's body is as wide as its wheels'
+  outer faces, so they don't poke into a wall side-on. Give your own chassis the same width. A wall lower than the
+  body's underside (40 cm on the default car) can still take a wheel side-on, and a motorcycle's front wheel noses
+  into a wall before its chassis (which sits above the wheels) reaches it.
 - Tyre grip is the same all round a tyre's limit (no friction circle) except under the handbrake, so cars brake and
   turn at once better than real ones.
-- `maxTilt` keeps a motorcycle from falling over at all.
+- `maxTilt` keeps a ridden motorcycle from falling over at all (until `upright(false)`).
+- Air control, self-righting and weight shift turn the vehicle directly (as an angular acceleration), not through a
+  modelled rider or centre of mass.
 
 ## Backends
 
 The public API is `IgePhysicsVehicle3dApi` and its option, input, readout and state types (in
 `IgePhysicsVehicle3dApi.ts`, with no physics library in them). `IgePhysicsVehicle3d` implements it for every backend:
 it fills in the options (`resolveVehicleSpec()`), shapes the input, places the entity and poses the wheels between
-steps, works out the readouts, and handles state and kinematic targets. Underneath, a backend provides an
-`IgeVehicleBackend` (`IgePhysicsVehicle3dBackend.ts`), built from the resolved `IgeVehicleSpec` in IGE units:
-`setInput()`, `preStep()`, `readPose()`, `readVelocity()`, `readWheel()`, `rpm()`, `gear()`, `shift()`, `setState()`,
-`setKinematic()`, `moveKinematic()`, `setEnabled()` and `destroy()`.
+steps, works out the readouts, air control, self-righting and weight shift, impacts and landings, and handles state
+and kinematic targets. Underneath, the world's backend makes an `IgeVehicleBackend` with
+`IgePhysicsBackend.createVehicle()` (see [physics-3d.md](physics-3d.md), "Backends"), from the resolved spec in metres
+(`IgeVehicleBackendSpec`, `IgePhysicsVehicle3dBackend.ts`): `setInput()`, `preStep()`, `readPose()`,
+`readVelocity()`, `readWheel()` (which reports the ground's body handle), `rpm()`, `gear()`, `shift()`, `setState()`,
+`setKinematic()`, `moveKinematic()`, `setEnabled()`, `addAngularVelocity()`, `setUpright()` and `destroy()`, and its
+chassis as `body`, so raycasts, sensors and impacts find it.
 
 `IgeJoltVehicle3d` is Jolt's: a body (which can switch to kinematic) with Jolt's `VehicleConstraint`, a
 `WheeledVehicleController` or `MotorcycleController`, and a step listener. A second backend needs suspension casts
 with springs and dampers, tyre friction from slip, an engine, gearbox and differentials, a lean controller for
 motorcycles, and a kinematic mode that still pushes bodies, and must report each wheel's suspension length, steering
-and spin angles, spin rate, contact and slip.
+and spin angles, spin rate, contact and slip. `setUpright(false)` turns off the motorcycle's balance and the tilt
+limit (Jolt: the lean controller and the constraint's pitch and roll limit).
 
 Two things in the Jolt backend are worth knowing when tuning:
 
@@ -274,10 +332,12 @@ Two things in the Jolt backend are worth knowing when tuning:
 ## Example and tests
 
 `src/examples/vehicles` is a drivable car and motorcycle on a field with roads, ramps, speed bumps and crates, with a
-chase camera and a readout of speed, revs and gear. Build it with
+chase camera and a readout of speed, revs and gear, crashes and landings. I K J L (or the right stick) pitch and roll
+it, and X drops the motorcycle. Build it with
 `npx webpack --config ./config/webpack.config.cjs --config-name vehicles`, and serve `dist/esm` with the
 cross-origin isolation headers (see [physics-3d.md](physics-3d.md), "Threads") to run Jolt threaded.
 
-`src/tests/IgePhysicsVehicle3d.test.ts` drives vehicles headlessly in jest through the public API only, so the same
-tests can run against another backend: only `createTestPhysics()` in `src/tests/support/physics3dTestWorld.ts` knows
-which one it is. `src/tests/IgeJoltVehicle3d.test.ts` checks that Jolt gets back every byte a vehicle takes.
+`src/tests/IgePhysicsVehicle3d.test.ts` drives vehicles headlessly in jest through the public API only, once for each
+backend in `src/tests/support/physics3dTestWorld.ts`: driving, braking, slip, state, kinematic mode, impacts, wheels
+against walls, landings, air control, self-righting, letting a motorcycle fall, wheelies and stoppies.
+`src/tests/IgeJoltVehicle3d.test.ts` checks that Jolt gets back every byte a vehicle takes.

@@ -8,7 +8,8 @@ import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { IgeGamePadAxis, IgeGamePadButton, IgeGamePadComponent } from "@/engine/components/IgeGamePadComponent";
 import { ige } from "@/engine/instance";
 import { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
-import type { IgePhysicsVehicle3dApi, IgePhysicsWheelOptions } from "@/engine/physics/IgePhysicsVehicle3dApi";
+import type { IgePhysicsImpact } from "@/engine/physics/IgePhysics3dTypes";
+import type { IgePhysicsVehicle3dApi, IgePhysicsVehicleLanding, IgePhysicsWheelOptions } from "@/engine/physics/IgePhysicsVehicle3dApi";
 import { IgeAmbientLight, IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
 import { IgePrimitiveGeometry } from "@/engine/webgl/IgePrimitiveGeometry";
 import { IgeBehaviourType } from "@/enums";
@@ -26,10 +27,14 @@ window.ige = ige;
  * and crates to knock about.
  *
  * - Keyboard: W / up throttle, S / down brake and reverse, A D / left right
- *   steer, space handbrake, C switch vehicle, R put it back on its wheels
+ *   steer, space handbrake, I K lean forward and back (pitch: air control,
+ *   wheelies and stoppies), J L roll, X drop the motorcycle, C switch
+ *   vehicle, R put it back on its wheels (a car on its roof also rocks
+ *   itself back with steering)
  * - Gamepad: right trigger throttle, left trigger brake and reverse, left
- *   stick steer, A handbrake, Y switch, B reset
- * - A chase camera and a readout of speed, revs and gear
+ *   stick steer, right stick pitch and roll, A handbrake, X drop the
+ *   motorcycle, Y switch, B reset
+ * - A chase camera and a readout of speed, revs and gear, crashes and landings
  *
  * One IGE unit is a centimetre (unitsPerMetre 100).
  */
@@ -68,6 +73,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	cameraYaw: number = 0;
 	cameraHeight: number = 230;
 	hud: Record<string, HTMLElement | null> = {};
+	/** The last crash or landing, shown for a moment. */
+	event: { text: string; until: number } = { text: "", until: 0 };
 
 	constructor () {
 		super();
@@ -118,7 +125,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				this.keysPressed = {};
 			});
 
-			for (const id of ["speed", "rpm", "gear", "rpmFill", "vehicleName", "state", "slip", "physicsStatus"]) this.hud[id] = document.getElementById(id);
+			for (const id of ["speed", "rpm", "gear", "rpmFill", "vehicleName", "state", "slip", "event", "physicsStatus"]) this.hud[id] = document.getElementById(id);
 			const status = this.hud.physicsStatus;
 			if (status) {
 				status.textContent = this.physics.threaded()
@@ -266,7 +273,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			steer: w.steer,
 			entity: this.buildWheel(root, 34, 22, Math.sign(w.x))
 		}));
-		const vehicle = this.physics!.addVehicle(root, { wheels });
+		const vehicle = this.physics!.addVehicle(root, { wheels, impacts: true });
+		this.watch("Car", vehicle);
 		return { name: "Car", vehicle, distance: 700, height: 230, maxRpm: 6500 };
 	}
 
@@ -286,8 +294,28 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			{ position: { x: 0, y: 70, z: 75 }, steer: 30, caster: 30, brakeTorque: 500, handbrake: false, entity: this.buildWheel(root, 31, 9, 1) },
 			{ position: { x: 0, y: 70, z: -75 }, brakeTorque: 250, handbrake: 500, entity: this.buildWheel(root, 31, 12, 1) }
 		];
-		const vehicle = this.physics!.addVehicle(root, { type: "motorcycle", wheels });
+		const vehicle = this.physics!.addVehicle(root, { type: "motorcycle", wheels, impacts: true });
+		this.watch("Motorcycle", vehicle);
 		return { name: "Motorcycle", vehicle, distance: 520, height: 190, maxRpm: 10000 };
+	}
+
+	/**
+	 * Show crashes and landings: what a game would use to decide when a
+	 * hard crash or a bad landing throws the rider off.
+	 */
+	watch (name: string, vehicle: IgePhysicsVehicle3dApi) {
+		const show = (text: string) => {
+			if (this.drivables[this.active]?.vehicle === vehicle) this.event = { text, until: performance.now() + 2000 };
+		};
+		vehicle.on("impact", (impact: IgePhysicsImpact) => {
+			if (impact.speed < 300) return; // under 3 m/s: a knock, not a crash
+			const what = impact.others.map((other) => other.entity.id()).join(", ") || "something";
+			show(`${name} crashed at ${(impact.speed / 100).toFixed(1)} m/s into ${what}`);
+		});
+		vehicle.on("landed", (landing: IgePhysicsVehicleLanding) => {
+			const how = !landing.onWheels ? "badly" : landing.tilt > 30 ? "on a tilt" : "cleanly";
+			show(`Landed ${how}: ${(landing.speed / 100).toFixed(1)} m/s down, ${Math.round(landing.tilt)}° tilt, ${landing.airTime.toFixed(1)} s in the air`);
+		});
 	}
 
 	setupInput () {
@@ -318,8 +346,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		let brake = keys.KeyS || keys.ArrowDown ? 1 : 0;
 		let right = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
 		let handbrake = keys.Space ? 1 : 0;
+		// Lean forward (nose down) and back, roll right and left
+		let pitch = (keys.KeyI || keys.Numpad8 ? 1 : 0) - (keys.KeyK || keys.Numpad5 ? 1 : 0);
+		let roll = (keys.KeyL || keys.Numpad6 ? 1 : 0) - (keys.KeyJ || keys.Numpad4 ? 1 : 0);
 		let swap = !!this.keysPressed.KeyC;
 		let reset = !!this.keysPressed.KeyR;
+		let drop = !!this.keysPressed.KeyX;
 
 		const pad = this.gamePad, index = this.padIndex();
 		if (pad && index >= 0) {
@@ -328,16 +360,25 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			const stick = pad.axis(index, IgeGamePadAxis.leftX);
 			if (Math.abs(stick) > Math.abs(right)) right = stick;
 			if (pad.button(index, IgeGamePadButton.a)) handbrake = 1;
+			// Right stick: pushed forward leans forward (the axis is negative forward)
+			const stickPitch = -pad.axis(index, IgeGamePadAxis.rightY), stickRoll = pad.axis(index, IgeGamePadAxis.rightX);
+			if (Math.abs(stickPitch) > Math.abs(pitch)) pitch = stickPitch;
+			if (Math.abs(stickRoll) > Math.abs(roll)) roll = stickRoll;
 			swap = swap || pad.justPressed(index, IgeGamePadButton.y);
 			reset = reset || pad.justPressed(index, IgeGamePadButton.b);
+			drop = drop || pad.justPressed(index, IgeGamePadButton.x);
 		}
 
 		if (swap) this.active = (this.active + 1) % this.drivables.length;
+		const active = this.drivables[this.active].vehicle;
+		// Drop the motorcycle: it stops balancing and falls over (a game would throw the rider off as a ragdoll)
+		if (drop && active.type === "motorcycle") active.upright(!active.upright());
 		this.drivables.forEach((drivable, i) => {
-			if (i === this.active) drivable.vehicle.drive({ forward, right, brake, handbrake });
+			if (!drivable.vehicle.upright()) drivable.vehicle.drive({}); // nobody riding it
+			else if (i === this.active) drivable.vehicle.drive({ forward, right, brake, handbrake, pitch, roll });
 			else drivable.vehicle.drive({ handbrake: 1 });
 		});
-		if (reset) this.putBackOnWheels(this.drivables[this.active].vehicle);
+		if (reset) this.putBackOnWheels(active);
 	}
 
 	/** Upright, a little above where it is (and never under the field), facing the way it was. */
@@ -349,7 +390,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			position: { x: state.position.x, y: Math.max(state.position.y, 0) + 60, z: state.position.z },
 			rotation: { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) },
 			velocity: { x: 0, y: 0, z: 0 },
-			angularVelocity: { x: 0, y: 0, z: 0 }
+			angularVelocity: { x: 0, y: 0, z: 0 },
+			upright: true
 		});
 	}
 
@@ -401,7 +443,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		set("gear", gear < 0 ? "R" : gear === 0 ? "N" : gear.toString());
 		const fill = this.hud.rpmFill;
 		if (fill) fill.style.width = `${Math.min(100, (v.rpm() / drivable.maxRpm) * 100).toFixed(1)}%`;
-		set("state", v.upsideDown() ? "upside down (R to reset)" : v.grounded() ? "grounded" : "airborne");
+		const state = !v.upright() ? "dropped (X or R to pick it up)"
+			: v.airborne() ? "airborne (I K J L to steer it)"
+				: v.upsideDown() ? (v.type === "car" ? "upside down (steer to rock it back, or R)" : "upside down (R to reset)")
+					: v.grounded() ? "grounded" : "on its side";
+		set("state", state);
+		set("event", performance.now() < this.event.until ? this.event.text : "");
 		let skid = 0;
 		for (let i = 0; i < v.wheelCount(); i++) {
 			const wheel = v.wheel(i);

@@ -2,8 +2,9 @@
  * @jest-environment <rootDir>/src/tests/support/jestNativeImportEnvironment.js
  */
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeJoltBackend } from "@/engine/physics/IgeJoltBackend";
 import type { IgePhysicsVehicle3dApi } from "@/engine/physics/IgePhysicsVehicle3dApi";
-import { addFloor, createTestPhysics, run, stubWebGlEngine } from "./support/physics3dTestWorld";
+import { addFloor, createTestPhysics, physicsTestBackends, run, stubWebGlEngine } from "./support/physics3dTestWorld";
 
 /*
  * Jolt only: vehicles give back every byte of WebAssembly memory they take.
@@ -13,10 +14,13 @@ import { addFloor, createTestPhysics, run, stubWebGlEngine } from "./support/phy
 
 beforeAll(() => stubWebGlEngine());
 
-it("frees every Jolt object a vehicle makes", async () => {
-	const physics = await createTestPhysics();
+const joltBackend = physicsTestBackends().find((backend) => backend.name === "jolt");
+const itJolt = joltBackend ? it : it.skip;
+
+itJolt("frees every Jolt object a vehicle makes", async () => {
+	const physics = await createTestPhysics({}, joltBackend);
 	addFloor(physics);
-	const jolt = physics._jolt;
+	const jolt = (physics._backend as IgeJoltBackend)._jolt;
 	const used = () => jolt.JoltInterface.prototype.sGetTotalMemory() - jolt.JoltInterface.prototype.sGetFreeMemory();
 
 	const cycle = (count: number) => {

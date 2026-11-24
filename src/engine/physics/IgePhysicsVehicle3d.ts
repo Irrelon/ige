@@ -1,4 +1,5 @@
 import type { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { invertMat4 } from "@/engine/webgl/IgeRaycast";
 import { matrixToQuaternion } from "@/engine/webgl/IgeModelParts";
 import type {
@@ -28,6 +29,26 @@ const SNAP_DISTANCE = 5;
 const TRACTION_SLIP = 1.5;
 /** ...and has closed the throttle right down by this much more. */
 const TRACTION_RANGE = 3;
+/** Fastest air control spins a vehicle (radians per second). */
+const MAX_AIR_SPIN = (150 * Math.PI) / 180;
+/** A car rights itself only when tilted more than this (degrees)... */
+const SELF_RIGHT_TILT = 60;
+/** ...and slower than this (metres per second). */
+const SELF_RIGHT_SPEED = 3;
+/**
+ * A motorcycle rider leaning right back on full throttle holds a wheelie at
+ * this nose-up angle, and leaning right forward on the brakes a stoppie at
+ * this nose-down one (radians); without throttle or brake leaning shifts
+ * the bike only a little.
+ */
+const WHEELIE_ANGLE = (35 * Math.PI) / 180;
+const STOPPIE_ANGLE = (25 * Math.PI) / 180;
+const LEAN_ANGLE = (2 * Math.PI) / 180;
+/** How firmly the rider holds that angle: per radian off it, and per radian per second of pitching. */
+const RIDER_STIFFNESS = 200;
+const RIDER_DAMPING = 25;
+/** How fast a motorcycle let go of (upright(false)) starts to topple (radians per second), so it doesn't stay balanced. */
+const TOPPLE_SPIN = 0.4;
 
 interface WheelTrack {
 	readout: IgePhysicsWheelReadout;
@@ -42,7 +63,7 @@ interface WheelTrack {
 function emptySample (): IgeVehicleWheelSample {
 	return {
 		suspensionLength: 0, steerAngle: 0, spinAngle: 0, spin: 0, contact: false,
-		point: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, longitudinalSlip: 0, lateralSlip: 0, entity: null
+		point: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, longitudinalSlip: 0, lateralSlip: 0, ground: null
 	};
 }
 
@@ -78,6 +99,7 @@ function wrapDelta (a: number, b: number): number {
 }
 
 const X_AXIS = { x: 1, y: 0, z: 0 };
+const Z_AXIS = { x: 0, y: 0, z: 1 };
 
 /**
  * A wheeled vehicle or motorcycle (see IgePhysicsVehicle3dApi), made with
@@ -85,16 +107,17 @@ const X_AXIS = { x: 1, y: 0, z: 0 };
  * backend: it shapes the driver's input (steering rate, less lock at
  * speed, braking before reversing), places the entity and wheels between
  * fixed steps, reports what the vehicle is doing and handles network
- * state and kinematic mode. The simulation itself is the backend's.
+ * state and kinematic mode. The simulation itself is the backend's, in
+ * metres: this converts what goes in and comes out.
  */
-export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
+export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsVehicle3dApi {
 	classId = "IgePhysicsVehicle3d";
 	readonly entity: IgeEntity;
 	readonly type: "car" | "motorcycle";
 	_host: IgeVehicleHost;
 	_spec: IgeVehicleSpec;
 	_backend: IgeVehicleBackend;
-	_input: IgePhysicsVehicleInput = { forward: 0, right: 0, brake: 0, handbrake: 0 };
+	_input: Required<IgePhysicsVehicleInput> = { forward: 0, right: 0, brake: 0, handbrake: 0, pitch: 0, roll: 0 };
 	/** Where the steering is now, -1..1 (follows the input at the steering rate). */
 	_steer: number = 0;
 	/** Pose at the last two steps: x, y, z, qx, qy, qz, qw (IGE units). */
@@ -102,6 +125,8 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 	_current = new Float64Array([0, 0, 0, 0, 0, 0, 1]);
 	_velocity: Vec3 = { x: 0, y: 0, z: 0 };
 	_angularVelocity: Vec3 = { x: 0, y: 0, z: 0 };
+	/** Velocity before the latest step (IGE units per second), for impacts. */
+	_velocityBefore: Vec3 = { x: 0, y: 0, z: 0 };
 	_wheels: WheelTrack[];
 	_kinematic: boolean = false;
 	/** Kinematic: the state being followed and how long ago (seconds of steps) it was given. */
@@ -113,8 +138,14 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 	_destroyed: boolean = false;
 	/** Whether the pose needs placing on the entity (false once at rest and placed). */
 	_moving: boolean = true;
+	/** No wheel on the ground and the body touching nothing, after the last step (the world works it out). */
+	_airborne: boolean = false;
+	/** Seconds in the air so far. */
+	_airTime: number = 0;
+	_upright: boolean = true;
 
 	constructor (host: IgeVehicleHost, entity: IgeEntity, spec: IgeVehicleSpec, backend: IgeVehicleBackend) {
+		super();
 		this._host = host;
 		this.entity = entity;
 		this.type = spec.type;
@@ -140,11 +171,34 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 		this._input.right = clamp(input.right, -1);
 		this._input.brake = clamp(input.brake, 0);
 		this._input.handbrake = clamp(input.handbrake, 0);
+		this._input.pitch = clamp(input.pitch, -1);
+		this._input.roll = clamp(input.roll, -1);
 		return this;
 	}
 
 	input (): IgePhysicsVehicleInput {
 		return { ...this._input };
+	}
+
+	airborne (): boolean {
+		return this._airborne;
+	}
+
+	upright (): boolean;
+	upright (val: boolean): this;
+	upright (val?: boolean): boolean | this {
+		if (val === undefined) return this._upright;
+		if (val === this._upright || this._destroyed) return this;
+		this._upright = val;
+		this._backend.setUpright(val);
+		if (!val && this._enabled && !this._kinematic) {
+			// A bike stood perfectly level would stay balanced: start it falling the way it leans
+			const c = this._current;
+			const left = rotate(X_AXIS, c[3], c[4], c[5], c[6]), forward = rotate(Z_AXIS, c[3], c[4], c[5], c[6]);
+			const side = left.y >= 0 ? 1 : -1;
+			this._backend.addAngularVelocity({ x: forward.x * side * TOPPLE_SPIN, y: forward.y * side * TOPPLE_SPIN, z: forward.z * side * TOPPLE_SPIN });
+		}
+		return this;
 	}
 
 	shift (gear: number): this {
@@ -223,11 +277,13 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 		state.steer = this._kinematic ? this._target?.steer ?? 0 : this._steer;
 		state.input = this._kinematic && this._target?.input ? { ...this._target.input } : { ...this._input };
 		state.wheelSpin = this._wheels.map((w) => w.sample.spin);
+		state.upright = this._upright;
 		return state;
 	}
 
 	setState (state: IgePhysicsVehicleState): this {
 		if (this._destroyed) return this;
+		if (state.upright !== undefined) this.upright(state.upright);
 		if (this._kinematic) {
 			const previous = this._target;
 			this._target = copyVehicleState(state);
@@ -299,10 +355,12 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 
 	/** Put the chassis and drivetrain in a state now, with nothing between the old pose and the new. */
 	_teleport (state: IgePhysicsVehicleState): void {
+		const u = this._spec.unitsPerMetre;
+		const p = state.position, v = state.velocity ?? { x: 0, y: 0, z: 0 };
 		this._backend.setState({
-			position: state.position,
+			position: { x: p.x / u, y: p.y / u, z: p.z / u },
 			rotation: state.rotation,
-			velocity: state.velocity ?? { x: 0, y: 0, z: 0 },
+			velocity: { x: v.x / u, y: v.y / u, z: v.z / u },
 			angularVelocity: state.angularVelocity ?? { x: 0, y: 0, z: 0 },
 			rpm: state.rpm,
 			gear: state.gear,
@@ -322,7 +380,8 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 			this._targetAge += dt;
 			const t = Math.min(this._targetAge, this._spec.extrapolate);
 			const p = target.position, v = target.velocity, w = target.angularVelocity;
-			const position = { x: p.x + v.x * t, y: p.y + v.y * t, z: p.z + v.z * t };
+			const u = this._spec.unitsPerMetre;
+			const position = { x: (p.x + v.x * t) / u, y: (p.y + v.y * t) / u, z: (p.z + v.z * t) / u };
 			// Turn on at the angular velocity (world axes)
 			const angle = Math.hypot(w.x, w.y, w.z) * t;
 			let rotation = target.rotation;
@@ -378,7 +437,61 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 		}
 
 		backend.setInput(forward, this._steer, brake, input.handbrake);
+		this._rotationControl(dt);
 		backend.preStep(dt);
+	}
+
+	/**
+	 * Turning the vehicle with pitch and roll (and steering, for a car
+	 * that's over): air control, a motorcycle rider's weight, a car rocking
+	 * itself back onto its wheels.
+	 */
+	_rotationControl (dt: number): void {
+		const spec = this._spec;
+		const input = this._input;
+		const c = this._current;
+		let pitch = 0, roll = 0;
+
+		if (this._airborne) {
+			// Towards a spin rate set by the stick, at the air control rate
+			if (!spec.airControl || (!input.pitch && !input.roll)) return;
+			const w = this._angularVelocity;
+			const most = spec.airControl * dt;
+			const toward = (axis: Vec3, amount: number) => {
+				const a = rotate(axis, c[3], c[4], c[5], c[6]);
+				const now = w.x * a.x + w.y * a.y + w.z * a.z;
+				return Math.max(-most, Math.min(most, amount * MAX_AIR_SPIN - now));
+			};
+			if (input.pitch) pitch = toward(X_AXIS, input.pitch);
+			if (input.roll) roll = toward(Z_AXIS, input.roll);
+		} else if (spec.type === "motorcycle") {
+			// The rider's weight, while a wheel is on the ground: leaning back on
+			// the throttle lifts the front to a wheelie and holds it there,
+			// leaning forward on the brakes lifts the back. weightShift caps how
+			// hard the rider can pitch the bike against its springs.
+			if (!spec.weightShift || !input.pitch || !this.grounded()) return;
+			const x = rotate(X_AXIS, c[3], c[4], c[5], c[6]);
+			const nose = Math.asin(Math.max(-1, Math.min(1, rotate(Z_AXIS, c[3], c[4], c[5], c[6]).y)));
+			const w = this._angularVelocity;
+			const noseUpRate = -(w.x * x.x + w.y * x.y + w.z * x.z);
+			const target = input.pitch < 0
+				? -input.pitch * Math.max(LEAN_ANGLE, WHEELIE_ANGLE * Math.max(0, input.forward))
+				: -input.pitch * Math.max(LEAN_ANGLE, STOPPIE_ANGLE * Math.max(input.brake, -input.forward, 0));
+			const push = RIDER_STIFFNESS * (target - nose) - RIDER_DAMPING * noseUpRate;
+			pitch = -Math.max(-spec.weightShift, Math.min(spec.weightShift, push)) * dt;
+		} else {
+			// Over on its roof or side and nearly stopped: rock it back
+			const turn = input.roll || input.right;
+			if (!spec.selfRighting || !turn || this.tilt() < SELF_RIGHT_TILT) return;
+			const v = this._velocity;
+			if (Math.hypot(v.x, v.y, v.z) > SELF_RIGHT_SPEED * spec.unitsPerMetre) return;
+			roll = turn * spec.selfRighting * dt;
+		}
+		if (!pitch && !roll) return;
+
+		// Nose down is a turn about the vehicle's +X, right side down one about its +Z
+		const x = rotate(X_AXIS, c[3], c[4], c[5], c[6]), z = rotate(Z_AXIS, c[3], c[4], c[5], c[6]);
+		this._backend.addAngularVelocity({ x: x.x * pitch + z.x * roll, y: x.y * pitch + z.y * roll, z: x.z * pitch + z.z * roll });
 	}
 
 	/** After each fixed step: read the pose and wheels back. */
@@ -390,11 +503,19 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 	/** Read the latest step (and make it the previous one too when resetting). */
 	_capture (reset: boolean): void {
 		const backend = this._backend;
+		const u = this._spec.unitsPerMetre;
 		const previous = this._previous, current = this._current;
 		if (!reset) previous.set(current);
 		backend.readPose(current);
+		current[0] *= u; current[1] *= u; current[2] *= u;
 		if (reset) previous.set(current);
-		backend.readVelocity(this._velocity, this._angularVelocity);
+		const v = this._velocity, before = this._velocityBefore;
+		before.x = v.x; before.y = v.y; before.z = v.z;
+		backend.readVelocity(v, this._angularVelocity);
+		v.x *= u; v.y *= u; v.z *= u;
+		if (reset) {
+			before.x = v.x; before.y = v.y; before.z = v.z;
+		}
 		this._moving = true;
 
 		const spec = this._spec;
@@ -405,7 +526,7 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 			backend.readWheel(index, sample);
 			const spin = reset ? sample.spinAngle : track.current[2] + wrapDelta(sample.spinAngle, track.rawSpin);
 			if (!reset) track.previous.set(track.current);
-			track.current[0] = sample.suspensionLength;
+			track.current[0] = sample.suspensionLength * u;
 			track.current[1] = sample.steerAngle;
 			track.current[2] = spin;
 			track.rawSpin = sample.spinAngle;
@@ -414,14 +535,14 @@ export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
 			const r = track.readout;
 			const travel = wheel.suspensionMax - wheel.suspensionMin;
 			r.contact = sample.contact;
-			r.compression = travel > 0 ? Math.max(0, Math.min(1, (wheel.suspensionMax - sample.suspensionLength) / travel)) : 0;
-			r.longitudinalSlip = sample.longitudinalSlip;
-			r.lateralSlip = sample.lateralSlip;
+			r.compression = travel > 0 ? Math.max(0, Math.min(1, (wheel.suspensionMax - sample.suspensionLength * u) / travel)) : 0;
+			r.longitudinalSlip = sample.longitudinalSlip * u;
+			r.lateralSlip = sample.lateralSlip * u;
 			r.steer = -sample.steerAngle * toDegrees;
 			r.spin = sample.spin;
-			r.point.x = sample.point.x; r.point.y = sample.point.y; r.point.z = sample.point.z;
+			r.point.x = sample.point.x * u; r.point.y = sample.point.y * u; r.point.z = sample.point.z * u;
 			r.normal.x = sample.normal.x; r.normal.y = sample.normal.y; r.normal.z = sample.normal.z;
-			r.entity = sample.entity;
+			r.entity = sample.contact && sample.ground ? this._host._entityOfBody(sample.ground) : null;
 		});
 	}
 

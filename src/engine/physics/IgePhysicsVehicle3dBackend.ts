@@ -1,20 +1,23 @@
 import type { IgeEntity } from "@/engine/core/IgeEntity";
-import type { IgePhysicsShape } from "@/engine/physics/IgePhysics3d";
+import type { IgePhysicsQuat, IgePhysicsShape, IgePhysicsVec3 } from "@/engine/physics/IgePhysics3dTypes";
+import { type IgePhysicsBackendShape, type IgePhysicsBodyHandle, toBackendShape } from "@/engine/physics/IgePhysicsBackend";
 import type {
-	IgePhysicsQuat,
-	IgePhysicsVec3,
 	IgePhysicsVehicleOptions,
 	IgePhysicsVehicleState,
 	IgePhysicsWheelOptions
 } from "@/engine/physics/IgePhysicsVehicle3dApi";
 
 /*
- * Internal: what a physics backend provides for vehicles, and the neutral
- * description it builds one from. IgePhysicsVehicle3d (the public object)
- * shapes input, interpolates, poses wheels and handles network state on
- * top of this; a backend only simulates. Everything is in IGE units and
- * radians; the backend converts to its own units. No physics library
- * types appear here.
+ * Vehicles' part of the backend interface (IgePhysicsBackend.createVehicle()),
+ * and the neutral description a vehicle is built from.
+ *
+ * IgePhysicsVehicle3d (the public object) fills in the options
+ * (resolveVehicleSpec(), IGE units), shapes the input, interpolates, poses
+ * wheels, reports impacts and handles network state on top of an
+ * IgeVehicleBackend; a backend only simulates. Like the rest of the
+ * backend interface, a backend works in SI units (metres, radians, kg,
+ * N·m): vehicleBackendSpec() converts the spec, and IgePhysicsVehicle3d
+ * converts what the backend reports. No physics library types appear here.
  */
 
 type Vec3 = IgePhysicsVec3;
@@ -48,16 +51,10 @@ export interface IgeVehicleWheelSpec {
 	entity?: IgeEntity;
 }
 
-/** A vehicle, every option resolved (IGE units, radians). */
-export interface IgeVehicleSpec {
+/** The drivetrain, the same in IGE units and metres. */
+interface IgeVehicleDrivetrain {
 	type: "car" | "motorcycle";
-	layer?: string;
-	unitsPerMetre: number;
 	mass: number;
-	/** Collision shape, already offset from the entity's origin. */
-	chassis: IgePhysicsShape;
-	centreOfMass: Vec3;
-	wheels: IgeVehicleWheelSpec[];
 	/** Driven wheels in pairs (-1: none on that side), each sharing the engine's torque equally. */
 	differentials: { left: number; right: number }[];
 	antiRollBars: { left: number; right: number; stiffness: number }[];
@@ -79,15 +76,67 @@ export interface IgeVehicleSpec {
 	/** Radians (Math.PI: no limit). */
 	maxTilt: number;
 	wheelCast: "cylinder" | "ray";
+}
+
+/** A vehicle, every option resolved (IGE units, radians). */
+export interface IgeVehicleSpec extends IgeVehicleDrivetrain {
+	layer?: string;
+	unitsPerMetre: number;
+	/** Collision shape, already offset from the entity's origin. */
+	chassis: IgePhysicsShape;
+	centreOfMass: Vec3;
+	wheels: IgeVehicleWheelSpec[];
 	steering: { rate: number; highSpeed: number; highSpeedLock: number };
 	reverseOnBrake: boolean;
 	tractionControl: boolean;
 	extrapolate: number;
+	/** Velocity change (IGE units per second) in a step that emits "impact" (0: none). */
+	impacts: number;
+	/** Radians per second squared (0: none). */
+	airControl: number;
+	selfRighting: number;
+	weightShift: number;
 }
 
-/** One wheel after a step, as a backend reports it. */
+/** One wheel as a backend builds it (metres, radians). */
+export interface IgeVehicleBackendWheel {
+	/** Suspension's fixing point, relative to the chassis' origin (the entity's). */
+	position: Vec3;
+	radius: number;
+	width: number;
+	suspensionMin: number;
+	suspensionMax: number;
+	/** N/m. */
+	stiffness: number;
+	/** N·s/m. */
+	damping: number;
+	/** Radians either way. */
+	maxSteer: number;
+	suspensionDirection: Vec3;
+	steeringAxis: Vec3;
+	driven: boolean;
+	brakeTorque: number;
+	handbrakeTorque: number;
+	grip: number;
+}
+
+/**
+ * A vehicle as a backend builds it (metres, radians, kg, N·m). Its
+ * chassis is a dynamic body that can switch to kinematic, with the mass
+ * given (inertia from the shape) and its centre of mass where it says.
+ */
+export interface IgeVehicleBackendSpec extends IgeVehicleDrivetrain {
+	/** Collision layer index; the wheels touch what it collides with. */
+	layer: number;
+	/** Relative to the entity's origin. */
+	chassis: IgePhysicsBackendShape;
+	centreOfMass: Vec3;
+	wheels: IgeVehicleBackendWheel[];
+}
+
+/** One wheel after a step, as a backend reports it (metres, radians). */
 export interface IgeVehicleWheelSample {
-	/** Distance from the fixing point to the wheel's centre (IGE units). */
+	/** Distance from the fixing point to the wheel's centre. */
 	suspensionLength: number;
 	/** Radians around the wheel's steering axis (right-hand rule: negative is turned right). */
 	steerAngle: number;
@@ -98,14 +147,16 @@ export interface IgeVehicleWheelSample {
 	contact: boolean;
 	point: Vec3;
 	normal: Vec3;
-	/** IGE units per second (see IgePhysicsWheelReadout). */
+	/** Metres per second (see IgePhysicsWheelReadout). */
 	longitudinalSlip: number;
 	lateralSlip: number;
-	entity: IgeEntity | null;
+	/** The body it stands on, when in contact. */
+	ground: IgePhysicsBodyHandle | null;
 }
 
-/** The chassis and drivetrain state a backend restores (IGE units, radians). */
+/** The chassis and drivetrain state a backend restores (metres, radians). */
 export interface IgeVehicleBackendState {
+	/** The entity's origin. */
 	position: Vec3;
 	rotation: Quat;
 	velocity: Vec3;
@@ -116,18 +167,20 @@ export interface IgeVehicleBackendState {
 }
 
 /**
- * Internal: one vehicle in a physics backend. Made from an IgeVehicleSpec
- * at the entity's current world transform; the world calls preStep()
- * before each fixed step and the vehicle reads it back after.
+ * One vehicle in a physics backend (IgePhysicsBackend.createVehicle()).
+ * The world calls preStep() before each fixed step and the vehicle reads
+ * it back after. Everything is in metres and radians.
  */
 export interface IgeVehicleBackend {
+	/** The chassis: raycasts, sensors, impacts and other vehicles' wheels meet it. */
+	readonly body: IgePhysicsBodyHandle;
 	/** Controls for the coming steps, already shaped (forward -1..1, right -1..1, brake 0..1, handbrake 0..1). */
 	setInput (forward: number, right: number, brake: number, handbrake: number): void;
 	/** Just before each fixed step of dt seconds. */
 	preStep (dt: number): void;
 	/** Chassis pose after the last step: the entity origin's x, y, z and rotation qx, qy, qz, qw. */
 	readPose (out: Float64Array): void;
-	/** Chassis velocity (IGE units per second) and angular velocity (radians per second). */
+	/** Chassis velocity (metres per second) and angular velocity (radians per second). */
 	readVelocity (linear: Vec3, angular: Vec3): void;
 	readWheel (index: number, out: IgeVehicleWheelSample): void;
 	rpm (): number;
@@ -143,9 +196,17 @@ export interface IgeVehicleBackend {
 	 * the chassis' speed.
 	 */
 	setKinematic (on: boolean): void;
-	/** Kinematic only: arrive at this pose at the end of the next step of dt seconds. */
+	/** Kinematic only: arrive at this pose (the entity origin's) at the end of the next step of dt seconds. */
 	moveKinematic (position: Vec3, rotation: Quat, dt: number): void;
 	setEnabled (on: boolean): void;
+	/** Add to the chassis' angular velocity (radians per second, world axes), waking it: air control, self-righting, weight shift. */
+	addAngularVelocity (change: Vec3): void;
+	/**
+	 * Balance on (as made) or off. Off, a motorcycle's lean controller
+	 * stops holding it up and the pitch and roll limit (maxTilt) goes, so it
+	 * falls over like any body; on, both come back.
+	 */
+	setUpright (on: boolean): void;
 	/** Remove everything from the world and free it. */
 	destroy (): void;
 }
@@ -154,6 +215,8 @@ export interface IgeVehicleBackend {
 export interface IgeVehicleHost {
 	unitsPerMetre (): number;
 	removeVehicle (vehicle: any): void;
+	/** The entity whose body this is, if it has one. */
+	_entityOfBody (body: IgePhysicsBodyHandle): IgeEntity | null;
 }
 
 const DEG = Math.PI / 180;
@@ -167,7 +230,7 @@ interface DefaultWheel extends Omit<IgePhysicsWheelOptions, "entity"> {
 const CAR_WHEEL_Y = 0.53;
 const DEFAULT_CAR = {
 	mass: 1300,
-	// Body and cabin, the origin on the ground under the middle
+	// Body and cabin (see defaultCarChassis()), the origin on the ground under the middle
 	chassis: {
 		type: "compound",
 		children: [
@@ -308,7 +371,7 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 
 	// The chassis, moved off the origin by its offset
 	const defaultShape = !options.chassis;
-	let chassis = options.chassis ?? scaleShape(base.chassis, u);
+	let chassis = options.chassis ?? (type === "car" ? defaultCarChassis(u, wheels) : scaleShape(base.chassis, u));
 	const baseOffset = (base as typeof DEFAULT_MOTORCYCLE).chassisOffset;
 	const offset = options.chassisOffset ?? (defaultShape && baseOffset ? scaled(baseOffset, u) : undefined);
 	if (offset && (offset.x || offset.y || offset.z)) {
@@ -369,7 +432,66 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 		},
 		reverseOnBrake: options.reverseOnBrake ?? true,
 		tractionControl: options.tractionControl ?? type === "car",
-		extrapolate: options.extrapolate ?? 0.25
+		extrapolate: options.extrapolate ?? 0.25,
+		impacts: options.impacts === true ? DEFAULT_IMPACT * u : options.impacts ? options.impacts : 0,
+		airControl: Math.max(0, options.airControl ?? 300) * DEG,
+		selfRighting: type === "car" ? Math.max(0, options.selfRighting ?? 1200) * DEG : 0,
+		weightShift: type === "motorcycle" ? Math.max(0, options.weightShift ?? 6000) * DEG : 0
+	};
+}
+
+/** Velocity change (metres per second) in a step that counts as an impact with `impacts: true`. */
+const DEFAULT_IMPACT = 1;
+
+/**
+ * The default car's body and cabin, the body at least as wide as the
+ * wheels' outer faces so a wheel side-on to a wall can't poke into it
+ * (the wheels are casts, not bodies; the chassis is what hits things).
+ */
+function defaultCarChassis (u: number, wheels: IgeVehicleWheelSpec[]): IgePhysicsShape {
+	const base = DEFAULT_CAR.chassis as Extract<IgePhysicsShape, { type: "compound" }>;
+	const outer = Math.max(0, ...wheels.map((w) => Math.abs(w.position.x) + w.width / 2));
+	const shape = scaleShape(base, u) as Extract<IgePhysicsShape, { type: "compound" }>;
+	const body = shape.children[0].shape as Extract<IgePhysicsShape, { type: "box" }>;
+	body.halfExtents.x = Math.max(body.halfExtents.x, outer + 0.01 * u);
+	return shape;
+}
+
+/** A spec in the backend's units: metres, with the layer as an index. */
+export function vehicleBackendSpec (spec: IgeVehicleSpec, layer: number): IgeVehicleBackendSpec {
+	const u = spec.unitsPerMetre;
+	const metres = (v: Vec3): Vec3 => ({ x: v.x / u, y: v.y / u, z: v.z / u });
+	return {
+		type: spec.type,
+		layer,
+		mass: spec.mass,
+		chassis: toBackendShape(spec.chassis, { x: 1, y: 1, z: 1 }, u),
+		centreOfMass: metres(spec.centreOfMass),
+		wheels: spec.wheels.map((w) => ({
+			position: metres(w.position),
+			radius: w.radius / u,
+			width: w.width / u,
+			suspensionMin: w.suspensionMin / u,
+			suspensionMax: w.suspensionMax / u,
+			stiffness: w.stiffness,
+			damping: w.damping,
+			maxSteer: w.maxSteer,
+			suspensionDirection: { ...w.suspensionDirection },
+			steeringAxis: { ...w.steeringAxis },
+			driven: w.driven,
+			brakeTorque: w.brakeTorque,
+			handbrakeTorque: w.handbrakeTorque,
+			grip: w.grip
+		})),
+		differentials: spec.differentials.map((d) => ({ ...d })),
+		antiRollBars: spec.antiRollBars.map((a) => ({ ...a })),
+		engine: { ...spec.engine },
+		gearbox: { ...spec.gearbox, ratios: [...spec.gearbox.ratios], reverseRatios: [...spec.gearbox.reverseRatios] },
+		friction: spec.friction,
+		handbrakeGrip: spec.handbrakeGrip,
+		maxLean: spec.maxLean,
+		maxTilt: spec.maxTilt,
+		wheelCast: spec.wheelCast
 	};
 }
 
@@ -411,5 +533,6 @@ export function copyVehicleState (state: IgePhysicsVehicleState, out?: IgePhysic
 	target.steer = state.steer;
 	target.input = state.input ? { ...state.input } : undefined;
 	target.wheelSpin = state.wheelSpin ? [...state.wheelSpin] : undefined;
+	target.upright = state.upright;
 	return target;
 }

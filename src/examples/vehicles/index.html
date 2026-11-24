@@ -61,8 +61,9 @@
   <h2>Vehicles</h2>
   <div><kbd>W</kbd>/<kbd>↑</kbd> throttle, <kbd>S</kbd>/<kbd>↓</kbd> brake and reverse</div>
   <div><kbd>A</kbd> <kbd>D</kbd>/<kbd>←</kbd> <kbd>→</kbd> steer, <kbd>Space</kbd> handbrake</div>
-  <div><kbd>C</kbd> switch car / motorcycle, <kbd>R</kbd> put it back on its wheels</div>
-  <div class="muted">Gamepad: right trigger throttle, left trigger brake and reverse, left stick steer, A handbrake, Y switch, B reset</div>
+  <div><kbd>I</kbd> <kbd>K</kbd> lean forward and back, <kbd>J</kbd> <kbd>L</kbd> roll: steers it in the air; on a motorcycle, lean back on the throttle for a wheelie, forward on the brake for a stoppie</div>
+  <div><kbd>X</kbd> drop the motorcycle, <kbd>C</kbd> switch car / motorcycle, <kbd>R</kbd> put it back on its wheels (a car on its roof rocks back with steering)</div>
+  <div class="muted">Gamepad: right trigger throttle, left trigger brake and reverse, left stick steer, right stick lean and roll, A handbrake, X drop, Y switch, B reset</div>
   <div class="muted" style="margin-top: 6px;">Physics: <span id="physicsStatus">loading...</span></div>
 </div>
 
@@ -72,6 +73,7 @@
   <div class="row"><span><span id="rpm">0</span> rpm</span><span id="gear" class="gear">N</span></div>
   <div id="rpmBar"><div id="rpmFill"></div></div>
   <div class="row muted"><span id="state">grounded</span><span id="slip"></span></div>
+  <div class="muted" id="event" style="max-width: 260px; margin-top: 4px;"></div>
 </div>
 
 <div class="igeLoading loadingFloat">

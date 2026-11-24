@@ -1,6 +1,8 @@
-import type JoltApi from "jolt-physics";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
-import type { IgePhysics3d, IgePhysicsBody3d } from "@/engine/physics/IgePhysics3d";
+import type { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
+import type { IgePhysicsBody3d } from "@/engine/physics/IgePhysicsBody3d";
+import type { IgePhysicsBackendCharacterState, IgePhysicsCharacterHandle } from "@/engine/physics/IgePhysicsBackend";
+import type { IgePhysicsCharacterState } from "@/engine/physics/IgePhysics3dTypes";
 
 export interface IgePhysicsCharacterOptions {
 	/** Capsule radius (IGE units). */
@@ -26,11 +28,11 @@ export interface IgePhysicsCharacterOptions {
 }
 
 /**
- * A player character moved by Jolt's CharacterVirtual: a capsule that
- * walks where it's told, up stairs and slopes, sticks to the floor going
- * down them, pushes crates and other bodies with a limited strength, and
- * isn't shoved around by them. Other bodies collide with it (through an
- * inner body, `body`), and raycasts and sensors report it.
+ * A player character: a capsule that walks where it's told, up stairs and
+ * slopes, sticks to the floor going down them, and pushes crates and other
+ * bodies with a limited strength. Other bodies collide with it (through
+ * `body`), and raycasts and sensors report it. Jolt runs it as a
+ * CharacterVirtual.
  *
  * The character's position is its feet, at the entity's origin; the entity
  * keeps its own rotation (facing).
@@ -40,25 +42,28 @@ export class IgePhysicsCharacter3d {
 	/** The body other bodies collide with; raycasts and sensors report this. */
 	readonly body: IgePhysicsBody3d;
 	_physics: IgePhysics3d;
-	_character: JoltApi.CharacterVirtual;
-	_settings: JoltApi.ExtendedUpdateSettings;
+	/** The backend's character. */
+	_handle: IgePhysicsCharacterHandle;
 	_moveX: number = 0;
 	_moveZ: number = 0;
 	_jump: number = 0;
 	_enabled: boolean = true;
-	/** Query filters for the character's layer. */
-	_bpFilter?: JoltApi.BroadPhaseLayerFilter;
-	_objectFilter?: JoltApi.ObjectLayerFilter;
-	_listener?: JoltApi.CharacterContactListenerJS;
 	_destroyed: boolean = false;
 	_previous = new Float64Array(3);
 	_current = new Float64Array(3);
+	/** The backend's latest report (metres). */
+	_state: IgePhysicsBackendCharacterState = {
+		position: { x: 0, y: 0, z: 0 },
+		velocity: { x: 0, y: 0, z: 0 },
+		onGround: false,
+		groundVelocity: { x: 0, y: 0, z: 0 }
+	};
+	_velocity = { x: 0, y: 0, z: 0 };
 
-	constructor (physics: IgePhysics3d, entity: IgeEntity, character: JoltApi.CharacterVirtual, settings: JoltApi.ExtendedUpdateSettings, body: IgePhysicsBody3d) {
+	constructor (physics: IgePhysics3d, entity: IgeEntity, handle: IgePhysicsCharacterHandle, body: IgePhysicsBody3d) {
 		this._physics = physics;
 		this.entity = entity;
-		this._character = character;
-		this._settings = settings;
+		this._handle = handle;
 		this.body = body;
 		this._capture(true);
 	}
@@ -78,26 +83,39 @@ export class IgePhysicsCharacter3d {
 
 	/** Whether the character stands on walkable ground. */
 	onGround (): boolean {
-		return this._character.GetGroundState() === this._physics._jolt.EGroundState_OnGround;
+		this._physics._backend.readCharacter(this._handle, this._state);
+		return this._state.onGround;
 	}
 
 	/** Velocity in IGE units per second. */
 	velocity (): { x: number; y: number; z: number } {
-		const v = this._character.GetLinearVelocity();
+		this._physics._backend.readCharacter(this._handle, this._state);
+		const v = this._state.velocity;
 		const u = this._physics.unitsPerMetre();
-		return { x: v.GetX() * u, y: v.GetY() * u, z: v.GetZ() * u };
+		return { x: v.x * u, y: v.y * u, z: v.z * u };
 	}
 
 	/** Move the character (and its entity) to a position, e.g. a respawn. */
 	teleport (x: number, y: number, z: number): this {
-		const physics = this._physics;
-		const u = physics.unitsPerMetre();
-		physics._rvec.Set(x / u, y / u, z / u);
-		this._character.SetPosition(physics._rvec);
-		physics._vec.Set(0, 0, 0);
-		this._character.SetLinearVelocity(physics._vec);
-		physics._bodies.SetPosition(this.body._id, physics._rvec, physics._jolt.EActivation_DontActivate);
-		this.entity.translateTo(x, y, z);
+		return this.setState({ position: { x, y, z }, velocity: { x: 0, y: 0, z: 0 } });
+	}
+
+	/** Where the character is and how it's moving, as plain numbers safe to send or keep as JSON. */
+	getState (): IgePhysicsCharacterState {
+		const state = this._state;
+		this._physics._backend.readCharacter(this._handle, state);
+		const u = this._physics.unitsPerMetre();
+		const p = state.position, v = state.velocity;
+		return { position: { x: p.x * u, y: p.y * u, z: p.z * u }, velocity: { x: v.x * u, y: v.y * u, z: v.z * u } };
+	}
+
+	/** Put the character (and its entity) in a state from getState(), e.g. in another world. */
+	setState (state: IgePhysicsCharacterState): this {
+		if (this._destroyed) return this;
+		const u = this._physics.unitsPerMetre();
+		const p = state.position, v = state.velocity ?? { x: 0, y: 0, z: 0 };
+		this._physics._backend.setCharacterState(this._handle, { x: p.x / u, y: p.y / u, z: p.z / u }, { x: v.x / u, y: v.y / u, z: v.z / u });
+		this.entity.translateTo(p.x, p.y, p.z);
 		this._capture(true);
 		return this;
 	}
@@ -109,7 +127,9 @@ export class IgePhysicsCharacter3d {
 		if (val === undefined) return this._enabled;
 		if (val === this._enabled || this._destroyed) return this;
 		this._enabled = val;
-		this.body.enabled(val);
+		this.body._enabled = val;
+		this._physics._backend.setCharacterEnabled(this._handle, val);
+		if (val) this._capture(true);
 		return this;
 	}
 
@@ -120,9 +140,10 @@ export class IgePhysicsCharacter3d {
 
 	_capture (reset: boolean = false): void {
 		const u = this._physics.unitsPerMetre();
-		const p = this._character.GetPosition();
+		this._physics._backend.readCharacter(this._handle, this._state);
+		const p = this._state.position;
 		if (!reset) this._previous.set(this._current);
-		this._current[0] = p.GetX() * u; this._current[1] = p.GetY() * u; this._current[2] = p.GetZ() * u;
+		this._current[0] = p.x * u; this._current[1] = p.y * u; this._current[2] = p.z * u;
 		if (reset) this._previous.set(this._current);
 	}
 
@@ -130,28 +151,26 @@ export class IgePhysicsCharacter3d {
 	_update (dt: number): void {
 		if (!this._enabled) return;
 		const physics = this._physics;
-		const jolt = physics._jolt;
+		const backend = physics._backend;
 		const u = physics.unitsPerMetre();
-		const character = this._character;
 		const gravity = physics._options.gravity;
+		const state = this._state;
 
 		// Walk along the ground when supported; otherwise keep falling
-		const current = character.GetLinearVelocity();
+		backend.readCharacter(this._handle, state);
 		let vy: number;
-		if (character.GetGroundState() === jolt.EGroundState_OnGround) {
-			vy = character.GetGroundVelocity().GetY();
+		if (state.onGround) {
+			vy = state.groundVelocity.y;
 			if (this._jump > 0) vy += this._jump / u;
 		} else {
-			vy = current.GetY();
+			vy = state.velocity.y;
 		}
 		this._jump = 0;
 		vy += gravity * dt;
 
-		physics._vec.Set(this._moveX / u, vy, this._moveZ / u);
-		character.SetLinearVelocity(physics._vec);
-		physics._vec.Set(0, gravity, 0);
-		character.ExtendedUpdate(dt, physics._vec, this._settings, this._bpFilter || physics._bpFilter, this._objectFilter || physics._objectFilter,
-			physics._bodyFilter, physics._shapeFilter, physics._interface.GetTempAllocator());
+		const v = this._velocity;
+		v.x = this._moveX / u; v.y = vy; v.z = this._moveZ / u;
+		backend.moveCharacter(this._handle, v, gravity, dt);
 		this._capture();
 	}
 

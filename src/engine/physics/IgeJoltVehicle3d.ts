@@ -1,14 +1,12 @@
 import type JoltApi from "jolt-physics";
-import type { IgeEntity } from "@/engine/core/IgeEntity";
-import type { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
-import type { IgePhysicsQuat, IgePhysicsVec3 } from "@/engine/physics/IgePhysicsVehicle3dApi";
+import type { IgeJoltBackend, IgeJoltBody } from "@/engine/physics/IgeJoltBackend";
+import type { IgePhysicsQuat, IgePhysicsVec3 } from "@/engine/physics/IgePhysics3dTypes";
 import type {
 	IgeVehicleBackend,
+	IgeVehicleBackendSpec,
 	IgeVehicleBackendState,
-	IgeVehicleSpec,
 	IgeVehicleWheelSample
 } from "@/engine/physics/IgePhysicsVehicle3dBackend";
-import { matrixToQuaternion } from "@/engine/webgl/IgeModelParts";
 
 /** Limited-slip ratio for every differential (Jolt's default). */
 const LIMITED_SLIP = 1.4;
@@ -32,9 +30,8 @@ function setLateralCurve (curve: JoltApi.LinearCurve, scale: number): void {
  * The Jolt backend for a vehicle (IgeVehicleBackend): a dynamic body that
  * can switch to kinematic, held up and driven by Jolt's VehicleConstraint
  * with a WheeledVehicleController (or MotorcycleController), stepped by a
- * VehicleConstraintStepListener. Converts IGE units to metres. Wheels find
- * the ground with a cylinder (or ray) cast against what the vehicle's
- * layer collides with.
+ * VehicleConstraintStepListener. Wheels find the ground with a cylinder
+ * (or ray) cast against what the vehicle's layer collides with. Metres.
  *
  * Every Jolt object it makes is freed in destroy(): the step listener and
  * scratch vector directly, the constraint by its reference (which frees
@@ -42,9 +39,11 @@ function setLateralCurve (curve: JoltApi.LinearCurve, scale: number): void {
  * its shape).
  */
 export class IgeJoltVehicle3d implements IgeVehicleBackend {
-	_physics: IgePhysics3d;
+	_physics: IgeJoltBackend;
 	_jolt: typeof JoltApi;
-	_spec: IgeVehicleSpec;
+	_spec: IgeVehicleBackendSpec;
+	/** The chassis, registered with the world so queries and other vehicles' wheels find it. */
+	body: IgeJoltBody;
 	_body: JoltApi.Body;
 	_id: JoltApi.BodyID;
 	_constraint: JoltApi.VehicleConstraint;
@@ -61,30 +60,23 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	/** A second scratch vector (the world's _vec is the first). */
 	_vec2: JoltApi.Vec3;
 
-	constructor (physics: IgePhysics3d, entity: IgeEntity, spec: IgeVehicleSpec) {
+	constructor (physics: IgeJoltBackend, spec: IgeVehicleBackendSpec, position: IgePhysicsVec3, rotation: IgePhysicsQuat) {
 		const jolt = physics._jolt;
-		const u = spec.unitsPerMetre;
 		this._physics = physics;
 		this._jolt = jolt;
 		this._spec = spec;
 		this._vec2 = new jolt.Vec3(0, 0, 0);
-		const layer = spec.layer ? physics._layerIndex(spec.layer) : physics._defaultLayer(false);
+		const layer = physics._layer(spec.layer);
 		this._layer = layer;
 		const motorcycle = spec.type === "motorcycle";
 
-		// Start at the entity's world transform
-		entity.updateTransform();
-		const world = entity._worldMatrix4?.matrix;
-		const position = world ? { x: world[12], y: world[13], z: world[14] } : { ...entity._translate };
-		const rotation = world ? matrixToQuaternion(world) : { x: 0, y: 0, z: 0, w: 1 };
-
 		// The chassis shape with its centre of mass moved where the spec puts it
-		const built = physics._createShape(spec.chassis, { x: 1, y: 1, z: 1 });
+		const built = physics._createShape(spec.chassis);
 		const com = built.shape.GetCenterOfMass();
-		physics._vec.Set(spec.centreOfMass.x / u - com.GetX(), spec.centreOfMass.y / u - com.GetY(), spec.centreOfMass.z / u - com.GetZ());
+		physics._vec.Set(spec.centreOfMass.x - com.GetX(), spec.centreOfMass.y - com.GetY(), spec.centreOfMass.z - com.GetZ());
 		const shape = new jolt.OffsetCenterOfMassShape(built.shape, physics._vec);
 
-		physics._rvec.Set(position.x / u, position.y / u, position.z / u);
+		physics._rvec.Set(position.x, position.y, position.z);
 		physics._quat.Set(rotation.x, rotation.y, rotation.z, rotation.w);
 		const settings = new jolt.BodyCreationSettings(shape, physics._rvec, physics._quat, jolt.EMotionType_Dynamic, layer);
 		settings.mOverrideMassProperties = jolt.EOverrideMassProperties_CalculateInertia;
@@ -97,6 +89,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		jolt.destroy(settings);
 		built.cleanup?.();
 		physics._bodies.AddBody(this._id, jolt.EActivation_Activate);
+		this.body = physics._register(this._body);
 
 		// Wheels
 		const vehicle = new jolt.VehicleConstraintSettings();
@@ -104,7 +97,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		for (const wheel of spec.wheels) {
 			const w = new jolt.WheelSettingsWV();
 			const vec = physics._vec;
-			vec.Set(wheel.position.x / u, wheel.position.y / u, wheel.position.z / u);
+			vec.Set(wheel.position.x, wheel.position.y, wheel.position.z);
 			w.mPosition = vec;
 			vec.Set(wheel.suspensionDirection.x, wheel.suspensionDirection.y, wheel.suspensionDirection.z);
 			w.mSuspensionDirection = vec;
@@ -114,10 +107,10 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 			w.mWheelUp = vec;
 			vec.Set(0, 0, 1);
 			w.mWheelForward = vec;
-			w.mRadius = wheel.radius / u;
-			w.mWidth = wheel.width / u;
-			w.mSuspensionMinLength = wheel.suspensionMin / u;
-			w.mSuspensionMaxLength = wheel.suspensionMax / u;
+			w.mRadius = wheel.radius;
+			w.mWidth = wheel.width;
+			w.mSuspensionMinLength = wheel.suspensionMin;
+			w.mSuspensionMaxLength = wheel.suspensionMax;
 			const spring = w.mSuspensionSpring;
 			spring.mMode = jolt.ESpringMode_StiffnessAndDamping;
 			spring.mStiffness = wheel.stiffness;
@@ -229,7 +222,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 			const fx = 2 * (qx * qz + qw * qy), fy = 2 * (qy * qz - qw * qx), fz = 1 - 2 * (qx * qx + qy * qy);
 			const forward = vx * fx + vy * fy + vz * fz;
 			this._wheels.forEach((wheel, index) => {
-				wheel.SetAngularVelocity(forward / (this._spec.wheels[index].radius / this._spec.unitsPerMetre));
+				wheel.SetAngularVelocity(forward / this._spec.wheels[index].radius);
 			});
 		} else if (this._driving && !this._body.IsActive()) {
 			bodies.ActivateBody(this._id);
@@ -237,25 +230,22 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	}
 
 	readPose (out: Float64Array): void {
-		const u = this._spec.unitsPerMetre;
 		const p = this._body.GetPosition();
-		out[0] = p.GetX() * u; out[1] = p.GetY() * u; out[2] = p.GetZ() * u;
+		out[0] = p.GetX(); out[1] = p.GetY(); out[2] = p.GetZ();
 		const r = this._body.GetRotation();
 		out[3] = r.GetX(); out[4] = r.GetY(); out[5] = r.GetZ(); out[6] = r.GetW();
 	}
 
 	readVelocity (linear: IgePhysicsVec3, angular: IgePhysicsVec3): void {
-		const u = this._spec.unitsPerMetre;
 		const v = this._body.GetLinearVelocity();
-		linear.x = v.GetX() * u; linear.y = v.GetY() * u; linear.z = v.GetZ() * u;
+		linear.x = v.GetX(); linear.y = v.GetY(); linear.z = v.GetZ();
 		const w = this._body.GetAngularVelocity();
 		angular.x = w.GetX(); angular.y = w.GetY(); angular.z = w.GetZ();
 	}
 
 	readWheel (index: number, out: IgeVehicleWheelSample): void {
-		const u = this._spec.unitsPerMetre;
 		const wheel = this._wheels[index];
-		out.suspensionLength = wheel.GetSuspensionLength() * u;
+		out.suspensionLength = wheel.GetSuspensionLength();
 		out.steerAngle = wheel.GetSteerAngle();
 		out.spinAngle = wheel.GetRotationAngle();
 		out.spin = wheel.GetAngularVelocity();
@@ -263,7 +253,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		if (!out.contact) {
 			out.longitudinalSlip = 0;
 			out.lateralSlip = 0;
-			out.entity = null;
+			out.ground = null;
 			return;
 		}
 
@@ -271,7 +261,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		const px = p.GetX(), py = p.GetY(), pz = p.GetZ();
 		const n = wheel.GetContactNormal();
 		const nx = n.GetX(), ny = n.GetY(), nz = n.GetZ();
-		out.point.x = px * u; out.point.y = py * u; out.point.z = pz * u;
+		out.point.x = px; out.point.y = py; out.point.z = pz;
 		out.normal.x = nx; out.normal.y = ny; out.normal.z = nz;
 
 		// The tyre's velocity over the ground there: the chassis' point velocity less the ground's
@@ -292,12 +282,10 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		const forward = dx * l.GetX() + dy * l.GetY() + dz * l.GetZ();
 		const s = wheel.GetContactLateral();
 		const sideways = dx * s.GetX() + dy * s.GetY() + dz * s.GetZ();
-		const radius = this._spec.wheels[index].radius / u;
-		out.longitudinalSlip = (out.spin * radius - forward) * u;
-		out.lateralSlip = sideways * u;
-
-		const ground = this._physics._byBodyId.get(wheel.GetContactBodyID().GetIndexAndSequenceNumber());
-		out.entity = ground ? ground.entity : null;
+		const radius = this._spec.wheels[index].radius;
+		out.longitudinalSlip = out.spin * radius - forward;
+		out.lateralSlip = sideways;
+		out.ground = this._physics._handleOf(wheel.GetContactBodyID()) ?? null;
 	}
 
 	rpm (): number {
@@ -316,12 +304,11 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 
 	setState (state: IgeVehicleBackendState): void {
 		const physics = this._physics;
-		const u = this._spec.unitsPerMetre;
 		const { position: p, rotation: r, velocity: v, angularVelocity: w } = state;
 		const len = Math.hypot(r.x, r.y, r.z, r.w) || 1;
-		physics._rvec.Set(p.x / u, p.y / u, p.z / u);
+		physics._rvec.Set(p.x, p.y, p.z);
 		physics._quat.Set(r.x / len, r.y / len, r.z / len, r.w / len);
-		physics._vec.Set(v.x / u, v.y / u, v.z / u);
+		physics._vec.Set(v.x, v.y, v.z);
 		this._vec2.Set(w.x, w.y, w.z);
 		physics._bodies.SetPositionRotationAndVelocity(this._id, physics._rvec, physics._quat, physics._vec, this._vec2);
 
@@ -351,9 +338,8 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	moveKinematic (position: IgePhysicsVec3, rotation: IgePhysicsQuat, dt: number): void {
 		if (!this._kinematic || !this._enabled) return;
 		const physics = this._physics;
-		const u = this._spec.unitsPerMetre;
 		const len = Math.hypot(rotation.x, rotation.y, rotation.z, rotation.w) || 1;
-		physics._rvec.Set(position.x / u, position.y / u, position.z / u);
+		physics._rvec.Set(position.x, position.y, position.z);
 		physics._quat.Set(rotation.x / len, rotation.y / len, rotation.z / len, rotation.w / len);
 		physics._bodies.MoveKinematic(this._id, physics._rvec, physics._quat, dt);
 	}
@@ -361,9 +347,25 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	setEnabled (on: boolean): void {
 		if (on === this._enabled || this._destroyed) return;
 		this._enabled = on;
+		this._physics.setBodyEnabled(this.body, on);
+	}
+
+	addAngularVelocity (change: IgePhysicsVec3): void {
+		if (!this._enabled || this._kinematic) return;
 		const bodies = this._physics._bodies;
-		if (on) bodies.AddBody(this._id, this._jolt.EActivation_Activate);
-		else bodies.RemoveBody(this._id);
+		const w = this._body.GetAngularVelocity();
+		this._vec2.Set(w.GetX() + change.x, w.GetY() + change.y, w.GetZ() + change.z);
+		bodies.SetAngularVelocity(this._id, this._vec2);
+		if (!this._body.IsActive()) bodies.ActivateBody(this._id);
+	}
+
+	setUpright (on: boolean): void {
+		if (this._destroyed) return;
+		// Jolt's motorcycle leans into turns and holds itself up with its lean
+		// controller; the constraint's pitch and roll limit stops it falling
+		if (this._spec.type === "motorcycle") (this._controller as JoltApi.MotorcycleController).EnableLeanController(on);
+		this._constraint.SetMaxPitchRollAngle(on ? this._spec.maxTilt : Math.PI);
+		if (this._enabled && !this._body.IsActive()) this._physics._bodies.ActivateBody(this._id);
 	}
 
 	destroy (): void {
@@ -377,8 +379,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		// its controller, wheels and collision tester
 		physics._system.RemoveConstraint(this._constraint);
 		this._constraint.Release();
-		if (this._enabled) physics._bodies.RemoveBody(this._id);
-		physics._bodies.DestroyBody(this._id);
+		physics.destroyBody(this.body);
 		jolt.destroy(this._vec2);
 		this._wheels = [];
 	}
