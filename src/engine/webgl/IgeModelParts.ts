@@ -371,6 +371,15 @@ function toMaterialData (model: IgeGltfModel, mat: IgeWebGlMaterial, index: numb
 	if (blob) {
 		data.textureId = `${model.id}_material${index}_baseColor`;
 		data.textureBlob = blob;
+		const sampler = m.baseColorSampler?.();
+		if (sampler) data.textureSampler = { ...sampler };
+	}
+
+	// KHR_texture_transform (a quantised model's texture coordinates are stored in a range this maps back)
+	const transform = m.textureTransform?.() as { scale: [number, number]; offset: [number, number] } | undefined;
+	if (transform) {
+		data.uvScale = { u: transform.scale[0], v: transform.scale[1] };
+		data.uvOffset = { u: transform.offset[0], v: transform.offset[1] };
 	}
 
 	const emissiveBlob = m.emissiveTextureData?.() as Blob | undefined;

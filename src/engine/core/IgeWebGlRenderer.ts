@@ -41,6 +41,8 @@ import { igeGpuUniformLayout, type IgeGpuBlendState, type IgeGpuBuffer, type Ige
 import { type IgeWebGl2GpuDevice, webGl2ExternalTexture, webGl2Framebuffer, webGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
 import { EFFECT_ATTRIBUTES, IgeGpuMeshPrograms, INSTANCE_LAYOUT, meshLayout, meshTopology } from "@/engine/webgl/IgeGpuMeshPrograms";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
+import { IgeGeometryUploadQueue, type IgeUploadBudget } from "@/engine/webgl/IgeGeometryUploadQueue";
+import { geometryGpuBytes, unpackVertices } from "@/engine/webgl/IgeVertexPacking";
 import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import type { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
 import { DECAL_INSTANCE_FLOATS, DECAL_MESH_VERTEX_FLOATS } from "@/engine/webgl/IgeDecalSystem3d";
@@ -233,6 +235,16 @@ export interface IgeWebGlRenderStats {
 	/** Shadow casters left out of the directional shadow pass because their shadow can't land in the view (see shadowCasterCulling()). */
 	shadowCastersCulled: number;
 	viewports: number;
+	/** Meshes uploaded to the GPU this frame (see uploadBudget()). */
+	uploads: number;
+	/** Bytes of vertex and index buffers uploaded this frame. */
+	uploadBytes: number;
+	/** Milliseconds spent packing and uploading meshes this frame. */
+	uploadMs: number;
+	/** Meshes waiting for their turn to upload (uploadBudget()); their entities aren't drawn meanwhile. */
+	uploadsQueued: number;
+	/** Bytes held on the GPU by every mesh's vertex and index buffers. */
+	geometryBytes: number;
 }
 
 /**
@@ -575,8 +587,24 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		dynamicShadowDraws: 0,
 		shadowCacheCopies: 0,
 		shadowCastersCulled: 0,
-		viewports: 0
+		viewports: 0,
+		uploads: 0,
+		uploadBytes: 0,
+		uploadMs: 0,
+		uploadsQueued: 0,
+		geometryBytes: 0
 	};
+
+	/** Meshes uploaded within a per-frame budget (see uploadBudget()); unlimited by default. Made as first needed. */
+	protected _uploads?: IgeGeometryUploadQueue<IgeGeometryData3d>;
+	/** Who's waiting for a mesh to reach the GPU (uploadGeometry()), by its id. */
+	protected _uploadWaiters?: Map<string, ((uploaded: boolean) => void)[]>;
+	/** The mesh each plain-geometry entity last drew: drawn meanwhile when its new one is waiting to upload. */
+	protected _drawnGeometry?: WeakMap<IgeEntity, IgeGeometryData3d>;
+	/** Generate mipmaps for model (glTF) textures whose sampler doesn't say otherwise (see modelTextureMipmaps()). */
+	protected _modelTextureMipmaps = true;
+	/** Scratch for a draw's world matrix with its mesh's position decode applied. */
+	protected _decodedWorld?: Float32Array;
 
 	// Multiplies every on-screen size used to pick a level of detail
 	protected _lodBias: number = 1;
@@ -1080,16 +1108,108 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	releaseGeometry(geometry: IgeGeometryData3d | string): this {
 		if (!this._geometryManager) return this;
 
-		if (typeof geometry === "string") {
-			this._geometryManager.deleteGeometry(geometry);
-			return this;
-		}
+		const id = typeof geometry === "string" ? geometry : geometry.id;
+		// Still waiting to upload: it never will
+		if (this._uploadQueue().remove(id)) this._resolveUpload(id, false);
+		this._geometryManager.deleteGeometry(id);
+		if (typeof geometry === "string") return this;
 
-		this._geometryManager.deleteGeometry(geometry.id);
 		for (const lod of takeGeneratedLods(geometry)) {
+			this._uploadQueue().remove(lod.id);
 			this._geometryManager.deleteGeometry(lod.id);
 		}
 		return this;
+	}
+
+	/**
+	 * Gets / sets the per-frame upload budget: how many bytes of vertex and index buffers, and how many milliseconds
+	 * (packing included), a frame may spend putting meshes on the GPU. Meshes over the budget wait their turn, in
+	 * order, for the next frames; their entities aren't drawn until theirs is up (an entity whose mesh was swapped
+	 * draws the one it had meanwhile, if that's still on the GPU). The first upload of a frame always goes. Unlimited
+	 * by default (meshes upload when first drawn). `stats()` reports `uploads`, `uploadBytes`, `uploadMs` and
+	 * `uploadsQueued`.
+	 * @example #Stream a city without hitches: at most 1 MB or 2 ms of uploads a frame
+	 *     renderer.uploadBudget({ bytes: 1024 * 1024, ms: 2 });
+	 * @example #Back to uploading everything at once
+	 *     renderer.uploadBudget({ bytes: Infinity, ms: Infinity });
+	 */
+	uploadBudget(): IgeUploadBudget;
+	uploadBudget(budget: Partial<IgeUploadBudget>): this;
+	uploadBudget(budget?: Partial<IgeUploadBudget>): IgeUploadBudget | this {
+		if (budget === undefined) return { ...this._uploadQueue().budget };
+		const b = this._uploadQueue().budget;
+		if (budget.bytes !== undefined) b.bytes = budget.bytes > 0 ? budget.bytes : Infinity;
+		if (budget.ms !== undefined) b.ms = budget.ms > 0 ? budget.ms : Infinity;
+		return this;
+	}
+
+	/**
+	 * Puts a mesh on the GPU ahead of drawing it: now, if the frame's upload budget allows, or in its turn. Resolves
+	 * true once it's there (false if it was released first). Lower priorities go first, e.g. the distance to the
+	 * camera. `discardArrays` frees its arrays once it's up (as discardGeometryArrays()).
+	 * @example #A chunk from a worker, nearest first, keeping only the GPU copy
+	 *     await renderer.uploadGeometry(chunkMesh, { priority: distance, discardArrays: true });
+	 *     chunk.geometry(chunkMesh);
+	 */
+	uploadGeometry(geometryData: IgeGeometryData3d, options: { priority?: number; discardArrays?: boolean } = {}): Promise<boolean> {
+		const manager = this._geometryManager;
+		if (!manager) return Promise.resolve(false);
+		if (manager.hasGeometry(geometryData.id)) {
+			if (options.discardArrays) this._discardArrays(geometryData);
+			return Promise.resolve(true);
+		}
+		if (geometryData.gpuOnly || (!geometryData.vertices && !geometryData.packed)) return Promise.resolve(false);
+		if (options.discardArrays) geometryData.discardAfterUpload = true;
+		return new Promise((resolve) => {
+			const waiters = (this._uploadWaiters ??= new Map());
+			const list = waiters.get(geometryData.id);
+			if (list) list.push(resolve);
+			else waiters.set(geometryData.id, [resolve]);
+			this._uploadQueue().request(geometryData.id, geometryData, geometryGpuBytes(geometryData), options.priority ?? 0);
+		});
+	}
+
+	/** Whether a mesh is on the GPU (uploaded and not released). */
+	geometryUploaded(geometryData: IgeGeometryData3d | string): boolean {
+		return !!this._geometryManager?.hasGeometry(typeof geometryData === "string" ? geometryData : geometryData.id);
+	}
+
+	/**
+	 * Gets / sets whether model (glTF) textures get mipmaps when their sampler doesn't say (on by default): far
+	 * surfaces then sample a smaller copy instead of shimmering. A sampler whose minFilter asks for none (LINEAR or
+	 * NEAREST) is kept as it is. Applies to textures made from then on.
+	 * @example #A flat-colour atlas whose swatches bleed into each other far away: no mipmaps
+	 *     renderer.modelTextureMipmaps(false);
+	 */
+	modelTextureMipmaps(): boolean;
+	modelTextureMipmaps(enabled: boolean): this;
+	modelTextureMipmaps(enabled?: boolean): boolean | this {
+		if (enabled === undefined) return this._modelTextureMipmaps;
+		this._modelTextureMipmaps = enabled;
+		return this;
+	}
+
+	/** The upload queue (see uploadBudget()). */
+	protected _uploadQueue(): IgeGeometryUploadQueue<IgeGeometryData3d> {
+		return this._uploads ??= new IgeGeometryUploadQueue((data) => this._uploadNow(data));
+	}
+
+	/** A mesh uploaded now (the upload queue's turn for it): its arrays freed if asked, its waiters told. */
+	protected _uploadNow(geometryData: IgeGeometryData3d): void {
+		const manager = this._geometryManager;
+		if (!manager) return;
+		const geometry = manager.createGeometryFromData(geometryData.id || "unknown", geometryData);
+		// Geometry creation binds buffers with raw GL calls
+		this._stateManager?.reset();
+		if (geometry && geometryData.discardAfterUpload) this._discardArrays(geometryData);
+		this._resolveUpload(geometryData.id, !!geometry);
+	}
+
+	protected _resolveUpload(id: string, uploaded: boolean): void {
+		const waiters = this._uploadWaiters?.get(id);
+		if (!waiters) return;
+		this._uploadWaiters!.delete(id);
+		for (const resolve of waiters) resolve(uploaded);
 	}
 
 	/**
@@ -1109,9 +1229,23 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 */
 	discardGeometryArrays(geometryData: IgeGeometryData3d): boolean {
 		if (geometryData.gpuOnly) return true;
-		if (!this._getGeometry(geometryData)) return false;
+		if (!this._getGeometry(geometryData)) {
+			// Waiting for its turn to upload (uploadBudget()): freed once it's up
+			if (this._uploadQueue().has(geometryData.id)) {
+				geometryData.discardAfterUpload = true;
+				return true;
+			}
+			return false;
+		}
+		this._discardArrays(geometryData);
+		return true;
+	}
 
-		const vertices = geometryData.vertices;
+	/** A mesh's arrays freed (it's on the GPU), its bounding box kept. */
+	protected _discardArrays(geometryData: IgeGeometryData3d): void {
+		if (geometryData.gpuOnly) return;
+		// (A packed mesh with no box is unpacked to measure one: worker-built meshes should bring theirs)
+		const vertices = geometryData.boundingBox ? undefined : geometryData.vertices ?? (geometryData.packed ? unpackVertices(geometryData.packed).vertices : undefined);
 		if (!geometryData.boundingBox && vertices && vertices.length >= 3) {
 			const min: [number, number, number] = [Infinity, Infinity, Infinity];
 			const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
@@ -1132,10 +1266,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		delete geometryData.indices;
 		delete geometryData.boneWeights;
 		delete geometryData.boneIndices;
+		delete geometryData.packed;
+		delete geometryData.discardAfterUpload;
 		geometryData.gpuOnly = true;
 		// (If the context is ever lost, this one can't be re-uploaded: contextRestored names it)
 		if (geometryData.id) this._gpuOnlyGeometry.add(geometryData.id);
-		return true;
 	}
 
 	/**
@@ -1842,7 +1977,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (!ray) return false;
 
 		const camera = viewport.camera;
-		const isSprite = !entity._modelParts && !entity._geometryData?.vertices && !entity._geometryData?.gpuOnly && !!entity._texture;
+		const isSprite = !entity._modelParts && !entity._geometryData?.vertices && !entity._geometryData?.packed && !entity._geometryData?.gpuOnly && !!entity._texture;
 		const flat2d = !!(camera._up && camera._up.y < 0);
 
 		if (isSprite && !flat2d && entity._billboardMode !== 0) {
@@ -2171,7 +2306,24 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// Lines queued with debugLine() last one rendered frame
 		this._debugLineVertices = 0;
 
+		this._endUploadFrame();
 		return true;
+	}
+
+	/**
+	 * The frame's uploads (the game's since the last frame, and the renderer's) into its stats; then the next frame's
+	 * budget starts, and meshes waiting to upload go first while it lasts (the game's and the scene's new ones take
+	 * what's left). With meshes still waiting, another frame is due (render on demand).
+	 */
+	protected _endUploadFrame(): void {
+		const stats = this._stats, queue = this._uploadQueue(), frame = queue.frame;
+		stats.uploads = frame.uploads;
+		stats.uploadBytes = frame.bytes;
+		stats.uploadMs = frame.ms;
+		stats.geometryBytes = this._geometryManager?.gpuBytes?.() ?? 0;
+		queue.beginFrame();
+		stats.uploadsQueued = queue.length;
+		if (queue.length > 0) markSceneChanged();
 	}
 
 	/** True while a model texture that was asked for is still being made (the picture drawn meanwhile isn't final). */
@@ -2272,11 +2424,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			data.decals.push(obj as unknown as IgeDecalSystem3d);
 		} else if (parts && parts.length > 0) {
 			this._addModelParts(entity, parts, data);
-		} else if (geometryData && (geometryData.vertices || geometryData.gpuOnly)) {
+		} else if (geometryData && (geometryData.vertices || geometryData.packed || geometryData.gpuOnly)) {
 			// Plain geometry LOD applies only to the geometry it was made for
 			const lod = entity._modelLod;
 			const useLod = !!lod && lod.source === geometryData;
-			const item = this._addModelItem(
+			let item = this._addModelItem(
 				entity,
 				geometryData,
 				entity._materialData,
@@ -2285,6 +2437,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				useLod ? lod!.partGeometries[0] : null,
 				useLod ? lod!.screenSizes : null
 			);
+			if (item) {
+				(this._drawnGeometry ??= new WeakMap()).set(entity, geometryData);
+			} else if (!geometryData.gpuOnly) {
+				// Its mesh is waiting to upload (uploadBudget()): the one it drew before meanwhile, if that's still up
+				const before = this._drawnGeometry?.get(entity);
+				if (before && before !== geometryData && this._geometryManager?.hasGeometry(before.id)) {
+					item = this._addModelItem(entity, before, entity._materialData, null, entity._worldMatrix4?.matrix);
+				}
+			}
 			if (item) data.models.push(item);
 		} else if (entity._texture) {
 			data.sprites.push(entity);
@@ -2394,6 +2555,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		const shown = entity._modelPartsShown;
+		// With an upload budget, a model is drawn once all its meshes are up, not a part at a time
+		if (this._uploadQueue().limited) {
+			let ready = true;
+			for (let i = 0; i < parts.length; i++) {
+				if ((!shown || shown[i]) && !this._getGeometry(parts[i].geometryData)) ready = false;
+			}
+			if (!ready) return;
+		}
 		for (let i = 0; i < parts.length; i++) {
 			if (shown && !shown[i]) continue;
 			const part = parts[i];
@@ -2420,11 +2589,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * Start uploading a model texture image (once); it is used as soon as
 	 * the upload completes.
 	 */
-	protected _requestBlobTexture(textureId: string, blob: Blob): void {
+	protected _requestBlobTexture(textureId: string, blob: Blob, sampler?: IgeMaterialData["textureSampler"]): void {
 		if (!this._textureManager || this._pendingBlobTextures.has(textureId)) return;
 
 		this._pendingBlobTextures.add(textureId);
-		this._textureManager.createTextureFromBlob(textureId, blob).then((texture) => {
+		this._textureManager.createTextureFromBlob(textureId, blob, sampler, this._modelTextureMipmaps).then((texture) => {
 			if (!texture) {
 				this.log(`Failed to create model texture "${textureId}"`, "warning");
 			}
@@ -2657,21 +2826,18 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * Get the GPU geometry for geometry data, uploading it on first use.
 	 */
 	protected _getGeometry(geometryData: IgeGeometryData3d): IgeWebGlGeometry | undefined {
-		if (!this._geometryManager) return;
+		const manager = this._geometryManager;
+		if (!manager) return;
 
 		const geometryId = geometryData.id || "unknown";
-		let geometry = this._geometryManager.getGeometry(geometryId);
-		if (!geometry && geometryData.gpuOnly) {
-			// Arrays discarded and the GPU copy released: nothing left to draw
-			return;
-		}
-		if (!geometry) {
-			geometry = this._geometryManager.createGeometryFromData(geometryId, geometryData) || undefined;
-			if (!geometry) return;
-			// Geometry creation binds buffers with raw GL calls
-			this._stateManager?.reset();
-		}
-		return geometry;
+		const geometry = manager.getGeometry(geometryId);
+		if (geometry) return geometry;
+		// Arrays discarded and the GPU copy released: nothing left to draw
+		if (geometryData.gpuOnly) return;
+		if (!geometryData.vertices && !geometryData.packed) return;
+		// Uploaded now if the frame's budget allows (always, unless uploadBudget() is set), else in its turn
+		if (!this._uploadQueue().request(geometryId, geometryData, geometryGpuBytes(geometryData))) return;
+		return manager.getGeometry(geometryId);
 	}
 
 	/**
@@ -2765,7 +2931,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			if (this._textureManager.getBlobTexture(textureId)) {
 				item.blobTextureId = textureId;
 			} else if (materialData.textureBlob) {
-				this._requestBlobTexture(textureId, materialData.textureBlob);
+				this._requestBlobTexture(textureId, materialData.textureBlob, materialData.textureSampler);
 			}
 		}
 	}
@@ -3208,9 +3374,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/** An item's own uniforms (a non-instanced draw's). */
-	protected _writeItemUniforms(block: { data: Float32Array; at: Record<string, number> }, item: IgeWebGlRenderItem): void {
+	protected _writeItemUniforms(block: { data: Float32Array; at: Record<string, number> }, item: IgeWebGlRenderItem, geometry: IgeWebGlGeometry): void {
 		const { data, at } = block, mat = item.material;
-		data.set(item.worldMatrix, at.u_worldMatrix);
+		data.set(this._drawWorld(item, geometry), at.u_worldMatrix);
 		data[at.u_baseColor] = mat.r;
 		data[at.u_baseColor + 1] = mat.g;
 		data[at.u_baseColor + 2] = mat.b;
@@ -3222,10 +3388,35 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		data[at.u_emissiveColor + 1] = mat.emissiveG;
 		data[at.u_emissiveColor + 2] = mat.emissiveB;
 		data[at.u_emissiveIntensity] = mat.emissiveIntensity;
-		data[at.u_uvTransform] = mat.uvScaleU;
-		data[at.u_uvTransform + 1] = mat.uvScaleV;
-		data[at.u_uvTransform + 2] = mat.uvOffsetU;
-		data[at.u_uvTransform + 3] = mat.uvOffsetV;
+		this._writeUvTransform(data, at.u_uvTransform, mat, geometry);
+	}
+
+	/**
+	 * The world matrix an item's mesh is drawn with: its own, or with the mesh's quantised positions' decode applied
+	 * (world × decode, into a scratch matrix used before the next call).
+	 */
+	protected _drawWorld(item: IgeWebGlRenderItem, geometry: IgeWebGlGeometry): Float32Array {
+		if (!geometry.positionDecode) return item.worldMatrix;
+		const out = (this._decodedWorld ??= new Float32Array(16));
+		multiplyMat4Into(out, item.worldMatrix, geometry.positionDecode);
+		return out;
+	}
+
+	/** A material's texture transform, after the mesh's quantised texture coordinates' decode, into a block. */
+	protected _writeUvTransform(data: Float32Array, at: number, mat: IgeWebGlRenderItem["material"], geometry: IgeWebGlGeometry): void {
+		const d = geometry.uvDecode;
+		if (!d) {
+			data[at] = mat.uvScaleU;
+			data[at + 1] = mat.uvScaleV;
+			data[at + 2] = mat.uvOffsetU;
+			data[at + 3] = mat.uvOffsetV;
+			return;
+		}
+		// (uv × decode scale + decode offset) × scale + offset
+		data[at] = d[0] * mat.uvScaleU;
+		data[at + 1] = d[1] * mat.uvScaleV;
+		data[at + 2] = d[2] * mat.uvScaleU + mat.uvOffsetU;
+		data[at + 3] = d[3] * mat.uvScaleV + mat.uvOffsetV;
 	}
 
 	/** One lit mesh's draw (its geometry set), indexed or not, `count` instances. */
@@ -3263,15 +3454,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			if (instanced) {
 				const count = batch.items.length;
-				this._gpuInstanceData = packInstances(batch.items, 0, count, this._gpuInstanceData);
+				this._gpuInstanceData = packInstances(batch.items, 0, count, this._gpuInstanceData, geometry.positionDecode);
 				device.writeBuffer(this._gpuInstances!, 0, this._gpuInstanceData.subarray(0, count * INSTANCE_FLOATS));
 				pass.setVertexBuffer(1, this._gpuInstances!);
 				// Items in an instanced batch share their texture transform (it's part of the batch key)
-				const m = batch.items[0].material;
-				data[at.u_uvTransform] = m.uvScaleU;
-				data[at.u_uvTransform + 1] = m.uvScaleV;
-				data[at.u_uvTransform + 2] = m.uvOffsetU;
-				data[at.u_uvTransform + 3] = m.uvOffsetV;
+				this._writeUvTransform(data, at.u_uvTransform, batch.items[0].material, geometry);
 				if (skinned) data[at.u_useSkinning] = 1;
 				pass.setUniforms(data, [block.itemFrom, data.length]);
 				this._drawMesh(pass, geometry, count);
@@ -3281,7 +3468,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			} else {
 				for (let i = 0; i < batch.items.length; i++) {
 					const item = batch.items[i];
-					this._writeItemUniforms(block, item);
+					this._writeItemUniforms(block, item, geometry);
 					if (skinned) this._writeBones(block, item);
 					pass.setUniforms(data, [block.itemFrom, data.length]);
 					this._drawMesh(pass, geometry, 1);
@@ -3323,7 +3510,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._setMesh(pass, geometry);
 			this._setLitTextures(pass, item.gpuBase, item.gpuEmissive);
 			data[at.u_hasVertexColors] = geometry.hasVertexColors ? 1 : 0;
-			this._writeItemUniforms(block, item);
+			this._writeItemUniforms(block, item, geometry);
 			if (skinned) this._writeBones(block, item);
 			pass.setUniforms(data, [block.itemFrom, data.length]);
 			this._drawMesh(pass, geometry, 1);
@@ -3607,7 +3794,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			if (instanced) {
 				const count = batch.items.length;
-				this._gpuInstanceData = packInstances(batch.items, 0, count, this._gpuInstanceData);
+				this._gpuInstanceData = packInstances(batch.items, 0, count, this._gpuInstanceData, geometry.positionDecode);
 				device.writeBuffer(this._gpuInstances!, 0, this._gpuInstanceData.subarray(0, count * INSTANCE_FLOATS));
 				pass.setVertexBuffer(1, this._gpuInstances!);
 				if (skinned && palette) {
@@ -3626,7 +3813,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			} else {
 				for (let i = 0; i < batch.items.length; i++) {
 					const item = batch.items[i];
-					block.set(item.worldMatrix, at.u_worldMatrix);
+					block.set(this._drawWorld(item, geometry), at.u_worldMatrix);
 					if (skinned) {
 						const skeleton = item.skeleton;
 						block[at.u_useSkinning] = skeleton ? 1 : 0;

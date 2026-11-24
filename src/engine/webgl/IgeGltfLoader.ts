@@ -3,6 +3,7 @@ import { IgeEntity } from "@/engine/core/IgeEntity";
 import { multiplyMat4 } from "@/engine/webgl/IgeModelParts";
 import { IgeWebGlMaterial, IgeWebGlPBRMaterial } from "@/engine/webgl/IgeWebGlMaterial";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
+import type { IgeVertexEncodings } from "@/engine/webgl/IgeVertexPacking";
 import type {
 	IgeBone,
 	IgeSkeleton,
@@ -47,6 +48,47 @@ enum GltfComponentType {
  */
 /** Largest value of each integer component type, for normalized accessors. */
 const NORMALIZED_MAX = { 5120: 127, 5121: 255, 5122: 32767, 5123: 65535 } as const;
+
+/** Bytes in each component type. */
+const COMPONENT_BYTES: Record<number, number> = { 5120: 1, 5121: 1, 5122: 2, 5123: 2, 5125: 4, 5126: 4 };
+
+/** The compact GPU encoding of each integer component type, and its largest value. */
+const ENCODINGS = {
+	5120: { encoding: "snorm8", max: 127 },
+	5121: { encoding: "unorm8", max: 255 },
+	5122: { encoding: "snorm16", max: 32767 },
+	5123: { encoding: "unorm16", max: 65535 }
+} as const;
+
+/** Typed arrays over each component type (for reading tightly packed, aligned data in one go). */
+const COMPONENT_ARRAYS: Record<number, { new (buffer: ArrayBufferLike, byteOffset: number, length: number): ArrayLike<number> }> = {
+	5120: Int8Array, 5121: Uint8Array, 5122: Int16Array, 5123: Uint16Array, 5125: Uint32Array, 5126: Float32Array
+};
+
+/** `elements` elements of `components` values each, `stride` bytes apart in `view`, into `out` from `at`. */
+function readComponents (view: DataView, type: number, elements: number, components: number, stride: number, at: number, out: Float32Array): void {
+	const size = COMPONENT_BYTES[type];
+	const offset = view.byteOffset;
+	// Tightly packed and aligned (most float meshes): one typed-array copy
+	if (stride === components * size && offset % size === 0) {
+		const src = new COMPONENT_ARRAYS[type](view.buffer, offset, elements * components);
+		if (src instanceof Float32Array) out.set(src, at);
+		else for (let i = 0, n = elements * components; i < n; i++) out[at + i] = src[i];
+		return;
+	}
+	// Strided (quantised meshes pad elements to 4 bytes) or unaligned: element by element, one loop per type
+	const read: (o: number) => number =
+		type === 5126 ? (o) => view.getFloat32(o, true)
+			: type === 5125 ? (o) => view.getUint32(o, true)
+				: type === 5123 ? (o) => view.getUint16(o, true)
+					: type === 5122 ? (o) => view.getInt16(o, true)
+						: type === 5121 ? (o) => view.getUint8(o)
+							: (o) => view.getInt8(o);
+	for (let e = 0; e < elements; e++) {
+		const base = e * stride;
+		for (let c = 0; c < components; c++) out[at + e * components + c] = read(base + c * size);
+	}
+}
 
 const GLTF_TYPE_SIZES: Record<string, number> = {
 	SCALAR: 1,
@@ -154,6 +196,13 @@ export interface IgeGltfPrimitive {
 export class IgeGltfLoader extends IgeBaseClass {
 	classId = "IgeGltfLoader";
 
+	/**
+	 * Keep quantised meshes (KHR_mesh_quantization: integer positions, normals, texture coordinates) in their
+	 * integer formats on the GPU (true by default): half the memory or less. Their arrays on the CPU are floats
+	 * either way.
+	 */
+	keepQuantised: boolean = true;
+
 	// Cache loaded models
 	protected _modelCache: Map<string, IgeGltfModel> = new Map();
 	// Loads in progress, so the same model requested twice is fetched once
@@ -177,6 +226,26 @@ export class IgeGltfLoader extends IgeBaseClass {
 			this._pending.set(id, pending);
 		}
 		return pending;
+	}
+
+	/**
+	 * Parse a model already in memory: a GLB's bytes, or a glTF's JSON with its buffers embedded (data: URIs) or
+	 * beside `baseUrl`. Cached under `id` like a loaded one.
+	 * @example #A model built in code or fetched by hand
+	 *     const model = await igeGltfLoader.parse(glbBytes, "generatedTown");
+	 */
+	async parse(data: ArrayBuffer | object, id: string, baseUrl: string = ""): Promise<IgeGltfModel> {
+		let json: any = data;
+		let binary: ArrayBuffer | null = null;
+		if (data instanceof ArrayBuffer) {
+			const result = this._parseGlb(data);
+			json = result.json;
+			binary = result.binary;
+		}
+		const buffers = await this._loadBuffers(json, baseUrl, binary);
+		const model = await this._parseGltf(json, buffers, baseUrl, id);
+		this._modelCache.set(id, model);
+		return model;
 	}
 
 	protected async _load(url: string, id: string): Promise<IgeGltfModel> {
@@ -507,8 +576,17 @@ export class IgeGltfLoader extends IgeBaseClass {
 
 						if (imageIndex !== undefined && images[imageIndex] && images[imageIndex].data) {
 							material.baseColorTextureData(images[imageIndex].data, texCoord);
+							if (texture.sampler) material.baseColorSampler(texture.sampler);
 							this.log(`Material "${matDef.name}" has base color texture from image ${imageIndex}`);
 						}
+					}
+
+					// KHR_texture_transform: offset and scale (a quantised mesh's texture coordinates use it)
+					const transform = pbr.baseColorTexture.extensions?.KHR_texture_transform;
+					if (transform) {
+						const scale = transform.scale ?? [1, 1], offset = transform.offset ?? [0, 0];
+						material.textureTransform({ scale: [scale[0], scale[1]], offset: [offset[0], offset[1]] });
+						if (transform.rotation) this.log(`Material "${matDef.name}": KHR_texture_transform rotation isn't supported`, "warning");
 					}
 				}
 
@@ -660,6 +738,12 @@ export class IgeGltfLoader extends IgeBaseClass {
 			geometry.indices = this._getAccessorDataAsIndices(gltf, primitive.indices, buffers);
 		}
 
+		// Quantised (KHR_mesh_quantization): kept compact on the GPU, while the arrays above stay floats for the CPU
+		if (this.keepQuantised) {
+			const encodings = this._vertexEncodings(gltf, primitive.attributes);
+			if (encodings) geometry.vertexEncodings = encodings;
+		}
+
 		return geometry;
 	}
 
@@ -678,71 +762,77 @@ export class IgeGltfLoader extends IgeBaseClass {
 		return data;
 	}
 
+	/**
+	 * An accessor's values as floats, as stored (integers not yet normalized): read element by element at the buffer
+	 * view's byteStride (quantised meshes pad their elements to 4 bytes), zeros when it has no buffer view, and its
+	 * sparse values put in.
+	 */
 	protected _readAccessorData(gltf: any, accessorIndex: number, buffers: ArrayBuffer[]): Float32Array {
 		const accessor = gltf.accessors[accessorIndex];
-		const bufferView = gltf.bufferViews[accessor.bufferView];
-		const buffer = buffers[bufferView.buffer];
-
-		const byteOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
 		const componentCount = GLTF_TYPE_SIZES[accessor.type];
-		const elementCount = accessor.count * componentCount;
+		const componentType = accessor.componentType as GltfComponentType;
+		const size = COMPONENT_BYTES[componentType];
+		if (!size) throw new Error(`Unsupported accessor component type: ${accessor.componentType}`);
+		const result = new Float32Array(accessor.count * componentCount);
 
-		// Get raw bytes first to avoid alignment issues
-		const rawBytes = new Uint8Array(buffer, byteOffset);
-
-		// Create appropriate typed array based on component type
-		// We copy data to new arrays to avoid byte alignment issues
-		switch (accessor.componentType) {
-			case GltfComponentType.FLOAT: {
-				const result = new Float32Array(elementCount);
-				const dataView = new DataView(buffer, byteOffset, elementCount * 4);
-				for (let i = 0; i < elementCount; i++) {
-					result[i] = dataView.getFloat32(i * 4, true); // little-endian
-				}
-				return result;
-			}
-			case GltfComponentType.UNSIGNED_SHORT: {
-				const result = new Float32Array(elementCount);
-				const dataView = new DataView(buffer, byteOffset, elementCount * 2);
-				for (let i = 0; i < elementCount; i++) {
-					result[i] = dataView.getUint16(i * 2, true);
-				}
-				return result;
-			}
-			case GltfComponentType.UNSIGNED_INT: {
-				const result = new Float32Array(elementCount);
-				const dataView = new DataView(buffer, byteOffset, elementCount * 4);
-				for (let i = 0; i < elementCount; i++) {
-					result[i] = dataView.getUint32(i * 4, true);
-				}
-				return result;
-			}
-			case GltfComponentType.UNSIGNED_BYTE: {
-				const result = new Float32Array(elementCount);
-				for (let i = 0; i < elementCount; i++) {
-					result[i] = rawBytes[i];
-				}
-				return result;
-			}
-			case GltfComponentType.SHORT: {
-				const result = new Float32Array(elementCount);
-				const dataView = new DataView(buffer, byteOffset, elementCount * 2);
-				for (let i = 0; i < elementCount; i++) {
-					result[i] = dataView.getInt16(i * 2, true);
-				}
-				return result;
-			}
-			case GltfComponentType.BYTE: {
-				const result = new Float32Array(elementCount);
-				const signedBytes = new Int8Array(buffer, byteOffset, elementCount);
-				for (let i = 0; i < elementCount; i++) {
-					result[i] = signedBytes[i];
-				}
-				return result;
-			}
-			default:
-				throw new Error(`Unsupported accessor component type: ${accessor.componentType}`);
+		if (accessor.bufferView !== undefined) {
+			const bufferView = gltf.bufferViews[accessor.bufferView];
+			const buffer = buffers[bufferView.buffer];
+			const byteOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
+			const stride = bufferView.byteStride || componentCount * size;
+			const view = new DataView(buffer, byteOffset, Math.max(0, (accessor.count - 1) * stride + componentCount * size));
+			readComponents(view, componentType, accessor.count, componentCount, stride, 0, result);
 		}
+
+		// Sparse: some elements replaced (morph targets, edited meshes)
+		const sparse = accessor.sparse;
+		if (sparse && sparse.count > 0) {
+			const iv = gltf.bufferViews[sparse.indices.bufferView];
+			const indexBuffer = buffers[iv.buffer];
+			const indexType = sparse.indices.componentType as GltfComponentType;
+			const indexView = new DataView(indexBuffer, (iv.byteOffset || 0) + (sparse.indices.byteOffset || 0), sparse.count * COMPONENT_BYTES[indexType]);
+			const indices = new Float32Array(sparse.count);
+			readComponents(indexView, indexType, sparse.count, 1, COMPONENT_BYTES[indexType], 0, indices);
+			const vv = gltf.bufferViews[sparse.values.bufferView];
+			const valueView = new DataView(buffers[vv.buffer], (vv.byteOffset || 0) + (sparse.values.byteOffset || 0), sparse.count * componentCount * size);
+			const values = new Float32Array(sparse.count * componentCount);
+			readComponents(valueView, componentType, sparse.count, componentCount, componentCount * size, 0, values);
+			for (let i = 0; i < sparse.count; i++) {
+				for (let c = 0; c < componentCount; c++) result[indices[i] * componentCount + c] = values[i * componentCount + c];
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * How a primitive's attributes stay compact on the GPU when its file stores them as integers
+	 * (KHR_mesh_quantization): each in the encoding its accessor has, with the decode that turns unnormalized
+	 * integers back into what the file means (their node transform or texture transform does the rest). Undefined
+	 * when every attribute is float (nothing to keep).
+	 */
+	protected _vertexEncodings(gltf: any, attributes: Record<string, number>): IgeVertexEncodings | undefined {
+		const out: IgeVertexEncodings = {};
+		let quantised = false;
+		const take = (semantic: string, key: "position" | "normal" | "uv" | "color" | "boneWeights") => {
+			const index = attributes[semantic];
+			if (index === undefined) return;
+			const a = gltf.accessors[index];
+			const enc = ENCODINGS[a.componentType as keyof typeof ENCODINGS];
+			if (!enc) return;
+			// Normals, colours and weights must be normalized integers to be anything but floats
+			if (!a.normalized && key !== "position" && key !== "uv") return;
+			quantised = true;
+			(out as any)[key] = enc.encoding;
+			const scale = a.normalized ? 1 : enc.max;
+			if (key === "position") out.positionDecode = { scale, offset: [0, 0, 0] };
+			if (key === "uv" && !a.normalized) out.uvDecode = { scale: [scale, scale], offset: [0, 0] };
+		};
+		take("POSITION", "position");
+		take("NORMAL", "normal");
+		take("TEXCOORD_0", "uv");
+		take("COLOR_0", "color");
+		take("WEIGHTS_0", "boneWeights");
+		return quantised ? out : undefined;
 	}
 
 	/**
@@ -794,34 +884,11 @@ export class IgeGltfLoader extends IgeBaseClass {
 	 */
 	protected _getAccessorDataAsUint8(gltf: any, accessorIndex: number, buffers: ArrayBuffer[]): Uint8Array {
 		const accessor = gltf.accessors[accessorIndex];
-		const bufferView = gltf.bufferViews[accessor.bufferView];
-		const buffer = buffers[bufferView.buffer];
-
-		const byteOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
-		const componentCount = GLTF_TYPE_SIZES[accessor.type];
-		const elementCount = accessor.count * componentCount;
-
-		// JOINTS_0 can be UNSIGNED_BYTE or UNSIGNED_SHORT
-		switch (accessor.componentType) {
-			case GltfComponentType.UNSIGNED_BYTE: {
-				// Copy to new array to avoid alignment issues
-				const rawBytes = new Uint8Array(buffer, byteOffset, elementCount);
-				const result = new Uint8Array(elementCount);
-				result.set(rawBytes);
-				return result;
-			}
-			case GltfComponentType.UNSIGNED_SHORT: {
-				// Convert UNSIGNED_SHORT to UNSIGNED_BYTE using DataView for safety
-				const result = new Uint8Array(elementCount);
-				const dataView = new DataView(buffer, byteOffset, elementCount * 2);
-				for (let i = 0; i < elementCount; i++) {
-					result[i] = dataView.getUint16(i * 2, true); // Should fit since bone count < 256
-				}
-				return result;
-			}
-			default:
-				throw new Error(`Unsupported JOINTS accessor type: ${accessor.componentType}`);
+		// JOINTS_0 is UNSIGNED_BYTE or UNSIGNED_SHORT (bone counts fit a byte); read at the view's stride
+		if (accessor.componentType !== GltfComponentType.UNSIGNED_BYTE && accessor.componentType !== GltfComponentType.UNSIGNED_SHORT) {
+			throw new Error(`Unsupported JOINTS accessor type: ${accessor.componentType}`);
 		}
+		return Uint8Array.from(this._readAccessorData(gltf, accessorIndex, buffers));
 	}
 
 	/**

@@ -323,11 +323,24 @@ targets are made again only when the scale changes. See `IgeDynamicResolution`.
 | `renderer.shadowSharing(threshold)` | Split-screen views close together share one shadow map |
 | `ige.engine.renderOnDemand(true)` | Draw only when something visible changed (strategy games, menus); setters such as `material()`, `texture()` and `opacity()` count as changes, edits to objects in place need `ige.engine.manualRender()` |
 | `renderer.debugDraw({ bounds, shadowFrustum })`, `debugLine()` | See culling, LOD levels and shadow coverage |
-| `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame |
+| `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame; uploads and GPU bytes held by meshes (`geometryBytes`) |
+| `renderer.uploadBudget({ bytes, ms })` | Spread mesh uploads across frames, so streaming in chunks doesn't stutter (see [`streaming-geometry.md`](streaming-geometry.md)) |
+| `quantiseGeometry(mesh)` | Half the GPU memory for a mesh: 16-bit positions, 8-bit normals, 16-bit texture coordinates |
 
 ## Physics
 
 Characters, debris and ragdolls with Jolt physics: see [`physics-3d.md`](physics-3d.md).
+
+## Big static worlds
+
+Cities and terrain streamed in chunks: merge each chunk's pieces into one mesh per material in a worker
+(`mergeGeometry()`), keep the vertices compact (16 bytes, not 32), hand the meshes to the main thread ready to upload,
+and let the renderer upload them a few a frame (`renderer.uploadBudget()`). Quantised glTF files
+(`KHR_mesh_quantization`, as `gltfpack` writes them) load and stay compact on the GPU. See
+[`streaming-geometry.md`](streaming-geometry.md).
+
+Textures in glTF files get mipmaps (as their sampler asks; on when it doesn't say). A flat-colour atlas whose swatches
+bleed together far away can turn them off with `renderer.modelTextureMipmaps(false)`.
 
 ## Freeing resources
 
@@ -339,7 +352,8 @@ and `renderer.releaseTexture(texture)` or `texture.destroy()`.
   doesn't). Give a rebuilt mesh a new `id`; the renderer uploads once per id.
 - `renderer.discardGeometryArrays(mesh)` frees a mesh's CPU arrays once it is uploaded, so only the GPU copy remains:
   for big meshes the game never reads again. Its bounding box is kept for culling and pointer events; generate LODs
-  first, and expect triangle picking, raycasts, decals and physics mesh shapes to skip it.
+  first, and expect triangle picking, raycasts, decals and physics mesh shapes to skip it. With an upload budget, a
+  mesh still waiting for its turn is freed once it's up.
 - Raycasts and projected decals use a triangle BVH for meshes over 512 triangles, built on first use (about half a
   second for 320,000 triangles). `getTriangleBvh(mesh)` from `IgeTriangleBvh` builds it ahead, e.g. while loading.
 

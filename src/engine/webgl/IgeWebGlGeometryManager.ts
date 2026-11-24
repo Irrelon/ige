@@ -3,6 +3,15 @@ import type { IgeWebGlResourceManager } from "@/engine/webgl/IgeWebGlResourceMan
 import { IgeWebGlGeometry } from "@/engine/webgl/IgeWebGlGeometry";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import { type IgeWebGl2GpuDevice, webGl2Buffer } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import type { IgeGpuVertexFormat } from "@/engine/gpu/IgeGpuDevice";
+import { type IgePackedVertices, packVertices, positionDecodeMatrix, unpackVertices, vertexBounds } from "@/engine/webgl/IgeVertexPacking";
+
+/** Each vertex format as GL's size, type and normalized flag (for the passes still binding attributes themselves). */
+const GL_FORMATS: Partial<Record<IgeGpuVertexFormat, [number, number, boolean]>> = {
+	float32: [1, 0x1406, false], float32x2: [2, 0x1406, false], float32x3: [3, 0x1406, false], float32x4: [4, 0x1406, false],
+	unorm8x2: [2, 0x1401, true], unorm8x4: [4, 0x1401, true], snorm8x2: [2, 0x1400, true], snorm8x4: [4, 0x1400, true],
+	unorm16x2: [2, 0x1403, true], unorm16x4: [4, 0x1403, true], snorm16x2: [2, 0x1402, true], snorm16x4: [4, 0x1402, true]
+};
 
 /**
  * Manages geometry (vertex and index buffers, on the GPU device) creation and caching for WebGL renderer.
@@ -19,6 +28,9 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 
 	// Shared quad geometry for all sprites (created once, reused)
 	protected _sharedQuadGeometry?: IgeWebGlGeometry;
+
+	// Bytes held by every geometry's buffers on the GPU
+	protected _bytes = 0;
 
 	constructor(
 		gl: WebGL2RenderingContext,
@@ -38,15 +50,15 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 	 * A geometry's buffers made on the device and filled. (Called amid GL code of the renderer's own: what the device
 	 * knows of GL's state is forgotten first, and the buffer bindings are left as GL code made them, none.)
 	 */
-	protected _upload(geometry: IgeWebGlGeometry, vertices: Float32Array, indices?: Uint16Array | Uint32Array): void {
+	protected _upload(geometry: IgeWebGlGeometry, vertices: ArrayBufferView | ArrayBuffer, indices?: Uint16Array | Uint32Array): void {
 		const gl = this._gl, d = this._device;
 		d.invalidate();
-		geometry.gpuVertex = d.createBuffer({ size: vertices.byteLength, usage: "vertex", label: `${geometry.id} vertices` });
-		d.writeBuffer(geometry.gpuVertex, 0, vertices);
+		const bytes = ArrayBuffer.isView(vertices) ? vertices : new Uint8Array(vertices);
+		// (Made with their contents: one copy each)
+		geometry.gpuVertex = d.createBuffer({ size: bytes.byteLength, usage: "vertex", data: bytes, label: `${geometry.id} vertices` });
 		geometry.vertexBuffer = webGl2Buffer(d, geometry.gpuVertex);
 		if (indices) {
-			geometry.gpuIndex = d.createBuffer({ size: indices.byteLength, usage: "index", label: `${geometry.id} indices` });
-			d.writeBuffer(geometry.gpuIndex, 0, indices);
+			geometry.gpuIndex = d.createBuffer({ size: indices.byteLength, usage: "index", data: indices, label: `${geometry.id} indices` });
 			geometry.indexBuffer = webGl2Buffer(d, geometry.gpuIndex);
 		}
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -107,7 +119,8 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Create geometry from IgeGeometryData3d.
+	 * Create geometry from IgeGeometryData3d: its vertices packed (data.packed as it is, already interleaved, or its
+	 * arrays packed now in data.vertexEncodings, float32 by default) and uploaded with its indices.
 	 */
 	createGeometryFromData(geometryId: string, data: IgeGeometryData3d): IgeWebGlGeometry | null | undefined {
 		// Check if already cached
@@ -117,142 +130,48 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 
 		const gl = this._gl;
 
-		// Create geometry object
-		const geometry = new IgeWebGlGeometry(geometryId, gl.TRIANGLES);
-
-		// Handle different geometry data formats
-		if (!data.vertices) {
+		if (!data.vertices && !data.packed) {
 			this.log(`Geometry data "${geometryId}" has no vertex data`, "error");
 			return null;
 		}
 
-		// Build interleaved vertex data
-		const vertexCount = data.vertices.length / 3; // Assuming vec3 positions
-		const hasNormals = !!data.normals;
-		const hasUVs = !!data.uvs;
-		const colorSize = data.colors && vertexCount > 0 ? Math.round(data.colors.length / vertexCount) : 0;
-		const hasColors = colorSize === 3 || colorSize === 4;
-		const hasBoneWeights = !!data.boneWeights;
-		const hasBoneIndices = !!data.boneIndices;
-		const isSkinned = hasBoneWeights && hasBoneIndices;
-
-		// Calculate stride
-		let componentsPerVertex = 3; // Position (x, y, z)
-		if (hasNormals) componentsPerVertex += 3; // Normal (nx, ny, nz)
-		if (hasUVs) componentsPerVertex += 2; // UV (u, v)
-		if (hasColors) componentsPerVertex += 4; // Color (r, g, b, a)
-		if (hasBoneWeights) componentsPerVertex += 4; // Bone weights (w0, w1, w2, w3)
-		if (hasBoneIndices) componentsPerVertex += 4; // Bone indices (i0, i1, i2, i3) - stored as floats
-
-		const stride = componentsPerVertex * 4; // * 4 bytes per float
-
-		// Build interleaved array
-		const interleavedData = new Float32Array(vertexCount * componentsPerVertex);
-		let offset = 0;
-
-		for (let i = 0; i < vertexCount; i++) {
-			// Position
-			interleavedData[offset++] = data.vertices[i * 3];
-			interleavedData[offset++] = data.vertices[i * 3 + 1];
-			interleavedData[offset++] = data.vertices[i * 3 + 2];
-
-			// Normal
-			if (hasNormals && data.normals) {
-				interleavedData[offset++] = data.normals[i * 3];
-				interleavedData[offset++] = data.normals[i * 3 + 1];
-				interleavedData[offset++] = data.normals[i * 3 + 2];
-			}
-
-			// UV
-			if (hasUVs && data.uvs) {
-				interleavedData[offset++] = data.uvs[i * 2];
-				interleavedData[offset++] = data.uvs[i * 2 + 1];
-			}
-
-			// Color
-			if (hasColors && data.colors) {
-				// RGB or RGBA per vertex
-				const c = data.colors;
-				const o = i * colorSize;
-				interleavedData[offset++] = c[o];
-				interleavedData[offset++] = c[o + 1];
-				interleavedData[offset++] = c[o + 2];
-				interleavedData[offset++] = colorSize === 4 ? c[o + 3] : 1;
-			}
-
-			// Bone weights (4 floats per vertex from WEIGHTS_0)
-			if (hasBoneWeights && data.boneWeights) {
-				interleavedData[offset++] = data.boneWeights[i * 4];
-				interleavedData[offset++] = data.boneWeights[i * 4 + 1];
-				interleavedData[offset++] = data.boneWeights[i * 4 + 2];
-				interleavedData[offset++] = data.boneWeights[i * 4 + 3];
-			}
-
-			// Bone indices (4 bytes converted to floats from JOINTS_0)
-			if (hasBoneIndices && data.boneIndices) {
-				interleavedData[offset++] = data.boneIndices[i * 4];
-				interleavedData[offset++] = data.boneIndices[i * 4 + 1];
-				interleavedData[offset++] = data.boneIndices[i * 4 + 2];
-				interleavedData[offset++] = data.boneIndices[i * 4 + 3];
-			}
-		}
+		// Interleaved: as the worker (or whoever) packed it, or packed here
+		const packed = data.packed ?? packVertices(data, data.vertexEncodings);
+		const geometry = new IgeWebGlGeometry(geometryId, gl.TRIANGLES);
 
 		// Its vertex buffer, and its index buffer if it has indices
-		this._upload(geometry, interleavedData, data.indices ?? undefined);
+		this._upload(geometry, packed.data, data.indices ?? undefined);
 		if (data.indices) geometry.setIndexData(data.indices);
+		geometry.gpuBytes = packed.data.byteLength + (data.indices?.byteLength ?? 0);
+		this._bytes += geometry.gpuBytes;
 
-		// Define vertex attributes
-		let attrOffset = 0;
-
-		// Position attribute
-		geometry.addAttribute("a_position", 3, gl.FLOAT, false, stride, attrOffset);
-		attrOffset += 3 * 4;
-
-		// Normal attribute
-		if (hasNormals) {
-			geometry.addAttribute("a_normal", 3, gl.FLOAT, false, stride, attrOffset);
-			attrOffset += 3 * 4;
+		// Its vertex attributes, by the layout it was packed in
+		for (const a of packed.attributes) {
+			const [size, type, normalized] = GL_FORMATS[a.format] ?? [4, gl.FLOAT, false];
+			geometry.addAttribute(`a_${a.name}`, size, type, normalized, packed.stride, a.offset, a.format);
+			if (a.name === "color") geometry.hasVertexColors = true;
 		}
-
-		// UV attribute
-		if (hasUVs) {
-			geometry.addAttribute("a_uv", 2, gl.FLOAT, false, stride, attrOffset);
-			attrOffset += 2 * 4;
-		}
-
-		// Color attribute
-		if (hasColors) {
-			geometry.addAttribute("a_color", 4, gl.FLOAT, false, stride, attrOffset);
-			geometry.hasVertexColors = true;
-			attrOffset += 4 * 4;
-		}
-
-		// Bone weights attribute (4 floats per vertex)
-		if (hasBoneWeights) {
-			geometry.addAttribute("a_boneWeights", 4, gl.FLOAT, false, stride, attrOffset);
-			attrOffset += 4 * 4;
-		}
-
-		// Bone indices attribute (4 floats per vertex - indices stored as floats)
-		if (hasBoneIndices) {
-			geometry.addAttribute("a_boneIndices", 4, gl.FLOAT, false, stride, attrOffset);
-			attrOffset += 4 * 4;
-		}
-
-		geometry.setVertexData(interleavedData, vertexCount);
+		geometry.setVertexData(packed.data, packed.count);
+		if (packed.positionDecode) geometry.positionDecode = positionDecodeMatrix(packed.positionDecode);
+		if (packed.uvDecode) geometry.uvDecode = [packed.uvDecode.scale[0], packed.uvDecode.scale[1], packed.uvDecode.offset[0], packed.uvDecode.offset[1]];
 
 		// Set skinning information
-		if (isSkinned) {
+		if (packed.attributes.some((a) => a.name === "boneWeights") && packed.attributes.some((a) => a.name === "boneIndices")) {
 			geometry.isSkinned = true;
 			geometry.skeletonId = data.skeletonId;
 		}
 
-		this._computeBounds(geometry, data, vertexCount);
+		this._computeBounds(geometry, data, packed.count, packed);
 
 		// Cache geometry. Not logged: dynamic content (e.g. terrain chunks)
 		// creates many geometries.
 		this._geometries.set(geometryId, geometry);
 		return geometry;
+	}
+
+	/** Bytes held on the GPU by every geometry's vertex and index buffers. */
+	gpuBytes(): number {
+		return this._bytes;
 	}
 
 	/**
@@ -261,10 +180,17 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 	 * vertex positions (box centre + furthest vertex). Skinned meshes are
 	 * measured in bind pose, so their radius is padded to cover animation.
 	 */
-	protected _computeBounds(geometry: IgeWebGlGeometry, data: IgeGeometryData3d, vertexCount: number): void {
+	protected _computeBounds(geometry: IgeWebGlGeometry, data: IgeGeometryData3d, vertexCount: number, packed?: IgePackedVertices): void {
 		let cx = 0, cy = 0, cz = 0, radius = -1;
 
-		if (data.boundingSphere) {
+		if (!data.boundingSphere && !data.vertices && packed && vertexCount > 0) {
+			// Packed only (built in a worker without bounds): measured from what was packed, in the mesh's own units
+			const b = vertexBounds(unpackVertices(packed).vertices, vertexCount);
+			cx = b.center[0];
+			cy = b.center[1];
+			cz = b.center[2];
+			radius = b.radius;
+		} else if (data.boundingSphere) {
 			cx = data.boundingSphere.center[0];
 			cy = data.boundingSphere.center[1];
 			cz = data.boundingSphere.center[2];
@@ -337,6 +263,7 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		}
 
 		// Delete buffers
+		this._bytes -= geometry.gpuBytes;
 		if (geometry.gpuVertex) this._device.destroyBuffer(geometry.gpuVertex);
 		if (geometry.gpuIndex) this._device.destroyBuffer(geometry.gpuIndex);
 		geometry.vertexBuffer = geometry.indexBuffer = null;

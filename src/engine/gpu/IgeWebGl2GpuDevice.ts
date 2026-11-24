@@ -172,8 +172,15 @@ const VERTEX_FORMATS: Record<IgeGpuVertexFormat, [number, number, boolean, boole
 	float32x2: [2, 0x1406, false, false],
 	float32x3: [3, 0x1406, false, false],
 	float32x4: [4, 0x1406, false, false],
-	uint8x4: [4, 0x1401, false, true],
+	unorm8x2: [2, 0x1401, true, false],
 	unorm8x4: [4, 0x1401, true, false],
+	snorm8x2: [2, 0x1400, true, false],
+	snorm8x4: [4, 0x1400, true, false],
+	unorm16x2: [2, 0x1403, true, false],
+	unorm16x4: [4, 0x1403, true, false],
+	snorm16x2: [2, 0x1402, true, false],
+	snorm16x4: [4, 0x1402, true, false],
+	uint8x4: [4, 0x1401, false, true],
 	uint16x4: [4, 0x1403, false, true],
 	uint32: [1, 0x1405, false, true],
 	sint32: [1, 0x1404, false, true]
@@ -332,9 +339,17 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		const gl = this.gl;
 		const target = desc.usage === "index" ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
 		const b: GlBuffer = { kind: "buffer", size: desc.size, usage: desc.usage, label: desc.label, _buf: gl.createBuffer()!, _target: target, _stream: !!desc.stream, _gen: this._gen };
+		if (desc.data && desc.data.byteLength > desc.size) {
+			throw new Error(`IgeGpuDevice: ${desc.label ?? "a buffer"}'s data (${desc.data.byteLength} bytes) is bigger than its size (${desc.size})`);
+		}
 		if (desc.size > 0) {
 			this._bindBuffer(b);
-			gl.bufferData(target, desc.size, desc.stream ? gl.STREAM_DRAW : gl.STATIC_DRAW);
+			// (Made with its contents: one copy, no zero-filled storage written over)
+			if (desc.data && desc.data.byteLength === desc.size) gl.bufferData(target, desc.data, desc.stream ? gl.STREAM_DRAW : gl.STATIC_DRAW);
+			else {
+				gl.bufferData(target, desc.size, desc.stream ? gl.STREAM_DRAW : gl.STATIC_DRAW);
+				if (desc.data && desc.data.byteLength > 0) gl.bufferSubData(target, 0, desc.data);
+			}
 		}
 		return b;
 	}

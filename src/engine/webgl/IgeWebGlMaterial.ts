@@ -1,6 +1,14 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 
+/** A texture's sampling, as glTF gives it (GL constants: 9729 LINEAR, 9987 LINEAR_MIPMAP_LINEAR, 10497 REPEAT...). */
+export interface IgeMaterialTextureSampler {
+	magFilter?: number;
+	minFilter?: number;
+	wrapS?: number;
+	wrapT?: number;
+}
+
 /**
  * Material blend modes for transparency handling.
  */
@@ -185,6 +193,35 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 	baseColorTexCoord(): number {
 		return this._baseColorTexCoord;
 	}
+
+	/**
+	 * Gets / sets how the base colour texture is sampled, as a glTF sampler gives it (GL filter and wrap constants):
+	 * a minFilter that asks for mipmaps gets them, LINEAR or NEAREST gets none.
+	 */
+	baseColorSampler(): IgeMaterialTextureSampler | undefined;
+	baseColorSampler(sampler: IgeMaterialTextureSampler): this;
+	baseColorSampler(sampler?: IgeMaterialTextureSampler): IgeMaterialTextureSampler | undefined | this {
+		if (sampler === undefined) return this._baseColorSampler;
+		this._baseColorSampler = sampler;
+		this._dirty = true;
+		return this;
+	}
+
+	/**
+	 * Gets / sets the texture transform (glTF's KHR_texture_transform: uv × scale + offset), e.g. the range a
+	 * quantised mesh's texture coordinates are stored in.
+	 */
+	textureTransform(): { scale: [number, number]; offset: [number, number] } | undefined;
+	textureTransform(transform: { scale: [number, number]; offset: [number, number] }): this;
+	textureTransform(transform?: { scale: [number, number]; offset: [number, number] }): { scale: [number, number]; offset: [number, number] } | undefined | this {
+		if (transform === undefined) return this._textureTransform;
+		this._textureTransform = transform;
+		this._dirty = true;
+		return this;
+	}
+
+	protected _baseColorSampler?: IgeMaterialTextureSampler;
+	protected _textureTransform?: { scale: [number, number]; offset: [number, number] };
 
 	/**
 	 * Check if material has base color texture data.
