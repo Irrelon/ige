@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="yes" name="mobile-web-app-capable" />
+  <meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+  <meta content="https://www.isogenicengine.com" name="game-engine-origin" />
+  <title>Breakables - Isogenic Engine</title>
+  <link rel="icon" href="data:," />
+
+  <link href="../../css/ige.css" media="all" rel="stylesheet" type="text/css" />
+  <script src="./index.bundle.js" type="module"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #8fb3d9;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .panel {
+      position: absolute;
+      color: #fff;
+      background: rgba(10, 14, 20, 0.72);
+      border-radius: 8px;
+      padding: 10px 14px;
+      z-index: 1000;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    #info { top: 12px; left: 12px; max-width: 340px; }
+    #info h2 { margin: 0 0 6px 0; font-size: 16px; color: #ffd166; }
+    #info .muted { color: #b8c2cc; }
+    #info kbd {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+      padding: 0 4px;
+      font-family: inherit;
+      font-size: 12px;
+    }
+
+    #breaks { top: 12px; right: 12px; max-width: 430px; font-variant-numeric: tabular-nums; }
+    #breaks h3 { margin: 0 0 4px 0; font-size: 14px; color: #ffd166; }
+    #recent { white-space: pre-line; color: #dfe6ec; font-size: 12px; margin-top: 6px; }
+    #lastBreak { color: #fff; }
+    #totals { color: #b8c2cc; font-size: 12px; margin-top: 6px; }
+    #slowmo { color: #ffd166; }
+
+    #hud { right: 16px; bottom: 16px; min-width: 120px; text-align: right; font-variant-numeric: tabular-nums; }
+    #hud .speed { font-size: 44px; font-weight: 700; line-height: 1; }
+    #hud .unit { font-size: 14px; color: #b8c2cc; margin-left: 4px; }
+  </style>
+</head>
+<body>
+<div id="info" class="panel">
+  <h2>Breakables</h2>
+  <div><kbd>W</kbd>/<kbd>↑</kbd> throttle, <kbd>S</kbd>/<kbd>↓</kbd> brake and reverse</div>
+  <div><kbd>A</kbd> <kbd>D</kbd>/<kbd>←</kbd> <kbd>→</kbd> steer, <kbd>Space</kbd> handbrake</div>
+  <div><kbd>R</kbd> back on its wheels, <kbd>T</kbd> rebuild the street, <kbd>M</kbd> slow motion</div>
+  <div class="muted">Gamepad: right trigger throttle, left trigger brake, left stick steer, A handbrake, B reset, Y rebuild</div>
+  <div class="muted" style="margin-top: 6px;">Every prop is cut where it's hit, at run time: crates and pallets, a fence, barriers, cones, bins, benches, bollards, a bus shelter, a phone box and a shop window.</div>
+  <div class="muted" style="margin-top: 6px;">Physics: <span id="physicsStatus">loading...</span></div>
+</div>
+
+<div id="breaks" class="panel">
+  <h3>Breaks <span id="slowmo"></span></h3>
+  <div id="lastBreak">Drive into something.</div>
+  <div id="recent"></div>
+  <div id="totals"></div>
+</div>
+
+<div id="hud" class="panel">
+  <div><span id="speed" class="speed">0</span><span class="unit">km/h</span></div>
+</div>
+
+<div class="igeLoading loadingFloat">
+  <div class="loadingLogo"></div>
+  <div class="loadingCircle"></div>
+  <div class="loadingCircleInner"></div>
+  <div class="loadingText" id="loadingText">Loading breakables...</div>
+</div>
+</body>
+</html>

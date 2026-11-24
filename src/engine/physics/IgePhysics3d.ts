@@ -10,6 +10,7 @@ import { IgePhysicsVehicle3d } from "@/engine/physics/IgePhysicsVehicle3d";
 import { resolveVehicleSpec, vehicleBackendSpec } from "@/engine/physics/IgePhysicsVehicle3dBackend";
 import type { IgePhysicsVehicle3dApi, IgePhysicsVehicleLanding, IgePhysicsVehicleOptions } from "@/engine/physics/IgePhysicsVehicle3dApi";
 import { IgePhysicsBody3d, IgePhysicsSensor3d, multiplyQuat, rotateVector } from "@/engine/physics/IgePhysicsBody3d";
+import { IgeBreakable3d, IgeBreakables3d, type IgeBreakableOptions } from "@/engine/physics/IgeBreakable3d";
 import {
 	type IgePhysicsBackend,
 	type IgePhysicsBackendFactory,
@@ -46,6 +47,8 @@ export type {
 	IgeRagdollState
 } from "@/engine/physics/IgePhysics3dTypes";
 export type { IgePhysicsBackend, IgePhysicsBackendFactory } from "@/engine/physics/IgePhysicsBackend";
+export { IgeBreakable3d, IgeBreakables3d };
+export type { IgeBreakableOptions, IgeBreakEvent, IgeBreakResult, IgeBreakablePiece3d, IgeBreakableMaterial } from "@/engine/physics/IgeBreakable3d";
 
 type Vec3 = IgePhysicsVec3;
 type Quat = IgePhysicsQuat;
@@ -146,6 +149,8 @@ export class IgePhysics3d extends IgeEventingClass {
 	_stepMs: number = 0;
 	_stepsLastUpdate: number = 0;
 	_bodiesAddedSinceOptimize: number = 0;
+	/** Breakable props and their pieces, made on first use (see breakables). */
+	_breakables?: IgeBreakables3d;
 
 	// Reused query results and vectors (no allocation per step)
 	_touching: IgePhysicsBodyHandle[] = [];
@@ -500,6 +505,27 @@ export class IgePhysics3d extends IgeEventingClass {
 		own._free();
 	}
 
+	/**
+	 * Make an entity breakable: when its body is hit harder than
+	 * `threshold` it's cut into pieces round the hit (seeded, so every
+	 * machine cuts the same ones) or swapped for pre-made pieces, which fly
+	 * off with the blow; small ones fade after a while. Uses the entity's
+	 * body, or makes a static one from its mesh. See IgeBreakable3d and
+	 * guides/breakables-3d.md.
+	 * @example #A crate that breaks when a car hits it
+	 *     physics.addBody(crate, { shape: { type: "box", halfExtents: { x: 30, y: 30, z: 30 } }, density: 90 });
+	 *     const breakable = physics.addBreakable(crate, { threshold: 6000, material: "wood", mass: 20 });
+	 *     breakable.on("break", (result) => network.send(result.event));
+	 */
+	addBreakable (entity: IgeEntity, options: IgeBreakableOptions): IgeBreakable3d {
+		return this.breakables.add(entity, options);
+	}
+
+	/** Every breakable in the world and their pieces: events, limits, replaying breaks from other machines. */
+	get breakables (): IgeBreakables3d {
+		return (this._breakables ??= new IgeBreakables3d(this));
+	}
+
 	/** The vehicle made from an entity by addVehicle(), if any. */
 	vehicleOf (entity: IgeEntity): IgePhysicsVehicle3dApi | undefined {
 		return (entity as any)._physicsVehicle3d;
@@ -520,6 +546,7 @@ export class IgePhysics3d extends IgeEventingClass {
 			for (const vehicle of this._vehicles) vehicle._preStep(step);
 			this._moveKinematicBodies(step);
 			if (this._impactBodies.length) this._recordImpactVelocities();
+			this._breakables?._preStep(step);
 			this._backend.step(step);
 			this._captureBodies();
 			for (const vehicle of this._vehicles) vehicle._postStep();
@@ -528,6 +555,7 @@ export class IgePhysics3d extends IgeEventingClass {
 				this._checkVehicleImpacts(step);
 				this._checkVehiclesAirborne(step);
 			}
+			this._breakables?._postStep(step);
 			this._accumulator -= step;
 			steps++;
 		}
@@ -594,6 +622,7 @@ export class IgePhysics3d extends IgeEventingClass {
 	/** Free every body and the world. */
 	destroy (): void {
 		this.stop();
+		this._breakables?.destroy();
 		for (const ragdoll of [...this._ragdolls]) this.removeRagdoll(ragdoll);
 		for (const vehicle of [...this._vehicles]) this.removeVehicle(vehicle);
 		for (const sensor of [...this._sensors]) this.removeSensor(sensor);

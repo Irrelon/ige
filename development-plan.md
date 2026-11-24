@@ -47,7 +47,7 @@ plan prioritises what the target games need.
 | Camera | Perspective and orthographic projection, up vector and look direction, `lookAtPoint()`, presets (`isometric`, `isometric45`, `topDown`, `sideScroller`, `screen2d`) |
 | 2D | WebGL when available (`igeCreateRenderer()`, or no renderer assigned), `screen2d` camera (Canvas 2D style: y down, one unit per pixel, zoom by camera scale), smart textures drawn per entity (redrawn every frame, or when dirty with `cache(true)`), flat 2D sprites with full 2D transforms, entity `preTick` behaviours (run once per frame), `IgeFontEntity` text (native fonts, bitmap font sheets, `bindData()`), texture filters (including filters applied later and animated pre-filters), split screen |
 | Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()` |
-| Physics | `IgePhysics3d` over pluggable backends (`IgePhysicsBackend`: SI units, opaque handles, no engine types), Jolt the first (loaded on demand, multithreaded when the page is cross-origin isolated), chosen with `create({ backend })`: static, dynamic and kinematic boxes, spheres, capsules, triangle meshes, heightfields, convex hulls and compound shapes on entities, named collision layers, trigger volumes (`addSensor()`, enter and exit events), impact events, player characters (`addCharacter()`: steps, slopes, pushing, optionally unpushable), interpolation between fixed steps, impulses, raycasts, `createRagdoll()` from a skinned entity's skeleton, per-body state as JSON for ownership changes and moving between servers; `entity.quaternion()` for full 3D rotations. Behaviour tests run per backend through the public API. The zombie demo runs on it with `?physics=1`. Vehicles: `addVehicle()` makes cars, vans, buses and motorcycles with wheel entities posed, speed, revs, gear and tyre slip readouts, air control, self-righting cars, wheelies and stoppies, motorcycles that can be let fall, impact and landing events, and `getState()` / `setState()` plus a kinematic mode for networked cars; example `vehicles`, `guides/vehicles-3d.md` |
+| Physics | `IgePhysics3d` over pluggable backends (`IgePhysicsBackend`: SI units, opaque handles, no engine types), Jolt the first (loaded on demand, multithreaded when the page is cross-origin isolated), chosen with `create({ backend })`: static, dynamic and kinematic boxes, spheres, capsules, triangle meshes, heightfields, convex hulls and compound shapes on entities, named collision layers, trigger volumes (`addSensor()`, enter and exit events), impact events, player characters (`addCharacter()`: steps, slopes, pushing, optionally unpushable), interpolation between fixed steps, impulses, raycasts, `createRagdoll()` from a skinned entity's skeleton, per-body state as JSON for ownership changes and moving between servers; `entity.quaternion()` for full 3D rotations. Behaviour tests run per backend through the public API. The zombie demo runs on it with `?physics=1`. Vehicles: `addVehicle()` makes cars, vans, buses and motorcycles with wheel entities posed, speed, revs, gear and tyre slip readouts, air control, self-righting cars, wheelies and stoppies, motorcycles that can be let fall, impact and landing events, and `getState()` / `setState()` plus a kinematic mode for networked cars; example `vehicles`, `guides/vehicles-3d.md`. Breakable props: `addBreakable()` cuts a prop where it's hit at run time (`igeFracture()`: seeded and deterministic across browsers, convex pieces with capped cut faces, Voronoi chunks, glass rays and rings, snapped planks, thin walls into shards) or swaps in pre-made pieces; thresholds, the hitter carried through fixed props, debris lifetimes and a world cap, big pieces with stable ids for syncing and a break event clients replay; effects by material; example `breakables`, `guides/breakables-3d.md` |
 | Loading | `igeLoadAssets()`: textures, cell sheets, models, animation files and JSON in one call with progress; missing files report errors instead of hanging |
 | Networking | Rooms on IgeNetIo (`IgeRoomServer`, `IgeRoomClient`): join codes, seats kept across reconnects, presence, chat, room info, an ordered command stream with snapshots and resync, save and restore |
 | Input and picking | Entity pointer events in every viewport (`pointerHitTest()`: mesh boxes, skinned joint boxes, sprite quads; exact triangles with `pointerPicking("triangles")`), `raycast()` for the nearest mesh hit under a screen point, `raycastEntities()` for game rays (line of sight, projectiles); skinned characters are tested in their current pose; large meshes go through a cached triangle BVH (also used by decal projection) |
@@ -71,6 +71,9 @@ On the development machine (Apple silicon, Chrome):
   otherwise).
 - Triangle BVH: a raycast against a 320,000-triangle terrain drops from 38.7 ms to 0.018 ms; projecting a decal onto
   it takes 0.55 ms; building the BVH takes about 0.46 s, once per mesh.
+- Breakables (M1 Max, Chrome, threaded Jolt): cutting a prop takes 0.3 to 1.3 ms and spawning its 6 to 30 pieces
+  0.4 to 1.8 ms, so it runs on the main thread; no frame went over about 19 ms after a break. Driving through the
+  example's street (12 breaks in 12 s) peaked at 109 awake bodies and a 2.4 ms physics step.
 
 ### Verified
 
@@ -132,6 +135,14 @@ On the development machine (Apple silicon, Chrome):
   local and remote players, twin-stick input, upper/lower body animation blending, many small lights, positional
   audio, navigation) are listed there and will come back here as engine work.
 - **Gamepads.** Test with real controllers (simulated ones pass).
+- **Breakables: run-time fracture or pre-made pieces?** Run-time fracture is built (`guides/breakables-3d.md`, example
+  `breakables`, screenshots from 2026-11-24). Wood (crates, pallets, fences, benches) and glass look right for
+  low-poly props; concrete breaks into clean-faced wedges; cones and bins shatter where real ones would bend or be
+  knocked over. Choose: keep run-time fracture for everything, add pre-made pieces for the props that need more
+  detail, or knock some props loose whole (`material: "metal"` or `pattern: "whole"`).
+- **Breakables online: a client's own car hitting a prop.** `authority: false` lets the car through and waits for the
+  server's break (up to a second). Choose between that, the client breaking it at once and correcting from the
+  server's event, or simply waiting for the server (the car bumps the prop for one round trip).
 - **Physics density** now applies. Jolt ignored `density` until the backend split, so every body weighed 1000 kg per
   cubic metre; the zombie demo's crates (250) and props (300) and the vehicles example's crates (150) are lighter now.
 

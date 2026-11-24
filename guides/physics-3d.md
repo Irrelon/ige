@@ -121,6 +121,16 @@ const car = physics.addVehicle(carEntity); // an arcade-leaning saloon
 car.drive({ forward: throttle, right: steer, brake, handbrake }); // each frame
 ```
 
+## Breakable props
+
+Crates, fences, barriers, cones, bins, benches and windows that break when hit hard enough have their own guide:
+[breakables-3d.md](breakables-3d.md).
+
+```typescript
+const breakable = physics.addBreakable(crate, { threshold: 5000, material: "wood", mass: 20 });
+breakable.on("break", (result) => network.send(result.event)); // clients replay it and cut the same pieces
+```
+
 ## Collision layers
 
 ```typescript
