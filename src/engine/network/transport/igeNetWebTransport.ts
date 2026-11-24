@@ -21,6 +21,24 @@ export const IGE_WT_JSON = 1;
 export const IGE_WT_BINARY = 2;
 /** A datagram size that fits any path when the session doesn't say (bytes). */
 export const IGE_WT_DEFAULT_DATAGRAM = 1150;
+/** Datagrams handed to the writer and not yet taken before more are dropped (they're lossy anyway: a late one is worse than none). */
+export const IGE_WT_MAX_PENDING_DATAGRAMS = 16;
+/** Bytes waiting on the reliable stream above which an unreliable message bound for it (too big for a datagram) is dropped, not queued behind them. */
+export const IGE_WT_MAX_UNRELIABLE_BACKLOG = 64 * 1024;
+/** A datagram older than this (ms) when the browser could send it is dropped by the browser (where supported). */
+export const IGE_WT_DATAGRAM_MAX_AGE = 150;
+
+/** What a connection's two writers are holding back. */
+export interface IgeNetWtBacklog {
+	/** Bytes written to the reliable stream that the session hasn't taken yet. */
+	streamBytes: number;
+	/** Messages in them. */
+	streamMessages: number;
+	/** Datagrams written and not yet taken. */
+	datagramsPending: number;
+	/** Datagrams (and unreliable stream messages) dropped for want of room, in all. */
+	dropped: number;
+}
 
 /** Anything shaped like the browser's WebTransport class. */
 export type IgeWebTransportClass = new (url: string, options?: Record<string, unknown>) => any;
@@ -78,7 +96,7 @@ export function igeNetWtConnection (
 	session: any,
 	stream: { readable: ReadableStream<Uint8Array>; writable: WritableStream<Uint8Array> },
 	onHello: () => void
-): IgeNetConnection & { _end: () => void; sendHello: () => void } {
+): IgeNetConnection & { _end: () => void; sendHello: () => void; backlog: () => IgeNetWtBacklog } {
 	const messageListeners: ((message: unknown) => void)[] = [];
 	const closeListeners: (() => void)[] = [];
 	let closed = false;
@@ -92,8 +110,32 @@ export function igeNetWtConnection (
 	const deliver = (message: unknown): void => {
 		if (!closed) for (const fn of messageListeners) fn(message);
 	};
-	const write = (w: WritableStreamDefaultWriter<Uint8Array>, bytes: Uint8Array): void => {
-		w.write(bytes).catch(end);
+	// The writers take everything and queue it without limit, so what they haven't taken yet is counted here
+	let pendingDatagrams = 0;
+	let streamBytes = 0;
+	let streamMessages = 0;
+	let dropped = 0;
+	try {
+		// Where the browser supports it, it drops a datagram that waited too long to go
+		if ("outgoingMaxAge" in session.datagrams) session.datagrams.outgoingMaxAge = IGE_WT_DATAGRAM_MAX_AGE;
+	} catch {
+		// Not settable here
+	}
+	const writeDatagram = (bytes: Uint8Array): void => {
+		if (pendingDatagrams >= IGE_WT_MAX_PENDING_DATAGRAMS) {
+			dropped++;
+			return;
+		}
+		pendingDatagrams++;
+		datagramWriter.write(bytes).catch(end).then(() => { pendingDatagrams--; });
+	};
+	const writeStream = (bytes: Uint8Array): void => {
+		streamBytes += bytes.length;
+		streamMessages++;
+		writer.write(bytes).catch(end).then(() => {
+			streamBytes -= bytes.length;
+			streamMessages--;
+		});
 	};
 	const frames = new IgeNetWtFrameReader();
 	(async () => {
@@ -133,12 +175,17 @@ export function igeNetWtConnection (
 		send: (message: unknown, reliable = true) => {
 			if (closed) return;
 			if (!reliable && message instanceof Uint8Array && message.length <= (connection.maxDatagramSize() ?? IGE_WT_DEFAULT_DATAGRAM)) {
-				write(datagramWriter, message);
+				writeDatagram(message);
 				return;
 			}
-			write(writer, igeNetWtFrame(message));
+			// An unreliable replication packet too big for a datagram doesn't queue behind a backlog: the next one is fresher
+			if (!reliable && message instanceof Uint8Array && streamBytes > IGE_WT_MAX_UNRELIABLE_BACKLOG) {
+				dropped++;
+				return;
+			}
+			writeStream(igeNetWtFrame(message));
 		},
-		sendHello: () => write(writer, igeNetWtHelloFrame()),
+		sendHello: () => writeStream(igeNetWtHelloFrame()),
 		onMessage: (fn: (message: unknown) => void) => { messageListeners.push(fn); },
 		onClose: (fn: () => void) => { closeListeners.push(fn); },
 		close: () => {
@@ -150,7 +197,9 @@ export function igeNetWtConnection (
 			}
 			end();
 		},
-		_end: end
+		_end: end,
+		/** What the two writers are holding back (a growing stream backlog is latency on everything reliable). */
+		backlog: (): IgeNetWtBacklog => ({ streamBytes, streamMessages, datagramsPending: pendingDatagrams, dropped })
 	};
 	return connection;
 }
