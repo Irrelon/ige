@@ -358,6 +358,28 @@ describe("ui2: the translate, rotate and scale properties", () => {
 	});
 });
 
+describe("ui2: a box placed by the translate property keeps its place when only its look changes", () => {
+	it("hovered (a background transition) and its class changed, it doesn't lose the translate", () => {
+		const r = ui(`.b { position: absolute; left: 100px; top: 100px; width: 80px; height: 20px; translate: -50% -50%; background: #222; transition: background 0.15s, transform 0.1s; } .b:hover { background: #864; } .b.on { box-shadow: 0 0 4px #fff; } .b:active { transform: translateY(1px); }`, 400, 300);
+		r.root.innerHTML = `<button class="b">SIT HERE</button>`;
+		r.update(0);
+		const b = r.root.querySelector(".b")!;
+		const place = () => { const rc = b.getBoundingClientRect(); return [Math.round(rc.left), Math.round(rc.top)]; };
+		expect(place()).toEqual([60, 90]);
+		const pt = { clientX: 100, clientY: 100, button: 0, buttons: 0, pointerType: "mouse", pointerId: 1, timeStamp: 0, stopImmediatePropagation () {}, preventDefault () {} };
+		r._pointer("pointermove", pt as never);
+		for (let t = 16; t <= 400; t += 16) {
+			r.update(t);
+			expect(place()).toEqual([60, 90]);
+		}
+		b.classList.add("on");
+		r.update(420);
+		expect(place()).toEqual([60, 90]);
+		const kept = snapshot(r);
+		expect(fresh(r, 440)).toEqual(kept);
+	});
+});
+
 describe("ui2: hover after a redraw", () => {
 	it("what's under a pointer that hasn't moved is hovered, also when the layout was done by a measurement first", () => {
 		const r = ui(`button { display: block; width: 80px; height: 20px; } button:hover { color: red; }`, 400, 300);

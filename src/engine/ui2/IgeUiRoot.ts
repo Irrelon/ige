@@ -1003,8 +1003,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			for (const el of moving) {
 				const b = el._box;
 				if (!b || b.el !== el || b.pseudo) continue;
-				const tf = styleValue(b.style, "transform");
-				b.transform = tf === "none" ? undefined : this.layoutEngine.layoutBoxTransform(b);
+				// (Its translate, rotate and scale too: a transform of "none" alone isn't no move)
+				b.transform = this.layoutEngine.layoutBoxTransform(b);
 				// (Paint-only changes: only the runs of items they're painted in are painted again; the layout paints all
 				// again if what it does needs it)
 				this._repaintEls.add(el);
@@ -1111,10 +1111,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 					const b = el._box;
 					b.style = el._computed;
 					// (Its transform worked out again, as an animated one is: _animate)
-					if (moved) {
-						const tf = styleValue(b.style, "transform");
-						b.transform = tf === "none" ? undefined : this.layoutEngine.layoutBoxTransform(b);
-					}
+					if (moved) b.transform = this.layoutEngine.layoutBoxTransform(b);
 					looks.push(el);
 				}
 				el._styleDirty = false;
