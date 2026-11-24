@@ -252,7 +252,7 @@ Axes differ by camera: 3D presets are y up; the `screen2d` preset is y down, one
 2. **Why custom**: no external 3D library for core rendering, full control of shaders, lighting, shadows, skeletal animation and batching, smaller bundle than Three.js.
 3. **2D content in 3D space** (done): textures on planes, `billboard("full" | "y" | "none")`, orthographic cameras, the `screen2d` and iso camera presets (`IgeCamera.preset()`).
 4. **Entity system** (done): `.texture()` and `.model()` both work; materials are `IgeMaterialData` / `IgeWebGlMaterial`; plane geometry for sprites is automatic.
-5. **Cameras** (mostly done): perspective and orthographic, presets, `IgeWebGlCameraController`, tracking. No animated transition between camera modes.
+5. **Cameras** (done): perspective and orthographic, presets, `IgeWebGlCameraController`, tracking (`lookAt()` can ease over a duration).
 
 ## Development Priorities
 
@@ -271,10 +271,10 @@ See `development-plan.md` for the current status, measurements and the prioritis
 -   PBR materials: partly done. `IgeWebGlPBRMaterial` and `IgeMaterialData` carry metallic, roughness and emissive values, and `renderer.pbr(true)` turns on the lighting model (off by default). Normal, metallic-roughness and occlusion maps exist in the shader and material classes but the renderer never turns them on (`u_hasNormalMap` etc. are set to 0 in `IgeWebGlRenderer`), so they have no effect. No specular maps
 -   Material editor/configuration tool: not started
 
-### Phase 3: Advanced Features (mostly done)
+### Phase 3: Advanced Features (done)
 
 -   Lighting: directional, point and spot lights (`IgeWebGlLightManager`); shadow mapping (`IgeWebGlShadowManager`, cached static shadows)
--   Light entity types: not started (lights are `IgeWebGlLight` objects on the renderer, not scene entities)
+-   Light entity types: done (`IgeAmbientLight`, `IgeDirectionalLight`, `IgePointLight`, `IgeSpotLight` extend `IgeEntity`, in `src/engine/webgl/IgeWebGlLight.ts`)
 -   Performance: frustum culling, LOD (`IgeMeshSimplifier`), GPU instancing, render batching, shared animation pose cache, dynamic resolution
 
 ### Phase 4: Developer Experience
