@@ -98,11 +98,14 @@ export interface IgeVehicleSpec extends IgeVehicleDrivetrain {
 	/** slip in radians (Infinity: none). */
 	steering: { rate: number; highSpeed: number; highSpeedLock: number; slip: number };
 	/** Arcade assists (IgePhysicsVehicle3d applies them through the backend's accelerate()). */
-	yawAssist: { strength: number; lateralG: number };
+	/** highSpeed in IGE units per second, highSpeedRate in full locks a second. */
+	yawAssist: { strength: number; lateralG: number; highSpeedG: number; highSpeed: number; highSpeedRate: number };
 	/** slideSpeed in IGE units per second. */
 	stabilityAssist: { strength: number; slideSpeed: number };
 	/** Share of the weight pushing down at 50 m/s. */
 	downforce: number;
+	/** g (0: none). */
+	antiRollover: number;
 	reverseOnBrake: boolean;
 	tractionControl: boolean;
 	extrapolate: number;
@@ -237,10 +240,11 @@ export interface IgeVehicleBackend {
 	/**
 	 * Push the chassis through the next step with a force through its
 	 * centre of mass and a torque that give it these accelerations (m/s²
-	 * and radians/s², world axes), waking it: the arcade assists and
-	 * downforce. Nothing while kinematic or disabled.
+	 * and radians/s², world axes), and a further torque in N·m if given,
+	 * waking it: the arcade assists and downforce. Nothing while kinematic
+	 * or disabled.
 	 */
-	accelerate (linear: Vec3, angular: Vec3): void;
+	accelerate (linear: Vec3, angular: Vec3, torque?: Vec3): void;
 	/**
 	 * Balance on (as made) or off. Off, a motorcycle's lean controller
 	 * stops holding it up and the pitch and roll limit (maxTilt) goes, so it
@@ -458,6 +462,7 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 	const assisted = type === "car" ? DEFAULT_ASSIST : 0;
 	const meanGrip = wheels.reduce((sum, w) => sum + w.grip, 0) / wheels.length;
 	const unit = (v: number | undefined, fallback: number) => Math.max(0, Math.min(1, Number.isFinite(v) ? v as number : fallback));
+	const lateralG = Math.max(0.05, options.yawAssist?.lateralG ?? meanGrip);
 	return {
 		type,
 		layer: options.layer,
@@ -494,13 +499,17 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 		},
 		yawAssist: {
 			strength: unit(options.yawAssist?.strength, assisted),
-			lateralG: Math.max(0.05, options.yawAssist?.lateralG ?? meanGrip)
+			lateralG,
+			highSpeedG: Math.max(0.05, options.yawAssist?.highSpeedG ?? Math.max(lateralG, 3)),
+			highSpeed: Math.max(0.01 * u, options.yawAssist?.highSpeed ?? 28 * u),
+			highSpeedRate: Math.max(0.01, options.yawAssist?.highSpeedRate ?? 2 * (steering.rate ?? base.steering.rate))
 		},
 		stabilityAssist: {
 			strength: unit(options.stabilityAssist?.strength, assisted),
 			slideSpeed: Math.max(0, options.stabilityAssist?.slideSpeed ?? 15 * u)
 		},
 		downforce: Math.max(0, options.downforce ?? 0),
+		antiRollover: Math.max(0, options.antiRollover ?? (type === "car" ? Math.max(2.5, 2 * meanGrip) : 0)),
 		reverseOnBrake: options.reverseOnBrake ?? true,
 		tractionControl: options.tractionControl ?? type === "car",
 		extrapolate: options.extrapolate ?? 0.25,

@@ -1040,6 +1040,7 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles up kerbs, guards, gr
 	function manoeuvre (vehicle: IgePhysicsVehicle3dApi, seconds: number, right: (time: number) => number) {
 		const kmh = vehicle.speedKmh();
 		let slide = 0, turn = 0, samples = 0;
+		const rates: number[] = [];
 		run(physics, seconds, (time) => {
 			const s = vehicle.speedKmh();
 			vehicle.drive({ forward: Math.max(0, Math.min(1, 0.3 + (kmh - s) * 0.15)), right: right(time) });
@@ -1048,12 +1049,16 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles up kerbs, guards, gr
 			const v = vehicle.velocity(), w = vehicle.angularVelocity().y;
 			const along = v.x * f.x + v.z * f.z, across = v.x * left.x + v.z * left.z - w * 137.5;
 			slide = Math.max(slide, (Math.abs(Math.atan2(across, Math.max(1, along))) * 180) / Math.PI);
+			rates.push((-w * 180) / Math.PI);
 			if (time > 0.6 && time < 1.6) {
 				turn += (-w * 180) / Math.PI;
 				samples++;
 			}
 		});
-		return { slide, turn: turn / Math.max(1, samples) };
+		turn /= Math.max(1, samples);
+		// Seconds until it first turns at 90% of that
+		const reached = rates.findIndex((rate) => rate >= turn * 0.9);
+		return { slide, turn, response: reached < 0 ? Infinity : (reached + 1) / 60 };
 	}
 
 	it("keeps a tail-happy car from spinning at full stick and in a lane change at speed, which spin it without the assists", () => {
@@ -1078,21 +1083,27 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles up kerbs, guards, gr
 		}
 	});
 
-	it("turns at 120 km/h as hard as lateralG asks, in proportion to the stick, and settles at once after a lane change", () => {
-		// The default car: its tyres' grip (1.2) makes lateralG 1.2, a rate of turn of 1.2 g / 33 m/s = 20 degrees a second
+	it("turns at 120 km/h as hard as highSpeedG asks, quickly and in proportion to the stick, as before when slow, and settles at once", () => {
+		// The default car at speed: 3 g (highSpeedG), a rate of turn of 3 g / 33 m/s = 51 degrees a second, a 38 m radius
 		const full = manoeuvre(atSpeed({}, 120, -60000), 2, () => 1);
-		const asked = ((1.2 * 9.81) / (120 / 3.6)) * (180 / Math.PI);
-		expect(full.turn).toBeGreaterThan(asked * 0.9);
-		expect(full.turn).toBeLessThan(asked * 1.4);
-		expect(full.slide).toBeLessThan(5);
+		const asked = ((3 * 9.81) / (120 / 3.6)) * (180 / Math.PI);
+		expect(full.turn).toBeGreaterThan(asked * 0.85);
+		expect(full.turn).toBeLessThan(asked * 1.25);
+		expect(full.slide).toBeLessThan(8);
+		expect(full.response).toBeLessThan(0.2);
 		const half = manoeuvre(atSpeed({}, 120, -50000), 2, () => 0.5);
 		expect(half.turn).toBeGreaterThan(full.turn * 0.35);
 		expect(half.turn).toBeLessThan(full.turn * 0.7);
 
-		// A gentler turn asked for (yawAssist.lateralG) turns less: the steering narrows to it and the stability holds it
-		const gentle = manoeuvre(atSpeed({ yawAssist: { lateralG: 0.8 } }, 120, -40000), 2, () => 1);
-		expect(gentle.turn).toBeGreaterThan(full.turn * 0.55);
-		expect(gentle.turn).toBeLessThan(full.turn * 0.85);
+		// A gentler turn at speed asked for turns less
+		const gentle = manoeuvre(atSpeed({ yawAssist: { highSpeedG: 1.5 } }, 120, -40000), 2, () => 1);
+		expect(gentle.turn).toBeGreaterThan(full.turn * 0.4);
+		expect(gentle.turn).toBeLessThan(full.turn * 0.7);
+
+		// Below 60 km/h the high-speed turn changes nothing
+		const slow = manoeuvre(atSpeed({}, 40, -35000), 2, () => 1);
+		const slowGentle = manoeuvre(atSpeed({ yawAssist: { highSpeedG: 1.2, highSpeedRate: 4 } }, 40, -32000), 2, () => 1);
+		expect(slow.turn).toBeCloseTo(slowGentle.turn, 0);
 
 		// Half a second each way, then let go: its rate of turn is under 3 degrees a second within half a second
 		const lane = atSpeed({}, 110, -30000);
@@ -1106,6 +1117,30 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles up kerbs, guards, gr
 		});
 		expect(settled).toBeGreaterThanOrEqual(0);
 		expect(settled).toBeLessThan(0.5);
+	});
+
+	it("keeps a tall van on its wheels at full lock with anti-rollover, which rolls over without it", () => {
+		// 3 tonnes, its centre of mass 1.1 m up over a 1.7 m track: it can't corner at its tyres' 1.2 g without tipping
+		const van = (extra: Partial<IgePhysicsVehicleOptions>): IgePhysicsVehicleOptions => ({
+			mass: 3000, chassis: { type: "box", halfExtents: { x: 95, y: 110, z: 260 } }, chassisOffset: { x: 0, y: 150, z: 0 },
+			centreOfMass: { x: 0, y: 110, z: 0 }, antiRoll: 20000,
+			wheels: [170, -170].flatMap((z, i) => [85, -85].map((x) => ({ position: { x, y: 55, z }, radius: 36, steer: i === 0 ? 36 : 0 }))),
+			...extra
+		});
+		const tilt = (options: IgePhysicsVehicleOptions, x: number) => {
+			const vehicle = atSpeed(options, 50, x);
+			let most = 0;
+			manoeuvre(vehicle, 3, () => 1);
+			run(physics, 0.5, () => {
+				vehicle.drive({ forward: 0.3, right: 1 });
+				most = Math.max(most, vehicle.tilt());
+			});
+			return { most, turning: Math.abs(vehicle.angularVelocity().y) };
+		};
+		const kept = tilt(van({}), -60000);
+		expect(kept.most).toBeLessThan(8);
+		expect(kept.turning).toBeGreaterThan(0.5);
+		expect(tilt(van({ antiRollover: 0 }), -50000).most).toBeGreaterThan(60);
 	});
 
 	it("still slides when asked: handbrake turns swing round as far as without the assists, and powerful cars do doughnuts", () => {

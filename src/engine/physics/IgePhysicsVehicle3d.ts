@@ -61,17 +61,33 @@ const G = 9.81;
 /** The assists fade in between these forward speeds (metres per second): none parking or reversing. */
 const ASSIST_FROM = 1;
 const ASSIST_FULL = 4;
-/** Yaw assist: turning towards the steering's rate of turn, per second of error, and at most (radians per second squared). */
+/**
+ * Yaw assist: turning towards the steering's rate of turn, per second of error, and at most (radians per second
+ * squared), at low speed and at yawAssist.highSpeed (blended between).
+ */
 const YAW_HELP = 6;
 const YAW_HELP_MOST = 3;
+const YAW_HELP_FAST = 25;
+const YAW_HELP_FAST_MOST = 30;
 /** Stability: turning back to the rate asked for beyond a small margin (radians per second), per second, at most. */
 const YAW_HOLD = 50;
 const YAW_HOLD_MARGIN = 0.02;
 const YAW_HOLD_MOST = 20;
-/** Stability: sideslip let be (radians), how fast the velocity turns towards the heading beyond it (per second), at most (g). */
+const YAW_HOLD_FAST_MOST = 40;
+/**
+ * Stability: sideslip let be (radians), how fast the velocity turns towards the heading beyond it (per second), at
+ * most (g; at speed, the turn asked for).
+ */
 const SLIP_ALLOWED = (3 * Math.PI) / 180;
 const SLIP_GAIN = 6;
+const SLIP_GAIN_FAST = 15;
 const SLIP_MOST = 0.6;
+/** The yaw assist stops helping as the rear axle slides from the first share of SLIP_ALLOWED to the second (low speed, at speed). */
+const HELP_SLIDE = [1, 2];
+const HELP_SLIDE_FAST = [3, 6];
+/** The cornering force (g) anti-rollover works from is smoothed over this long (seconds) and taken as at most this. */
+const CORNERING_SMOOTHING = 0.05;
+const CORNERING_MOST = 4;
 /** The yaw assist fades out as the body tilts from the first (degrees) to the second, so it never rolls a vehicle over. */
 const ROLL_GUARD_FROM = 8;
 const ROLL_GUARD_TO = 14;
@@ -162,8 +178,14 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 	_powerSlide: number = 0;
 	/** Put somewhere (setState()) and not stepped since: the wheels haven't found the ground yet. */
 	_placed: boolean = true;
-	/** Assists: wheelbase and how far the rear axle is behind the centre of mass (metres), and the most any wheel steers (radians). */
-	_geometry = { wheelbase: 0, rear: 0, maxSteer: 0 };
+	/**
+	 * Assists: wheelbase, how far the rear axle is behind the centre of mass, half the track and the centre of mass's
+	 * height above the ground (metres), and the most any wheel steers (radians).
+	 */
+	_geometry = { wheelbase: 0, rear: 0, halfTrack: 0, height: 0, maxSteer: 0 };
+	/** Assists: the sideways acceleration they gave the last step, and the tyres' (and anything else touching it), smoothed (m/s²). */
+	_assistAcross: number = 0;
+	_cornering: number = 0;
 	/** Pose at the last two steps: x, y, z, qx, qy, qz, qw (IGE units). */
 	_previous = new Float64Array([0, 0, 0, 0, 0, 0, 1]);
 	_current = new Float64Array([0, 0, 0, 0, 0, 0, 1]);
@@ -476,8 +498,9 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 		const speed = this.speed();
 		const stopped = STOPPED_SPEED * spec.unitsPerMetre;
 
-		// Steering: eased towards the input at the steering rate, then less lock at speed
-		const rate = spec.steering.rate;
+		// Steering: eased towards the input at the steering rate (quicker at speed), then less lock at speed
+		const slow = spec.steering.rate, fast = this._fast(speed);
+		const rate = slow === Infinity ? Infinity : slow + (Math.max(slow, spec.yawAssist.highSpeedRate) - slow) * fast;
 		const most = rate === Infinity ? Infinity : rate * dt;
 		this._steer += Math.max(-most, Math.min(most, input.right - this._steer));
 
@@ -516,12 +539,24 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 		backend.preStep(dt);
 	}
 
+	/** How far into the arcade's high-speed turning a forward speed (IGE units per second) is: 0 below 60% of yawAssist.highSpeed, 1 from it. */
+	_fast (speed: number): number {
+		const high = this._spec.yawAssist.highSpeed;
+		return Math.max(0, Math.min(1, (Math.abs(speed) - 0.6 * high) / (0.4 * high)));
+	}
+
+	/** The sideways acceleration (g) a full stick asks for at a forward speed (IGE units per second). */
+	_turnG (speed: number): number {
+		const yaw = this._spec.yawAssist;
+		return yaw.lateralG + (yaw.highSpeedG - yaw.lateralG) * this._fast(speed);
+	}
+
 	/**
 	 * Share of the full lock the steering has at this forward speed (IGE
 	 * units per second): narrowed towards highSpeedLock by highSpeed, and
-	 * to the angle that turns the vehicle at yawAssist.lateralG (the
-	 * steering's geometry: atan(wheelbase x acceleration / speed²)) plus
-	 * steering.slip.
+	 * to the angle that turns the vehicle as hard as the arcade turn asks
+	 * (_turnG(); the steering's geometry: atan(wheelbase x acceleration /
+	 * speed²)) plus steering.slip.
 	 */
 	_lock (speed: number): number {
 		const spec = this._spec;
@@ -531,7 +566,7 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 		const { wheelbase, maxSteer } = this._geometry;
 		const v = Math.abs(speed) / spec.unitsPerMetre;
 		if (slip === Infinity || !wheelbase || !maxSteer || v < 1) return lock;
-		const angle = Math.atan((wheelbase * spec.yawAssist.lateralG * G) / (v * v)) + slip;
+		const angle = Math.atan((wheelbase * this._turnG(speed) * G) / (v * v)) + slip;
 		return Math.min(lock, angle / maxSteer);
 	}
 
@@ -601,42 +636,67 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 		const { wheelbase, rear, maxSteer } = this._geometry;
 		const acrossRear = across - turning * rear;
 		const slip = Math.atan2(Math.abs(acrossRear), Math.max(along, 1e-6));
+		// From 60% of yawAssist.highSpeed to it: the arcade's high-speed turning (a harder turn, more authority)
+		const fast = this._fast(along * u);
+		const blend = (low: number, high: number) => low + (high - low) * fast;
+		const turnG = this._turnG(along * u);
+		let acrossAssist = 0;
 		if (on > 0 && slip < SPUN) {
 			// Eased back in (squared), so a slide let go of carries on a little before it's caught
 			const hold = stability.strength * (1 - Math.max(this._handbrakeHold, this._powerSlide)) ** 2 * on;
 			// Neither assist rolls a vehicle over, and the yaw assist helps understeer only: not once the rear slides
 			const tilt = (Math.acos(Math.max(-1, Math.min(1, up.y))) * 180) / Math.PI;
 			const guard = Math.max(0, Math.min(1, (ROLL_GUARD_TO - tilt) / (ROLL_GUARD_TO - ROLL_GUARD_FROM)));
-			const gripping = Math.max(0, Math.min(1, (2 * SLIP_ALLOWED - slip) / SLIP_ALLOWED));
+			const from = blend(HELP_SLIDE[0], HELP_SLIDE_FAST[0]) * SLIP_ALLOWED, to = blend(HELP_SLIDE[1], HELP_SLIDE_FAST[1]) * SLIP_ALLOWED;
+			const gripping = Math.max(0, Math.min(1, (to - slip) / (to - from)));
 			const help = yaw.strength * on * guard * gripping;
 
 			// The rate of turn asked for (positive turns left, towards +X; steering right is positive)
 			const geometric = wheelbase > 0 ? (along * Math.tan(maxSteer)) / wheelbase : 0;
-			const target = -this._steer * Math.min(geometric, (yaw.lateralG * G) / Math.max(along, 0.5));
+			const target = -this._steer * Math.min(geometric, (turnG * G) / Math.max(along, 0.5));
 			const side = target < 0 ? -1 : 1;
 			const asked = target * side, now = turning * side;
 			let push = 0;
-			if (help > 0 && now < asked) push += help * Math.min(YAW_HELP_MOST, YAW_HELP * (asked - Math.max(now, 0)));
+			if (help > 0 && now < asked) push += help * Math.min(blend(YAW_HELP_MOST, YAW_HELP_FAST_MOST), blend(YAW_HELP, YAW_HELP_FAST) * (asked - Math.max(now, 0)));
 			if (hold > 0) {
 				const over = now - asked - YAW_HOLD_MARGIN, wrong = -now - YAW_HOLD_MARGIN;
-				if (over > 0) push -= hold * Math.min(YAW_HOLD_MOST, YAW_HOLD * over);
-				else if (wrong > 0) push += hold * Math.min(YAW_HOLD_MOST, YAW_HOLD * wrong);
+				const most = blend(YAW_HOLD_MOST, YAW_HOLD_FAST_MOST);
+				if (over > 0) push -= hold * Math.min(most, YAW_HOLD * over);
+				else if (wrong > 0) push += hold * Math.min(most, YAW_HOLD * wrong);
 			}
 			angular = push * side;
 
-			// Sliding: turn the velocity towards the heading (taking the rear axle's slide away), keeping the speed
+			// Sliding: turn the velocity towards the heading (taking the rear axle's slide away), keeping the speed. At
+			// speed this is most of the arcade's grip, up to the whole turn asked for
 			const excess = Math.abs(acrossRear) - Math.abs(along) * Math.tan(SLIP_ALLOWED);
 			if (hold > 0 && excess > 0) {
 				const speed = Math.hypot(along, across);
-				const change = Math.min(excess, guard * hold * Math.min(SLIP_MOST * G, SLIP_GAIN * excess) * dt);
+				const most = Math.max(SLIP_MOST, turnG * fast) * G;
+				const change = Math.min(excess, guard * hold * Math.min(most, blend(SLIP_GAIN, SLIP_GAIN_FAST) * excess) * dt);
 				const nextAcross = Math.max(-speed, Math.min(speed, across - Math.sign(acrossRear) * change));
 				const nextAlong = Math.sign(along) * Math.sqrt(Math.max(0, speed * speed - nextAcross * nextAcross));
 				const da = (nextAlong - along) / dt, dc = (nextAcross - across) / dt;
 				linear.x += f.x * da + left.x * dc; linear.y += f.y * da + left.y * dc; linear.z += f.z * da + left.z * dc;
+				acrossAssist = dc;
 			}
 		}
-		if (!angular && !linear.x && !linear.y && !linear.z) return;
-		this._backend.accelerate(linear, { x: up.x * angular, y: up.y * angular, z: up.z * angular });
+
+		// Anti-rollover: the tyres' sideways force acts at the ground, below the centre of mass, and rolls the body out
+		// of the turn. Measured from the last step's change in velocity (less gravity and the assists' own push), it's
+		// met with a torque that makes the centre of mass act as low as tipping at antiRollover g needs
+		let rollTorque = 0;
+		const { halfTrack, height } = this._geometry;
+		const vb = this._velocityBefore;
+		const accelAcross = ((v.x - vb.x) * left.x + (v.y - vb.y) * left.y + (v.z - vb.z) * left.z) / u / dt + G * left.y - this._assistAcross;
+		this._cornering += (Math.max(-CORNERING_MOST * G, Math.min(CORNERING_MOST * G, accelAcross)) - this._cornering) * Math.min(1, dt / CORNERING_SMOOTHING);
+		this._assistAcross = acrossAssist;
+		if (spec.antiRollover > 0 && halfTrack > 0) {
+			const lower = height - halfTrack / spec.antiRollover;
+			if (lower > 0) rollTorque = spec.mass * this._cornering * lower;
+		}
+		const roll = rollTorque ? { x: -f.x * rollTorque, y: -f.y * rollTorque, z: -f.z * rollTorque } : undefined;
+		if (!angular && !linear.x && !linear.y && !linear.z && !roll) return;
+		this._backend.accelerate(linear, { x: up.x * angular, y: up.y * angular, z: up.z * angular }, roll);
 	}
 
 	/**
@@ -801,10 +861,13 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 /**
  * For the assists: the wheelbase (metres, steering wheels to the others),
  * how far the rear axle (the wheels that don't steer) is behind the centre
- * of mass, and the most any wheel steers (radians).
+ * of mass, half the track and the centre of mass's height above the ground
+ * where the wheels rest, and the most any wheel steers (radians).
  */
-function steeringGeometry (spec: IgeVehicleSpec): { wheelbase: number; rear: number; maxSteer: number } {
-	let steerZ = 0, steered = 0, fixedZ = 0, fixed = 0, maxSteer = 0;
+function steeringGeometry (spec: IgeVehicleSpec): { wheelbase: number; rear: number; halfTrack: number; height: number; maxSteer: number } {
+	const u = spec.unitsPerMetre, com = spec.centreOfMass;
+	let steerZ = 0, steered = 0, fixedZ = 0, fixed = 0, maxSteer = 0, track = 0, ground = 0;
+	const share = spec.mass / spec.wheels.length;
 	for (const wheel of spec.wheels) {
 		if (wheel.maxSteer > 0) {
 			steerZ += wheel.position.z;
@@ -814,10 +877,16 @@ function steeringGeometry (spec: IgeVehicleSpec): { wheelbase: number; rear: num
 			fixedZ += wheel.position.z;
 			fixed++;
 		}
+		track += Math.abs(wheel.position.x - com.x);
+		// Where the tyre meets the ground at rest on its spring
+		const sag = wheel.stiffness > 0 ? ((share * G) / wheel.stiffness) * u : 0;
+		const rest = Math.max(wheel.suspensionMin, Math.min(wheel.suspensionMax, wheel.suspensionMax - sag));
+		ground += wheel.position.y + wheel.suspensionDirection.y * rest - wheel.radius;
 	}
-	const u = spec.unitsPerMetre;
-	if (!steered || !fixed) return { wheelbase: 0, rear: 0, maxSteer };
-	return { wheelbase: Math.abs(steerZ / steered - fixedZ / fixed) / u, rear: (spec.centreOfMass.z - fixedZ / fixed) / u, maxSteer };
+	const n = spec.wheels.length;
+	const halfTrack = track / n / u, height = (com.y - ground / n) / u;
+	if (!steered || !fixed) return { wheelbase: 0, rear: 0, halfTrack, height, maxSteer };
+	return { wheelbase: Math.abs(steerZ / steered - fixedZ / fixed) / u, rear: (com.z - fixedZ / fixed) / u, halfTrack, height, maxSteer };
 }
 
 function isIdentity (m: ArrayLike<number>): boolean {

@@ -658,7 +658,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		if (!this._body.IsActive()) bodies.ActivateBody(this._id);
 	}
 
-	accelerate (linear: IgePhysicsVec3, angular: IgePhysicsVec3): void {
+	accelerate (linear: IgePhysicsVec3, angular: IgePhysicsVec3, extra?: IgePhysicsVec3): void {
 		if (!this._enabled || this._kinematic || this._destroyed) return;
 		const motion = this._body.GetMotionProperties();
 		const inverseMass = motion.GetInverseMass();
@@ -679,7 +679,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		const dx = d.GetX(), dy = d.GetY(), dz = d.GetZ();
 		const torque = rotateBy({ x: dx > 0 ? local.x / dx : 0, y: dy > 0 ? local.y / dy : 0, z: dz > 0 ? local.z / dz : 0 }, q.x, q.y, q.z, q.w);
 		this._vec2.Set(linear.x / inverseMass, linear.y / inverseMass, linear.z / inverseMass);
-		this._vec3.Set(torque.x, torque.y, torque.z);
+		this._vec3.Set(torque.x + (extra?.x ?? 0), torque.y + (extra?.y ?? 0), torque.z + (extra?.z ?? 0));
 		this._physics._bodies.AddForceAndTorque(this._id, this._vec2, this._vec3, this._jolt.EActivation_Activate);
 	}
 

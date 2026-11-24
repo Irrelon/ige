@@ -182,8 +182,18 @@ export interface IgePhysicsVehicleOptions {
 	yawAssist?: {
 		/** 0..1 (default 1 for cars, 0 for motorcycles). */
 		strength?: number;
-		/** Sideways acceleration a full stick asks for at speed, in g (default: the tyres' grip, about 1.2). */
+		/** Sideways acceleration a full stick asks for at low speed, in g (default: the tyres' grip, about 1.2). */
 		lateralG?: number;
+		/**
+		 * Sideways acceleration a full stick asks for at highSpeed and above, in g: arcade turning at speed, beyond
+		 * the tyres' grip (default 2.5 x the tyres' grip, 3 g on the default car). From 60% of highSpeed the turn,
+		 * the steering's speed and the assists' strength blend from their low-speed values to these.
+		 */
+		highSpeedG?: number;
+		/** IGE units per second (default 28 m/s, 100 km/h): the turn is highSpeedG from here, lateralG below 60% of it. */
+		highSpeed?: number;
+		/** How fast the steering follows the input at highSpeed, full locks a second (default twice steering.rate). */
+		highSpeedRate?: number;
 	};
 	/**
 	 * Arcade stability: a torque that holds the vehicle's rate of turn to
@@ -201,6 +211,15 @@ export interface IgePhysicsVehicleOptions {
 		/** Wheelspin below this speed (IGE units per second) eases it off, for power slides (default 15 m/s, 54 km/h). */
 		slideSpeed?: number;
 	};
+	/**
+	 * Anti-rollover, in g: a vehicle whose centre of mass is too high to
+	 * corner this hard without tipping has it act lower while cornering (a
+	 * torque against the tyres' roll), so it leans but doesn't roll over
+	 * (default 2.5, or twice the tyres' grip if more, for cars; 0 for
+	 * motorcycles: none). Cars with a low centre of mass are hardly
+	 * touched; a van or bus gets most of it.
+	 */
+	antiRollover?: number;
 	/**
 	 * Downforce: a push down growing with the square of the speed, as a
 	 * share of the vehicle's weight at 50 m/s (180 km/h), so the tyres grip
