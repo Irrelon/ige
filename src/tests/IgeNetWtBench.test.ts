@@ -161,7 +161,7 @@ run("WebTransport against WebSocket latency (live, headless Chrome)", () => {
 				const page = await browser.newPage();
 				page.on("pageerror", (e: Error) => console.log("page error", e.message));
 				page.on("console", (m: { text: () => string }) => console.log("page:", m.text()));
-				const samples: { t: number; rtt: number; clockErr: number; ageAvg: number; ageMax: number; snaps: number }[] = [];
+				const samples: { t: number; rtt: number; streamRtt: number; clockErr: number; ageAvg: number; ageMax: number; snaps: number }[] = [];
 				await page.exposeFunction("report", (s: (typeof samples)[number]) => samples.push(s));
 				const base = `http://localhost:${PORT}/?transport=${mode}&epoch=${epoch}&hash=${wt.certHash}&wtUrl=${encodeURIComponent(`https://127.0.0.1:${proxy ? PORT + 3 : PORT + 1}/sync`)}&ws=${encodeURIComponent(`ws://127.0.0.1:${PORT + 2}/sync`)}`;
 				await page.goto(base);
@@ -207,8 +207,8 @@ run("WebTransport against WebSocket latency (live, headless Chrome)", () => {
 				clearInterval(trickle);
 				clearInterval(queueTimer);
 				const queued = "n/a";
-				const lines = [`\n== ${mode === "wt" ? "WebTransport" : "WebSocket"} ==  (writer desiredSize at end: ${queued || "n/a"})`, "t(s)  rtt  clockErr  ageAvg  ageMax  snaps/s  server backlog (stream/datagrams/dropped)  event"];
-				for (const s of samples) lines.push(`${String(s.t).padStart(4)}  ${String(s.rtt).padStart(4)}  ${String(s.clockErr).padStart(8)}  ${String(s.ageAvg).padStart(6)}  ${String(s.ageMax).padStart(6)}  ${String(s.snaps).padStart(7)}  ${(queueLog[s.t - 1] ?? "-").padStart(22)}  ${marks[s.t] ?? ""}`);
+				const lines = [`\n== ${mode === "wt" ? "WebTransport" : "WebSocket"} ==  (writer desiredSize at end: ${queued || "n/a"})`, "t(s)  rtt  stream  clockErr  ageAvg  ageMax  snaps/s  server backlog (stream/datagrams/dropped)  event"];
+				for (const s of samples) lines.push(`${String(s.t).padStart(4)}  ${String(s.rtt).padStart(4)}  ${String(s.streamRtt).padStart(6)}  ${String(s.clockErr).padStart(8)}  ${String(s.ageAvg).padStart(6)}  ${String(s.ageMax).padStart(6)}  ${String(s.snaps).padStart(7)}  ${(queueLog[s.t - 1] ?? "-").padStart(22)}  ${marks[s.t] ?? ""}`);
 				const third = Math.floor(samples.length / 3);
 				const rtt = (from: number, to: number) => stats(samples.slice(from, to).map((s) => s.rtt));
 				lines.push(`rtt first third ${JSON.stringify(rtt(0, third))}, last third ${JSON.stringify(rtt(samples.length - third, samples.length))}`);

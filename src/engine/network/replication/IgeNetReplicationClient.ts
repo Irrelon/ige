@@ -3,12 +3,15 @@ import { igeNetQuatSlerp, igeNetQuatUnpack, type IgeNetQuat } from "@/engine/net
 import { IgeNetBitReader, IgeNetBitWriter } from "@/engine/network/replication/IgeNetBits";
 import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions, type IgeNetEventDefs } from "@/engine/network/replication/IgeNetSchema";
 import {
+	IGE_NET_PACKET_PONG,
 	igeNetIsSnapshot,
 	type IgeNetDetail,
 	igeNetPacketType,
+	igeNetReadPong,
 	igeNetReadSnapshotBody,
 	igeNetReadSnapshotHeader,
 	igeNetWriteInputPacket,
+	igeNetWritePing,
 	IgeNetSliceAssembly,
 	type IgeNetHandleEntry,
 	type IgeNetInputFrameBinary,
@@ -89,6 +92,13 @@ export interface IgeNetClientObject {
 
 const UNANSWERED_PINGS = 3;
 const RESYNC_MS = 500;
+/** Round trips remembered for the clock: it trusts the smallest, so a backlog behind one pong can't skew it. */
+const RTT_WINDOW = 8;
+/** A round trip over this many times the smallest recent one (plus RTT_SLACK_MS) is a queue, not the path: it's left out of clock sync. */
+const RTT_OUTLIER = 2;
+const RTT_SLACK_MS = 30;
+/** How many ping intervals a datagram pong counts as the live round trip before the stream's takes over again. */
+const DATAGRAM_PONG_INTERVALS = 3;
 
 /**
  * A machine in a real-time game run by an IgeNetReplicationHost. It joins with its local players, sends their inputs every
@@ -125,7 +135,13 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		return this._connection.transport;
 	}
 	tickRate = 30;
+	/**
+	 * The round trip the game's packets see, in ms: a datagram ping on a lossy transport (WebTransport), so a
+	 * backlog on the reliable stream doesn't show here; the stream's ping otherwise.
+	 */
 	rtt = 0;
+	/** The reliable stream's own round trip (the same as `rtt` on a WebSocket); a backlog on it shows here. */
+	streamRtt = 0;
 	info: unknown;
 	readonly schemas: IgeNetSchemaSet;
 	readonly inputSchema: IgeNetSchema;
@@ -141,6 +157,10 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	_hash: string;
 	_lastHeard = 0;
 	_unanswered = 0;
+	/** Recent round trips from the live ping path (newest last), for the clock. */
+	_rtts: number[] = [];
+	/** When a datagram pong last came. */
+	_datagramPongAt = -Infinity;
 	_seq = 0;
 	/** The tick the latest interpolated() call drew at. */
 	_viewTick?: number;
@@ -430,7 +450,10 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 				return;
 			}
 			this._unanswered++;
-			this._send({ t: "ping", time: this._now() }, false);
+			const time = this._now();
+			// On a lossy transport the datagram ping gives the round trip; the stream's still goes, as the fallback and to show a backlog
+			if (this._connection.lossy) this._send(igeNetWritePing(time), false);
+			this._send({ t: "ping", time }, false);
 		};
 		ping();
 		this._pingTimer = setInterval(ping, interval);
@@ -439,6 +462,32 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 	_stopPing (): void {
 		if (this._pingTimer) clearInterval(this._pingTimer);
 		this._pingTimer = undefined;
+	}
+
+	/** Adds a round trip to the clock's window; false when it's far above the smallest recent one (a queue, not the path). */
+	_addRtt (rtt: number): boolean {
+		this._rtts.push(rtt);
+		if (this._rtts.length > RTT_WINDOW) this._rtts.shift();
+		return rtt <= Math.min(...this._rtts) * RTT_OUTLIER + RTT_SLACK_MS;
+	}
+
+	/** The round trip the clock uses: the smallest of the recent ones. */
+	_clockRtt (): number {
+		return this._rtts.length ? Math.min(...this._rtts) : this.rtt;
+	}
+
+	_onPong (time: number, tick: number, datagram: boolean): void {
+		const rtt = Math.max(0, this._now() - time);
+		let live = datagram;
+		if (datagram) this._datagramPongAt = this._now();
+		else {
+			this.streamRtt = rtt;
+			// On a lossy transport the datagram pong is the live one while they keep coming
+			live = !this._connection.lossy || this._now() - this._datagramPongAt > DATAGRAM_PONG_INTERVALS * (this._options.pingInterval ?? 1000);
+		}
+		if (!live) return;
+		this.rtt = rtt;
+		if (this._addRtt(rtt)) this._syncClock(tick, this._clockRtt() / 2);
 	}
 
 	_syncClock (tick: number, oneWay: number): void {
@@ -469,7 +518,11 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		if (data instanceof Uint8Array) {
 			this._lastHeard = this._now();
 			this._unanswered = 0;
-			if (igeNetIsSnapshot(igeNetPacketType(data))) this._onPacket(data);
+			const type = igeNetPacketType(data);
+			if (type === IGE_NET_PACKET_PONG) {
+				const pong = igeNetReadPong(data);
+				if (pong) this._onPong(pong.time, pong.tick, true);
+			} else if (igeNetIsSnapshot(type)) this._onPacket(data);
 			return;
 		}
 		const message = data as { t: string } & Record<string, any>;
@@ -506,8 +559,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 				}
 				break;
 			case "pong":
-				this.rtt = Math.max(0, this._now() - message.time);
-				this._syncClock(message.tick, this.rtt / 2);
+				this._onPong(message.time, message.tick, false);
 				break;
 			case "event":
 				this.emit("event", message.data, message.tick);
@@ -669,7 +721,7 @@ export class IgeNetReplicationClient<Input = Record<string, unknown>> extends Ig
 		// Events last, so one about an object made in this packet finds it
 		for (const event of packet.eventList) this._deliver(event);
 		if (fresh) {
-			this._syncClock(header.tick, this.rtt / 2);
+			this._syncClock(header.tick, this._clockRtt() / 2);
 			this.emit("snapshot", header.tick);
 		}
 	}

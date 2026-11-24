@@ -36,7 +36,7 @@ setInterval(() => {
 	const clockErr = ((client.serverTick() - trueTick) * 1000) / client.tickRate;
 	const sorted = ages.slice().sort((a, b) => a - b);
 	window.report({
-		t: Math.round((performance.now() - start) / 1000), rtt: Math.round(client.rtt), clockErr: Math.round(clockErr),
+		t: Math.round((performance.now() - start) / 1000), rtt: Math.round(client.rtt), streamRtt: Math.round(client.streamRtt ?? client.rtt), clockErr: Math.round(clockErr),
 		ageAvg: sorted.length ? Math.round(sorted.reduce((a, b) => a + b, 0) / sorted.length) : -1,
 		ageMax: sorted.length ? sorted[sorted.length - 1] : -1, snaps: snapshots
 	});

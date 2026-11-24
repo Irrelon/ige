@@ -92,6 +92,39 @@ export const IGE_NET_PACKET_SNAPSHOT = 1;
 export const IGE_NET_PACKET_INPUT = 2;
 /** A snapshot packet that carries events (the section described above comes after the header). */
 export const IGE_NET_PACKET_SNAPSHOT_EVENTS = 3;
+/** A ping as a datagram (lossy transports), so its round trip is the one the game's packets take, not the reliable stream's: [type][time f64]. */
+export const IGE_NET_PACKET_PING = 4;
+/** The answer to a ping: [type][time f64][tick u32]. */
+export const IGE_NET_PACKET_PONG = 5;
+
+/** A binary ping carrying the sender's clock reading. */
+export function igeNetWritePing (time: number): Uint8Array {
+	const bytes = new Uint8Array(9);
+	bytes[0] = IGE_NET_PACKET_PING << 4;
+	new DataView(bytes.buffer).setFloat64(1, time);
+	return bytes;
+}
+
+/** The pong for a ping packet: its time given back, and the authority's tick. */
+export function igeNetWritePong (ping: Uint8Array, tick: number): Uint8Array {
+	const bytes = new Uint8Array(13);
+	bytes[0] = IGE_NET_PACKET_PONG << 4;
+	bytes.set(ping.subarray(1, 9), 1);
+	new DataView(bytes.buffer).setUint32(9, tick >>> 0);
+	return bytes;
+}
+
+/** The time of a ping packet (undefined if it's too short). */
+export function igeNetReadPing (bytes: Uint8Array): number | undefined {
+	return bytes.length >= 9 ? new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getFloat64(1) : undefined;
+}
+
+/** The time and tick of a pong packet (undefined if it's too short). */
+export function igeNetReadPong (bytes: Uint8Array): { time: number; tick: number } | undefined {
+	if (bytes.length < 13) return undefined;
+	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+	return { time: view.getFloat64(1), tick: view.getUint32(9) };
+}
 
 export interface IgeNetSnapshotHeader {
 	/** The packet has an events section. */

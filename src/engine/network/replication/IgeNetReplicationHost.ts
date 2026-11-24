@@ -2,7 +2,7 @@ import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeNetBitReader } from "@/engine/network/replication/IgeNetBits";
 import { IgeNetSchema, IgeNetSchemaSet, igeNetSchemaHash, type IgeNetFieldDef, type IgeNetKindOptions, type IgeNetEventDefs } from "@/engine/network/replication/IgeNetSchema";
 import { IgeNetReplicator, type IgeNetEventTarget, type IgeNetReplicatorOptions, type IgeNetViewer } from "@/engine/network/replication/IgeNetReplicator";
-import { IGE_NET_PACKET_INPUT, igeNetPacketType, igeNetReadInputPacket, type IgeNetClientMessage, type IgeNetMachine } from "@/engine/network/replication/igeNetReplicationProtocol";
+import { IGE_NET_PACKET_INPUT, IGE_NET_PACKET_PING, igeNetPacketType, igeNetWritePong, igeNetReadInputPacket, type IgeNetClientMessage, type IgeNetMachine } from "@/engine/network/replication/igeNetReplicationProtocol";
 import type { IgeNetConnection, IgeNetListener } from "@/engine/network/transport/IgeNetTransport";
 
 /** The packet size for a lossy connection that doesn't know its datagram size (bytes). */
@@ -186,7 +186,9 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		const link: JoinLink<Input> = { closed: () => closed, joined: (joined) => { state = joined; } };
 		connection.onMessage((data) => {
 			if (data instanceof Uint8Array) {
-				if (state) this._onInput(state, data);
+				// A datagram ping is answered at once, the same way (it measures the path the game's packets take)
+				if (state && igeNetPacketType(data) === IGE_NET_PACKET_PING) this._send(connection, igeNetWritePong(data, this.tick), false);
+				else if (state) this._onInput(state, data);
 				return;
 			}
 			const message = data as IgeNetClientMessage;
