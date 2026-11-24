@@ -12,6 +12,13 @@ import type {
 const LIMITED_SLIP = 1.4;
 /** Friction of bodies made without one (IgePhysicsBodyOptions.friction), which tyre grip is measured against. */
 const DEFAULT_GROUND_FRICTION = 0.5;
+/**
+ * The stiffest an anti-roll bar may be, as the angular frequency of the
+ * roll it alone would set swinging times the step. Jolt works a bar out
+ * once a step, and past about 0.5 the body rocks between its wheels by
+ * itself.
+ */
+const ANTI_ROLL_STEADY = 0.4;
 
 /** Tyre curve scale for a grip (see the curves in the constructor). */
 function tyreScale (grip: number): number {
@@ -59,6 +66,8 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	_destroyed: boolean = false;
 	/** A second scratch vector (the world's _vec is the first). */
 	_vec2: JoltApi.Vec3;
+	/** The step length the anti-roll bars were last set for (see _setAntiRollBars()). */
+	_antiRollDt: number = 0;
 
 	constructor (physics: IgeJoltBackend, spec: IgeVehicleBackendSpec, position: IgePhysicsVec3, rotation: IgePhysicsQuat) {
 		const jolt = physics._jolt;
@@ -122,11 +131,13 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 			// degrees. Jolt combines them with the ground's friction as
 			// sqrt(tyre * ground), so they're scaled for grip 1 to peak at 1.2
 			// on ground of the engine's default friction (0.5). A car's tyre
-			// holds the road even when it isn't slipping: with Jolt's curve
-			// (no friction at no slip) the driven wheels flick between
-			// rolling and spinning on alternate steps when pulling away. A
-			// motorcycle keeps Jolt's curve, which its lean controller is
-			// tuned for.
+			// holds the road even when it isn't slipping: Jolt reads the
+			// curve once a step from the slip at its start, and with Jolt's
+			// curve (no friction at no slip) the driven wheels flick between
+			// rolling and spinning on alternate steps when pulling away,
+			// every wheel on the ground throughout. A motorcycle keeps
+			// Jolt's curve: with grip at no slip, a heavier, more powerful
+			// bike fell onto its tilt limit weaving and after jumps.
 			const scale = tyreScale(wheel.grip);
 			const longitudinal = w.mLongitudinalFriction;
 			longitudinal.Clear();
@@ -192,6 +203,58 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		this._constraint = constraint;
 		this._controller = jolt.castObject(constraint.GetController(), motorcycle ? jolt.MotorcycleController : jolt.WheeledVehicleController);
 		this._wheels = spec.wheels.map((_, index) => jolt.castObject(constraint.GetWheel(index), jolt.WheelWV));
+		this._setAntiRollBars(physics._fixedTimeStep);
+	}
+
+	/**
+	 * Set Jolt's anti-roll bars to the spec's rates (N/m) for steps of dt.
+	 *
+	 * Jolt works out a bar's impulse once a step (rate x difference in
+	 * suspension length x dt) and hands it to each wheel's suspension as a
+	 * velocity bias. The suspension is a soft constraint, so the impulse it
+	 * gives for that bias is the bias times its effective mass, 1 / (1 / m
+	 * + 1 / (dt (c + dt k))): about 50 kg for the default car at 60 Hz.
+	 * Given straight to Jolt, a 10,000 N/m bar acted like a 530,000 N/m
+	 * one, 18 times stiffer than the springs, and worked out once a step it
+	 * rocked the body between its wheels at 15 Hz and threw it about (or
+	 * over) when one side dropped off a kerb. Dividing by that effective
+	 * mass makes the bar the rate asked for. A bar too stiff to stay steady
+	 * at this step (ANTI_ROLL_STEADY) is limited to the stiffest that does.
+	 */
+	_setAntiRollBars (dt: number): void {
+		this._antiRollDt = dt;
+		const spec = this._spec;
+		if (!spec.antiRollBars.length) return;
+		const com = spec.centreOfMass;
+		const motion = this._body.GetMotionProperties();
+		const identity = this._physics._identity;
+		// Where each tyre touches the ground (resting mid-travel) from the centre of mass, crossed with up: (-z, 0, x)
+		const arms = spec.wheels.map((wheel) => {
+			const length = (wheel.suspensionMin + wheel.suspensionMax) / 2;
+			const d = wheel.suspensionDirection;
+			return { x: -(wheel.position.z + d.z * length - com.z), z: wheel.position.x + d.x * length - com.x };
+		});
+		// a . I^-1 b, in the body's space
+		const inertia = (a: { x: number; z: number }, b: { x: number; z: number }): number => {
+			this._vec2.Set(b.x, 0, b.z);
+			const w = motion.MultiplyWorldSpaceInverseInertiaByVector(identity, this._vec2);
+			return a.x * w.GetX() + a.z * w.GetZ();
+		};
+		// The suspension's effective mass at a wheel: 1 / (1 / m + (r x up) . I^-1 (r x up) + softness)
+		const effectiveMass = (index: number): number => {
+			const wheel = spec.wheels[index];
+			const softness = 1 / (dt * (wheel.damping + dt * wheel.stiffness));
+			return 1 / (motion.GetInverseMass() + inertia(arms[index], arms[index]) + softness);
+		};
+		const bars = this._constraint.GetAntiRollBars();
+		spec.antiRollBars.forEach((bar, index) => {
+			// The roll the bar alone sets swinging: angular frequency^2 = rate x (d . I^-1 d), d the difference in arms
+			const l = arms[bar.left], r = arms[bar.right];
+			const d = { x: l.x - r.x, z: l.z - r.z };
+			const steadiest = (ANTI_ROLL_STEADY / dt) ** 2 / Math.max(1e-9, inertia(d, d));
+			const stiffness = Math.min(bar.stiffness, steadiest);
+			bars.at(index).mStiffness = (2 * stiffness) / (effectiveMass(bar.left) + effectiveMass(bar.right));
+		});
 	}
 
 	setInput (forward: number, right: number, brake: number, handbrake: number): void {
@@ -209,8 +272,9 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		}
 	}
 
-	preStep (_dt: number): void {
+	preStep (dt: number): void {
 		if (!this._enabled) return;
+		if (dt !== this._antiRollDt) this._setAntiRollBars(dt);
 		const bodies = this._physics._bodies;
 		if (this._kinematic) {
 			// The wheels roll at the chassis' speed (nothing simulates them)

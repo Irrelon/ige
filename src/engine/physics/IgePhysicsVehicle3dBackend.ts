@@ -57,6 +57,7 @@ interface IgeVehicleDrivetrain {
 	mass: number;
 	/** Driven wheels in pairs (-1: none on that side), each sharing the engine's torque equally. */
 	differentials: { left: number; right: number }[];
+	/** Anti-roll bars across axles: the wheels either side, and the rate in N/m. */
 	antiRollBars: { left: number; right: number; stiffness: number }[];
 	engine: { maxTorque: number; minRpm: number; maxRpm: number };
 	gearbox: {

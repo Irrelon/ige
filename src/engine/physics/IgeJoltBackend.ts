@@ -125,6 +125,8 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 	readonly name = "jolt";
 	_jolt: IgeJolt;
 	_threaded: boolean;
+	/** Seconds per step the world was made for (vehicles' anti-roll bars are worked out for it before their first step). */
+	_fixedTimeStep: number;
 	_layerCount: number;
 	_interface: JoltApi.JoltInterface;
 	_system: JoltApi.PhysicsSystem;
@@ -151,6 +153,7 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 	constructor (jolt: IgeJolt, config: IgePhysicsBackendConfig, threaded: boolean, tuning: { maxBodyPairs: number; maxContactConstraints: number }) {
 		this._jolt = jolt;
 		this._threaded = threaded;
+		this._fixedTimeStep = config.options?.fixedTimeStep ?? 1 / 60;
 
 		const settings = new jolt.JoltSettings();
 		settings.mMaxBodies = config.maxBodies;

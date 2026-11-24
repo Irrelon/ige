@@ -23,8 +23,8 @@ window.ige = ige;
 
 /**
  * Vehicles: a car and a motorcycle on IgePhysics3d.addVehicle() (Jolt's
- * vehicle constraint underneath), on a field with roads, ramps, speed bumps
- * and crates to knock about.
+ * vehicle constraint underneath), on a field with roads, a kerbed
+ * pavement, ramps, speed bumps and crates to knock about.
  *
  * - Keyboard: W / up throttle, S / down brake and reverse, A D / left right
  *   steer, space handbrake, I K lean forward and back (pitch: air control,
@@ -223,6 +223,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.ramp(-1800, 5000, 600, 1400, 18, { r: 0.85, g: 0.35, b: 0.25, a: 1 });
 		this.ramp(1800, 2500, 450, 700, 9, { r: 0.85, g: 0.7, b: 0.25, a: 1 });
 		for (let i = 0; i < 5; i++) this.solid(900, 12, 70, 0, 0, 12000 + i * 250, { r: 0.9, g: 0.8, b: 0.2, a: 1 }, 0, "bump");
+		// A pavement along the road's right-hand side behind a 15 cm kerb, to drive up, along and off
+		this.solid(350, 15, 5000, -625, 7.5, 5500, concrete, 0, "pavement");
 		this.solid(60, 120, 5000, 4200, 60, 4000, concrete, 0, "wall");
 		this.solid(3000, 120, 60, 0, 60, -3500, concrete, 0, "wall");
 	}
