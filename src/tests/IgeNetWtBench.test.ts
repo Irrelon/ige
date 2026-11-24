@@ -206,8 +206,7 @@ run("WebTransport against WebSocket latency (live, headless Chrome)", () => {
 				await at(1 - last);
 				clearInterval(trickle);
 				clearInterval(queueTimer);
-				const queued = "n/a";
-				const lines = [`\n== ${mode === "wt" ? "WebTransport" : "WebSocket"} ==  (writer desiredSize at end: ${queued || "n/a"})`, "t(s)  rtt  stream  clockErr  ageAvg  ageMax  snaps/s  server backlog (stream/datagrams/dropped)  event"];
+				const lines = [`\n== ${mode === "wt" ? "WebTransport" : "WebSocket"} ==`, "t(s)  rtt  stream  clockErr  ageAvg  ageMax  snaps/s  server backlog (stream/datagrams/dropped)  event"];
 				for (const s of samples) lines.push(`${String(s.t).padStart(4)}  ${String(s.rtt).padStart(4)}  ${String(s.streamRtt).padStart(6)}  ${String(s.clockErr).padStart(8)}  ${String(s.ageAvg).padStart(6)}  ${String(s.ageMax).padStart(6)}  ${String(s.snaps).padStart(7)}  ${(queueLog[s.t - 1] ?? "-").padStart(22)}  ${marks[s.t] ?? ""}`);
 				const third = Math.floor(samples.length / 3);
 				const rtt = (from: number, to: number) => stats(samples.slice(from, to).map((s) => s.rtt));
