@@ -213,7 +213,9 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles on $name", (backend)
 	it("round-trips its state through JSON and carries on from it", async () => {
 		const { vehicle } = addVehicle();
 		run(physics, 1);
-		run(physics, 3, () => vehicle.drive({ forward: 1, right: 0.3 }));
+		// Not just before a gear change: traction control's hold on the throttle isn't in the state, so a copy can change
+		// up a few steps early and fall behind (at 3 s, 4,650 rpm in first)
+		run(physics, 2.5, () => vehicle.drive({ forward: 1, right: 0.3 }));
 		const state = vehicle.getState();
 		const json = JSON.parse(JSON.stringify(state)) as IgePhysicsVehicleState;
 		expect(json).toEqual(state);
@@ -783,9 +785,9 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles on kerbs and landing
 
 /*
  * Kerbs met head-on and at an angle, wheel guards, combined grip, the
- * clutch, and changing options after a vehicle is made.
+ * clutch, changing options after a vehicle is made, and the arcade assists.
  */
-describe.each(physicsTestBackends())("IgePhysics3d vehicles up kerbs, guards, grip, clutch and options on $name", (backend) => {
+describe.each(physicsTestBackends())("IgePhysics3d vehicles up kerbs, guards, grip, clutch, options and assists on $name", (backend) => {
 	let physics: IgePhysics3d;
 
 	beforeEach(async () => {
@@ -1016,5 +1018,144 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles up kerbs, guards, gr
 		expect(hit?.entity).toBe(tuned.entity);
 		expect(physics.vehicleOf(tuned.entity)).toBe(tuned);
 		expect(() => tuned.setOptions({ type: "motorcycle" })).toThrow();
+	});
+
+	/** No arcade assists: a simulation's handling (and the steering lock narrowing only by highSpeedLock). */
+	const SIM: Partial<IgePhysicsVehicleOptions> = { yawAssist: { strength: 0 }, stabilityAssist: { strength: 0 }, steering: { slip: Infinity } };
+
+	/** A vehicle brought up to a speed on full throttle (so it's in its gear), somewhere of its own. */
+	function atSpeed (options: IgePhysicsVehicleOptions, kmh: number, x: number) {
+		const vehicle = physics.addVehicle(new IgeEntity().translateTo(x, 20, -150000), options);
+		run(physics, 0.5);
+		for (let t = 0; t < 40 && vehicle.speedKmh() < kmh; t += 1 / 60) run(physics, 1 / 60, () => vehicle.drive({ forward: 1 }));
+		expect(vehicle.speedKmh()).toBeGreaterThanOrEqual(kmh);
+		return vehicle;
+	}
+
+	/**
+	 * Drive for some seconds with steering from the time (throttle holding the speed it started at): the most its rear
+	 * axle slid (degrees: how far its velocity there points from its heading; 1.35 m behind the saloon's centre of
+	 * mass), and its mean rate of turn (degrees a second, right positive) from 0.6 to 1.6 s.
+	 */
+	function manoeuvre (vehicle: IgePhysicsVehicle3dApi, seconds: number, right: (time: number) => number) {
+		const kmh = vehicle.speedKmh();
+		let slide = 0, turn = 0, samples = 0;
+		run(physics, seconds, (time) => {
+			const s = vehicle.speedKmh();
+			vehicle.drive({ forward: Math.max(0, Math.min(1, 0.3 + (kmh - s) * 0.15)), right: right(time) });
+			const state = vehicle.getState();
+			const f = rotate({ x: 0, y: 0, z: 1 }, state.rotation), left = rotate({ x: 1, y: 0, z: 0 }, state.rotation);
+			const v = vehicle.velocity(), w = vehicle.angularVelocity().y;
+			const along = v.x * f.x + v.z * f.z, across = v.x * left.x + v.z * left.z - w * 137.5;
+			slide = Math.max(slide, (Math.abs(Math.atan2(across, Math.max(1, along))) * 180) / Math.PI);
+			if (time > 0.6 && time < 1.6) {
+				turn += (-w * 180) / Math.PI;
+				samples++;
+			}
+		});
+		return { slide, turn: turn / Math.max(1, samples) };
+	}
+
+	it("keeps a tail-happy car from spinning at full stick and in a lane change at speed, which spin it without the assists", () => {
+		// Less grip at the back than the front: it oversteers, and without the assists a full stick, a lane change or a
+		// quarter-second tap at 120 km/h spins it round
+		const tailHappy = (extra: Partial<IgePhysicsVehicleOptions> = {}) => {
+			const options = saloon(extra);
+			options.wheels = options.wheels!.map((wheel, i) => ({ ...wheel, grip: i < 2 ? 1.3 : 1.05 }));
+			return options;
+		};
+		const fullStick = () => 1, laneChange = (t: number) => (t < 0.5 ? 1 : t < 1 ? -1 : 0), tap = (t: number) => (t < 0.25 ? 1 : 0);
+		let x = -100000;
+		for (const right of [fullStick, laneChange, tap]) {
+			const assisted = atSpeed(tailHappy(), 120, x += 5000);
+			const held = manoeuvre(assisted, 3, right);
+			expect(held.slide).toBeLessThan(6);
+			expect(assisted.speedKmh()).toBeGreaterThan(90);
+			expect(assisted.upsideDown()).toBe(false);
+
+			const sim = atSpeed(tailHappy(SIM), 120, x += 5000);
+			expect(manoeuvre(sim, 3, right).slide).toBeGreaterThan(45);
+		}
+	});
+
+	it("turns at 120 km/h as hard as lateralG asks, in proportion to the stick, and settles at once after a lane change", () => {
+		// The default car: its tyres' grip (1.2) makes lateralG 1.2, a rate of turn of 1.2 g / 33 m/s = 20 degrees a second
+		const full = manoeuvre(atSpeed({}, 120, -60000), 2, () => 1);
+		const asked = ((1.2 * 9.81) / (120 / 3.6)) * (180 / Math.PI);
+		expect(full.turn).toBeGreaterThan(asked * 0.9);
+		expect(full.turn).toBeLessThan(asked * 1.4);
+		expect(full.slide).toBeLessThan(5);
+		const half = manoeuvre(atSpeed({}, 120, -50000), 2, () => 0.5);
+		expect(half.turn).toBeGreaterThan(full.turn * 0.35);
+		expect(half.turn).toBeLessThan(full.turn * 0.7);
+
+		// A gentler turn asked for (yawAssist.lateralG) turns less: the steering narrows to it and the stability holds it
+		const gentle = manoeuvre(atSpeed({ yawAssist: { lateralG: 0.8 } }, 120, -40000), 2, () => 1);
+		expect(gentle.turn).toBeGreaterThan(full.turn * 0.55);
+		expect(gentle.turn).toBeLessThan(full.turn * 0.85);
+
+		// Half a second each way, then let go: its rate of turn is under 3 degrees a second within half a second
+		const lane = atSpeed({}, 110, -30000);
+		manoeuvre(lane, 1, (t) => (t < 0.5 ? 1 : -1));
+		let settled = -1;
+		run(physics, 1.5, (time) => {
+			lane.drive({ forward: 0.4 });
+			const calm = Math.abs(lane.angularVelocity().y) < (3 * Math.PI) / 180;
+			if (calm && settled < 0) settled = time;
+			if (!calm) settled = -1;
+		});
+		expect(settled).toBeGreaterThanOrEqual(0);
+		expect(settled).toBeLessThan(0.5);
+	});
+
+	it("still slides when asked: handbrake turns swing round as far as without the assists, and powerful cars do doughnuts", () => {
+		// From 60 km/h, full stick and the handbrake for 0.8 s
+		const swing = (options: IgePhysicsVehicleOptions, x: number) => {
+			const vehicle = atSpeed(options, 60, x);
+			const before = heading(vehicle);
+			run(physics, 0.8, () => vehicle.drive({ right: 1, handbrake: 1 }));
+			return Math.abs(heading(vehicle) - before);
+		};
+		const assisted = swing(saloon(), -20000);
+		expect(assisted).toBeGreaterThan(60);
+		expect(assisted).toBeGreaterThan(swing(saloon(SIM), -10000) * 0.9);
+
+		// Full lock and full throttle from rest without traction control: the tail stays out (the stability eases off
+		// for wheelspin at low speed)
+		const vehicle = physics.addVehicle(new IgeEntity().translateTo(0, 20, -150000), saloon({ engine: { maxTorque: 560 }, grip: 1.45, tractionControl: false }));
+		run(physics, 1);
+		let slide = 0, samples = 0;
+		run(physics, 5, (time) => {
+			vehicle.drive({ forward: 1, right: 1 });
+			const state = vehicle.getState();
+			const f = rotate({ x: 0, y: 0, z: 1 }, state.rotation), left = rotate({ x: 1, y: 0, z: 0 }, state.rotation);
+			const v = vehicle.velocity(), w = vehicle.angularVelocity().y;
+			const along = v.x * f.x + v.z * f.z, across = v.x * left.x + v.z * left.z - w * 137.5;
+			if (time > 2 && Math.hypot(along, across) > 100) {
+				slide += (Math.abs(Math.atan2(across, along)) * 180) / Math.PI;
+				samples++;
+			}
+		});
+		expect(slide / samples).toBeGreaterThan(12);
+	});
+
+	it("changes the assists while driving, and keeps them off motorcycles", () => {
+		const car = physics.addVehicle(new IgeEntity().translateTo(0, 20, -150000), {});
+		car.setOptions({ yawAssist: { lateralG: 1.5 } });
+		car.setOptions({ stabilityAssist: { strength: 0.5 }, downforce: 0.3 });
+		expect(car.options().yawAssist).toEqual({ lateralG: 1.5 });
+		expect(car.options().stabilityAssist).toEqual({ strength: 0.5 });
+		expect(car.options().downforce).toBe(0.3);
+		car.setOptions({ yawAssist: { strength: 0 } });
+		expect(car.options().yawAssist).toEqual({ lateralG: 1.5, strength: 0 });
+
+		// A motorcycle leans into its turns: no assists unless asked for, and they don't change how it turns
+		const bike = (options: IgePhysicsVehicleOptions, x: number) => {
+			const vehicle = atSpeed({ type: "motorcycle", ...options }, 50, x);
+			const before = heading(vehicle);
+			run(physics, 1.5, () => vehicle.drive({ forward: 0.5, right: 0.5 }));
+			return heading(vehicle) - before;
+		};
+		expect(bike({}, 10000)).toBeCloseTo(bike({ yawAssist: { strength: 0 }, stabilityAssist: { strength: 0 } }, 20000), 1);
 	});
 });

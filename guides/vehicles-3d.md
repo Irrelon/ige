@@ -24,7 +24,8 @@ car.drive({ forward: throttle, right: steer, brake, handbrake });
 
 With no options, it's a 1,300 kg rear-wheel-drive saloon about 4.4 m long, with its origin on the ground under its
 middle. It does 0 to 100 km/h in about 6 seconds, stops from 100 km/h in 35 m, corners at about 1.2 g rolling under 2
-degrees, and swings round about 140 degrees in a handbrake turn from 60 km/h.
+degrees, and swings round about 140 degrees in a handbrake turn from 60 km/h. It handles like a driving game's car
+(see "Arcade assists"): it turns firmly at any speed and doesn't spin unless you ask it to.
 
 **Axes.** A vehicle faces +Z of its entity with +Y up, so its left is +X and its right is -X. That's glTF's
 convention, which most vehicle models already use.
@@ -53,8 +54,8 @@ arrow keys too, and I K J L for pitch and roll.
 Input is shaped to feel like a driving game rather than a simulator:
 
 - **Steering** follows the input at `steering.rate` (4 full locks a second), so keyboard steering isn't twitchy. The
-  lock narrows with speed, down to `steering.highSpeedLock` (35%) at `steering.highSpeed` (30 m/s), so a flick at
-  speed doesn't spin the car.
+  lock narrows with speed: towards `steering.highSpeedLock` (35%) by `steering.highSpeed` (30 m/s), and at speed to
+  the turn the arcade assists ask for (see "Arcade assists"), so the stick's whole travel turns the car.
 - **Traction control** eases off the throttle while the driven wheels spin, so the car pulls away cleanly and keeps
   shifting up. It's on for cars and off for motorcycles (`tractionControl`).
 - **The handbrake** locks the rear wheels, and they keep only `handbrakeGrip` (40%) of their sideways grip, as locked
@@ -155,7 +156,10 @@ anti-roll bar (`antiRoll`, 10,000 N/m; 0 for none): stiffer keeps the body flatt
 | `combinedGrip` | 1 for cars, 0 for motorcycles | How much wheelspin and locked brakes use up sideways grip, see "Combined grip" |
 | `handbrakeGrip` | 0.4 | Sideways grip the handbrake's wheels keep |
 | `friction` | 0.4 | The body's own, when it scrapes along things |
-| `steering` | rate 4, highSpeed 30 m/s, highSpeedLock 0.35 | See "Driving" |
+| `steering` | rate 4, highSpeed 30 m/s, highSpeedLock 0.35, slip 2.5 | See "Driving" and "Arcade assists" |
+| `yawAssist` | strength 1 (cars), lateralG the tyres' grip | See "Arcade assists" |
+| `stabilityAssist` | strength 1 (cars), slideSpeed 15 m/s | See "Arcade assists" |
+| `downforce` | 0 | Share of the weight pushing down at 50 m/s |
 | `maxTilt` | none (60 for a motorcycle) | Most the body pitches or rolls, in degrees: an arcade stabiliser |
 | `maxLean` | 45 | Motorcycles: most it leans into a turn, in degrees |
 | `reverseOnBrake` | true | |
@@ -235,6 +239,61 @@ sideways: a car's tyre needs some just to keep rolling, and taking it away let w
 A tall, heavy rear-drive van or bus can still lift and spin an inside wheel under throttle in a fast swerve: give it
 less (0.35 keeps the driving spike's van and bus straight through a 110 km/h lane change).
 
+## Arcade assists
+
+A driving game's car turns firmly at any speed, goes where it's pointed and doesn't spin unless the player asks it to
+(the handbrake, a power slide). Real tyres at speed do none of that: a full stick at 120 km/h spins a car or ploughs
+on, and taking lock away at speed to stop the spins (as the driving spike first did) makes fast turns weak and vague.
+So cars have assists by default, worked out in `IgePhysicsVehicle3d` for every backend and applied as a force and a
+torque through the chassis' centre of mass (accelerations, so a bus gets the same help as a car). A simulation turns
+them off:
+
+```typescript
+physics.addVehicle(entity, { yawAssist: { strength: 0 }, stabilityAssist: { strength: 0 }, steering: { slip: Infinity } });
+```
+
+- **The turn asked for.** The steering asks for a rate of turn: what the steering's geometry gives at low speed (speed
+  x tan(lock) / wheelbase), and at speed the rate that gives a sideways acceleration of `yawAssist.lateralG` (default:
+  the tyres' grip, about 1.2 g), so the turning circle widens with speed. Half the stick asks for half.
+- **Steering lock at speed** narrows to the angle that makes that turn plus `steering.slip` (2.5 degrees), so the
+  stick's whole travel turns the car at any speed and a flick can't steer it past its grip. `highSpeedLock` still
+  narrows it at low speed. Without it (`slip: Infinity`), at 60 km/h the driving spike's saloon turned as hard at half
+  the stick as at full.
+- **Yaw assist** (`yawAssist.strength`, 0..1): turning less than asked, in its direction (understeer), a torque turns
+  the vehicle towards it, at most 3 radians per second squared. It stops helping once the rear axle slides (it isn't
+  there to spin the car), and fades out as the body tilts from 8 to 14 degrees, so it never rolls a vehicle over.
+- **Stability** (`stabilityAssist.strength`, 0..1): turning more than asked (overshoot, oversteer), the other way, or
+  at all with the steering straight, a torque turns it back beyond a margin of 0.02 radians a second (at most 20
+  radians per second squared): no sudden spins, and a lane change stops turning at once. Its rear axle sliding
+  sideways more than 3 degrees (a car turning without sliding goes straight along its rear axle), its velocity turns
+  towards where it's pointed, keeping its speed, with up to 0.6 g. It eases off while the handbrake is on, and while
+  the driven wheels spin under throttle below `stabilityAssist.slideSpeed` (15 m/s), so handbrake turns, power slides
+  and doughnuts still happen; it comes back over 0.8 s after (eased in), so a slide let go of carries on a little and
+  is then caught. A vehicle sliding more than 70 degrees has spun, and is left to it.
+- **Downforce** (`downforce`, default 0): a push down with the square of the speed, as a share of the weight at
+  50 m/s, so the tyres grip harder at speed. 0.3 is 18% more grip at 140 km/h.
+
+None of them act in the air, with fewer than half the wheels down, tilted past 45 degrees, below 1 to 4 m/s forward or
+reversing, or in kinematic mode. Motorcycles have none unless given (they lean into their turns themselves).
+
+In the tests, a saloon with less grip at the back than the front spins round at 120 km/h in a full-stick turn, a lane
+change and even a quarter-second tap without the assists, and slides under 6 degrees with them; the default car turns
+at its `lateralG` at 120 km/h, at half the stick about half as hard, and stops turning within half a second of a lane
+change; a handbrake turn swings as far as without them, and a powerful car without traction control still does
+doughnuts. In the driving spike (ige-gta, `docs/spikes/driving.md`), with the game's own cars at 100 to 140 km/h: the
+yaw rate overshot by 15 to 110% and reached 90% of its steady value in 0.03 to 0.08 s (darting), the saloon slid
+16 degrees and the taxi spun at 140; with the assists, 2 to 14% overshoot, 0.2 to 0.3 s, 1 to 3 degrees of slide and
+no spins.
+
+Tuning:
+
+- `yawAssist.lateralG` is the feel at speed: how tight a full stick turns. Above the tyres' grip the assists add a
+  little (the stability's push), not much: they don't make grip. A tall vehicle wants less (a bus 0.55; at its tyres'
+  0.87 g its lock alone rolls it over at 60 km/h).
+- Grippy tyres (grip 2 and up) turn harder than `lateralG` by 10 to 25% at speed: the stability holds the car near it,
+  not exactly to it.
+- The assists don't know the ground's friction: on ice the stability still pulls the car straight with up to 0.6 g.
+
 ## Changing options
 
 ```typescript
@@ -243,8 +302,8 @@ car.options(); // what it's using
 ```
 
 `setOptions()` changes a vehicle while it's driven (a tuning panel, an upgrade, damage): the fields given replace the
-ones it was made with (`engine`, `gearbox` and `steering` field by field), and it carries on at the same place, speed,
-revs and gear. Mass, engine, gearbox and clutch, final drive, springs, dampers and where they're fixed, steering lock,
+ones it was made with (`engine`, `gearbox`, `steering`, `yawAssist` and `stabilityAssist` field by field), and it
+carries on at the same place, speed, revs and gear. The assists and downforce change at once. Mass, engine, gearbox and clutch, final drive, springs, dampers and where they're fixed, steering lock,
 brakes, grip, anti-roll bars, friction and the tilt limit change in place. A new chassis, wheels of another size or
 number, or more gears make its simulation again from its state, still the same vehicle object (its events, entity and
 wheel entities stay). `type` can't change.
@@ -382,6 +441,10 @@ Apple silicon Mac. Each wheel casts a ray (a car's) or a cylinder (a motorcycle'
 - `maxTilt` keeps a ridden motorcycle from falling over at all (until `upright(false)`).
 - Air control, self-righting and weight shift turn the vehicle directly (as an angular acceleration), not through a
   modelled rider or centre of mass.
+- The arcade assists push the chassis directly too (a torque, and a sideways force when it slides), not through the
+  tyres or the brakes, and don't know the ground's friction (see "Arcade assists").
+- Traction control's hold on the throttle isn't in `getState()`: a copy put in a state just before a gear change can
+  change up a few steps early.
 
 ## Backends
 
@@ -393,7 +456,8 @@ and kinematic targets. Underneath, the world's backend makes an `IgeVehicleBacke
 `IgePhysicsBackend.createVehicle()` (see [physics-3d.md](physics-3d.md), "Backends"), from the resolved spec in metres
 (`IgeVehicleBackendSpec`, `IgePhysicsVehicle3dBackend.ts`): `setInput()`, `preStep()`, `readPose()`,
 `readVelocity()`, `readWheel()` (which reports the ground's body handle), `rpm()`, `gear()`, `shift()`, `setState()`,
-`setKinematic()`, `moveKinematic()`, `setEnabled()`, `addAngularVelocity()`, `setUpright()`, optionally `retune()`
+`setKinematic()`, `moveKinematic()`, `setEnabled()`, `addAngularVelocity()`, `accelerate()` (a force and a torque that
+give the chassis an acceleration for a step: the arcade assists), `setUpright()`, optionally `retune()`
 (a new spec in place, for `setOptions()`; without it the vehicle is made again) and `destroy()`, and its chassis as
 `body`, so raycasts, sensors and impacts find it. The chassis includes the spec's wheel `guards`, which collide but
 don't count towards its mass. A wheel must find a step up to its `stepHeight` from above.
@@ -448,6 +512,8 @@ against walls, landings, air control, self-righting, letting a motorcycle fall, 
 jump tests drive off a 15 cm kerb straight and at an angle, park and drive with one side up a kerb, and land from
 1.5 m, counting wheels lifting off and how long the body takes to be still. Others drive up 15 cm box and 20 cm
 road-tile kerbs at 10, 30 and 60 km/h, head-on and at 30 degrees, keep wheels out of a low wall and a motorcycle's
-front wheel out of a wall with guards, do doughnuts with combined grip, pull a heavy bus away on its clutch, and
-change options while driving.
+front wheel out of a wall with guards, do doughnuts with combined grip, pull a heavy bus away on its clutch, change
+options while driving, and check the arcade assists: no spin at full stick, in a lane change or a tap at 120 km/h for a
+car that spins without them, the turn asked for at 120 km/h in proportion to the stick, settling after a lane change,
+handbrake turns and doughnuts as without them, and none on motorcycles.
 `src/tests/IgeJoltVehicle3d.test.ts` checks that Jolt gets back every byte a vehicle takes.

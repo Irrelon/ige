@@ -160,7 +160,53 @@ export interface IgePhysicsVehicleOptions {
 		highSpeed?: number;
 		/** Share of the full lock left at highSpeed and above, so fast cars don't spin (default 0.35). */
 		highSpeedLock?: number;
+		/**
+		 * Degrees the front tyres may slip past the turn yawAssist.lateralG
+		 * allows: at speed the lock narrows to the angle that turns the
+		 * vehicle that hard, plus this, so the stick's whole travel turns it
+		 * (half the stick, about half the turn) and a flick can't steer it
+		 * past its grip. Default 2.5 for cars; Infinity (motorcycles' default)
+		 * leaves only highSpeedLock.
+		 */
+		slip?: number;
 	};
+	/**
+	 * Arcade turning (see stabilityAssist too): steering asks for a rate of
+	 * turn, from the steering's geometry at low speed and a sideways
+	 * acceleration of `lateralG` at speed (a turning circle that widens
+	 * with speed, as the tyres' grip allows), and a torque turns the
+	 * vehicle towards it when the tyres alone turn it less (understeer).
+	 * A driving game's cars turn firmly at any speed this way. Off
+	 * (strength 0) for a simulation.
+	 */
+	yawAssist?: {
+		/** 0..1 (default 1 for cars, 0 for motorcycles). */
+		strength?: number;
+		/** Sideways acceleration a full stick asks for at speed, in g (default: the tyres' grip, about 1.2). */
+		lateralG?: number;
+	};
+	/**
+	 * Arcade stability: a torque that holds the vehicle's rate of turn to
+	 * what the steering asks for (no yaw overshoot or sudden spin, lane
+	 * changes that settle at once), and a sideways push that turns its
+	 * velocity towards where it points once it slides more than a few
+	 * degrees (slides are easy to catch; the car goes where it's pointed).
+	 * It eases off while the handbrake is on and for a moment after, and
+	 * while the driven wheels spin under throttle below `slideSpeed` (power
+	 * slides and doughnuts). Off (strength 0) for a simulation.
+	 */
+	stabilityAssist?: {
+		/** 0..1 (default 1 for cars, 0 for motorcycles). */
+		strength?: number;
+		/** Wheelspin below this speed (IGE units per second) eases it off, for power slides (default 15 m/s, 54 km/h). */
+		slideSpeed?: number;
+	};
+	/**
+	 * Downforce: a push down growing with the square of the speed, as a
+	 * share of the vehicle's weight at 50 m/s (180 km/h), so the tyres grip
+	 * harder at speed (default 0).
+	 */
+	downforce?: number;
 	/** Motorcycles: most the bike leans into a turn, in degrees (default 45). */
 	maxLean?: number;
 	/**

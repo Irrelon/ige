@@ -95,7 +95,14 @@ export interface IgeVehicleSpec extends IgeVehicleDrivetrain {
 	guards: IgeVehicleGuard[];
 	centreOfMass: Vec3;
 	wheels: IgeVehicleWheelSpec[];
-	steering: { rate: number; highSpeed: number; highSpeedLock: number };
+	/** slip in radians (Infinity: none). */
+	steering: { rate: number; highSpeed: number; highSpeedLock: number; slip: number };
+	/** Arcade assists (IgePhysicsVehicle3d applies them through the backend's accelerate()). */
+	yawAssist: { strength: number; lateralG: number };
+	/** slideSpeed in IGE units per second. */
+	stabilityAssist: { strength: number; slideSpeed: number };
+	/** Share of the weight pushing down at 50 m/s. */
+	downforce: number;
 	reverseOnBrake: boolean;
 	tractionControl: boolean;
 	extrapolate: number;
@@ -227,6 +234,13 @@ export interface IgeVehicleBackend {
 	setEnabled (on: boolean): void;
 	/** Add to the chassis' angular velocity (radians per second, world axes), waking it: air control, self-righting, weight shift. */
 	addAngularVelocity (change: Vec3): void;
+	/**
+	 * Push the chassis through the next step with a force through its
+	 * centre of mass and a torque that give it these accelerations (m/s²
+	 * and radians/s², world axes), waking it: the arcade assists and
+	 * downforce. Nothing while kinematic or disabled.
+	 */
+	accelerate (linear: Vec3, angular: Vec3): void;
 	/**
 	 * Balance on (as made) or off. Off, a motorcycle's lean controller
 	 * stops holding it up and the pitch and roll limit (maxTilt) goes, so it
@@ -440,6 +454,10 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 		maxRpm: options.engine?.maxRpm ?? base.engine.maxRpm
 	};
 	const steering = options.steering ?? {};
+	// Assists: on for cars (a driving game's handling), off for motorcycles (they lean into turns themselves)
+	const assisted = type === "car" ? DEFAULT_ASSIST : 0;
+	const meanGrip = wheels.reduce((sum, w) => sum + w.grip, 0) / wheels.length;
+	const unit = (v: number | undefined, fallback: number) => Math.max(0, Math.min(1, Number.isFinite(v) ? v as number : fallback));
 	return {
 		type,
 		layer: options.layer,
@@ -471,8 +489,18 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 		steering: {
 			rate: steering.rate ?? base.steering.rate,
 			highSpeed: steering.highSpeed ?? base.steering.highSpeed * u,
-			highSpeedLock: steering.highSpeedLock ?? base.steering.highSpeedLock
+			highSpeedLock: steering.highSpeedLock ?? base.steering.highSpeedLock,
+			slip: Math.max(0, steering.slip ?? (type === "car" ? 2.5 : Infinity)) * DEG
 		},
+		yawAssist: {
+			strength: unit(options.yawAssist?.strength, assisted),
+			lateralG: Math.max(0.05, options.yawAssist?.lateralG ?? meanGrip)
+		},
+		stabilityAssist: {
+			strength: unit(options.stabilityAssist?.strength, assisted),
+			slideSpeed: Math.max(0, options.stabilityAssist?.slideSpeed ?? 15 * u)
+		},
+		downforce: Math.max(0, options.downforce ?? 0),
 		reverseOnBrake: options.reverseOnBrake ?? true,
 		tractionControl: options.tractionControl ?? type === "car",
 		extrapolate: options.extrapolate ?? 0.25,
@@ -482,6 +510,9 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 		weightShift: type === "motorcycle" ? Math.max(0, options.weightShift ?? 6000) * DEG : 0
 	};
 }
+
+/** The assists' default strength for cars. */
+const DEFAULT_ASSIST = 1;
 
 /** Velocity change (metres per second) in a step that counts as an impact with `impacts: true`. */
 const DEFAULT_IMPACT = 1;
@@ -590,10 +621,10 @@ function scaleShape (shape: IgePhysicsShape, u: number): IgePhysicsShape {
 	}
 }
 
-/** Options with changes laid over them: engine, gearbox and steering field by field, the rest replaced. */
+/** Options with changes laid over them: engine, gearbox, steering and the assists field by field, the rest replaced. */
 export function mergeVehicleOptions (options: IgePhysicsVehicleOptions, changes: Partial<IgePhysicsVehicleOptions>): IgePhysicsVehicleOptions {
 	const merged: IgePhysicsVehicleOptions = { ...options, ...changes };
-	for (const key of ["engine", "gearbox", "steering"] as const) {
+	for (const key of ["engine", "gearbox", "steering", "yawAssist", "stabilityAssist"] as const) {
 		if (changes[key] && options[key]) (merged as any)[key] = { ...options[key], ...changes[key] };
 	}
 	return merged;

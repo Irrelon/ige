@@ -49,6 +49,12 @@ function tyreScale (grip: number): number {
 	return (grip * 1.2) ** 2 / DEFAULT_GROUND_FRICTION / 1.2;
 }
 
+/** v rotated by the unit quaternion (x, y, z, w). */
+function rotateBy (v: IgePhysicsVec3, x: number, y: number, z: number, w: number): IgePhysicsVec3 {
+	const tx = 2 * (y * v.z - z * v.y), ty = 2 * (z * v.x - x * v.z), tz = 2 * (x * v.y - y * v.x);
+	return { x: v.x + w * tx + (y * tz - z * ty), y: v.y + w * ty + (z * tx - x * tz), z: v.z + w * tz + (x * ty - y * tx) };
+}
+
 /** Sideways friction by slip angle in degrees (Jolt's curve, scaled). */
 function setLateralCurve (curve: JoltApi.LinearCurve, scale: number): void {
 	curve.Clear();
@@ -140,8 +146,9 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	/** How far (metres, along the axle) each wheel's ray starts from the middle of its tyre (see _placeRays()). */
 	_rayShift: number[];
 	_destroyed: boolean = false;
-	/** A second scratch vector (the world's _vec is the first). */
+	/** A second scratch vector (the world's _vec is the first), and a third. */
 	_vec2: JoltApi.Vec3;
+	_vec3: JoltApi.Vec3;
 	/** The step length the anti-roll bars were last set for (see _setAntiRollBars()). */
 	_antiRollDt: number = 0;
 	/**
@@ -157,6 +164,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		this._jolt = jolt;
 		this._spec = spec;
 		this._vec2 = new jolt.Vec3(0, 0, 0);
+		this._vec3 = new jolt.Vec3(0, 0, 0);
 		const layer = physics._layer(spec.layer);
 		this._layer = layer;
 		const motorcycle = spec.type === "motorcycle";
@@ -650,6 +658,31 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		if (!this._body.IsActive()) bodies.ActivateBody(this._id);
 	}
 
+	accelerate (linear: IgePhysicsVec3, angular: IgePhysicsVec3): void {
+		if (!this._enabled || this._kinematic || this._destroyed) return;
+		const motion = this._body.GetMotionProperties();
+		const inverseMass = motion.GetInverseMass();
+		if (!(inverseMass > 0)) return;
+		// Torque = I x angular, I = R diag(1 / inverse diagonal) R^T, R the body's rotation times its inertia's
+		const b = this._body.GetRotation();
+		const bx = b.GetX(), by = b.GetY(), bz = b.GetZ(), bw = b.GetW();
+		const i = motion.GetInertiaRotation();
+		const ix = i.GetX(), iy = i.GetY(), iz = i.GetZ(), iw = i.GetW();
+		const q = {
+			x: bw * ix + bx * iw + by * iz - bz * iy,
+			y: bw * iy - bx * iz + by * iw + bz * ix,
+			z: bw * iz + bx * iy - by * ix + bz * iw,
+			w: bw * iw - bx * ix - by * iy - bz * iz
+		};
+		const local = rotateBy(angular, -q.x, -q.y, -q.z, q.w);
+		const d = motion.GetInverseInertiaDiagonal();
+		const dx = d.GetX(), dy = d.GetY(), dz = d.GetZ();
+		const torque = rotateBy({ x: dx > 0 ? local.x / dx : 0, y: dy > 0 ? local.y / dy : 0, z: dz > 0 ? local.z / dz : 0 }, q.x, q.y, q.z, q.w);
+		this._vec2.Set(linear.x / inverseMass, linear.y / inverseMass, linear.z / inverseMass);
+		this._vec3.Set(torque.x, torque.y, torque.z);
+		this._physics._bodies.AddForceAndTorque(this._id, this._vec2, this._vec3, this._jolt.EActivation_Activate);
+	}
+
 	setUpright (on: boolean): void {
 		if (this._destroyed) return;
 		this._upright = on;
@@ -736,6 +769,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		this._constraint.Release();
 		physics.destroyBody(this.body);
 		jolt.destroy(this._vec2);
+		jolt.destroy(this._vec3);
 		this._wheels = [];
 	}
 }
