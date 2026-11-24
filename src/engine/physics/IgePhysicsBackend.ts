@@ -64,6 +64,20 @@ export interface IgePhysicsBackendBodyDesc {
 	ccd: boolean;
 	/** Collides with nothing; found by touching() (trigger volumes). Always kinematic. */
 	sensor: boolean;
+	/** kg: this mass instead of one from the density (inertia from the shape, scaled to it). */
+	mass?: number;
+	/** The centre of mass relative to the body's position, in its own axes (default: the shape's). */
+	centreOfMass?: Vec3;
+	/** A dynamic body that setBodyKinematic() can switch to kinematic and back (craft driven from the network). */
+	allowKinematic?: boolean;
+}
+
+/** A body's inertia (filled in place by readBodyInertia()). */
+export interface IgePhysicsBackendInertia {
+	/** Principal moments of inertia, kg·m² (Infinity about an axis it can't turn around). */
+	moments: Vec3;
+	/** The rotation of those principal axes relative to the body's own axes. */
+	rotation: Quat;
 }
 
 export interface IgePhysicsBackendCharacterDesc {
@@ -178,6 +192,25 @@ export interface IgePhysicsBackend {
 	moveKinematic (body: IgePhysicsBodyHandle, position: Vec3, rotation: Quat, dt: number): void;
 	/** kg * m/s, at the centre of mass or at a world point. */
 	addImpulse (body: IgePhysicsBodyHandle, impulse: Vec3, at?: Vec3): void;
+	/**
+	 * Newtons, at the centre of mass or at a world point, for the next step
+	 * only (forces add up until the step, then start again from nothing).
+	 * Wakes the body. Dynamic bodies only. Flight, buoyancy and water drag
+	 * are worked out in engine-neutral code and arrive here.
+	 */
+	addForce (body: IgePhysicsBodyHandle, force: Vec3, at?: Vec3): void;
+	/** Newton metres about the centre of mass (world axes), for the next step only. Wakes the body. Dynamic bodies only. */
+	addTorque (body: IgePhysicsBodyHandle, torque: Vec3): void;
+	/** The centre of mass's world position (it moves with the body). */
+	readBodyCentreOfMass (body: IgePhysicsBodyHandle, out: Vec3): void;
+	/** Principal moments of inertia and their axes (dynamic bodies; they don't change). */
+	readBodyInertia (body: IgePhysicsBodyHandle, out: IgePhysicsBackendInertia): void;
+	/**
+	 * Switch a body made with allowKinematic between dynamic (simulated)
+	 * and kinematic (moved by moveKinematic(), pushing dynamic bodies). It
+	 * keeps its mass and shape.
+	 */
+	setBodyKinematic (body: IgePhysicsBodyHandle, kinematic: boolean): void;
 	/** kg (Infinity for static and kinematic bodies). */
 	bodyMass (body: IgePhysicsBodyHandle): number;
 	/** Whether it's being simulated (false once asleep, and for static bodies). */
@@ -188,9 +221,10 @@ export interface IgePhysicsBackend {
 
 	/**
 	 * The nearest body along a ray (direction unit length) that the layer
-	 * collides with. Fills `out` and returns true on a hit.
+	 * collides with, other than `ignore` (e.g. the body casting it: an
+	 * aircraft's landing gear). Fills `out` and returns true on a hit.
 	 */
-	raycast (origin: Vec3, direction: Vec3, maxDistance: number, layer: number, out: IgePhysicsBackendRaycastHit): boolean;
+	raycast (origin: Vec3, direction: Vec3, maxDistance: number, layer: number, out: IgePhysicsBackendRaycastHit, ignore?: IgePhysicsBodyHandle): boolean;
 	/**
 	 * Every other body in the world whose shape overlaps this body's, or
 	 * is within `margin` of it, that the body's layer collides with

@@ -121,6 +121,21 @@ const car = physics.addVehicle(carEntity); // an arcade-leaning saloon
 car.drive({ forward: throttle, right: steer, brake, handbrake }); // each frame
 ```
 
+## Aircraft, boats and water
+
+Planes, helicopters, boats and floating bodies have their own guide: [aircraft-boats-3d.md](aircraft-boats-3d.md).
+
+```typescript
+physics.water({ level: 0, waves: [{ direction: 30, length: 4000, amplitude: 25 }] });
+const boat = physics.addBoat(boatEntity, { preset: "speedboat" });
+const plane = physics.addAircraft(planeEntity, { preset: "lightPlane" });
+physics.addBuoyancy(crateBody); // floats or sinks by its density
+```
+
+Any body can be pushed steadily too: `body.applyForce(x, y, z, at?)` (kg * IGE units per second squared, for the next
+step), `body.applyTorque(x, y, z)` (newton metres) and `body.centreOfMass()`. Bodies take a `mass` instead of a
+density, and a `centreOfMass` of their own.
+
 ## Collision layers
 
 ```typescript
@@ -275,14 +290,18 @@ The interface is `IgePhysicsBackend` in `src/engine/physics/IgePhysicsBackend.ts
 | Area | Calls |
 |---|---|
 | The world | `step()`, `setGravity()`, `optimize()`, `activeBodyCount()`, `threaded()`, `destroy()` |
-| Bodies | `createBody()` (static, dynamic or kinematic; box, sphere, capsule, mesh, convex, compound and heightfield shapes; density, friction, restitution, damping, gravity factor, locked rotation, continuous collision, sensors), `destroyBody()`, `setBodyEnabled()`, `readBodyPose()`, `readBodyVelocity()`, `setBodyVelocity()`, `setBodyTransform()`, `moveKinematic()`, `addImpulse()`, `bodyMass()`, `bodyAwake()`, `setBodyAwake()` |
+| Bodies | `createBody()` (static, dynamic or kinematic; box, sphere, capsule, mesh, convex, compound and heightfield shapes; density or a mass, a centre of mass, friction, restitution, damping, gravity factor, locked rotation, continuous collision, sensors, `allowKinematic`), `destroyBody()`, `setBodyEnabled()`, `readBodyPose()`, `readBodyVelocity()`, `setBodyVelocity()`, `setBodyTransform()`, `moveKinematic()`, `setBodyKinematic()`, `addImpulse()`, `addForce()`, `addTorque()`, `readBodyCentreOfMass()`, `readBodyInertia()`, `bodyMass()`, `bodyAwake()`, `setBodyAwake()` |
 | Layers | Named by index: static layers don't collide with each other; every other pair does unless ignored |
-| Queries | `raycast()` (nearest hit, distance and normal, by what a layer collides with), `touching()` (what overlaps a body: sensors and impacts are built on it) |
+| Queries | `raycast()` (nearest hit, distance and normal, by what a layer collides with, skipping an `ignore` body), `touching()` (what overlaps a body: sensors and impacts are built on it) |
 | Characters | `createCharacter()` (walks up steps and slopes, sticks to the floor, pushes bodies with a limited strength, optionally unpushable), `characterBody()`, `moveCharacter()`, `readCharacter()`, `setCharacterState()`, `setCharacterEnabled()`, `destroyCharacter()` |
 | Ragdolls | `createRagdoll()` (capsules joined by swing-twist joints, parts not colliding with each other), `destroyRagdoll()` |
 | Vehicles | `createVehicle()`, returning an `IgeVehicleBackend` (see [vehicles-3d.md](vehicles-3d.md)) |
 
 Queries run after the step on the main thread, so a threaded engine needs no callbacks from its workers.
+
+Flight, boats and buoyancy need no more than forces, torques, the centre of mass, inertia, kinematic switching and
+raycasts: lift, drag, thrust, buoyancy and water drag are worked out in IGE's own code (see
+[aircraft-boats-3d.md](aircraft-boats-3d.md), "Backends"), never by an engine's own features.
 
 To write one:
 
@@ -292,11 +311,12 @@ To write one:
 2. Implement `IgePhysicsBackend`, using `IgeJoltBackend.ts` (and `IgeJoltVehicle3d.ts`) as the reference. Free
    everything a call makes in the call that removes it.
 3. Add it to `BACKENDS` in `src/tests/support/physics3dTestWorld.ts`. The behaviour suite
-   (`src/tests/IgePhysics3dContract.test.ts`: falling and resting, every shape, layers, sensors, raycasts, characters
-   on steps and slopes, pushing, impacts, ragdolls, state round trips, freeing) and the vehicle suite
-   (`IgePhysicsVehicle3d.test.ts`) then run against it too. `IGE_PHYSICS_BACKENDS=rapier npx jest` runs them for it
+   (`src/tests/IgePhysics3dContract.test.ts`: falling and resting, every shape, forces and torques, layers, sensors,
+   raycasts, characters on steps and slopes, pushing, impacts, ragdolls, state round trips, freeing), the vehicle
+   suite (`IgePhysicsVehicle3d.test.ts`) and the aircraft and boat suite (`IgePhysicsCraft3d.test.ts`) then run
+   against it too. `IGE_PHYSICS_BACKENDS=rapier npx jest` runs them for it
    alone.
 4. Games choose it with `IgePhysics3d.create({ backend: myRapierBackend() })`.
 
-Jolt's own checks (that every byte of WebAssembly memory comes back) are in `IgeJoltBackend.test.ts` and
-`IgeJoltVehicle3d.test.ts`.
+Jolt's own checks (that every byte of WebAssembly memory comes back) are in `IgeJoltBackend.test.ts`,
+`IgeJoltVehicle3d.test.ts` and `IgeJoltCraft3d.test.ts`.

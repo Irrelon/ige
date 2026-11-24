@@ -132,6 +132,38 @@ export class IgePhysicsBody3d extends IgeEventingClass {
 		return this;
 	}
 
+	/**
+	 * Push the body steadily: a force in kg * IGE units per second squared
+	 * (newtons times unitsPerMetre), at its centre of mass or at a world
+	 * point, for the next step only (call it every frame for a steady push:
+	 * wind, a thruster). Wakes the body.
+	 */
+	applyForce (x: number, y: number, z: number, at?: Vec3): this {
+		const u = this._physics.unitsPerMetre();
+		SCRATCH.x = x / u; SCRATCH.y = y / u; SCRATCH.z = z / u;
+		if (at) {
+			SCRATCH2.x = at.x / u; SCRATCH2.y = at.y / u; SCRATCH2.z = at.z / u;
+		}
+		this._physics._backend.addForce(this._handle, SCRATCH, at ? SCRATCH2 : undefined);
+		return this;
+	}
+
+	/** Twist the body: a torque in newton metres about each world axis, for the next step only. Wakes the body. */
+	applyTorque (x: number, y: number, z: number): this {
+		SCRATCH.x = x; SCRATCH.y = y; SCRATCH.z = z;
+		this._physics._backend.addTorque(this._handle, SCRATCH);
+		return this;
+	}
+
+	/** The centre of mass's world position (IGE units). */
+	centreOfMass (): Vec3 {
+		const c = { x: 0, y: 0, z: 0 };
+		this._physics._backend.readBodyCentreOfMass(this._handle, c);
+		const u = this._physics.unitsPerMetre();
+		c.x *= u; c.y *= u; c.z *= u;
+		return c;
+	}
+
 	/** Mass in kg (Infinity for static and kinematic bodies). */
 	mass (): number {
 		return this._physics._backend.bodyMass(this._handle);

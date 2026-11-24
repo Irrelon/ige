@@ -76,6 +76,10 @@ export interface IgePhysicsBodyOptions {
 	restitution?: number;
 	/** kg per cubic metre, default 1000 (water). */
 	density?: number;
+	/** kg: this mass instead of one from the density (dynamic bodies; inertia from the shape). */
+	mass?: number;
+	/** Where the centre of mass is relative to the entity's origin, in its own axes (IGE units; dynamic bodies). Default: the shape's. */
+	centreOfMass?: Vec3;
 	/** Default 0.05. */
 	linearDamping?: number;
 	/** Default 0.05. */
