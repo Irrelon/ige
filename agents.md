@@ -2,7 +2,15 @@
 
 ## Project Overview
 
-The Isogenic Game Engine (IGE) is a custom 2D/isometric/3D game engine written in TypeScript for creating games using web technologies. The engine supports 2D, isometric, and full 3D rendering via a custom WebGL renderer, maintaining the simplicity and ease of use that makes IGE special.
+The Isogenic Game Engine (IGE) is a TypeScript game engine for 2D, isometric and 3D games on web technologies. It has two renderers in daily use: `IgeCanvas2dRenderer` (2D and isometric) and `IgeWebGlRenderer`, a custom WebGL 2 renderer that draws both 3D scenes and 2D sprites (as textured planes). The scene graph and entity API are shared, so the same `translateTo()` / `mount()` calls work for both.
+
+## Where 3D lives (start here)
+
+-   Renderer: `src/engine/core/IgeWebGlRenderer.ts` (large; the batching, shadow, post-process and UI passes are in it). `igeCreateRenderer()` (`src/engine/core/igeCreateRenderer.ts`) picks it.
+-   Support code: `src/engine/webgl/` (managers, glTF loader, model parts, instancing, particles, decals, raycasting), `src/engine/gpu/` (`IgeGpuDevice`), `src/engine/shaders/webgl/` (GLSL), `src/engine/physics/` (Jolt 3D physics), `src/engine/timeline/`.
+-   Entity API for 3D: `IgeEntity.model()`, `.geometry()`, `.material()`, `.texture()`, `.billboard()`, `.outline()`, `.uiLayer()`; cameras via `IgeCamera.preset()`.
+-   Guides: `guides/` (list under Guides below). Status and next steps: `development-plan.md`.
+-   Examples: `src/examples/webGlRenderer`, `coordTest3d`, `lightingShadows`, `skeletalAnimation`, `webGl2d` (2D on WebGL), `zombie-game` (the main test bed).
 
 ## Current State
 
@@ -12,50 +20,50 @@ The engine is built around several key classes that form the foundation of the r
 
 #### **IgeEntity** (`src/engine/core/IgeEntity.ts`)
 
--   The fundamental building block of all game objects
--   Already supports 3D positioning (x, y, z) and 3D sizing via `_bounds3d`
+-   The fundamental building block of all game objects (extends `IgeObject`)
+-   Supports 3D positioning (x, y, z) and 3D sizing via `_bounds3d`
 -   Has transformation matrices and world position calculations
--   Supports both 2D (`IgeEntityRenderMode.flat`) and isometric (`IgeEntityRenderMode.iso`) rendering modes
--   Contains depth sorting for isometric rendering (`depthSortChildren()`)
--   Has built-in support for textures via `IgeTexture`
+-   Supports both flat 2D (`IgeEntityRenderMode.flat`) and isometric (`IgeEntityRenderMode.iso`) modes for Canvas 2D; the WebGL renderer treats every entity as 3D and ignores the iso mode
+-   Has built-in support for textures via `IgeTexture` (`texture()`), and for 3D content via `model()`, `geometry()` and `material()`; `billboard()` sets how a textured sprite faces the camera under WebGL
 
 #### **IgeObject** (`src/engine/core/IgeObject.ts`)
 
 -   Base class for all engine objects including entities
--   Provides fundamental transformation support (translate, rotate, scale)
+-   Provides fundamental transformation support (`translateTo`, `rotateTo`, `scaleTo`)
 -   Has 3D bounds (`_bounds3d: IgePoint3d`) and positioning (`_translate: IgePoint3d`)
--   Includes scene graph management (parent/child relationships)
+-   Includes scene graph management (`mount()`, parent/child relationships)
 -   Contains geometry and material data properties for 3D rendering
+-   Contains depth sorting for isometric rendering (`depthSortChildren()`)
 
 #### **IgeViewport** (`src/engine/core/IgeViewport.ts`)
 
--   Manages what portion of the scene is visible to the user
+-   Manages what portion of the scene is visible to the user (extends `IgeUiEntity`)
 -   Contains an `IgeCamera` for controlling viewpoint
 -   Handles clipping and viewport transformations
--   Supports both 2D and 3D rendering modes
+-   Used by both renderers; under WebGL each viewport is culled, shadowed and drawn on its own (split-screen)
 
 #### **IgeCamera** (`src/engine/core/IgeCamera.ts`)
 
--   Controls the viewpoint within a viewport
--   Supports tracking entities for smooth camera movement
--   Has 3D transformation support (translate, rotate, scale)
+-   Controls the viewpoint within a viewport (extends `IgeEntity`)
+-   Supports tracking entities for smooth camera movement (`trackTranslate()`, `lookAt()`)
+-   Has 3D transformation support (translate, rotate, scale), perspective and orthographic projection (`projectionType()`), and presets (`preset("isometric" | "isometric45" | "topDown" | "sideScroller" | "screen2d")`)
 
 #### **IgeTexture** (`src/engine/core/IgeTexture.ts`)
 
 -   Handles loading and rendering of 2D images/textures
--   Supports cell-based sprite sheets
+-   Supports cell-based sprite sheets and smart (script-drawn) textures
 -   Used in both Canvas 2D and WebGL rendering pipelines
 
 ### 3D Support Infrastructure
 
-The engine has extensive 3D infrastructure:
+What exists in the code today:
 
 1. **3D Positioning**: All entities support 3D coordinates via `IgePoint3d`
-2. **3D Bounds**: Entities have `_bounds3d` for 3D collision and depth sorting
-3. **Isometric Rendering**: Built-in support for pseudo-3D isometric views
-4. **Depth Sorting**: Multiple algorithms for proper 3D object ordering
-5. **Geometry Data**: `_geometryData` property for storing 3D mesh information
-6. **Material Data**: `_materialData` property for 3D material properties
+2. **3D Bounds**: Entities have `_bounds3d` for 3D sizing, depth sorting (Canvas 2D iso) and culling
+3. **Isometric Rendering**: Pseudo-3D iso projection in Canvas 2D; on WebGL, the `isometric` / `isometric45` camera presets give an orthographic iso view of a real 3D scene
+4. **Depth Sorting**: `depthSortChildren()` for Canvas 2D iso; WebGL uses a depth buffer
+5. **Geometry Data**: `_geometryData` (default: a quad) for 3D mesh information
+6. **Material Data**: `_materialData` (`IgeMaterialData`) for 3D material properties
 7. **Mesh Data**: `_meshData` property for renderer-specific 3D objects
 
 ### Rendering System
@@ -65,7 +73,7 @@ The engine has extensive 3D infrastructure:
 -   Extends `IgeBaseRenderer` for Canvas 2D rendering
 -   Handles viewport management and scene graph traversal
 -   Renders entities using their textures and transformation matrices
--   Optimized for 2D but supports isometric projection
+-   The only renderer for isometric (`IgeEntityRenderMode.iso`) scenes: it does the iso projection and depth sorting itself, and `igeCreateRenderer({ mode: "iso" })` always returns it. Also the fallback when WebGL isn't available.
 
 #### **IgeWebGlRenderer** (`src/engine/core/IgeWebGlRenderer.ts`) - PRIMARY 3D RENDERER
 
@@ -154,19 +162,21 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 -   Animations in separate files: `model(model, { animations: { Attack: attackFile } })` (record: first clip of each file under the key) or `animations: [libraryFile]` (every clip under its own name). Clips are retargeted by bone name (`IgeAnimationRetarget`); identical rigs share keyframes, other rigs are converted rest-relative.
 -   LOD levels are generated once per model and shared; `{ screenSize, model }` uses an authored lower-detail model instead (same parts and skeleton). `renderer.stats().lodItems` and `.triangles` help tune thresholds.
 
+
 #### **IgeThreeJsRenderer** (`src/engine/core/IgeThreeJsRenderer.ts`) - EXPERIMENTAL
 
--   Incomplete Three.js-based renderer
--   Has basic setup (WebGLRenderer, Scene, PerspectiveCamera) but many TODOs remain
--   Three.js is a peer dependency (optional), not a core dependency
--   Only one example uses it (`threeJsRenderer/client.ts`)
+-   Incomplete Three.js-based renderer (about 220 lines; `TODO`s in the render path)
+-   Has basic setup (WebGLRenderer, Scene, PerspectiveCamera) but does not draw IGE scenes
+-   `three` is listed as a peer dependency in `package.json` (not marked optional, unlike the others) and as a dev type dependency; the custom renderer doesn't use it
+-   Only one example uses it (`src/examples/threeJsRenderer/client.ts`)
 -   Not recommended for active development; the custom WebGL renderer is the primary path
 
 #### **IgeWebGpuRenderer** (`src/engine/core/IgeWebGpuRenderer.ts`) - PROTOTYPE
 
--   Early WebGPU API prototype
--   Has basic initialization pipeline but lacks real entity/scene rendering
--   Future-focused but not production-ready
+-   Early WebGPU API prototype (about 490 lines): adapter/device setup, one pipeline, draws textured rectangles
+-   No scene graph, lighting, models or shadows; example `src/examples/webGpuRenderer`
+-   Not production-ready. WebGPU work for the main renderer is going through `IgeGpuDevice` (`src/engine/gpu/`, `guides/gpu-device.md`), which has only a WebGL 2 backend so far
+
 
 ### WebGL Support Files (`src/engine/webgl/`)
 
@@ -203,144 +213,75 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 | `IgeHeightfieldRay.ts` | Ray/heightfield intersection behind `screenToHeightfield()` |
 | `IgeViewportOverlay.ts` | DOM HUD elements over the 3D views, clipped per viewport |
 
+
 ## Ultimate Project Goals
 
 ### Primary Objective
 
 **A unified 3D renderer (custom WebGL) that handles both 2D and 3D content seamlessly, similar to modern game engines like Unity and Unreal Engine.**
 
-Users should be able to:
+This works today under `IgeWebGlRenderer`:
 
 ```typescript
-// This should work for both 2D sprites and 3D models
+// 2D sprite: a textured plane in 3D space, facing the camera (billboard "full" by default)
 const entity = new IgeEntity()
-	.texture(myTexture) // 2D sprite as texture on 3D plane
+	.texture(myTexture)
 	.translateTo(100, 50, 25) // 3D positioning
-	.mount(scene); // Simple mounting
+	.mount(scene);
 
-// Or with 3D models
+// 3D model (load it first with igeGltfLoader.load())
 const entity3d = new IgeEntity()
 	.model(my3dModel) // 3D model instead of texture
 	.translateTo(100, 50, 25) // Same positioning API
 	.mount(scene); // Same mounting API
 ```
 
+Axes differ by camera: 3D presets are y up; the `screen2d` preset is y down, one unit per pixel (see `guides/2d-on-webgl.md`). Isometric (`IgeEntityRenderMode.iso`) scenes are not drawn by the WebGL renderer.
+
 ### Key Requirements
 
-1. **API Consistency**: Same methods work for both 2D sprites and 3D models
-2. **Unified Renderer**: Single WebGL renderer handles all content types
+1. **API Consistency**: Same methods work for both 2D sprites and 3D models (done for positioning, mounting, scaling, materials; iso mode is Canvas 2D only)
+2. **Unified Renderer**: Single WebGL renderer handles all content types (2D and 3D yes; iso no)
 3. **Performance**: Custom WebGL rendering for maximum control and performance
 4. **Simplicity**: Maintain IGE's ease of use philosophy
-5. **Backward Compatibility**: Existing 2D workflows continue to work
+5. **Backward Compatibility**: Existing 2D workflows continue to work (Canvas 2D is unchanged; `igeCreateRenderer({ mode: "2d" })` runs them on WebGL)
 
 ### Technical Strategy
 
-1. **Custom WebGL Renderer**:
-
-    - Purpose-built for IGE's specific needs
-    - Maximum control over rendering pipeline and performance
-    - Modular manager architecture for maintainability
-    - 2D sprites rendered as textured planes in 3D space
-    - 3D models rendered natively via GLTF/GLB loader
-    - Single rendering pipeline for all content
-
-2. **Custom Renderer Benefits**:
-
-    - No external 3D library dependency for core rendering
-    - Full control over shader pipeline and optimizations
-    - Custom GLTF/GLB model loading tailored to IGE
-    - Built-in lighting, shadows, and skeletal animation
-    - Render batching optimized for IGE's scene graph
-    - Smaller bundle size compared to full Three.js dependency
-
-3. **2D Content in 3D Space**:
-
-    - 2D textures mapped to 3D planes
-    - Automatic billboarding for sprite-like behavior
-    - Orthographic camera mode for pure 2D feel
-    - Isometric camera presets for isometric games
-
-4. **Enhanced Entity System**:
-
-    - Support both `.texture()` and `.model()` methods
-    - Unified material system for both 2D and 3D content
-    - Automatic geometry generation for 2D sprites
-    - Native 3D model support
-
-5. **Camera Evolution**:
-
-    - True 3D perspective and orthographic cameras
-    - 2D camera mode (orthographic with locked Z)
-    - Isometric camera presets
-    - Smooth transitions between camera modes
+1. **Custom WebGL Renderer** (done): purpose-built, modular manager architecture, 2D sprites as textured planes, 3D models via the glTF loader, one pipeline for all content.
+2. **Why custom**: no external 3D library for core rendering, full control of shaders, lighting, shadows, skeletal animation and batching, smaller bundle than Three.js.
+3. **2D content in 3D space** (done): textures on planes, `billboard("full" | "y" | "none")`, orthographic cameras, the `screen2d` and iso camera presets (`IgeCamera.preset()`).
+4. **Entity system** (done): `.texture()` and `.model()` both work; materials are `IgeMaterialData` / `IgeWebGlMaterial`; plane geometry for sprites is automatic.
+5. **Cameras** (mostly done): perspective and orthographic, presets, `IgeWebGlCameraController`, tracking. No animated transition between camera modes.
 
 ## Development Priorities
 
-See `development-plan.md` for the current status, measurements and the prioritised next steps (driven by the split-screen zombie ARPG).
+See `development-plan.md` for the current status, measurements and the prioritised next steps (driven by the split-screen zombie ARPG). Status of the original phases:
 
-### Phase 1: Unified Renderer Foundation (Largely Complete)
+### Phase 1: Unified Renderer Foundation (Done)
 
-1. **IgeWebGlRenderer as Primary Renderer** (Done):
-
-    - Custom WebGL renderer with modular manager architecture
-    - 2D sprite rendering as textured 3D planes
-    - Material and lighting support
-    - GLTF/GLB 3D model loading
-    - Shadow mapping
-    - Skeletal animation support
-
-2. **Unified Entity System**:
-
-    - Support both `.texture()` for 2D sprites and `.model()` for 3D content
-    - Unified material system for both content types
-    - Automatic geometry generation for 2D sprites
-    - Enhanced transformation handling in 3D space
-
-3. **Camera System**:
-    - Perspective and orthographic cameras via `IgeWebGlCameraController`
-    - Camera presets for common configurations
-    - Maintain API compatibility for existing camera usage
+-   `IgeWebGlRenderer` as primary renderer, modular managers: done
+-   `.texture()` and `.model()` on one entity API, sprites as textured planes: done (`IgeEntity`, `billboard()`)
+-   Cameras: perspective and orthographic, presets, `IgeCamera.preset()` and `IgeWebGlCameraController`: done
 
 ### Phase 2: Asset Pipeline
 
-1. **3D Asset Loading**:
+-   GLTF/GLB loading (`IgeGltfLoader`), `igeLoadAssets()`, animation files and retargeting: done
+-   Texture loading for 3D materials: done for base colour and emissive maps
+-   PBR materials: partly done. `IgeWebGlPBRMaterial` and `IgeMaterialData` carry metallic, roughness and emissive values, and `renderer.pbr(true)` turns on the lighting model (off by default). Normal, metallic-roughness and occlusion maps exist in the shader and material classes but the renderer never turns them on (`u_hasNormalMap` etc. are set to 0 in `IgeWebGlRenderer`), so they have no effect. No specular maps
+-   Material editor/configuration tool: not started
 
-    - GLTF/GLB loader for 3D models (implemented)
-    - Texture loading for 3D materials
-    - Asset management for 3D resources
+### Phase 3: Advanced Features (mostly done)
 
-2. **Material System**:
-    - PBR (Physically Based Rendering) materials
-    - Texture mapping (diffuse, normal, specular)
-    - Material editor/configuration
-
-### Phase 3: Advanced Features
-
-1. **Lighting System**:
-
-    - Dynamic lighting for 3D scenes (implemented - directional and point lights)
-    - Shadow mapping (implemented)
-    - Light entity types
-
-2. **Performance Optimization**:
-    - Frustum culling for 3D scenes (implemented, world-space bounding spheres)
-    - Level-of-detail (LOD) system (implemented: generated or authored levels, chosen per viewport and shadow pass)
-    - Instanced rendering for repeated objects (implemented, static and skinned)
-    - Render batching (implemented)
-    - Shared animation pose cache and off-screen animation culling (implemented)
+-   Lighting: directional, point and spot lights (`IgeWebGlLightManager`); shadow mapping (`IgeWebGlShadowManager`, cached static shadows)
+-   Light entity types: not started (lights are `IgeWebGlLight` objects on the renderer, not scene entities)
+-   Performance: frustum culling, LOD (`IgeMeshSimplifier`), GPU instancing, render batching, shared animation pose cache, dynamic resolution
 
 ### Phase 4: Developer Experience
 
-1. **Documentation**:
-
-    - 3D development guides
-    - Migration guides from 2D to 3D
-    - Best practices documentation
-
-2. **Tooling**:
-    - 3D scene editor
-    - Asset preview tools
-    - Debug visualization for 3D
+-   Documentation: partly done. `guides/` covers the WebGL, 2D-on-WebGL, physics, networking, UI and timeline systems; there are no migration or best-practice guides beyond `guides/2d-on-webgl.md`
+-   3D scene editor and asset preview tools: not started (only the old Canvas 2D editor under `other/editor`, not ported)
+-   Debug visualization: partly done (`debugDraw()`, `debugLine()`, `stats()`)
 
 ## Implementation Guidelines
 
@@ -352,7 +293,7 @@ When working on IGE, follow these principles:
 2. **Follow Patterns**: Use existing code patterns and class structures
 3. **TypeScript First**: Maintain strict typing throughout
 4. **Test Backward Compatibility**: Ensure 2D examples still work
-5. **Document Changes**: Update inline documentation for new features
+5. **Document Changes**: Update inline documentation, and this file and `guides/` for new features
 6. **Use Custom WebGL**: Build on `IgeWebGlRenderer`, not Three.js
 
 ### Key Files to Understand
@@ -360,8 +301,9 @@ When working on IGE, follow these principles:
 -   `src/engine/core/IgeEntity.ts` - Core entity class
 -   `src/engine/core/IgeObject.ts` - Base object class
 -   `src/engine/core/IgeWebGlRenderer.ts` - Primary 3D renderer
--   `src/engine/core/IgeCanvas2dRenderer.ts` - 2D renderer
+-   `src/engine/core/IgeCanvas2dRenderer.ts` - 2D and isometric renderer
 -   `src/engine/core/IgeBaseRenderer.ts` - Base renderer class
+-   `src/engine/core/igeCreateRenderer.ts` - Chooses the renderer
 -   `src/engine/webgl/` - WebGL support modules (managers, loaders, etc.)
 -   `src/examples/webGlRenderer/` - WebGL renderer example
 -   `src/examples/coordTest3d/` - 3D coordinate test example
@@ -370,10 +312,10 @@ When working on IGE, follow these principles:
 ### Common Tasks
 
 1. **Renderer Enhancement**: Extend the custom WebGL renderer with new features
-2. **Entity Enhancement**: Add unified 2D/3D content support to `IgeEntity`
+2. **Material work**: Switch on normal, metallic-roughness and occlusion maps in the renderer
 3. **Asset Pipeline**: Improve GLTF/GLB loading and material support
-4. **Camera Modernization**: Enhance camera controller for more use cases
-5. **API Unification**: Ensure same methods work for both 2D and 3D content
+4. **Tooling**: Scene editor, asset preview, material editor
+5. **Docs**: Migration guide from Canvas 2D to WebGL beyond `guides/2d-on-webgl.md`
 
 ### Architecture Constraints
 
@@ -386,41 +328,34 @@ When working on IGE, follow these principles:
 
 ## Current Challenges
 
-1. **Feature Completeness**: Continuing to build out the WebGL renderer's feature set
-2. **Asset Pipeline**: Unified loading for both 2D textures and 3D models
-3. **Performance**: Optimizing the custom WebGL renderer for large scenes
+1. **Feature Completeness**: PBR texture maps, a tooling story, and the items in `development-plan.md`
+2. **Isometric on WebGL**: iso scenes stay on Canvas 2D; they must be moved to a 3D layout to use WebGL
+3. **Performance**: Large scenes and split-screen (see `development-plan.md` for measurements)
 4. **Complexity vs Simplicity**: Maintaining IGE simplicity with growing 3D capabilities
-5. **Migration Path**: Smooth transition for existing IGE users from Canvas 2D
+5. **Migration Path**: `guides/2d-on-webgl.md` is the only guide for moving Canvas 2D games to WebGL
 
 ## Renderer Comparison
 
 | Renderer | Status | Use Case | Maturity |
 |----------|--------|----------|----------|
-| **IgeWebGlRenderer** | Production-ready | Primary 3D rendering | Mature |
-| **IgeCanvas2dRenderer** | Production-ready | 2D rendering | Mature |
-| **IgeThreeJsRenderer** | Experimental | Alternative (not recommended) | Incomplete |
+| **IgeWebGlRenderer** | In use (zombie-game, other examples) | 3D, and 2D on WebGL (WebGL 2 only) | Mature |
+| **IgeCanvas2dRenderer** | In use | 2D, isometric, fallback without WebGL | Mature |
+| **IgeThreeJsRenderer** | Experimental, not developed | Alternative (not recommended) | Incomplete |
 | **IgeWebGpuRenderer** | Prototype | Future graphics API | Very early |
 
 ## Success Metrics
 
-The unified 3D renderer will be considered successful when:
+The unified 3D renderer is judged by:
 
-1. **2D sprites work seamlessly in 3D space**
-2. **3D models can be used as easily as 2D textures**
-3. **Performance is suitable for both 2D and 3D games**
-4. **Developer experience remains intuitive and simple**
-5. **Single API works for all content types**
-6. **Existing workflows require minimal changes**
+1. **2D sprites work seamlessly in 3D space**: done (`texture()`, `billboard()`, `screen2d` preset; example `webGl2d`)
+2. **3D models can be used as easily as 2D textures**: done (`model()` after `igeGltfLoader.load()`)
+3. **Performance suitable for both 2D and 3D games**: measured in `development-plan.md` for the 3D case; 2D on WebGL is newer and less measured
+4. **Developer experience stays intuitive and simple**: ongoing, a judgement
+5. **Single API works for all content types**: partly done; iso scenes still need Canvas 2D
+6. **Existing workflows require minimal changes**: done for 2D (`igeCreateRenderer({ mode: "2d" })`); iso games must restructure to use WebGL
 
 ## Conclusion
 
-IGE has a solid and maturing 3D rendering system built on a custom WebGL renderer (`IgeWebGlRenderer`) with a comprehensive modular architecture including lighting, shadows, skeletal animation, GLTF/GLB loading, frustum culling, and render batching. This custom approach replaces the earlier experimental Three.js integration, providing maximum control over the rendering pipeline and performance.
+IGE has a mature custom WebGL renderer (`IgeWebGlRenderer`) with lighting, shadows, skeletal animation, GLTF/GLB loading, culling, batching, physics, networking and UI layers. It replaced the earlier experimental Three.js integration.
 
-This approach allows IGE to:
-
--   **Maintain full control** over the rendering pipeline without external 3D library dependencies
--   **Optimize specifically for IGE's needs** with custom shader management and render batching
--   **Keep bundle sizes small** by not requiring Three.js as a core dependency
--   **Maintain API simplicity** while gaining powerful 3D capabilities
--   **Provide a clear migration path** for existing 2D projects
--   **Future-proof the engine** with WebGPU exploration alongside the mature WebGL renderer
+Remaining gaps: PBR texture maps in the renderer, authoring tools, isometric scenes on WebGL, and a real WebGPU backend behind `IgeGpuDevice`.
