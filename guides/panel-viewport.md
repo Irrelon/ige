@@ -100,6 +100,10 @@ a panel already on the canvas, must now draw the panel's pixels too.)
 `IgeRecorderEffect` (`guides/recorder-effect.md`) is a ready-made effect: grain, scanlines, tint, dropouts and
 more (a freeze on the last good frame, overscan so a warp fills its rectangle), with presets, its noise tied to a time you set.
 
+## Stills: `capture()`
+
+`panel.capture(callback, silent?)` hands over the panel's finished picture the next time it's drawn: RGBA bytes, top row first, one pixel to a device pixel (`{ width, height, pixels }`). It reads the panel's own offscreen target back once, so nothing else on the canvas is in it. With `silent` the panel isn't composited onto the canvas that frame, so a still can be made out of sight: `panel.show()`, `panel.capture(done, true)`, and `panel.hide()` from the callback. A panel that isn't shown isn't drawn, so nothing is handed over.
+
 ## No main viewport
 
 Shown panels draw even when the engine has no viewport (a menu-only screen with a panel): the frame is cleared,

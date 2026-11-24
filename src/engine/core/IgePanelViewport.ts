@@ -27,6 +27,13 @@ export interface IgePanelLayout {
 	aspect?: number;
 }
 
+/** What capture() hands over: the panel's picture in device pixels, RGBA bytes, the top row first. */
+export interface IgePanelPicture {
+	width: number;
+	height: number;
+	pixels: Uint8ClampedArray;
+}
+
 /** A panel's rectangle in CSS pixels, measured from the canvas's top-left. */
 export interface IgePanelRect {
 	x: number;
@@ -124,6 +131,10 @@ export class IgePanelViewport {
 	_renderer?: { shadowManager?: { createShadowMap(id: string, config: any): boolean; deleteShadowMap(id: string): void } };
 	/** @internal */
 	_shadowLight?: IgeDirectionalLight;
+	/** @internal Pictures asked for with capture(), handed over by the renderer after the next frame the panel is drawn. */
+	_captures: ((picture: IgePanelPicture) => void)[] = [];
+	/** @internal The panel isn't composited onto the canvas (it's drawn for capture() alone). */
+	_silent = false;
 	protected _visible = false;
 	protected _samples = IGE_PANEL_DEFAULT_SAMPLES;
 	protected _fog: IgeWebGlFogSettings | null = null;
@@ -190,6 +201,20 @@ export class IgePanelViewport {
 		if (n === this._samples) return;
 		this._samples = n;
 		markSceneChanged();
+	}
+
+	/**
+	 * Hands over the panel's finished picture the next time it's drawn: its colour as RGBA bytes, top row first, one pixel
+	 * to a device pixel (the panel's rectangle at the canvas's pixel ratio). Once; the panel is read back from its own
+	 * offscreen target, so nothing else on the canvas is in it. `silent`: the panel isn't drawn onto the canvas that frame
+	 * (a still made out of sight: show() it, capture(), hide() it from the callback). Show the panel for this: a hidden
+	 * panel isn't drawn, so nothing is handed over.
+	 */
+	capture (callback: (picture: IgePanelPicture) => void, silent = false): this {
+		this._captures.push(callback);
+		if (silent) this._silent = true;
+		markSceneChanged();
+		return this;
 	}
 
 	/** Draw the panel from the next frame. */

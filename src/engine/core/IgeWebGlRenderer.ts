@@ -1403,7 +1403,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				if (target && targets && device) {
 					targets.resolve(target);
 					this._gpuBegin();
-					if (panel.effect) panel.effect.apply(device, frame, target);
+					// Pictures asked for with panel.capture(): the resolved colour read back, flipped to top row first
+					if (panel._captures.length) this._handOverPanelPictures(panel, device, target);
+					if (panel._silent) panel._silent = false;
+					else if (panel.effect) panel.effect.apply(device, frame, target);
 					else targets.copy(target, frame);
 					device.release();
 					this._stateManager?.reset();
@@ -1419,6 +1422,18 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._shadowMapHoldsCache = saved.holds;
 			this._fog = saved.fog;
 		}
+	}
+
+	/** Reads the panel's finished picture back and gives it to everyone waiting for it (IgePanelViewport.capture()). */
+	protected _handOverPanelPictures(panel: IgePanelViewport, device: { readTarget(target: IgeGpuTexture, rect: [number, number, number, number]): Uint8Array }, target: { color: IgeGpuTexture; width: number; height: number }): void {
+		const waiting = panel._captures.splice(0);
+		const { width, height } = target;
+		const raw = device.readTarget(target.color, [0, 0, width, height]);
+		// (GL's rows run bottom to top: the picture's top row first)
+		const pixels = new Uint8ClampedArray(raw.length);
+		const row = width * 4;
+		for (let y = 0; y < height; y++) pixels.set(raw.subarray((height - 1 - y) * row, (height - y) * row), y * row);
+		for (const done of waiting) done({ width, height, pixels });
 	}
 
 	/**
