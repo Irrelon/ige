@@ -53,6 +53,12 @@ describe("igeNetConnect: WebTransport with the WebSocket as the fallback", () =>
 		expect(FakeSocket.opened).toEqual(["ws://zone/sync"]);
 	});
 
+	it("blames the page, not the browser, when WebTransport is hidden because the page isn't a secure context", async () => {
+		const result = await igeNetConnect({ ...base, webTransport: { url: "https://zone/sync" }, WebTransport: undefined, isSecureContext: false });
+		expect(result.transport).toBe("websocket");
+		expect(result.fallbackReason).toMatch(/secure context/);
+	});
+
 	it("uses the WebSocket when the page isn't a secure context, without trying WebTransport", async () => {
 		const wt = fakeWebTransport("never");
 		const result = await igeNetConnect({ ...base, webTransport: { url: "https://zone/sync" }, WebTransport: wt.Class, isSecureContext: false });

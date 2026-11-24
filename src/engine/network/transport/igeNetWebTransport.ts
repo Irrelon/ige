@@ -256,8 +256,9 @@ export async function igeNetConnect (options: IgeNetConnectOptions): Promise<Ige
 	const secure = options.isSecureContext ?? (globalThis as { isSecureContext?: boolean }).isSecureContext !== false;
 	let fallbackReason: string | undefined;
 	if (!options.webTransport) fallbackReason = "no WebTransport address";
+	// (Not a secure context first: browsers hide WebTransport there, so "no WebTransport" would blame the browser)
+	else if (!secure) fallbackReason = "the page isn't a secure context (WebTransport needs HTTPS or localhost)";
 	else if (!Class) fallbackReason = "this browser has no WebTransport";
-	else if (!secure) fallbackReason = "the page isn't a secure context";
 	else {
 		try {
 			const connection = await igeNetWebTransport(options.webTransport.url, { certHash: options.webTransport.certHash, WebTransport: Class, timeout: options.timeout });
