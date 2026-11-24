@@ -262,6 +262,9 @@ const PARTICLE_FLOATS = 8;
 /** Fraction of the shadow frustum's half-size the cached frustum re-centres by. */
 const SHADOW_RECENTER_STEP = 0.125;
 
+/** Fraction of the shadow frustum's size added to a caster's radius when testing whether its shadow can land in view (covers the shadow filter's blur and the camera moving between collect and draw). */
+const SHADOW_CULL_MARGIN = 0.02;
+
 let nextRenderUid = 1;
 
 type IgeLocalBox = { minX: number; minY: number; minZ: number; maxX: number; maxY: number; maxZ: number };
@@ -3679,7 +3682,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				ly = m[6] / g;
 				lz = m[10] / g;
 				lLen = 2 / g;
-				cullPad = (shadowManager.frustumSize() as number) * SHADOW_RECENTER_STEP;
+				cullPad = (shadowManager.frustumSize() as number) * SHADOW_CULL_MARGIN;
 			}
 		}
 
