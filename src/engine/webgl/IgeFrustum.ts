@@ -162,6 +162,22 @@ export class IgeFrustum extends IgeBaseClass {
 	}
 
 	/**
+	 * Whether a sphere swept along a line (a capsule) may touch the frustum: the sphere at (x, y, z), carried from
+	 * `-length` to `+length` along the unit vector (dx, dy, dz). Returns false only when the whole capsule lies
+	 * outside one plane. Used for casters, whose shadow falls along the light.
+	 */
+	sweptSphereVisibleXYZ(x: number, y: number, z: number, radius: number, dx: number, dy: number, dz: number, length: number): boolean {
+		const planes = this.planes;
+		for (let i = 0; i < 6; i++) {
+			const p = planes[i];
+			const d = p.a * x + p.b * y + p.c * z + p.d;
+			const along = Math.abs(p.a * dx + p.b * dy + p.c * dz) * length;
+			if (d + along < -radius) return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Test if an axis-aligned bounding box is inside or intersects the frustum.
 	 * Returns false only if the box is completely outside.
 	 */

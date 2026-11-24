@@ -14,6 +14,7 @@ export class IgeWebGlSkeletonManager extends IgeBaseClass {
 
 	// Active skeleton instances
 	protected _skeletons: Map<string, IgeSkeleton> = new Map();
+	protected _skinScratch: Float32Array = new Float32Array(0);
 
 	// Temporary matrices for computation
 	private _tempMat4: Float32Array = new Float32Array(16);
@@ -63,7 +64,8 @@ export class IgeWebGlSkeletonManager extends IgeBaseClass {
 			localMatrices: new Float32Array(boneCount * 16),
 			worldMatrices: new Float32Array(boneCount * 16),
 			skinMatrices: new Float32Array(boneCount * 16),
-			dirty: true
+			dirty: true,
+			poseVersion: 0
 		};
 
 		// Initialize local matrices to bind pose
@@ -115,19 +117,32 @@ export class IgeWebGlSkeletonManager extends IgeBaseClass {
 		if (skeleton.boneRotations?.length) this._applyBoneRotations(skeleton);
 
 		// Compute skin matrices: skinMatrix = worldMatrix * inverseBindMatrix
+		// (into scratch first, so the pose version moves only when the pose really came out different)
+		const total = data.boneCount * 16;
+		if (this._skinScratch.length < total) this._skinScratch = new Float32Array(total);
+		const scratch = this._skinScratch;
 		for (let i = 0; i < data.boneCount; i++) {
 			const bone = data.bones[i];
 			const worldOffset = i * 16;
 			const skinOffset = i * 16;
 
 			this._multiplyMat4(
-				skeleton.skinMatrices,
+				scratch,
 				skinOffset,
 				skeleton.worldMatrices,
 				worldOffset,
 				bone.inverseBindMatrix,
 				0
 			);
+		}
+
+		const skin = skeleton.skinMatrices;
+		for (let i = 0; i < total; i++) {
+			if (skin[i] !== scratch[i]) {
+				for (let j = i; j < total; j++) skin[j] = scratch[j];
+				skeleton.poseVersion++;
+				break;
+			}
 		}
 
 		skeleton.dirty = false;

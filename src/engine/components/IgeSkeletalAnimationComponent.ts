@@ -872,7 +872,14 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		// a ragdoll taking over) starts from this pose rather than an older one
 		skeleton.localMatrices.set(entry.local);
 		skeleton.worldMatrices.set(entry.world);
-		skeleton.skinMatrices.set(entry.skin);
+		const skin = skeleton.skinMatrices;
+		for (let i = 0; i < skin.length; i++) {
+			if (skin[i] !== entry.skin[i]) {
+				skeleton.poseVersion++;
+				break;
+			}
+		}
+		skin.set(entry.skin);
 		skeleton.dirty = false;
 		return true;
 	}

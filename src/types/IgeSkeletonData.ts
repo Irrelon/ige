@@ -83,6 +83,12 @@ export interface IgeSkeleton {
 
 	/** Whether matrices need recomputation */
 	dirty: boolean;
+
+	/**
+	 * Changes only when the pose actually changes (the skin matrices come out different), not each time something
+	 * writes it. The shadow cache reads it to treat a skinned caster whose pose has stopped changing as static.
+	 */
+	poseVersion: number;
 }
 
 /**

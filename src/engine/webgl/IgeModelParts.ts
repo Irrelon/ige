@@ -335,7 +335,8 @@ export function createSkeletonInstance (data: IgeSkeletonData): IgeSkeleton {
 		localMatrices: new Float32Array(boneCount * 16),
 		worldMatrices: new Float32Array(boneCount * 16),
 		skinMatrices: new Float32Array(boneCount * 16),
-		dirty: true
+		dirty: true,
+		poseVersion: 0
 	};
 
 	for (let i = 0; i < boneCount; i++) {

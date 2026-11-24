@@ -230,6 +230,8 @@ export interface IgeWebGlRenderStats {
 	dynamicShadowDraws: number;
 	/** Times the cached static map was copied into the live shadow map. */
 	shadowCacheCopies: number;
+	/** Shadow casters left out of the directional shadow pass because their shadow can't land in the view (see shadowCasterCulling()). */
+	shadowCastersCulled: number;
 	viewports: number;
 }
 
@@ -525,6 +527,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _defaultParticleTexture: IgeGpuTexture | null = null;
 	protected _defaultDecalTexture: IgeGpuTexture | null = null;
 	protected _lightFrustum: IgeFrustum = new IgeFrustum();
+	protected _shadowCasterCulling: boolean = true;
 	// Point light shadow casters in range of the current light, with the
 	// LOD key and geometry chosen for it (reused across lights and frames)
 	protected _pointCasterItems: IgeWebGlRenderItem[] = [];
@@ -568,6 +571,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		shadowCacheRebuilds: 0,
 		dynamicShadowDraws: 0,
 		shadowCacheCopies: 0,
+		shadowCastersCulled: 0,
 		viewports: 0
 	};
 
@@ -1169,6 +1173,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 		this._shadowCaching = val;
 		this._shadowMapHoldsCache = false;
+		return this;
+	}
+
+	/**
+	 * Gets / sets whether the directional shadow pass leaves out the casters drawn each frame (moving, skinned) whose
+	 * shadow can't land in the view (on by default; `stats().shadowCastersCulled` counts them). Casters in the
+	 * static shadow cache are never left out, so the cache doesn't change as the camera moves.
+	 */
+	shadowCasterCulling(val?: boolean): boolean | this {
+		if (val === undefined) return this._shadowCasterCulling;
+		this._shadowCasterCulling = val;
 		return this;
 	}
 
@@ -2024,6 +2039,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		stats.shadowCacheRebuilds = 0;
 		stats.dynamicShadowDraws = 0;
 		stats.shadowCacheCopies = 0;
+		stats.shadowCastersCulled = 0;
 		this._directionalPassesLastFrame = this._directionalPassesThisFrame;
 		this._directionalPassesThisFrame = 0;
 		stats.viewports = viewports ? viewports.length : 0;
@@ -2932,7 +2948,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			);
 
 			if (lightSpaceMatrix) {
-				this._renderDirectionalShadowPass(data, lightSpaceMatrix);
+				this._renderDirectionalShadowPass(data, lightSpaceMatrix, frustum);
 				this._stateManager.reset();
 				gl.depthFunc(gl.LEQUAL);
 			}
@@ -3614,9 +3630,16 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/**
 	 * Render the directional light's shadow map for one viewport. Casters
 	 * are culled against the light's own frustum (not the camera's), so
-	 * objects just off-screen still cast shadows into view.
+	 * objects just off-screen still cast shadows into view. Casters drawn over the cache (or every caster, when there
+	 * is no cache) are also dropped when `viewFrustum` (the viewport's camera) is given and the shadow they could
+	 * cast, anywhere along the light's depth, can't land in view. Static casters are never dropped this way, so the
+	 * cache doesn't depend on where the camera looks.
 	 */
-	protected _renderDirectionalShadowPass(data: IgeWebGlSceneFrameData, lightSpaceMatrix: Float32Array): void {
+	protected _renderDirectionalShadowPass(
+		data: IgeWebGlSceneFrameData,
+		lightSpaceMatrix: Float32Array,
+		viewFrustum?: IgeFrustum
+	): void {
 		if (!this._shadowManager) return;
 		const shadowManager = this._shadowManager;
 		const lightId = this._shadowLightId;
@@ -3645,6 +3668,21 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		signature.reset();
 		let movingCount = 0;
 
+		// The light's direction (towards deeper depth) and depth span, from its orthographic matrix
+		let cullFrustum: IgeFrustum | undefined;
+		let lx = 0, ly = 0, lz = 0, lLen = 0, cullPad = 0;
+		if (viewFrustum && this._shadowCasterCulling) {
+			const g = Math.hypot(m[2], m[6], m[10]);
+			if (g > 1e-9) {
+				cullFrustum = viewFrustum;
+				lx = m[2] / g;
+				ly = m[6] / g;
+				lz = m[10] / g;
+				lLen = 2 / g;
+				cullPad = (shadowManager.frustumSize() as number) * SHADOW_RECENTER_STEP;
+			}
+		}
+
 		const models = data.models;
 		for (let i = 0; i < models.length; i++) {
 			const item = models[i];
@@ -3664,13 +3702,24 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			}
 
 			if (cache) {
-				if (igeShadowCasterIsStatic(entity, frameId, !!item.skeleton)) {
+				if (igeShadowCasterIsStatic(entity, frameId, !!item.skeleton, item.skeleton?.poseVersion)) {
 					if (!entity._renderUid) entity._renderUid = nextRenderUid++;
 					signature.add(entity._renderUid, geometry.uid, entity._transformVersion);
 					staticBatcher.add(item, key, geometry);
 					continue;
 				}
+				if (cullFrustum && item.radius >= 0 && !cullFrustum.sweptSphereVisibleXYZ(
+					item.cx, item.cy, item.cz, item.radius + cullPad, lx, ly, lz, lLen
+				)) {
+					this._stats.shadowCastersCulled++;
+					continue;
+				}
 				movingCount++;
+			} else if (cullFrustum && item.radius >= 0 && !cullFrustum.sweptSphereVisibleXYZ(
+				item.cx, item.cy, item.cz, item.radius + cullPad, lx, ly, lz, lLen
+			)) {
+				this._stats.shadowCastersCulled++;
+				continue;
 			}
 
 			batcher.add(item, key, geometry);

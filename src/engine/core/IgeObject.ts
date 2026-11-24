@@ -74,6 +74,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/** Renderer bookkeeping for cached static shadows (see IgeWebGlRenderer.shadowCaching()). */
 	_renderUid: number = 0;
 	_shadowSeenVersion: number = -1;
+	_shadowSeenPose: number = -1;
 	_shadowStableSince: number = 0;
 	/** Casts a shadow that is never cached (see IgeWebGlRenderer.shadowCaching()). */
 	_shadowDynamic: boolean = false;

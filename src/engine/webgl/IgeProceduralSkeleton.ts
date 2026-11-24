@@ -60,12 +60,20 @@ export function igeProceduralSkeletonInstance (data: IgeSkeletonData): IgeSkelet
 
 /**
  * Sets a procedural skeleton's pose: each bone's current model-space matrix (column-major, 16 floats per bone, in
- * bone order; fewer bones leaves the rest as they were). The skin matrices are worked out when the frame is
+ * bone order; fewer bones leaves the rest as they were). Returns whether anything changed. The skin matrices are worked out when the frame is
  * collected (or when `bonePosition()` / `attachToBone()` ask), so call this as often as you like.
  */
-export function igeSetBonePose (skeleton: IgeSkeleton, matrices: ArrayLike<number>): void {
+export function igeSetBonePose (skeleton: IgeSkeleton, matrices: ArrayLike<number>): boolean {
 	const n = Math.min(matrices.length, skeleton.localMatrices.length);
 	const local = skeleton.localMatrices;
-	for (let i = 0; i < n; i++) local[i] = matrices[i];
-	skeleton.dirty = true;
+	let changed = false;
+	for (let i = 0; i < n; i++) {
+		if (local[i] !== matrices[i]) {
+			local[i] = matrices[i];
+			changed = true;
+		}
+	}
+	// Writing the pose it already has leaves everything as it was (and the shadow cache sees a still pose)
+	if (changed) skeleton.dirty = true;
+	return changed;
 }

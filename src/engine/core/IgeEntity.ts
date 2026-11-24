@@ -1334,8 +1334,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	setBonePose (matrices: ArrayLike<number>): this {
 		const skeleton = this._skeleton;
 		if (!skeleton) return this;
-		igeSetBonePose(skeleton, matrices);
-		this._renderChanged();
+		if (igeSetBonePose(skeleton, matrices)) this._renderChanged();
 		return this;
 	}
 

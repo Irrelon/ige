@@ -59,21 +59,36 @@ export interface IgeShadowCasterState {
 	_transformVersion: number;
 	_shadowSeenVersion: number;
 	_shadowStableSince: number;
+	/** The skeleton pose version last seen (skinned casters). */
+	_shadowSeenPose?: number;
 	/** Caster flagged as always dynamic (never cached). */
 	_shadowDynamic?: boolean;
 }
 
 /**
  * Whether a shadow caster belongs in the static cache this frame. Static casters have an unchanged transform for
- * SHADOW_STATIC_FRAMES frames; skinned meshes and casters flagged dynamic never are. A caster seen for the first time
+ * SHADOW_STATIC_FRAMES frames; skinned meshes count while their pose version (a skeleton's `poseVersion`) stays put too; casters flagged dynamic never do. A caster seen for the first time
  * starts out static (one extra rebuild if it turns out to move); one that moves is dynamic until it has settled.
  */
-export function igeShadowCasterIsStatic(entity: IgeShadowCasterState, frameId: number, skinned: boolean): boolean {
+export function igeShadowCasterIsStatic(
+	entity: IgeShadowCasterState,
+	frameId: number,
+	skinned: boolean,
+	poseVersion?: number
+): boolean {
 	if (entity._transformVersion !== entity._shadowSeenVersion) {
 		entity._shadowStableSince = entity._shadowSeenVersion === -1 ? -SHADOW_STATIC_FRAMES : frameId;
 		entity._shadowSeenVersion = entity._transformVersion;
 	}
-	if (skinned || entity._shadowDynamic) return false;
+	if (skinned) {
+		// Without a pose version a skinned mesh is always dynamic; with one, it settles like a still transform
+		if (poseVersion === undefined) return false;
+		if (poseVersion !== entity._shadowSeenPose) {
+			entity._shadowStableSince = frameId;
+			entity._shadowSeenPose = poseVersion;
+		}
+	}
+	if (entity._shadowDynamic) return false;
 	return frameId - entity._shadowStableSince >= SHADOW_STATIC_FRAMES;
 }
 
