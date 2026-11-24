@@ -90,7 +90,7 @@ What exists in the code today:
     -   **Shadow Mapping** (`IgeWebGlShadowManager`) - shadow support
     -   **Skeletal Animation** (`IgeWebGlSkeletonManager`) - bone-based animations
     -   **GLTF/GLB Loading** (`IgeGltfLoader`) - 3D model loading
-    -   **Material System** (`IgeWebGlMaterial`) - advanced materials
+    -   **Material System** (`IgeWebGlMaterial`) - advanced materials; glTF normal, metallic-roughness and occlusion maps (`IgeMaterialData.normalTexture` etc., example `pbrMaps`; see `guides/webgl-models.md`)
     -   **Frustum Culling** (`IgeFrustum`) - performance optimization
     -   **Primitive Geometry** (`IgePrimitiveGeometry`) - built-in shapes
     -   **State Management** (`IgeWebGlStateManager`) - WebGL state tracking
@@ -212,6 +212,7 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 | `IgeProceduralSkeleton.ts` | Skeletons made in code for rigid-part characters posed each frame with `setBonePose()` |
 | `IgeTriangleBvh.ts` | Cached triangle BVH for raycasts and decal projection on large meshes |
 | `IgeHeightfieldRay.ts` | Ray/heightfield intersection behind `screenToHeightfield()` |
+| `IgeTangents.ts` | `igeComputeTangents(geometry)`: per-vertex tangents (Lengyel, handedness in w) for normal maps when a model has none |
 | `IgeViewportOverlay.ts` | DOM HUD elements over the 3D views, clipped per viewport |
 | `IgeDynamicResolution.ts` | Picks the scale the 3D scene is drawn at to keep the frame rate (`IgeGpuFrameTimer` GPU timer included) |
 | `IgeGpuMeshPrograms.ts` | The mesh shaders, vertex layouts and pipelines on `IgeGpuDevice` |
@@ -280,8 +281,8 @@ See `development-plan.md` for the current status, measurements and the prioritis
 ### Phase 2: Asset Pipeline
 
 -   GLTF/GLB loading (`IgeGltfLoader`), `igeLoadAssets()`, animation files and retargeting: done
--   Texture loading for 3D materials: done for base colour and emissive maps
--   PBR materials: partly done. `IgeWebGlPBRMaterial` and `IgeMaterialData` carry metallic, roughness and emissive values, and `renderer.pbr(true)` turns on the lighting model (off by default). Normal, metallic-roughness and occlusion maps exist in the shader and material classes but the renderer never turns them on (`u_hasNormalMap` etc. are set to 0 in `IgeWebGlRenderer`), so they have no effect. No specular maps
+-   Texture loading for 3D materials: done for base colour, emissive, normal, metallic-roughness and occlusion maps
+-   PBR materials: done for the metallic-roughness workflow. `IgeWebGlPBRMaterial` and `IgeMaterialData` carry metallic, roughness, emissive and the maps; `renderer.pbr(true)` turns on the lighting model (off by default). The glTF loader reads `normalTexture` (with `scale`), `metallicRoughnessTexture` and `occlusionTexture` (with `strength`), TEXCOORD_0 only; tangents come from the file or are made at load (`igeComputeTangents`, Lengyel's method) for meshes whose material has a normal map. Normal maps work under both lightings; metal/roughness and occlusion maps act only with `pbr(true)`. A mesh with no maps costs what it did before. No specular maps, no KHR_materials extensions beyond emissive strength
 -   Material editor/configuration tool: not started
 
 ### Phase 3: Advanced Features (done)
@@ -325,7 +326,7 @@ When working on IGE, follow these principles:
 ### Common Tasks
 
 1. **Renderer Enhancement**: Extend the custom WebGL renderer with new features
-2. **Material work**: Switch on normal, metallic-roughness and occlusion maps in the renderer
+2. **Material work**: Beyond the metallic-roughness workflow (clearcoat, transmission, specular maps), a material editor
 3. **Asset Pipeline**: Improve GLTF/GLB loading and material support
 4. **Tooling**: Scene editor, asset preview, material editor
 5. **Docs**: Migration guide from Canvas 2D to WebGL beyond `guides/2d-on-webgl.md`
@@ -341,7 +342,7 @@ When working on IGE, follow these principles:
 
 ## Current Challenges
 
-1. **Feature Completeness**: PBR texture maps, a tooling story, and the items in `development-plan.md`
+1. **Feature Completeness**: a tooling story, and the items in `development-plan.md`
 2. **Isometric on WebGL**: iso scenes stay on Canvas 2D; they must be moved to a 3D layout to use WebGL
 3. **Performance**: Large scenes and split-screen (see `development-plan.md` for measurements)
 4. **Complexity vs Simplicity**: Maintaining IGE simplicity with growing 3D capabilities
@@ -371,4 +372,4 @@ The unified 3D renderer is judged by:
 
 IGE has a mature custom WebGL renderer (`IgeWebGlRenderer`) with lighting, shadows, skeletal animation, GLTF/GLB loading, culling, batching, physics, networking and UI layers. It replaced the earlier experimental Three.js integration.
 
-Remaining gaps: PBR texture maps in the renderer, authoring tools, isometric scenes on WebGL, and a real WebGPU backend behind `IgeGpuDevice`.
+Remaining gaps: authoring tools, isometric scenes on WebGL, and a real WebGPU backend behind `IgeGpuDevice`.

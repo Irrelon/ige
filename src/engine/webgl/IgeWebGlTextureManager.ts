@@ -309,8 +309,9 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	/**
 	 * Create a WebGL texture from a Blob (e.g., from GLTF embedded image).
 	 * Returns a promise since image loading is asynchronous.
+	 * `options.mipmaps` makes mipmaps and filters trilinearly (material maps; base colour and emissive don't).
 	 */
-	async createTextureFromBlob(textureId: string, blob: Blob): Promise<WebGLTexture | null> {
+	async createTextureFromBlob(textureId: string, blob: Blob, options?: { mipmaps?: boolean }): Promise<WebGLTexture | null> {
 		// Check cache first
 		if (this._blobTextureCache.has(textureId)) {
 			return this._blobTextureCache.get(textureId) || null;
@@ -335,13 +336,15 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 				// Create WebGL texture from loaded image
 				// Note: GLTF textures use flipY: false because GLTF UV coordinates
 				// expect origin at top-left, which matches the natural image orientation
-				// Use LINEAR filter (not LINEAR_MIPMAP_LINEAR) to avoid mipmap generation issues
+				// Use LINEAR filter (not LINEAR_MIPMAP_LINEAR) to avoid mipmap generation issues, except for
+				// material maps (options.mipmaps): they have mipmaps and trilinear filtering, so detail doesn't shimmer
+				const mipmaps = !!options?.mipmaps;
 				const texture = this.createTextureFromImage(textureId, img, {
 					wrapS: this._gl.REPEAT,
 					wrapT: this._gl.REPEAT,
-					minFilter: this._gl.LINEAR,
+					minFilter: mipmaps ? this._gl.LINEAR_MIPMAP_LINEAR : this._gl.LINEAR,
 					magFilter: this._gl.LINEAR,
-					generateMipmaps: false,
+					generateMipmaps: mipmaps,
 					flipY: false
 				});
 

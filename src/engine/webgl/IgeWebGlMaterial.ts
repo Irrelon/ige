@@ -43,6 +43,9 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 	protected _baseColorTextureData?: Blob;
 	/** Encoded emissive image (e.g. from a GLB's emissiveTexture). */
 	protected _emissiveTextureData?: Blob;
+	/** Encoded normal map image (a glTF's normalTexture) and its strength (normalTexture.scale). */
+	protected _normalTextureData?: Blob;
+	protected _normalScale: number = 1;
 	protected _baseColorTexCoord: number = 0;
 	// Texture ID for the loaded WebGL texture
 	public _baseColorTextureId?: string;
@@ -163,6 +166,30 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 			return this;
 		}
 		return this._emissiveTextureData;
+	}
+
+	/**
+	 * Gets / sets the encoded normal map image (raw Blob from a glTF's normalTexture).
+	 */
+	normalTextureData(data?: Blob): Blob | undefined | this {
+		if (data !== undefined) {
+			this._normalTextureData = data;
+			this._dirty = true;
+			return this;
+		}
+		return this._normalTextureData;
+	}
+
+	/**
+	 * Gets / sets how strongly the normal map bends the surface (1 = as authored, 0 = flat).
+	 */
+	normalScale(val?: number): number | this {
+		if (val !== undefined) {
+			this._normalScale = val;
+			this._dirty = true;
+			return this;
+		}
+		return this._normalScale;
 	}
 
 	/**
@@ -299,6 +326,8 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 		cloned._normalTexture = this._normalTexture;
 		cloned._emissiveTexture = this._emissiveTexture;
 		cloned._emissiveTextureData = this._emissiveTextureData;
+		cloned._normalTextureData = this._normalTextureData;
+		cloned._normalScale = this._normalScale;
 		cloned._emissiveColor = { ...this._emissiveColor };
 		cloned._emissiveIntensity = this._emissiveIntensity;
 		cloned._blendMode = this._blendMode;
@@ -323,6 +352,10 @@ export class IgeWebGlPBRMaterial extends IgeWebGlMaterial {
 	// Additional PBR textures
 	protected _metallicRoughnessTexture?: IgeTexture;
 	protected _aoTexture?: IgeTexture;
+	/** Encoded images (from a glTF) and how strongly the occlusion map darkens (occlusionTexture.strength). */
+	protected _metallicRoughnessTextureData?: Blob;
+	protected _aoTextureData?: Blob;
+	protected _aoStrength: number = 1;
 
 	/**
 	 * Gets / sets the metallic value (0 = dielectric, 1 = metal).
@@ -385,6 +418,36 @@ export class IgeWebGlPBRMaterial extends IgeWebGlMaterial {
 		return this._aoTexture;
 	}
 
+	/** Gets / sets the encoded metallic-roughness image (raw Blob from a glTF). */
+	metallicRoughnessTextureData(data?: Blob): Blob | undefined | this {
+		if (data !== undefined) {
+			this._metallicRoughnessTextureData = data;
+			this._dirty = true;
+			return this;
+		}
+		return this._metallicRoughnessTextureData;
+	}
+
+	/** Gets / sets the encoded occlusion image (raw Blob from a glTF; red channel). */
+	aoTextureData(data?: Blob): Blob | undefined | this {
+		if (data !== undefined) {
+			this._aoTextureData = data;
+			this._dirty = true;
+			return this;
+		}
+		return this._aoTextureData;
+	}
+
+	/** Gets / sets how strongly the occlusion map darkens ambient light (1 = as authored, 0 = not at all). */
+	aoStrength(val?: number): number | this {
+		if (val !== undefined) {
+			this._aoStrength = val;
+			this._dirty = true;
+			return this;
+		}
+		return this._aoStrength;
+	}
+
 	/**
 	 * Clone this PBR material.
 	 */
@@ -397,6 +460,8 @@ export class IgeWebGlPBRMaterial extends IgeWebGlMaterial {
 		cloned._normalTexture = this._normalTexture;
 		cloned._emissiveTexture = this._emissiveTexture;
 		cloned._emissiveTextureData = this._emissiveTextureData;
+		cloned._normalTextureData = this._normalTextureData;
+		cloned._normalScale = this._normalScale;
 		cloned._emissiveColor = { ...this._emissiveColor };
 		cloned._emissiveIntensity = this._emissiveIntensity;
 		cloned._blendMode = this._blendMode;
@@ -409,6 +474,9 @@ export class IgeWebGlPBRMaterial extends IgeWebGlMaterial {
 		cloned._ambientOcclusion = this._ambientOcclusion;
 		cloned._metallicRoughnessTexture = this._metallicRoughnessTexture;
 		cloned._aoTexture = this._aoTexture;
+		cloned._metallicRoughnessTextureData = this._metallicRoughnessTextureData;
+		cloned._aoTextureData = this._aoTextureData;
+		cloned._aoStrength = this._aoStrength;
 		return cloned;
 	}
 }

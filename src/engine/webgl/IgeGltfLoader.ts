@@ -1,5 +1,6 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { igeComputeTangents } from "@/engine/webgl/IgeTangents";
 import { multiplyMat4 } from "@/engine/webgl/IgeModelParts";
 import { IgeWebGlMaterial, IgeWebGlPBRMaterial } from "@/engine/webgl/IgeWebGlMaterial";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
@@ -519,6 +520,27 @@ export class IgeGltfLoader extends IgeBaseClass {
 				if (pbr.roughnessFactor !== undefined) {
 					material.roughness(pbr.roughnessFactor);
 				}
+
+				// Metallic-roughness map (G = roughness, B = metallic, multiplied by the factors). The spec's
+				// factors default to 1 when the file leaves them out; without a map the engine's own defaults stand.
+				const mrImage = this._mapImage(matDef.name, "metallicRoughnessTexture", pbr.metallicRoughnessTexture, textures, images);
+				if (mrImage) {
+					material.metallicRoughnessTextureData(mrImage);
+					if (pbr.metallicFactor === undefined) material.metallic(1);
+					if (pbr.roughnessFactor === undefined) material.roughness(1);
+				}
+			}
+
+			// Normal map (its scale bends the surface more or less) and occlusion map (red channel, with a strength)
+			const normalImage = this._mapImage(matDef.name, "normalTexture", matDef.normalTexture, textures, images);
+			if (normalImage) {
+				material.normalTextureData(normalImage);
+				material.normalScale(matDef.normalTexture.scale ?? 1);
+			}
+			const occlusionImage = this._mapImage(matDef.name, "occlusionTexture", matDef.occlusionTexture, textures, images);
+			if (occlusionImage) {
+				material.aoTextureData(occlusionImage);
+				material.aoStrength(matDef.occlusionTexture.strength ?? 1);
 			}
 
 			// Parse emissive
@@ -555,6 +577,20 @@ export class IgeGltfLoader extends IgeBaseClass {
 		}
 
 		return materials;
+	}
+
+	/**
+	 * A material map's encoded image, or undefined when the material has no such map. Only TEXCOORD_0 is read:
+	 * a map on another set is warned about and ignored.
+	 */
+	protected _mapImage (materialName: string | undefined, what: string, info: any, textures: IgeGltfTexture[], images: IgeGltfImage[]): Blob | undefined {
+		if (!info || info.index === undefined) return undefined;
+		if ((info.texCoord ?? 0) !== 0) {
+			this.log(`Material "${materialName}" has its ${what} on TEXCOORD_${info.texCoord}; only TEXCOORD_0 is read, so the map is ignored`, "warning");
+			return undefined;
+		}
+		const imageIndex = textures[info.index]?.imageIndex;
+		return imageIndex !== undefined ? images[imageIndex]?.data : undefined;
 	}
 
 	/**
@@ -634,9 +670,13 @@ export class IgeGltfLoader extends IgeBaseClass {
 			geometry.colors = this._getAccessorData(gltf, primitive.attributes.COLOR_0, buffers);
 		}
 
-		// Parse tangents
-		if (primitive.attributes.TANGENT !== undefined) {
-			geometry.tangents = this._getAccessorData(gltf, primitive.attributes.TANGENT, buffers);
+		// Tangents, only for a mesh whose material has a normal map (others would carry them for nothing): the
+		// file's own when it has them, else made from the positions, normals and UVs (see igeComputeTangents)
+		const normalTexture = primitive.material !== undefined ? gltf.materials?.[primitive.material]?.normalTexture : undefined;
+		if (normalTexture && (normalTexture.texCoord ?? 0) === 0) {
+			if (primitive.attributes.TANGENT !== undefined) {
+				geometry.tangents = this._getAccessorData(gltf, primitive.attributes.TANGENT, buffers);
+			}
 		}
 
 		// Parse skinning data (bone indices and weights)
@@ -658,6 +698,10 @@ export class IgeGltfLoader extends IgeBaseClass {
 		// Parse indices - use specialized method for integer data
 		if (primitive.indices !== undefined) {
 			geometry.indices = this._getAccessorDataAsIndices(gltf, primitive.indices, buffers);
+		}
+
+		if (normalTexture && (normalTexture.texCoord ?? 0) === 0 && !geometry.tangents) {
+			geometry.tangents = igeComputeTangents(geometry);
 		}
 
 		return geometry;

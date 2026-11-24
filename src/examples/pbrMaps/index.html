@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+  <title>PBR Maps - Isogenic Engine</title>
+
+  <link href="../../css/ige.css" media="all" rel="stylesheet" type="text/css" />
+
+  <script src="./index.bundle.js" type="module"></script>
+
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; background: #0c0e14; }
+    .panel {
+      position: absolute; color: #fff; font-family: monospace; font-size: 13px;
+      background: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 5px; z-index: 1000;
+    }
+    #info { top: 10px; left: 10px; }
+    #info h2 { margin: 0 0 8px 0; font-size: 17px; color: #f0c040; }
+    #hint { bottom: 10px; left: 10px; line-height: 1.6; }
+    #hint b { color: #f0c040; }
+    #credit { bottom: 10px; right: 10px; font-size: 11px; max-width: 360px; opacity: 0.85; }
+    #credit a { color: #8ab4ff; }
+  </style>
+</head>
+<body>
+<div id="info" class="panel">
+  <h2>PBR Maps</h2>
+  <div>Status: <span id="status">Initializing...</span></div>
+  <div>Maps: <span id="mapsState">on</span></div>
+  <div>PBR lighting: <span id="pbrState">off</span></div>
+  <div>FPS: <span id="fps">0</span></div>
+</div>
+
+<div id="hint" class="panel">
+  <div><b>M</b> maps on / off (normal, metal-roughness, occlusion)</div>
+  <div><b>P</b> PBR lighting on / off (normal maps work in both)</div>
+  <div><b>C</b> close-up / far view</div>
+  <div><b>Space</b> pause the turn</div>
+</div>
+
+<div id="credit" class="panel">
+  Model: "SciFi Helmet" by Michael Pavlovic, converted to glTF by Norbert Nopper (2017).
+  Khronos glTF Sample Assets, licensed
+  <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank">CC0 1.0</a>.
+  Packed into one .glb, with the colour and metallic-roughness and occlusion images as JPEG.
+  <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/SciFiHelmet" target="_blank">Source</a>
+</div>
+
+<div class="igeLoading loadingFloat">
+  <div class="loadingLogo"></div>
+  <div class="loadingCircle"></div>
+  <div class="loadingCircleInner"></div>
+  <div class="loadingText" id="loadingText">Loading PBR Maps...</div>
+</div>
+
+<div class="igeLoading loadingLink">
+  Powered By Isogenic Game Engine
+  <a href="https://www.isogenicengine.com" target="_blank">https://www.isogenicengine.com</a>
+</div>
+</body>
+</html>

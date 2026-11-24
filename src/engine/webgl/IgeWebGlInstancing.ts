@@ -59,6 +59,18 @@ export interface IgeWebGlRenderItem {
 	emissiveTexture?: IgeTexture;
 	/** An emissive map was asked for but isn't loaded yet (the item doesn't glow until it is). */
 	emissivePending?: boolean;
+	/**
+	 * Material maps (normal, metallic-roughness, occlusion): a glTF image's texture id or an IgeTexture each, only the
+	 * ones that can act (a normal map needs tangents, the others PBR lighting) and are loaded. mapKey names them
+	 * ("" for none) so items with different maps don't share a batch; gpuMaps are their GL textures (undefined for none).
+	 */
+	mapBlobIds: (string | undefined)[];
+	mapTextures: (IgeTexture | undefined)[];
+	mapKey: string;
+	gpuMaps?: (WebGLTexture | null)[];
+	/** How strongly the normal and occlusion maps act (1 as authored). */
+	normalScale: number;
+	aoStrength: number;
 	skeleton?: IgeSkeleton;
 	/** Row in the bone palette texture (instanced skinned draws), -1 if none. */
 	boneRow: number;
@@ -118,6 +130,7 @@ export interface IgeWebGlItemBatch {
 	/** Its base colour and emissive GL textures, made ready before the pass that draws it (the texture manager's). */
 	gpuBase?: WebGLTexture | null;
 	gpuEmissive?: WebGLTexture | null;
+	gpuMaps?: (WebGLTexture | null)[];
 }
 
 /**

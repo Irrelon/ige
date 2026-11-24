@@ -325,6 +325,31 @@ targets are made again only when the scale changes. See `IgeDynamicResolution`.
 | `renderer.debugDraw({ bounds, shadowFrustum })`, `debugLine()` | See culling, LOD levels and shadow coverage |
 | `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame |
 
+## Texture maps (normal, metallic-roughness, occlusion)
+
+The loader reads a glTF material's `normalTexture` (with its `scale`), `pbrMetallicRoughness.metallicRoughnessTexture`
+(green = roughness, blue = metallic, each multiplied by the factors) and `occlusionTexture` (red channel, with its
+`strength`, often packed into the metallic-roughness image). Only `TEXCOORD_0` is read: a map on another set is
+logged as a warning and ignored. See the `pbrMaps` example (Khronos SciFi Helmet; M turns maps on and off, P turns
+PBR lighting on and off).
+
+- **Normal maps** work under the default lighting and under PBR lighting. They need tangents: the file's `TANGENT`
+  attribute when it has one, else tangents made at load from positions, normals and UVs (`igeComputeTangents()`,
+  Lengyel's per-vertex method with handedness in w; glTF's +Y-up-the-image convention). Only meshes whose material has
+  a normal map get them. Generated LOD levels and shells keep them.
+- **Metallic-roughness and occlusion maps** act only with `renderer.pbr(true)`. With PBR off the default lighting looks
+  as it always did (plus normal-map detail); those two maps aren't even loaded then.
+- Everything lit takes them: static, instanced and skinned meshes (skinned instancing included), LOD levels, model parts
+  and shells. `entity.material({ ... })` overrides take the same fields as the material data
+  (`normalTexture`, `normalScale`, `metallicRoughnessTexture`, `aoTexture`, `aoStrength`: an `IgeTexture` each, or an
+  `...TextureId` with `...TextureBlob` for a glTF image). A normal map on a mesh made in code needs `tangents` on its
+  geometry data (`igeComputeTangents(geometry)` makes them). Shadow, outline, silhouette and decal passes ignore maps.
+- **Mipmaps**: the three maps get mipmaps and trilinear filtering (base colour and emissive textures stay as they were), which costs a third more texture memory for each map.
+- **Cost**: a mesh with no maps pays nothing: no extra vertex data, texture binds or batch splits. A mesh with maps adds
+  4 floats a vertex (tangent), up to three textures bound for its draw, and items with different maps don't share an
+  instanced draw. Map textures go through the texture manager, so a lost WebGL context brings them back, and
+  `renderer.releaseModel(model)` frees a model's meshes and every texture it made (base colour and emissive too).
+
 ## Physics
 
 Characters, debris and ragdolls with Jolt physics: see [`physics-3d.md`](physics-3d.md).

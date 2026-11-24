@@ -135,6 +135,8 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		const hasBoneWeights = !!data.boneWeights;
 		const hasBoneIndices = !!data.boneIndices;
 		const isSkinned = hasBoneWeights && hasBoneIndices;
+		// Tangents (4 floats a vertex) go up only when the mesh has them: loaders make them for meshes with a normal map
+		const hasTangents = !!data.tangents && data.tangents.length === vertexCount * 4;
 
 		// Calculate stride
 		let componentsPerVertex = 3; // Position (x, y, z)
@@ -143,6 +145,7 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		if (hasColors) componentsPerVertex += 4; // Color (r, g, b, a)
 		if (hasBoneWeights) componentsPerVertex += 4; // Bone weights (w0, w1, w2, w3)
 		if (hasBoneIndices) componentsPerVertex += 4; // Bone indices (i0, i1, i2, i3) - stored as floats
+		if (hasTangents) componentsPerVertex += 4; // Tangent (x, y, z, handedness)
 
 		const stride = componentsPerVertex * 4; // * 4 bytes per float
 
@@ -195,6 +198,14 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 				interleavedData[offset++] = data.boneIndices[i * 4 + 2];
 				interleavedData[offset++] = data.boneIndices[i * 4 + 3];
 			}
+
+			// Tangent
+			if (hasTangents && data.tangents) {
+				interleavedData[offset++] = data.tangents[i * 4];
+				interleavedData[offset++] = data.tangents[i * 4 + 1];
+				interleavedData[offset++] = data.tangents[i * 4 + 2];
+				interleavedData[offset++] = data.tangents[i * 4 + 3];
+			}
 		}
 
 		// Its vertex buffer, and its index buffer if it has indices
@@ -236,6 +247,13 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		// Bone indices attribute (4 floats per vertex - indices stored as floats)
 		if (hasBoneIndices) {
 			geometry.addAttribute("a_boneIndices", 4, gl.FLOAT, false, stride, attrOffset);
+			attrOffset += 4 * 4;
+		}
+
+		// Tangent attribute (for normal maps)
+		if (hasTangents) {
+			geometry.addAttribute("a_tangent", 4, gl.FLOAT, false, stride, attrOffset);
+			geometry.hasTangents = true;
 			attrOffset += 4 * 4;
 		}
 

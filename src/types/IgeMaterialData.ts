@@ -76,6 +76,28 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	 */
 	emissiveVertexColor?: boolean;
 
+	// Texture maps. Each comes as an IgeTexture, or as a glTF image (id + blob, uploaded on first use like textureId's).
+	/**
+	 * Normal map (tangent space, +Y up the image, as glTF). Works under the default lighting and PBR lighting, on
+	 * meshes that have tangents (glTF models with a normal map get them at load; for a mesh made in code, give its
+	 * geometry `tangents` or make them with igeComputeTangents()). Items that differ only by it can't share a draw.
+	 */
+	normalTexture?: IgeTexture;
+	normalTextureId?: string;
+	normalTextureBlob?: Blob;
+	/** How strongly the normal map bends the surface (default 1, as authored; 0 is flat). */
+	normalScale?: number;
+	/** Metallic-roughness map (G = roughness, B = metallic, each multiplied by the factors above). PBR lighting only (renderer.pbr(true)). */
+	metallicRoughnessTexture?: IgeTexture;
+	metallicRoughnessTextureId?: string;
+	metallicRoughnessTextureBlob?: Blob;
+	/** Ambient occlusion map (red channel, darkens ambient light). PBR lighting only (renderer.pbr(true)). */
+	aoTexture?: IgeTexture;
+	aoTextureId?: string;
+	aoTextureBlob?: Blob;
+	/** How strongly the occlusion map darkens (default 1, as authored; 0 is none). */
+	aoStrength?: number;
+
 	// Texture references
 	/** ID of the base color/diffuse texture (loaded via TextureManager) */
 	textureId?: string;

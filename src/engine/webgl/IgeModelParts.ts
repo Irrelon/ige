@@ -381,6 +381,30 @@ function toMaterialData (model: IgeGltfModel, mat: IgeWebGlMaterial, index: numb
 		data.emissiveIntensity ??= m.emissiveIntensity?.() ?? 1;
 	}
 
+	// Normal, metallic-roughness and occlusion maps (glTF images, or IgeTextures a material made in code carries)
+	const normalBlob = m.normalTextureData?.() as Blob | undefined;
+	const normalTexture = m.normalTexture?.();
+	if (normalBlob) {
+		data.normalTextureId = `${model.id}_material${index}_normal`;
+		data.normalTextureBlob = normalBlob;
+	} else if (normalTexture) data.normalTexture = normalTexture;
+	if (normalBlob || normalTexture) data.normalScale = m.normalScale?.() ?? 1;
+
+	const mrBlob = m.metallicRoughnessTextureData?.() as Blob | undefined;
+	const mrTexture = m.metallicRoughnessTexture?.();
+	if (mrBlob) {
+		data.metallicRoughnessTextureId = `${model.id}_material${index}_metallicRoughness`;
+		data.metallicRoughnessTextureBlob = mrBlob;
+	} else if (mrTexture) data.metallicRoughnessTexture = mrTexture;
+
+	const aoBlob = m.aoTextureData?.() as Blob | undefined;
+	const aoTexture = m.aoTexture?.();
+	if (aoBlob) {
+		data.aoTextureId = `${model.id}_material${index}_ao`;
+		data.aoTextureBlob = aoBlob;
+	} else if (aoTexture) data.aoTexture = aoTexture;
+	if (aoBlob || aoTexture) data.aoStrength = m.aoStrength?.() ?? 1;
+
 	return data;
 }
 

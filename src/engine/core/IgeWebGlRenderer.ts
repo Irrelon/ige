@@ -46,7 +46,8 @@ import type { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
 import { DECAL_INSTANCE_FLOATS, DECAL_MESH_VERTEX_FLOATS } from "@/engine/webgl/IgeDecalSystem3d";
 import type { IgeRaycastHit, IgeRaycastOptions } from "@/engine/webgl/IgeRaycast";
 import { raycastEntities } from "@/engine/webgl/IgeRaycast";
-import { takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
+import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
+import { getModelParts, takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
 import type { IgeHeightfieldRayOptions } from "@/engine/webgl/IgeHeightfieldRay";
 import { IgeDynamicResolution, IgeGpuFrameTimer, type IgeDynamicResolutionSettings } from "@/engine/webgl/IgeDynamicResolution";
 import { IGE_POST_PROCESS_DEFAULTS, igePictureEffectsOn, IgeWebGlPostProcess, type IgePostProcessSettings } from "@/engine/webgl/IgeWebGlPostProcess";
@@ -65,6 +66,8 @@ const POINT_SHADOW_TEXTURE_UNIT = 2; // 2 and 3
 const BONE_TEXTURE_UNIT = 4;
 /** Emissive maps (see IgeMaterialData.emissiveTexture); without one the shader's emissive samples unit 0. */
 const EMISSIVE_TEXTURE_UNIT = 5;
+/** The material maps (normal, metallic-roughness, occlusion): units 6 to 8, bound only by draws that have them. */
+const MAP_NORMAL = 0, MAP_METALLIC_ROUGHNESS = 1, MAP_AO = 2;
 
 /**
  * A depth pass's uniform block: the light's matrix, the item's world matrix (not instanced), a point light's position
@@ -127,14 +130,16 @@ const LIT_VIEW_UNIFORMS: IgeGpuUniform[] = [
 	{ name: "u_shadowNormalBias", type: "f32" }, { name: "u_shadowMapSize", type: "f32" }, { name: "u_usePackedDepth", type: "i32" }, { name: "u_shadowNormalOffset", type: "f32" },
 	{ name: "u_numShadowPointLights", type: "i32" }, { name: "u_pointShadowFarPlane", type: "f32", count: 2 }, { name: "u_pointShadowBias", type: "f32", count: 2 },
 	{ name: "u_pointShadowFaceSize", type: "f32", count: 2 }, { name: "u_pointShadowMatrices", type: "mat4", count: 12 }, { name: "u_pointShadowLightIndex", type: "i32", count: 2 },
-	{ name: "u_usePBR", type: "i32" }, { name: "u_hasMetallicRoughnessTexture", type: "i32" }, { name: "u_hasAoTexture", type: "i32" }, { name: "u_ambientOcclusion", type: "f32" },
-	{ name: "u_hasNormalMap", type: "i32" },
+	{ name: "u_usePBR", type: "i32" }, { name: "u_ambientOcclusion", type: "f32" },
 	{ name: "u_fogMode", type: "i32" }, { name: "u_fogColor", type: "vec3" }, { name: "u_fogNear", type: "f32" }, { name: "u_fogFar", type: "f32" }, { name: "u_fogDensity", type: "f32" }
 ];
 const LIT_ITEM_UNIFORMS: IgeGpuUniform[] = [
 	{ name: "u_hasVertexColors", type: "i32" }, { name: "u_uvTransform", type: "vec4" }, { name: "u_worldMatrix", type: "mat4" }, { name: "u_baseColor", type: "vec4" },
 	{ name: "u_opacity", type: "f32" }, { name: "u_metallic", type: "f32" }, { name: "u_roughness", type: "f32" }, { name: "u_emissiveColor", type: "vec3" },
-	{ name: "u_emissiveIntensity", type: "f32" }, { name: "u_useSkinning", type: "i32" }
+	{ name: "u_emissiveIntensity", type: "f32" }, { name: "u_useSkinning", type: "i32" },
+	// The item's maps: which it has (see _setLitMaps), how strongly they act
+	{ name: "u_hasNormalMap", type: "i32" }, { name: "u_hasMetallicRoughnessTexture", type: "i32" }, { name: "u_hasAoTexture", type: "i32" },
+	{ name: "u_normalScale", type: "f32" }, { name: "u_aoStrength", type: "f32" }
 ];
 
 /** A lit program's whole block: the view's, the bone palette's size (skinned, instanced), an item's, its bones (skinned, not instanced). */
@@ -147,8 +152,8 @@ function litUniforms (skinned: boolean, instanced: boolean): IgeGpuUniform[] {
 	];
 }
 
-/** The lit programs' texture slots: base colour, the directional shadow map, two point light atlases, the bone palette, emissive. */
-const LIT_TEXTURES = ["u_baseColorTexture", "u_shadowMap", "u_pointShadowAtlas[0]", "u_pointShadowAtlas[1]", "u_boneTexture", "u_emissiveTexture"].map((name) => ({ name }));
+/** The lit programs' texture slots: base colour, the directional shadow map, two point light atlases, the bone palette, emissive, normal, metallic-roughness, occlusion. */
+const LIT_TEXTURES = ["u_baseColorTexture", "u_shadowMap", "u_pointShadowAtlas[0]", "u_pointShadowAtlas[1]", "u_boneTexture", "u_emissiveTexture", "u_normalTexture", "u_metallicRoughnessTexture", "u_aoTexture"].map((name) => ({ name }));
 
 /** The sprite program's block: the view's, then a sprite's. */
 const SPRITE_UNIFORMS: IgeGpuUniform[] = [
@@ -1136,6 +1141,22 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// (If the context is ever lost, this one can't be re-uploaded: contextRestored names it)
 		if (geometryData.id) this._gpuOnlyGeometry.add(geometryData.id);
 		return true;
+	}
+
+	/**
+	 * Free everything a loaded glTF model put on the GPU: its meshes (and generated LOD levels) and its textures
+	 * (base colour, emissive, normal, metallic-roughness and occlusion maps). An entity still showing the model
+	 * uploads what it needs again on its next frame, so releasing early costs time but breaks nothing.
+	 */
+	releaseModel(model: IgeGltfModel): this {
+		for (const part of getModelParts(model)) {
+			this.releaseGeometry(part.geometryData);
+			const m = part.materialData;
+			for (const id of [m.textureId, m.emissiveTextureId, m.normalTextureId, m.metallicRoughnessTextureId, m.aoTextureId]) {
+				if (id) this.releaseTexture(id);
+			}
+		}
+		return this;
 	}
 
 	/**
@@ -2420,11 +2441,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * Start uploading a model texture image (once); it is used as soon as
 	 * the upload completes.
 	 */
-	protected _requestBlobTexture(textureId: string, blob: Blob): void {
+	protected _requestBlobTexture(textureId: string, blob: Blob, mipmaps: boolean = false): void {
 		if (!this._textureManager || this._pendingBlobTextures.has(textureId)) return;
 
 		this._pendingBlobTextures.add(textureId);
-		this._textureManager.createTextureFromBlob(textureId, blob).then((texture) => {
+		this._textureManager.createTextureFromBlob(textureId, blob, mipmaps ? { mipmaps } : undefined).then((texture) => {
 			if (!texture) {
 				this.log(`Failed to create model texture "${textureId}"`, "warning");
 			}
@@ -2487,7 +2508,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				lodGeometries: [],
 				lodBatchKeys: [],
 				lodDepthKeys: [],
-				drawGeometry: geometry
+				drawGeometry: geometry,
+				mapBlobIds: [undefined, undefined, undefined],
+				mapTextures: [undefined, undefined, undefined],
+				mapKey: "",
+				normalScale: 1,
+				aoStrength: 1
 			} as IgeWebGlRenderItem;
 			this._itemPool[this._itemCount] = item;
 		}
@@ -2514,6 +2540,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		item.emissiveBlobTextureId = undefined;
 		item.emissiveTexture = undefined;
 		item.emissivePending = false;
+		item.mapBlobIds[0] = item.mapBlobIds[1] = item.mapBlobIds[2] = undefined;
+		item.mapTextures[0] = item.mapTextures[1] = item.mapTextures[2] = undefined;
+		item.normalScale = 1;
+		item.aoStrength = 1;
 
 		if (materialData) {
 			this._applyMaterialData(item, materialData);
@@ -2524,6 +2554,23 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// An emissive map still loading: no glow until it's there (else the base texture would glow in its place)
 		if (item.emissivePending && !item.emissiveBlobTextureId && !item.emissiveTexture) mat.emissiveIntensity = 0;
 		// (set by _applyMaterialData, so read back through the item's type)
+		// Material maps: the normal map needs a mesh with tangents, the others PBR lighting; what can't act is left
+		// out, so it costs no batch split, texture upload or bind
+		if (!geometry.hasTangents) item.mapBlobIds[MAP_NORMAL] = item.mapTextures[MAP_NORMAL] = undefined;
+		if (!this._pbr) {
+			item.mapBlobIds[MAP_METALLIC_ROUGHNESS] = item.mapTextures[MAP_METALLIC_ROUGHNESS] = undefined;
+			item.mapBlobIds[MAP_AO] = item.mapTextures[MAP_AO] = undefined;
+		}
+		let mapKey = "";
+		for (let k = 0; k < 3; k++) {
+			const id = item.mapBlobIds[k], texture = item.mapTextures[k];
+			if (id || texture) mapKey += `|m${k}` + (id ?? ((texture as any)._id || texture!.id()));
+		}
+		if (mapKey) {
+			if (item.mapBlobIds[MAP_NORMAL] || item.mapTextures[MAP_NORMAL]) mapKey += `|ns${item.normalScale}`;
+			if (item.mapBlobIds[MAP_AO] || item.mapTextures[MAP_AO]) mapKey += `|as${item.aoStrength}`;
+		}
+		item.mapKey = mapKey;
 		const emissiveMap = item.emissiveTexture as IgeTexture | undefined;
 		const emissiveKey = item.emissiveBlobTextureId
 			? "|e" + item.emissiveBlobTextureId
@@ -2620,7 +2667,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const um = item.material;
 		const uv = um.uvScaleU !== 1 || um.uvScaleV !== 1 || um.uvOffsetU !== 0 || um.uvOffsetV !== 0
 			? `|uv${um.uvScaleU},${um.uvScaleV},${um.uvOffsetU},${um.uvOffsetV}` : "";
-		item.batchKey = geometry.id + "|" + item.textureKey + emissiveKey + skinned + sided + uv;
+		item.batchKey = geometry.id + "|" + item.textureKey + emissiveKey + item.mapKey + skinned + sided + uv;
 		item.depthKey = geometry.id + skinned;
 
 		// Level-of-detail geometry (index 0 is the full mesh)
@@ -2640,7 +2687,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				const lodGeometry = this._getGeometry(lodGeometryData[i]);
 				if (!lodGeometry) break;
 				geometries.push(lodGeometry);
-				batchKeys.push(lodGeometry.id + "|" + item.textureKey + emissiveKey + skinned + sided);
+				batchKeys.push(lodGeometry.id + "|" + item.textureKey + emissiveKey + item.mapKey + skinned + sided);
 				depthKeys.push(lodGeometry.id + skinned);
 			}
 
@@ -2693,6 +2740,21 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _countTriangles(geometry: IgeWebGlGeometry, instances: number): void {
 		const vertices = geometry.indexCount > 0 ? geometry.indexCount : geometry.vertexCount;
 		this._stats.triangles += Math.floor(vertices / 3) * instances;
+	}
+
+	/** One of an item's material maps from material data: its loaded texture, or the upload requested (the map shows once it's there). */
+	protected _applyMap(item: IgeWebGlRenderItem, k: number, texture: IgeTexture | undefined, id: string | undefined, blob: Blob | undefined): void {
+		if (texture) {
+			item.mapBlobIds[k] = undefined;
+			item.mapTextures[k] = texture._loaded ? texture : undefined;
+		} else if (id && this._textureManager) {
+			item.mapTextures[k] = undefined;
+			if (this._textureManager.getBlobTexture(id)) item.mapBlobIds[k] = id;
+			else {
+				item.mapBlobIds[k] = undefined;
+				if (blob) this._requestBlobTexture(id, blob, true); // material maps get mipmaps
+			}
+		}
 	}
 
 	/**
@@ -2749,6 +2811,16 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					this._requestBlobTexture(emissiveId, materialData.emissiveTextureBlob);
 				}
 			}
+		}
+
+		// Material maps (each with its own pending upload, drawn without until it's there)
+		this._applyMap(item, MAP_NORMAL, materialData.normalTexture, materialData.normalTextureId, materialData.normalTextureBlob);
+		if (materialData.normalScale !== undefined) item.normalScale = materialData.normalScale;
+		// (Metallic-roughness and occlusion maps only act under PBR lighting, so aren't loaded without it)
+		if (this._pbr) {
+			this._applyMap(item, MAP_METALLIC_ROUGHNESS, materialData.metallicRoughnessTexture, materialData.metallicRoughnessTextureId, materialData.metallicRoughnessTextureBlob);
+			this._applyMap(item, MAP_AO, materialData.aoTexture, materialData.aoTextureId, materialData.aoTextureBlob);
+			if (materialData.aoStrength !== undefined) item.aoStrength = materialData.aoStrength;
 		}
 
 		if (materialData.uvScale) {
@@ -3134,10 +3206,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			// Simple lighting unless the game opted in to physically based lighting (see pbr())
 			data[at.u_usePBR] = this._pbr ? 1 : 0;
-			data[at.u_hasMetallicRoughnessTexture] = 0;
-			data[at.u_hasAoTexture] = 0;
 			data[at.u_ambientOcclusion] = 1;
-			data[at.u_hasNormalMap] = 0;
 
 			const fog = this._fog;
 			const fogMode = fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0;
@@ -3182,7 +3251,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * A batch's or item's textures made ready (base colour, emissive) before the pass: blob textures, IgeTextures (the
 	 * texture manager's own GL, which makes them as first asked for), the white texture when there's none.
 	 */
-	protected _prepareTextures(into: { gpuBase?: WebGLTexture | null; gpuEmissive?: WebGLTexture | null; blobTextureId?: string; texture?: IgeTexture }, item: IgeWebGlRenderItem): void {
+	protected _prepareTextures(into: { gpuBase?: WebGLTexture | null; gpuEmissive?: WebGLTexture | null; gpuMaps?: (WebGLTexture | null)[]; blobTextureId?: string; texture?: IgeTexture }, item: IgeWebGlRenderItem): void {
 		const tm = this._textureManager!;
 		let base: WebGLTexture | null | undefined;
 		if (into.blobTextureId) base = tm.getBlobTexture(into.blobTextureId);
@@ -3192,6 +3261,46 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (item.emissiveBlobTextureId) emissive = tm.getBlobTexture(item.emissiveBlobTextureId);
 		else if (item.emissiveTexture) emissive = tm.getTextureForIgeTexture(item.emissiveTexture);
 		into.gpuEmissive = emissive || null;
+
+		// The material maps, for an item that has any (none: nothing made, nothing bound)
+		if (!item.mapKey) {
+			into.gpuMaps = undefined;
+			return;
+		}
+		const maps = into.gpuMaps ??= [null, null, null];
+		for (let k = 0; k < 3; k++) {
+			const id = item.mapBlobIds[k], texture = item.mapTextures[k];
+			maps[k] = (id ? tm.getBlobTexture(id) : texture ? tm.getTextureForIgeTexture(texture) : null) || null;
+		}
+	}
+
+	/**
+	 * A lit draw's material maps: which of the item's maps are there (and loaded), and bound for them. Maps act only
+	 * in the passes that draw the item as itself (not a silhouette, mask or depth-only draw), and only the normal map
+	 * unless PBR lighting is on. An item with no maps writes zeros and binds nothing.
+	 */
+	protected _setLitMaps(pass: IgeGpuRenderPass, block: { data: Float32Array; at: Record<string, number> }, item: IgeWebGlRenderItem, gpuMaps: (WebGLTexture | null)[] | undefined, state: LitState): void {
+		const { data, at } = block;
+		const maps = state === LitState.Opaque || state === LitState.OpaqueCulled || state === LitState.Transparent ? gpuMaps : undefined;
+		data[at.u_hasNormalMap] = 0;
+		data[at.u_hasMetallicRoughnessTexture] = 0;
+		data[at.u_hasAoTexture] = 0;
+		if (!maps) return;
+		const device = this._device!;
+		if (maps[MAP_NORMAL] && item.geometry.hasTangents) {
+			data[at.u_hasNormalMap] = 1;
+			data[at.u_normalScale] = item.normalScale;
+			pass.setTexture(6, webGl2ExternalTexture(device, maps[MAP_NORMAL]!));
+		}
+		if (this._pbr && maps[MAP_METALLIC_ROUGHNESS]) {
+			data[at.u_hasMetallicRoughnessTexture] = 1;
+			pass.setTexture(7, webGl2ExternalTexture(device, maps[MAP_METALLIC_ROUGHNESS]!));
+		}
+		if (this._pbr && maps[MAP_AO]) {
+			data[at.u_hasAoTexture] = 1;
+			data[at.u_aoStrength] = item.aoStrength;
+			pass.setTexture(8, webGl2ExternalTexture(device, maps[MAP_AO]!));
+		}
 	}
 
 	/** A lit draw's textures: the view's (shadows, bones) and its own (base colour; emissive, or the base colour again). */
@@ -3259,6 +3368,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			pass.setPipeline(pipeline);
 			this._setMesh(pass, geometry);
 			this._setLitTextures(pass, batch.gpuBase, batch.gpuEmissive);
+			this._setLitMaps(pass, block, batch.items[0], batch.gpuMaps, state);
 			data[at.u_hasVertexColors] = geometry.hasVertexColors ? 1 : 0;
 
 			if (instanced) {
@@ -3322,6 +3432,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			pass.setPipeline(pipeline);
 			this._setMesh(pass, geometry);
 			this._setLitTextures(pass, item.gpuBase, item.gpuEmissive);
+			this._setLitMaps(pass, block, item, item.gpuMaps, state);
 			data[at.u_hasVertexColors] = geometry.hasVertexColors ? 1 : 0;
 			this._writeItemUniforms(block, item);
 			if (skinned) this._writeBones(block, item);

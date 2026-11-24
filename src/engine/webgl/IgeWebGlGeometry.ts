@@ -45,6 +45,8 @@ export class IgeWebGlGeometry extends IgeBaseClass {
 	indexType: number = 0x1403;
 	/** Whether the vertex buffer has an a_color attribute. */
 	hasVertexColors: boolean = false;
+	/** Has a tangent attribute (a_tangent), so a normal map can be applied. */
+	hasTangents: boolean = false;
 
 	// Skinning information
 	isSkinned: boolean = false; // Whether this geometry has bone weights/indices

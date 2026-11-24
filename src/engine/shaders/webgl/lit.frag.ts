@@ -47,7 +47,8 @@ uniform float u_roughness;                // Roughness value (0-1)
 uniform sampler2D u_metallicRoughnessTexture; // Combined metallic (B) + roughness (G) texture
 uniform int u_hasMetallicRoughnessTexture;      // 0: metallic and roughness come from the material alone
 uniform sampler2D u_normalTexture;        // Normal map
-uniform int u_hasNormalMap;               // Whether normal map is used
+uniform int u_hasNormalMap;               // Whether normal map is used (the mesh has tangents too)
+uniform float u_normalScale;              // How strongly the normal map bends the surface (1 = as authored)
 uniform sampler2D u_emissiveTexture;      // Emissive texture
 uniform vec3 u_emissiveColor;             // Emissive color
 uniform float u_emissiveIntensity;        // Emissive intensity
@@ -72,6 +73,7 @@ uniform float u_fogDensity;
 uniform vec3 u_cameraPosition;
 uniform sampler2D u_aoTexture;            // Ambient occlusion texture
 uniform int u_hasAoTexture;               // 0: no occlusion map (full ambient)
+uniform float u_aoStrength;               // How strongly the occlusion map darkens (1 = as authored)
 uniform float u_ambientOcclusion;         // AO value
 
 // Ambient light (hemisphere: u_ambientLightColor from above, u_ambientGroundColor from below)
@@ -495,6 +497,7 @@ void main() {
 	vec3 N = normalize(v_worldNormal);
 	if (u_hasNormalMap == 1) {
 		vec3 normalMap = texture2D(u_normalTexture, v_uv).xyz * 2.0 - 1.0;
+		normalMap.xy *= u_normalScale;
 		N = normalize(v_TBN * normalMap);
 	}
 
@@ -571,7 +574,7 @@ void main() {
 		float roughness = u_roughness * mrSample.g;
 		roughness = clamp(roughness, 0.04, 1.0); // Prevent divide by zero in NDF
 
-		float ao = u_ambientOcclusion * (u_hasAoTexture == 1 ? texture2D(u_aoTexture, v_uv).r : 1.0);
+		float ao = u_ambientOcclusion * (u_hasAoTexture == 1 ? mix(1.0, texture2D(u_aoTexture, v_uv).r, u_aoStrength) : 1.0);
 
 		// Ambient light with PBR (simplified IBL approximation)
 		vec3 F0 = mix(F0_DIELECTRIC, albedo, metallic);
