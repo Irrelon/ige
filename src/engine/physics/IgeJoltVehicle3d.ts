@@ -19,6 +19,30 @@ const DEFAULT_GROUND_FRICTION = 0.5;
  * itself.
  */
 const ANTI_ROLL_STEADY = 0.4;
+/** A wheel's cast starts this far (metres) above the tallest step it rides up, at full bump. */
+const STEP_MARGIN = 0.03;
+
+/**
+ * Whether a vehicle made from spec `a` can become `b` in place: the same
+ * kind, chassis, wheels' size, travel and layout, and number of gears.
+ */
+function retunable (a: IgeVehicleBackendSpec, b: IgeVehicleBackendSpec): boolean {
+	const same = (x: unknown, y: unknown) => JSON.stringify(x) === JSON.stringify(y);
+	const build = (spec: IgeVehicleBackendSpec) => ({
+		type: spec.type,
+		layer: spec.layer,
+		wheelCast: spec.wheelCast,
+		gears: [spec.gearbox.ratios.length, spec.gearbox.reverseRatios.length],
+		lean: spec.type === "motorcycle" ? spec.maxLean : 0,
+		chassis: spec.chassis,
+		guards: spec.guards,
+		centreOfMass: spec.centreOfMass,
+		differentials: spec.differentials,
+		bars: spec.antiRollBars.map((bar) => [bar.left, bar.right]),
+		wheels: spec.wheels.map((w) => [w.radius, w.width, w.suspensionMin, w.suspensionMax, w.stepHeight, w.suspensionDirection, w.steeringAxis, w.driven])
+	});
+	return same(build(a), build(b));
+}
 
 /** Tyre curve scale for a grip (see the curves in the constructor). */
 function tyreScale (grip: number): number {
@@ -32,6 +56,42 @@ function setLateralCurve (curve: JoltApi.LinearCurve, scale: number): void {
 	curve.AddPoint(3, 1.2 * scale);
 	curve.AddPoint(20, 1.0 * scale);
 }
+
+/**
+ * Friction along the tyre by slip ratio (Jolt's curve, scaled). A car's
+ * tyre holds the road even when it isn't slipping (see the constructor);
+ * a motorcycle's keeps Jolt's curve.
+ */
+function setLongitudinalCurve (curve: JoltApi.LinearCurve, scale: number, motorcycle: boolean): void {
+	curve.Clear();
+	curve.AddPoint(0, motorcycle ? 0 : 1.0 * scale);
+	curve.AddPoint(0.06, 1.2 * scale);
+	curve.AddPoint(0.2, 1.0 * scale);
+}
+
+/** The slip ratio where the tyre curve along peaks (see setLongitudinalCurve()). */
+const PEAK_SLIP_RATIO = 0.06;
+
+/**
+ * A wheel's slip for combined grip falls to this share of itself each step
+ * unless it slips more: a held peak, so a wheel flicking between spinning
+ * and rolling stays loose, gripping again about 0.1 s after it stops.
+ */
+const SLIP_HOLD = 0.6;
+/** The sine of the tilt (1 degree) at which a car tyre rests fully on its tread's edge (see _placeRays()). */
+const EDGE_TILT = Math.sin(Math.PI / 180);
+/**
+ * Steps a wheel must have carried at least LOADED_SHARE of its share of the
+ * weight before its slip counts: one landing from a jump, or the inside
+ * wheel of a fast swerve loading up again, spins until the ground slows it.
+ */
+const LANDED_STEPS = 15;
+const LOADED_SHARE = 0.5;
+
+/** Tyre curves are rebuilt only when a wheel's grip changes by this share or more. */
+const GRIP_STEP = 0.05;
+/** Least share of its sideways grip combined grip leaves a tyre, so a spinning or locked wheel still steers a little. */
+const MIN_COMBINED_GRIP = 0.1;
 
 /**
  * The Jolt backend for a vehicle (IgeVehicleBackend): a dynamic body that
@@ -63,11 +123,33 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	_driving: boolean = false;
 	/** The handbrake grip the handbrake's wheels' sideways curves are set for (1: full grip). */
 	_handbrakeGrip: number = 1;
+	/** The handbrake grip the curves are set for. */
+	_appliedHandbrake: number = 1;
+	/** Balancing (setUpright()). */
+	_upright: boolean = true;
+	/** The controls being held, for combined grip: only a wheel being driven or braked spins or locks. */
+	_pushing = { forward: 0, brake: 0, handbrake: 0 };
+	/** Each wheel's share of its sideways grip (combined grip), and the shares its curves are set for (along is always whole; -1: rebuild). */
+	_gripAcross: number[];
+	_curveAlong: number[];
+	_curveAcross: number[];
+	/** Each wheel's slip ratio over the curve's peak, held at its recent peak, and steps on the ground. */
+	_slipAlong: number[];
+	/** Steps each wheel has carried at least LOADED_SHARE of its share of the weight. */
+	_grounded: number[];
+	/** How far (metres, along the axle) each wheel's ray starts from the middle of its tyre (see _placeRays()). */
+	_rayShift: number[];
 	_destroyed: boolean = false;
 	/** A second scratch vector (the world's _vec is the first). */
 	_vec2: JoltApi.Vec3;
 	/** The step length the anti-roll bars were last set for (see _setAntiRollBars()). */
 	_antiRollDt: number = 0;
+	/**
+	 * How far above its spec each wheel's suspension is fixed to Jolt (and
+	 * its lengths longer by the same), so its cast starts above any step it
+	 * can ride up (see the constructor).
+	 */
+	_lift: number[];
 
 	constructor (physics: IgeJoltBackend, spec: IgeVehicleBackendSpec, position: IgePhysicsVec3, rotation: IgePhysicsQuat) {
 		const jolt = physics._jolt;
@@ -80,16 +162,39 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		const motorcycle = spec.type === "motorcycle";
 
 		// The chassis shape with its centre of mass moved where the spec puts it
+		const offsetShape = (built: JoltApi.Shape): JoltApi.OffsetCenterOfMassShape => {
+			const com = built.GetCenterOfMass();
+			physics._vec.Set(spec.centreOfMass.x - com.GetX(), spec.centreOfMass.y - com.GetY(), spec.centreOfMass.z - com.GetZ());
+			return new jolt.OffsetCenterOfMassShape(built, physics._vec);
+		};
 		const built = physics._createShape(spec.chassis);
-		const com = built.shape.GetCenterOfMass();
-		physics._vec.Set(spec.centreOfMass.x - com.GetX(), spec.centreOfMass.y - com.GetY(), spec.centreOfMass.z - com.GetZ());
-		const shape = new jolt.OffsetCenterOfMassShape(built.shape, physics._vec);
+		const chassis = offsetShape(built.shape);
 
 		physics._rvec.Set(position.x, position.y, position.z);
 		physics._quat.Set(rotation.x, rotation.y, rotation.z, rotation.w);
-		const settings = new jolt.BodyCreationSettings(shape, physics._rvec, physics._quat, jolt.EMotionType_Dynamic, layer);
-		settings.mOverrideMassProperties = jolt.EOverrideMassProperties_CalculateInertia;
-		settings.mMassPropertiesOverride.mMass = spec.mass;
+		let settings: JoltApi.BodyCreationSettings;
+		let withGuards: { shape: JoltApi.Shape; cleanup?: () => void } | undefined;
+		if (spec.guards.length) {
+			// The wheel guards collide but weigh nothing: the body's mass and
+			// inertia are the chassis shape's alone
+			withGuards = physics._createShape({
+				type: "compound",
+				children: [
+					{ shape: spec.chassis, position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0, w: 1 } },
+					...spec.guards.map((g) => ({ shape: { type: "box" as const, halfExtents: g.halfExtents }, position: g.position, rotation: { x: 0, y: 0, z: 0, w: 1 } }))
+				]
+			});
+			settings = new jolt.BodyCreationSettings(offsetShape(withGuards.shape), physics._rvec, physics._quat, jolt.EMotionType_Dynamic, layer);
+			const mass = chassis.GetMassProperties();
+			mass.ScaleToMass(spec.mass);
+			settings.mOverrideMassProperties = jolt.EOverrideMassProperties_MassAndInertiaProvided;
+			settings.mMassPropertiesOverride = mass;
+			jolt.destroy(chassis);
+		} else {
+			settings = new jolt.BodyCreationSettings(chassis, physics._rvec, physics._quat, jolt.EMotionType_Dynamic, layer);
+			settings.mOverrideMassProperties = jolt.EOverrideMassProperties_CalculateInertia;
+			settings.mMassPropertiesOverride.mMass = spec.mass;
+		}
 		settings.mAllowDynamicOrKinematic = true;
 		settings.mFriction = spec.friction;
 		settings.mMotionQuality = jolt.EMotionQuality_LinearCast;
@@ -97,16 +202,26 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		this._id = this._body.GetID();
 		jolt.destroy(settings);
 		built.cleanup?.();
+		withGuards?.cleanup?.();
 		physics._bodies.AddBody(this._id, jolt.EActivation_Activate);
 		this.body = physics._register(this._body);
 
-		// Wheels
+		// Wheels. Jolt casts a wheel from where its suspension is fixed, and
+		// a wheel whose cast starts beside a kerb (not above it) finds the
+		// kerb's face: the suspension and its bump stop push along the
+		// contact's normal, so the car was stopped dead, or its wheels fell
+		// inside a road tile's hollow kerb. Fixing the suspension higher (and
+		// making it longer by the same, so the wheel, spring and stops don't
+		// move) starts the cast above any step the wheel can ride up, which
+		// it then finds from above, facing up.
+		this._lift = spec.wheels.map((wheel) => Math.max(0, wheel.stepHeight + STEP_MARGIN - wheel.suspensionMin));
 		const vehicle = new jolt.VehicleConstraintSettings();
 		vehicle.mMaxPitchRollAngle = spec.maxTilt;
-		for (const wheel of spec.wheels) {
+		spec.wheels.forEach((wheel, index) => {
 			const w = new jolt.WheelSettingsWV();
 			const vec = physics._vec;
-			vec.Set(wheel.position.x, wheel.position.y, wheel.position.z);
+			const lift = this._lift[index], d = wheel.suspensionDirection;
+			vec.Set(wheel.position.x - d.x * lift, wheel.position.y - d.y * lift, wheel.position.z - d.z * lift);
 			w.mPosition = vec;
 			vec.Set(wheel.suspensionDirection.x, wheel.suspensionDirection.y, wheel.suspensionDirection.z);
 			w.mSuspensionDirection = vec;
@@ -118,8 +233,8 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 			w.mWheelForward = vec;
 			w.mRadius = wheel.radius;
 			w.mWidth = wheel.width;
-			w.mSuspensionMinLength = wheel.suspensionMin;
-			w.mSuspensionMaxLength = wheel.suspensionMax;
+			w.mSuspensionMinLength = wheel.suspensionMin + lift;
+			w.mSuspensionMaxLength = wheel.suspensionMax + lift;
 			const spring = w.mSuspensionSpring;
 			spring.mMode = jolt.ESpringMode_StiffnessAndDamping;
 			spring.mStiffness = wheel.stiffness;
@@ -139,14 +254,16 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 			// Jolt's curve: with grip at no slip, a heavier, more powerful
 			// bike fell onto its tilt limit weaving and after jumps.
 			const scale = tyreScale(wheel.grip);
-			const longitudinal = w.mLongitudinalFriction;
-			longitudinal.Clear();
-			longitudinal.AddPoint(0, motorcycle ? 0 : 1.0 * scale);
-			longitudinal.AddPoint(0.06, 1.2 * scale);
-			longitudinal.AddPoint(0.2, 1.0 * scale);
+			setLongitudinalCurve(w.mLongitudinalFriction, scale, motorcycle);
 			setLateralCurve(w.mLateralFriction, scale);
 			vehicle.mWheels.push_back(w);
-		}
+		});
+		this._gripAcross = spec.wheels.map(() => 1);
+		this._curveAlong = spec.wheels.map(() => 1);
+		this._curveAcross = spec.wheels.map(() => 1);
+		this._slipAlong = spec.wheels.map(() => 0);
+		this._grounded = spec.wheels.map(() => 0);
+		this._rayShift = spec.wheels.map(() => 0);
 
 		// Engine, gearbox and differentials
 		const controller = motorcycle ? new jolt.MotorcycleControllerSettings() : new jolt.WheeledVehicleControllerSettings();
@@ -163,7 +280,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		gearbox.mShiftUpRPM = spec.gearbox.shiftUpRpm;
 		gearbox.mShiftDownRPM = spec.gearbox.shiftDownRpm;
 		gearbox.mSwitchTime = spec.gearbox.shiftTime;
-		gearbox.mClutchStrength = motorcycle ? 2 : 10;
+		gearbox.mClutchStrength = spec.gearbox.clutchStrength;
 		controller.mDifferentials.clear();
 		for (const pair of spec.differentials) {
 			const differential = new jolt.VehicleDifferentialSettings();
@@ -260,21 +377,131 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	setInput (forward: number, right: number, brake: number, handbrake: number): void {
 		this._controller.SetDriverInput(forward, right, brake, handbrake);
 		this._driving = forward !== 0 || right !== 0 || brake !== 0 || handbrake !== 0;
-
 		// Locked tyres lose most of their sideways grip (Jolt keeps it all):
-		// rescale the handbrake wheels' sideways curves when it changes
-		const grip = Math.round((1 - (1 - this._spec.handbrakeGrip) * handbrake) * 20) / 20;
-		if (grip !== this._handbrakeGrip) {
-			this._handbrakeGrip = grip;
-			this._spec.wheels.forEach((wheel, index) => {
-				if (wheel.handbrakeTorque > 0) setLateralCurve(this._wheels[index].GetSettings().mLateralFriction, tyreScale(wheel.grip) * grip);
-			});
-		}
+		// the handbrake's wheels' sideways curves are scaled by this
+		this._handbrakeGrip = 1 - (1 - this._spec.handbrakeGrip) * handbrake;
+		this._pushing.forward = Math.abs(forward);
+		this._pushing.brake = brake;
+		this._pushing.handbrake = handbrake;
+	}
+
+	/**
+	 * Before a step: where each wheel's ray starts across the tyre. A tyre
+	 * tilted with the body (rolling in a corner) rests on its lower tread
+	 * edge, which moves the outside wheels' contact out by half their width
+	 * and widens the track; a ray cast from the middle of the tyre doesn't,
+	 * and with rays a van rolled over at 1.1 g that rolled 4 degrees on a
+	 * cylinder cast (body roll and stability as the cylinder gave them). So
+	 * each ray starts under the lower edge, fully once the axle is a degree
+	 * off the ground's plane (a flat-faced tyre tips onto its edge), from
+	 * the last step's ground.
+	 */
+	_placeRays (): void {
+		const spec = this._spec;
+		const r = this._body.GetRotation();
+		const qx = r.GetX(), qy = r.GetY(), qz = r.GetZ(), qw = r.GetW();
+		// The axle (+X) in the world
+		const ax = 1 - 2 * (qy * qy + qz * qz), ay = 2 * (qx * qy + qw * qz), az = 2 * (qx * qz - qw * qy);
+		this._wheels.forEach((wheel, index) => {
+			const w = spec.wheels[index];
+			let nx = 0, ny = 1, nz = 0;
+			if (wheel.HasContact()) {
+				const n = wheel.GetContactNormal();
+				nx = n.GetX(); ny = n.GetY(); nz = n.GetZ();
+			}
+			// How far the axle's +X end is up off the ground's plane, as a share of a degree's worth
+			const tilt = Math.max(-1, Math.min(1, (ax * nx + ay * ny + az * nz) / EDGE_TILT));
+			const shift = Math.round(-tilt * (w.width / 2) * 1000) / 1000;
+			if (shift === this._rayShift[index]) return;
+			this._rayShift[index] = shift;
+			const lift = this._lift[index], d = w.suspensionDirection;
+			this._vec2.Set(w.position.x + shift - d.x * lift, w.position.y - d.y * lift, w.position.z - d.z * lift);
+			wheel.GetSettings().mPosition = this._vec2;
+		});
+	}
+
+	/**
+	 * Before a step: each wheel's sideways grip, from how much it was
+	 * spinning or locked in the last step (combinedGrip), and the handbrake.
+	 *
+	 * Jolt's tyre curves give the most friction each way independently, so
+	 * a wheel spinning under power kept all its sideways grip. A tyre
+	 * spinning or locked slides, and has little left for cornering: here
+	 * the slip ratio past the curve's peak (6%) cuts the sideways grip, to
+	 * 1 / sqrt(1 + over²) of it (over: the slip ratio over the peak's, less
+	 * one): 89% at 9% slip (as traction control allows), 45% at 18%, 7%
+	 * locked. Within the peak (driving and braking in grip) it's untouched,
+	 * and so is a wheel the driver isn't driving or braking: coasting through
+	 * a fast swerve, the differential drags a loaded wheel off the road's
+	 * speed as the other unloads, which isn't wheelspin and spun cars.
+	 * Grip along the tyre isn't cut for sliding sideways: a car's tyre needs
+	 * some just to keep rolling (see the constructor), and taking it away
+	 * let the wheels spin or lock in a fast corner, which took the sideways
+	 * grip with it and spun cars changing lane.
+	 *
+	 * The slip is a step old (Jolt reads its curves once a step), and a
+	 * wheel at the edge of spinning flicks between spinning and rolling
+	 * from step to step, so each wheel's slip is held at its recent peak
+	 * (SLIP_HOLD) and the scale eased; the curve is rebuilt only when it
+	 * moves by GRIP_STEP. A wheel's slip counts once it has carried half
+	 * its share of the weight for a few steps (LANDED_STEPS): a wheel
+	 * spun up in the air off a jump, or nearly unloaded on the inside of a
+	 * fast swerve under throttle, slips until the ground slows it once it's
+	 * loaded again, and counting that took the back end away from rear-drive
+	 * cars landing jumps and changing lanes.
+	 */
+	_updateGrip (): void {
+		const spec = this._spec;
+		const c = spec.combinedGrip;
+		const motorcycle = spec.type === "motorcycle";
+		const push = this._pushing;
+		// A wheel's share of the weight as the suspension impulse it would carry level and at rest
+		const share = (spec.mass * 9.81 * this._antiRollDt || 1) / this._wheels.length;
+		this._wheels.forEach((wheel, index) => {
+			let across = 1;
+			const w = spec.wheels[index];
+			// Driven or braked by the driver: a wheel coasting can be dragged off the road's speed through the
+			// differential as the other one unloads in a fast swerve, and that isn't wheelspin
+			const pushed = (w.driven && push.forward > 0.05) || (push.brake > 0.05 && w.brakeTorque > 0) || (push.handbrake > 0.05 && w.handbrakeTorque > 0);
+			// Steps it has carried at least half its share of the weight (0 off the ground or nearly unloaded)
+			const contact = wheel.HasContact();
+			const loaded = this._grounded[index] = contact && wheel.GetSuspensionLambda() > share * LOADED_SHARE ? this._grounded[index] + 1 : 0;
+			if (c > 0 && contact) {
+				const counts = pushed && loaded > LANDED_STEPS;
+				this._slipAlong[index] = Math.max(counts ? Math.abs(wheel.mLongitudinalSlip) / PEAK_SLIP_RATIO : 0, this._slipAlong[index] * SLIP_HOLD);
+				const over = Math.max(0, this._slipAlong[index] - 1);
+				across = 1 - c * (1 - Math.max(MIN_COMBINED_GRIP, 1 / Math.sqrt(1 + over * over)));
+			} else {
+				this._slipAlong[index] = 0;
+			}
+			this._gripAcross[index] += (across - this._gripAcross[index]) * 0.5;
+		});
+
+		const handbrake = Math.round(this._handbrakeGrip / GRIP_STEP) * GRIP_STEP;
+		const handbrakeChanged = handbrake !== this._appliedHandbrake;
+		this._appliedHandbrake = handbrake;
+		this._wheels.forEach((wheel, index) => {
+			const w = spec.wheels[index];
+			const scale = tyreScale(w.grip);
+			const settings = wheel.GetSettings();
+			if (this._curveAlong[index] !== 1) {
+				this._curveAlong[index] = 1;
+				setLongitudinalCurve(settings.mLongitudinalFriction, scale, motorcycle);
+			}
+			const across = this._gripAcross[index];
+			const acrossChanged = Math.abs(across - this._curveAcross[index]) >= GRIP_STEP || (across === 1 && this._curveAcross[index] !== 1);
+			if (acrossChanged) this._curveAcross[index] = across > 1 - GRIP_STEP / 2 ? 1 : across;
+			if (acrossChanged || (handbrakeChanged && w.handbrakeTorque > 0)) {
+				setLateralCurve(settings.mLateralFriction, scale * this._curveAcross[index] * (w.handbrakeTorque > 0 ? handbrake : 1));
+			}
+		});
 	}
 
 	preStep (dt: number): void {
 		if (!this._enabled) return;
 		if (dt !== this._antiRollDt) this._setAntiRollBars(dt);
+		if (!this._kinematic) this._updateGrip();
+		if (this._spec.wheelCast === "ray") this._placeRays();
 		const bodies = this._physics._bodies;
 		if (this._kinematic) {
 			// The wheels roll at the chassis' speed (nothing simulates them)
@@ -309,7 +536,7 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 
 	readWheel (index: number, out: IgeVehicleWheelSample): void {
 		const wheel = this._wheels[index];
-		out.suspensionLength = wheel.GetSuspensionLength();
+		out.suspensionLength = wheel.GetSuspensionLength() - this._lift[index];
 		out.steerAngle = wheel.GetSteerAngle();
 		out.spinAngle = wheel.GetRotationAngle();
 		out.spin = wheel.GetAngularVelocity();
@@ -425,11 +652,75 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 
 	setUpright (on: boolean): void {
 		if (this._destroyed) return;
+		this._upright = on;
 		// Jolt's motorcycle leans into turns and holds itself up with its lean
 		// controller; the constraint's pitch and roll limit stops it falling
 		if (this._spec.type === "motorcycle") (this._controller as JoltApi.MotorcycleController).EnableLeanController(on);
 		this._constraint.SetMaxPitchRollAngle(on ? this._spec.maxTilt : Math.PI);
 		if (this._enabled && !this._body.IsActive()) this._physics._bodies.ActivateBody(this._id);
+	}
+
+	/**
+	 * Change to a new spec in place: mass, engine, gearbox and clutch,
+	 * final drive, springs, dampers and where they're fixed, steering
+	 * lock, brakes, tyre grip, anti-roll bars, friction and tilt limit.
+	 * Anything else (the chassis, the wheels' size, travel or number, the
+	 * gear count, a motorcycle's lean) needs the vehicle made again: false.
+	 */
+	retune (spec: IgeVehicleBackendSpec): boolean {
+		const old = this._spec;
+		if (this._destroyed || !retunable(old, spec)) return false;
+		const jolt = this._jolt;
+		this._spec = spec;
+
+		// Mass: the same shape, so the inertia scales with it
+		const motion = this._body.GetMotionProperties();
+		const ratio = old.mass / spec.mass;
+		if (ratio !== 1) {
+			const diagonal = motion.GetInverseInertiaDiagonal();
+			this._vec2.Set(diagonal.GetX() * ratio, diagonal.GetY() * ratio, diagonal.GetZ() * ratio);
+			motion.SetInverseInertia(this._vec2, motion.GetInertiaRotation());
+			motion.SetInverseMass(1 / spec.mass);
+		}
+		this._body.SetFriction(spec.friction);
+
+		// Engine, gearbox, clutch and final drive
+		const engine = this._controller.GetEngine();
+		engine.mMaxTorque = spec.engine.maxTorque;
+		engine.mMinRPM = spec.engine.minRpm;
+		engine.mMaxRPM = spec.engine.maxRpm;
+		const gearbox = this._controller.GetTransmission();
+		gearbox.mMode = spec.gearbox.mode === "manual" ? jolt.ETransmissionMode_Manual : jolt.ETransmissionMode_Auto;
+		gearbox.mGearRatios.clear();
+		for (const r of spec.gearbox.ratios) gearbox.mGearRatios.push_back(r);
+		gearbox.mReverseGearRatios.clear();
+		for (const r of spec.gearbox.reverseRatios) gearbox.mReverseGearRatios.push_back(-r);
+		gearbox.mShiftUpRPM = spec.gearbox.shiftUpRpm;
+		gearbox.mShiftDownRPM = spec.gearbox.shiftDownRpm;
+		gearbox.mSwitchTime = spec.gearbox.shiftTime;
+		gearbox.mClutchStrength = spec.gearbox.clutchStrength;
+		const differentials = this._controller.GetDifferentials();
+		for (let i = 0; i < differentials.size(); i++) differentials.at(i).mDifferentialRatio = spec.gearbox.finalDrive;
+
+		// Wheels: where the springs are fixed (they move with the sag), springs, steering, brakes; the curves are rebuilt
+		spec.wheels.forEach((wheel, index) => {
+			const settings = this._wheels[index].GetSettings();
+			const lift = this._lift[index], d = wheel.suspensionDirection;
+			this._vec2.Set(wheel.position.x + this._rayShift[index] - d.x * lift, wheel.position.y - d.y * lift, wheel.position.z - d.z * lift);
+			settings.mPosition = this._vec2;
+			settings.mSuspensionSpring.mStiffness = wheel.stiffness;
+			settings.mSuspensionSpring.mDamping = wheel.damping;
+			settings.mMaxSteerAngle = wheel.maxSteer;
+			settings.mMaxBrakeTorque = wheel.brakeTorque;
+			settings.mMaxHandBrakeTorque = wheel.handbrakeTorque;
+			this._curveAlong[index] = this._curveAcross[index] = -1;
+		});
+		this._appliedHandbrake = -1;
+		this._updateGrip();
+		this._setAntiRollBars(this._antiRollDt || this._physics._fixedTimeStep);
+		this._constraint.SetMaxPitchRollAngle(this._upright ? spec.maxTilt : Math.PI);
+		if (this._enabled && !this._kinematic) this._physics._bodies.ActivateBody(this._id);
+		return true;
 	}
 
 	destroy (): void {

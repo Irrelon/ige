@@ -82,8 +82,20 @@ export interface IgePhysicsBodyOptions {
 	angularDamping?: number;
 	/** Scales gravity for this body, default 1. */
 	gravityFactor?: number;
-	/** Continuous collision for small fast bodies (debris, projectiles) so they don't tunnel through walls. */
+	/**
+	 * Continuous collision for fast or thin bodies (debris, projectiles, a
+	 * felled lamp post) so they don't pass into or through walls and the
+	 * ground in one step.
+	 */
 	ccd?: boolean;
+	/**
+	 * Where its weight sits, relative to the entity's origin (IGE units;
+	 * default: the middle of its shape, as if all one material). A lamp
+	 * post or a sign on a heavy base stands up and falls like one with it
+	 * low; a shape with a big, light part (a lamp's arm and head) doesn't
+	 * topple over by itself.
+	 */
+	centreOfMass?: Vec3;
 }
 
 /** Tuning for the Jolt backend (IgePhysics3dOptions.jolt). Other backends ignore it. */

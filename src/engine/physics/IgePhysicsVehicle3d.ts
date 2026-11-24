@@ -7,11 +7,14 @@ import type {
 	IgePhysicsVec3,
 	IgePhysicsVehicle3dApi,
 	IgePhysicsVehicleInput,
+	IgePhysicsVehicleOptions,
 	IgePhysicsVehicleState,
 	IgePhysicsWheelReadout
 } from "@/engine/physics/IgePhysicsVehicle3dApi";
 import {
 	copyVehicleState,
+	mergeVehicleOptions,
+	resolveVehicleSpec,
 	type IgeVehicleBackend,
 	type IgeVehicleHost,
 	type IgeVehicleSpec,
@@ -134,6 +137,8 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 	_targetAge: number = 0;
 	/** Traction control's share of the throttle, 0..1. */
 	_traction: number = 1;
+	/** The options it was made with, and setOptions()' changes. */
+	_options: IgePhysicsVehicleOptions;
 	_enabled: boolean = true;
 	_destroyed: boolean = false;
 	/** Whether the pose needs placing on the entity (false once at rest and placed). */
@@ -144,14 +149,22 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 	_airTime: number = 0;
 	_upright: boolean = true;
 
-	constructor (host: IgeVehicleHost, entity: IgeEntity, spec: IgeVehicleSpec, backend: IgeVehicleBackend) {
+	constructor (host: IgeVehicleHost, entity: IgeEntity, spec: IgeVehicleSpec, backend: IgeVehicleBackend, options: IgePhysicsVehicleOptions = {}) {
 		super();
 		this._host = host;
 		this.entity = entity;
 		this.type = spec.type;
 		this._spec = spec;
 		this._backend = backend;
-		this._wheels = spec.wheels.map((wheel) => ({
+		this._options = { ...options };
+		this._wheels = this._wheelTracks(spec);
+		this._capture(true);
+		this._sync(1);
+	}
+
+	/** Each wheel's readout and the poses it's drawn between. */
+	_wheelTracks (spec: IgeVehicleSpec): WheelTrack[] {
+		return spec.wheels.map((wheel) => ({
 			readout: {
 				contact: false, compression: 0, longitudinalSlip: 0, lateralSlip: 0, steer: 0, spin: 0,
 				point: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, entity: null
@@ -161,8 +174,26 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 			current: new Float64Array([wheel.suspensionMax, 0, 0]),
 			rawSpin: 0
 		}));
-		this._capture(true);
-		this._sync(1);
+	}
+
+	setOptions (options: Partial<IgePhysicsVehicleOptions>): this {
+		if (this._destroyed) return this;
+		if (options.type !== undefined && options.type !== this.type) throw new Error("IgePhysicsVehicle3d: a vehicle's type can't change");
+		const merged = mergeVehicleOptions(this._options, options);
+		const spec = resolveVehicleSpec(merged, this._spec.unitsPerMetre);
+		const state = this.getState();
+		const newWheels = spec.wheels.length !== this._spec.wheels.length || spec.wheels.some((w, i) => w.entity !== this._spec.wheels[i].entity);
+		this._backend = this._host._retuneVehicle(this, spec);
+		this._spec = spec;
+		this._options = merged;
+		if (newWheels) this._wheels = this._wheelTracks(spec);
+		if (newWheels && state.wheelSpin?.length !== spec.wheels.length) state.wheelSpin = undefined;
+		this._teleport(state);
+		return this;
+	}
+
+	options (): IgePhysicsVehicleOptions {
+		return mergeVehicleOptions(this._options, {});
 	}
 
 	drive (input: Partial<IgePhysicsVehicleInput>): this {

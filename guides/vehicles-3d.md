@@ -149,9 +149,10 @@ anti-roll bar (`antiRoll`, 10,000 N/m; 0 for none): stiffer keeps the body flatt
 | `wheels` | four (two for a motorcycle) | See above |
 | `drive` | `"rear"` | `"front"`, `"rear"` or `"all"` |
 | `engine` | 500 N·m, 1000 to 6500 rpm | `maxTorque`, `minRpm`, `maxRpm` |
-| `gearbox` | auto, 2.66 / 1.78 / 1.3 / 1.0 / 0.74, reverse 2.9, final drive 3.42 | `mode`, `ratios`, `reverseRatios`, `finalDrive`, `shiftUpRpm`, `shiftDownRpm`, `shiftTime` |
+| `gearbox` | auto, 2.66 / 1.78 / 1.3 / 1.0 / 0.74, reverse 2.9, final drive 3.42 | `mode`, `ratios`, `reverseRatios`, `finalDrive`, `shiftUpRpm`, `shiftDownRpm`, `shiftTime`, `clutchStrength` (see "Vans, buses and lorries") |
 | `antiRoll` | 10000 N/m | Per axle, see "Suspension" |
 | `grip` | 1.2 | Tyre grip; 1 is a road tyre on ground of the default friction (0.5) |
+| `combinedGrip` | 1 for cars, 0 for motorcycles | How much wheelspin and locked brakes use up sideways grip, see "Combined grip" |
 | `handbrakeGrip` | 0.4 | Sideways grip the handbrake's wheels keep |
 | `friction` | 0.4 | The body's own, when it scrapes along things |
 | `steering` | rate 4, highSpeed 30 m/s, highSpeedLock 0.35 | See "Driving" |
@@ -159,7 +160,9 @@ anti-roll bar (`antiRoll`, 10,000 N/m; 0 for none): stiffer keeps the body flatt
 | `maxLean` | 45 | Motorcycles: most it leans into a turn, in degrees |
 | `reverseOnBrake` | true | |
 | `tractionControl` | true for cars | |
-| `wheelCast` | `"cylinder"` | How wheels find the ground: `"cylinder"` rolls smoothly over kerbs and edges, `"ray"` is cheaper |
+| `wheelCast` | `"ray"` for cars, `"cylinder"` for motorcycles | How wheels find the ground, see "Kerbs and wheel guards" |
+| `stepHeight` | 65% of each wheel's radius (22 cm on the default car) | Tallest kerb the wheels ride up |
+| `wheelGuards` | true | A weightless box over each wheel's upper half that collides, see "Kerbs and wheel guards" |
 | `layer` | `"moving"` | Collision layer; wheels touch what it collides with |
 | `extrapolate` | 0.25 s | Kinematic mode, see below |
 | `impacts` | off | `true` (1 m/s) or a velocity change in IGE units per second: "impact" events |
@@ -182,6 +185,69 @@ Anti-roll bars are real rates: 10,000 N/m on the default car rolls it 1.7 degree
 simulation works a bar out once a step, so a very stiff one would set the body rocking between its wheels by itself:
 a bar too stiff to keep steady at the step rate is limited to the stiffest that does (about 170,000 N/m for the
 default car at 60 steps a second).
+
+## Kerbs and wheel guards
+
+A car meets a kerb up to `stepHeight` tall (65% of the wheel's radius: 22 cm on the default car, so a 20 cm city
+kerb) with a jolt: the front wheels bump up, then the back, and it carries on. Coasting into a 15 cm kerb or a 20 cm
+road-tile kerb at 10, 30 or 60 km/h, head-on or at 30 degrees, the default car and a saloon whose wheels stand
+outside its body keep their speed (87 to 93%, the same as coasting that far on the flat) and pitch a few degrees.
+A taller step stops the wheel like a wall.
+
+Each wheel finds the ground with a cast down from its suspension's fixing point. Two things made kerbs stop cars:
+that point sits only a wheel's sag above the bottom of the tyre (about 20 cm), so a wheel's cast already overlapped a
+kerb's face instead of coming down on its top, and the suspension (and its bump stop) pushes along the contact's
+normal, which was the kerb's face: the bump stop took all the car's speed into the kerb at once, and on a road tile's
+kerb (a surface, not a solid) the wheel then dropped inside it. Now the cast starts above any step the wheel rides
+up (the suspension is fixed higher and made longer by the same, so the wheel, spring and stops don't move), and a
+car's wheels cast a ray, which reports the top of the kerb (facing up) as the wheel's centre crosses its edge. A
+cylinder (the tyre's outline, `wheelCast: "cylinder"`) meets the kerb's edge at an angle as a real tyre does, but the
+push back is a rigid bump stop's, not a tyre's: a car coasting at 10 km/h stopped at a 20 cm kerb, and lost 20 to 40%
+of its speed at 30. Motorcycles keep the cylinder: a ray along a fork leaning 45 degrees reaches the ground 13 cm late.
+
+Wheel guards (`wheelGuards`, on by default) are boxes over each wheel's upper half, as wide as the tyre and a
+centimetre more, added to the chassis for collision only (the mass and inertia are the chassis shape's alone). A wheel
+side-on to a low wall or a bollard, or a motorcycle's front wheel meeting a wall, stops at it instead of poking in.
+Their bottoms sit 5 cm above `stepHeight` (where the wheel rests on its springs), so kerbs pass under them. They have
+the chassis' `friction`: a lower friction of their own needs per-shape friction, which Jolt gives only through a
+contact callback that can't run on its worker threads.
+
+## Combined grip
+
+A tyre has one budget of grip, shared between driving or braking and cornering (a friction circle): spin the driven
+wheels or lock the brakes and there's little left for cornering. `combinedGrip` (default 1 for cars, 0 for
+motorcycles) sets how much of this the tyres do: 1 is a real tyre, 0 keeps the two apart, as before (a spinning wheel
+still corners).
+
+With it, a powerful car without traction control does doughnuts (full lock and full throttle from rest: its tail
+slides out, 37 degrees at the rear axle against 2 without it) and steps its tail out when it's floored out of a slow
+corner; a car with traction control (the default) keeps its wheels near the peak of their grip and stays tidy (2
+degrees). Locked wheels lose their sideways grip too: a car on full brakes in a bend goes straighter on (there's no
+anti-lock braking), and handbrake turns swing round further (`handbrakeGrip` still scales them).
+
+A wheel's slip ratio past its curve's peak (6%) cuts its sideways grip to 1 / sqrt(1 + over²) (over: the slip ratio
+over the peak's, less one): 89% at 9% slip (about what traction control allows), 45% at 18%, 7% locked, never below
+10%. Within the peak it's untouched. Only a wheel the driver is driving (throttle) or braking (brakes, handbrake)
+counts, once it has carried half its share of the weight for a quarter of a second: a wheel spun up in the air off a
+jump, or one nearly unloaded on the inside of a fast swerve under throttle, spins until the ground slows it once it's
+loaded again, and counting that spun rear-drive cars out of lane changes. Grip along the tyre isn't cut for sliding
+sideways: a car's tyre needs some just to keep rolling, and taking it away let wheels spin or lock in fast corners.
+A tall, heavy rear-drive van or bus can still lift and spin an inside wheel under throttle in a fast swerve: give it
+less (0.35 keeps the driving spike's van and bus straight through a 110 km/h lane change).
+
+## Changing options
+
+```typescript
+car.setOptions({ mass: 1600, engine: { maxTorque: 650 }, grip: 1.4 });
+car.options(); // what it's using
+```
+
+`setOptions()` changes a vehicle while it's driven (a tuning panel, an upgrade, damage): the fields given replace the
+ones it was made with (`engine`, `gearbox` and `steering` field by field), and it carries on at the same place, speed,
+revs and gear. Mass, engine, gearbox and clutch, final drive, springs, dampers and where they're fixed, steering lock,
+brakes, grip, anti-roll bars, friction and the tilt limit change in place. A new chassis, wheels of another size or
+number, or more gears make its simulation again from its state, still the same vehicle object (its events, entity and
+wheel entities stay). `type` can't change.
 
 ## Motorcycles
 
@@ -224,6 +290,12 @@ const bus = physics.addVehicle(busEntity, {
 });
 bus.shift(1);
 ```
+
+The clutch passes the engine's torque in proportion to how much faster the engine turns than the wheels behind it.
+`gearbox.clutchStrength` is that rate, N·m per radian per second of slip, and defaults to the engine's peak torque
+over 50 rad/s (480 rpm; 10 for the default car), so a big engine gets a strong clutch. With every vehicle's at 10, an
+11-tonne bus with 1,250 N·m slipped its clutch, the revs ran up and the automatic box changed up at 14 km/h instead
+of the 17 km/h first gear reaches.
 
 ## What it's doing
 
@@ -300,16 +372,13 @@ it, e.g. a parked car far from every player.
 ## Performance
 
 The example (a car, a motorcycle and 25 crates, 38 bodies) steps in 0.25 to 0.3 ms with threaded Jolt in Chrome on an
-Apple silicon Mac. Each wheel casts a cylinder (or a ray) down to the ground every step.
+Apple silicon Mac. Each wheel casts a ray (a car's) or a cylinder (a motorcycle's) down to the ground every step.
 
 ## Limits
 
-- Wheels are casts, not bodies; the chassis shape is what hits things. The default car's body is as wide as its wheels'
-  outer faces, so they don't poke into a wall side-on. Give your own chassis the same width. A wall lower than the
-  body's underside (40 cm on the default car) can still take a wheel side-on, and a motorcycle's front wheel noses
-  into a wall before its chassis (which sits above the wheels) reaches it.
-- Tyre grip is the same all round a tyre's limit (no friction circle) except under the handbrake, so cars brake and
-  turn at once better than real ones.
+- Wheels are casts, not bodies; the chassis shape and the wheel guards are what hit things. A car's front tyre passes
+  into a kerb's face by up to its radius before its centre crosses the edge and it bumps up (a few frames at speed).
+- No anti-lock brakes: full braking locks wheels, and with `combinedGrip` locked front wheels don't steer.
 - `maxTilt` keeps a ridden motorcycle from falling over at all (until `upright(false)`).
 - Air control, self-righting and weight shift turn the vehicle directly (as an angular acceleration), not through a
   modelled rider or centre of mass.
@@ -324,8 +393,10 @@ and kinematic targets. Underneath, the world's backend makes an `IgeVehicleBacke
 `IgePhysicsBackend.createVehicle()` (see [physics-3d.md](physics-3d.md), "Backends"), from the resolved spec in metres
 (`IgeVehicleBackendSpec`, `IgePhysicsVehicle3dBackend.ts`): `setInput()`, `preStep()`, `readPose()`,
 `readVelocity()`, `readWheel()` (which reports the ground's body handle), `rpm()`, `gear()`, `shift()`, `setState()`,
-`setKinematic()`, `moveKinematic()`, `setEnabled()`, `addAngularVelocity()`, `setUpright()` and `destroy()`, and its
-chassis as `body`, so raycasts, sensors and impacts find it.
+`setKinematic()`, `moveKinematic()`, `setEnabled()`, `addAngularVelocity()`, `setUpright()`, optionally `retune()`
+(a new spec in place, for `setOptions()`; without it the vehicle is made again) and `destroy()`, and its chassis as
+`body`, so raycasts, sensors and impacts find it. The chassis includes the spec's wheel `guards`, which collide but
+don't count towards its mass. A wheel must find a step up to its `stepHeight` from above.
 
 `IgeJoltVehicle3d` is Jolt's: a body (which can switch to kinematic) with Jolt's `VehicleConstraint`, a
 `WheeledVehicleController` or `MotorcycleController`, and a step listener. A second backend needs suspension casts
@@ -334,7 +405,7 @@ controller for motorcycles, and a kinematic mode that still pushes bodies, and m
 length, steering and spin angles, spin rate, contact and slip. `setUpright(false)` turns off the motorcycle's balance
 and the tilt limit (Jolt: the lean controller and the constraint's pitch and roll limit).
 
-Three things in the Jolt backend are worth knowing when tuning:
+Seven things in the Jolt backend are worth knowing when tuning:
 
 - Jolt combines tyre and ground friction as `sqrt(tyre * ground)`, so its tyre curves are scaled for `grip` to mean
   the same on ground of friction 0.5.
@@ -347,7 +418,21 @@ Three things in the Jolt backend are worth knowing when tuning:
 - Jolt reads its tyre curve once a step, from the slip at the start of the step, and its curve gives no grip at zero
   slip, so driven wheels pulling away flick between rolling and spinning on alternate steps (with every wheel on the
   ground throughout). Car tyres get full grip at zero slip instead. Motorcycles keep Jolt's curve: with grip at zero
-  slip, a heavier, more powerful bike fell onto its tilt limit when weaving and after jumps.
+  slip, a heavier, more powerful bike fell onto its tilt limit when weaving and after jumps. The friction circle
+  doesn't change this: Jolt's curves are the most friction its tyre constraints may use, and a car's still needs some
+  at zero slip to keep a wheel rolling.
+- Jolt casts a wheel from its suspension's fixing point, so `IgeJoltVehicle3d` fixes each wheel higher by
+  `stepHeight` plus 3 cm less the travel to the bump stop, and lengthens the suspension by the same, keeping the
+  wheel, spring and stops where they were; `readWheel()` takes the extra length back off. Jolt's cylinder cast reports
+  where it first overlaps (with no slope limit) and the suspension pushes along that normal, hence rays for cars.
+- Combined grip (`_updateGrip()`) scales each wheel's sideways tyre curve before each step from Jolt's slip ratio in
+  the last one. A wheel at the edge of spinning flicks between spinning and rolling from step to step, so its slip is
+  held at its recent peak (falling by 40% a step) and the scale eased.
+- Car wheels cast rays from the lower edge of the tyre's tread, half its width out, as the body rolls (`_placeRays()`):
+  a tilted cylinder rests on that edge, which widens the track, and rays from the middle of the tyre made a van roll
+  over at 1.1 g that rolls 4 degrees on cylinders. Body roll and stability are as the cylinder cast gave them.
+- `retune()` changes the engine, transmission, differentials, wheel settings, curves, anti-roll bars, mass (inverse
+  mass and inertia scaled; the shape is the same) and friction of the live constraint and body.
 
 ## Example and tests
 
@@ -361,5 +446,8 @@ cross-origin isolation headers (see [physics-3d.md](physics-3d.md), "Threads") t
 backend in `src/tests/support/physics3dTestWorld.ts`: driving, braking, slip, state, kinematic mode, impacts, wheels
 against walls, landings, air control, self-righting, letting a motorcycle fall, wheelies and stoppies. Its kerb and
 jump tests drive off a 15 cm kerb straight and at an angle, park and drive with one side up a kerb, and land from
-1.5 m, counting wheels lifting off and how long the body takes to be still.
+1.5 m, counting wheels lifting off and how long the body takes to be still. Others drive up 15 cm box and 20 cm
+road-tile kerbs at 10, 30 and 60 km/h, head-on and at 30 degrees, keep wheels out of a low wall and a motorcycle's
+front wheel out of a wall with guards, do doughnuts with combined grip, pull a heavy bus away on its clutch, and
+change options while driving.
 `src/tests/IgeJoltVehicle3d.test.ts` checks that Jolt gets back every byte a vehicle takes.

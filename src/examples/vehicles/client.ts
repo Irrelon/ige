@@ -243,7 +243,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		}
 		for (const spot of spots) {
 			const crate = this.part(scene, geometry, { r: 0.62, g: 0.44, b: 0.24, a: 1 }, spot.x, spot.y, spot.z, { roughness: 0.85 });
-			this.physics!.addBody(crate, { shape: { type: "box", halfExtents: { x: half, y: half, z: half } }, density: 150, friction: 0.6 });
+			this.physics!.addBody(crate, { shape: { type: "box", halfExtents: { x: half, y: half, z: half } }, density: 1000, friction: 0.6 });
 		}
 	}
 

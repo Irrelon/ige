@@ -7,7 +7,12 @@ import { matrixToQuaternion } from "@/engine/webgl/IgeModelParts";
 import { IgeRagdoll3d, type IgeRagdollOptions } from "@/engine/physics/IgeRagdoll3d";
 import { IgePhysicsCharacter3d, type IgePhysicsCharacterOptions } from "@/engine/physics/IgePhysicsCharacter3d";
 import { IgePhysicsVehicle3d } from "@/engine/physics/IgePhysicsVehicle3d";
-import { resolveVehicleSpec, vehicleBackendSpec } from "@/engine/physics/IgePhysicsVehicle3dBackend";
+import {
+	type IgeVehicleBackend as IgePhysicsVehicleBackend,
+	type IgeVehicleSpec,
+	resolveVehicleSpec,
+	vehicleBackendSpec
+} from "@/engine/physics/IgePhysicsVehicle3dBackend";
 import type { IgePhysicsVehicle3dApi, IgePhysicsVehicleLanding, IgePhysicsVehicleOptions } from "@/engine/physics/IgePhysicsVehicle3dApi";
 import { IgePhysicsBody3d, IgePhysicsSensor3d, multiplyQuat, rotateVector } from "@/engine/physics/IgePhysicsBody3d";
 import {
@@ -300,6 +305,11 @@ export class IgePhysics3d extends IgeEventingClass {
 			gravityFactor: options.gravityFactor ?? 1,
 			lockRotation: !!options.lockRotation,
 			ccd: !!options.ccd,
+			centreOfMass: options.centreOfMass && {
+				x: (options.centreOfMass.x - (options.offset?.x ?? 0)) / u,
+				y: (options.centreOfMass.y - (options.offset?.y ?? 0)) / u,
+				z: (options.centreOfMass.z - (options.offset?.z ?? 0)) / u
+			},
 			sensor
 		});
 	}
@@ -473,7 +483,7 @@ export class IgePhysics3d extends IgeEventingClass {
 		const pose = this._entityPose(entity);
 		const p = pose.position;
 		const backend = this._backend.createVehicle(vehicleBackendSpec(spec, layer), { x: p.x / u, y: p.y / u, z: p.z / u }, pose.rotation);
-		const vehicle = new IgePhysicsVehicle3d(this, entity, spec, backend);
+		const vehicle = new IgePhysicsVehicle3d(this, entity, spec, backend, options);
 
 		// Raycasts, sensors and other vehicles' wheels report the vehicle's entity
 		const body = this._register(new IgePhysicsBody3d(this, entity, { type: "dynamic", shape: spec.chassis, layer: spec.layer }, backend.body));
@@ -482,6 +492,32 @@ export class IgePhysics3d extends IgeEventingClass {
 		this._vehicles.push(vehicle);
 		(entity as any)._physicsVehicle3d = vehicle;
 		return vehicle;
+	}
+
+	/**
+	 * A vehicle's options changed (setOptions()): its backend takes the new
+	 * spec in place, or a new one is made where the vehicle is (the vehicle
+	 * puts its state back).
+	 */
+	_retuneVehicle (vehicle: IgePhysicsVehicle3d, spec: IgeVehicleSpec): IgePhysicsVehicleBackend {
+		const u = this._options.unitsPerMetre;
+		const layer = spec.layer ? this._layerIndex(spec.layer) : this._defaultLayer(false);
+		const backendSpec = vehicleBackendSpec(spec, layer);
+		const old = vehicle._backend;
+		if (old.retune?.(backendSpec)) return old;
+		const c = vehicle._current;
+		const backend = this._backend.createVehicle(backendSpec, { x: c[0] / u, y: c[1] / u, z: c[2] / u }, { x: c[3], y: c[4], z: c[5], w: c[6] });
+		if (!vehicle._enabled) backend.setEnabled(false);
+		if (vehicle._kinematic) backend.setKinematic(true);
+		if (!vehicle._upright) backend.setUpright(false);
+		const body = this._vehicleBodies.get(vehicle);
+		if (body) {
+			this._byHandle.delete(body._handle);
+			body._handle = backend.body;
+			this._byHandle.set(body._handle, body);
+		}
+		old.destroy();
+		return backend;
 	}
 
 	/** Remove a vehicle and free it. */

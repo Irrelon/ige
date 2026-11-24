@@ -62,6 +62,8 @@ export interface IgePhysicsBackendBodyDesc {
 	lockRotation: boolean;
 	/** Continuous collision detection, so it doesn't tunnel through thin walls. */
 	ccd: boolean;
+	/** The centre of mass relative to the body's position (the shape's centre), in the body's frame; left out, the shape's own. */
+	centreOfMass?: Vec3;
 	/** Collides with nothing; found by touching() (trigger volumes). Always kinematic. */
 	sensor: boolean;
 }

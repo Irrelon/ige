@@ -109,6 +109,15 @@ export interface IgePhysicsVehicleOptions {
 		shiftDownRpm?: number;
 		/** Seconds a shift takes, with the engine disconnected (default 0.2). */
 		shiftTime?: number;
+		/**
+		 * How hard the clutch grips, in N·m for each radian per second the
+		 * engine turns faster than the wheels behind it. Too weak for the
+		 * engine and it slips, so the revs run up and an automatic box
+		 * changes up before the wheels catch up. Default: the engine's peak
+		 * torque over 50 rad/s (about 480 rpm) of slip (10 for the default
+		 * car); a motorcycle's over 75 rad/s.
+		 */
+		clutchStrength?: number;
 	};
 	/**
 	 * Anti-roll bar rate for each axle in N/m (default 10000; 0 for none).
@@ -124,6 +133,18 @@ export interface IgePhysicsVehicleOptions {
 	 * slippery ground (lower friction) gives less.
 	 */
 	grip?: number;
+	/**
+	 * Combined tyre grip (a friction circle), 0..1: how much wheelspin and
+	 * locked brakes use up a tyre's sideways grip. 1 is a real tyre: a
+	 * wheel spinning or locked keeps little sideways grip, so a powerful car
+	 * without traction control slides its tail out on the throttle (power
+	 * slides, doughnuts) and locked front wheels don't steer; driving and
+	 * braking within the tyre's grip cost nothing. 0 keeps the two apart, as
+	 * games often do: a spinning wheel still corners. Default 1 for cars, 0
+	 * for motorcycles. A tall, heavy rear-drive vehicle can lift and spin an
+	 * inside wheel in a fast swerve under throttle: give it less (0.35).
+	 */
+	combinedGrip?: number;
 	/**
 	 * Share of their sideways grip the wheels held by the handbrake keep
 	 * while it's on, as locked tyres do, so the tail swings round in a
@@ -157,6 +178,22 @@ export interface IgePhysicsVehicleOptions {
 	tractionControl?: boolean;
 	/** How the wheels find the ground: "cylinder" (default, smooth over kerbs and edges) or "ray" (cheaper). */
 	wheelCast?: "cylinder" | "ray";
+	/**
+	 * Tallest step the wheels ride up onto, IGE units: a kerb this high,
+	 * met head-on or at an angle, bumps the front wheels up and then the
+	 * rear, costing a little speed. Default: 65% of each wheel's radius (22
+	 * cm on the default car). A taller step stops the wheel like a wall.
+	 */
+	stepHeight?: number;
+	/**
+	 * Wheel guards (default true): a box over each wheel's upper half, as
+	 * wide as the tyre, that collides with the world but weighs nothing, so
+	 * a wheel side-on to a low wall or a bollard, or a motorcycle's front
+	 * wheel meeting a wall, doesn't poke into it (wheels find the ground
+	 * with casts; only the chassis collides). Their bottoms are above
+	 * stepHeight, so kerbs pass under them. They use the chassis' friction.
+	 */
+	wheelGuards?: boolean;
 	/**
 	 * Kinematic mode: how long (seconds) the vehicle carries on along the
 	 * last state's velocity when no new state arrives (default 0.25).
@@ -352,6 +389,18 @@ export interface IgePhysicsVehicle3dApi {
 	 */
 	upright (): boolean;
 	upright (val: boolean): this;
+	/**
+	 * Change options after it's made (a tuning panel, an upgrade): given
+	 * fields replace the ones it was made with (engine, gearbox and
+	 * steering field by field), and it carries on from where it is, at the
+	 * same speed, revs and gear. Most changes (mass, engine, gearbox,
+	 * springs, grip, brakes, anti-roll) apply in place; a new chassis or
+	 * wheels of another size make its simulation again from its state.
+	 * `type` can't change.
+	 */
+	setOptions (options: Partial<IgePhysicsVehicleOptions>): this;
+	/** The options it's using: what it was made with, with setOptions()' changes. */
+	options (): IgePhysicsVehicleOptions;
 	/** Remove the vehicle from the world and free it. */
 	destroy (): void;
 

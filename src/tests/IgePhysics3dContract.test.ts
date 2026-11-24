@@ -256,6 +256,64 @@ describe.each(physicsTestBackends())("IgePhysics3d contract on $name", (backend)
 			expectNear(runner.body.velocity(), { x: 100, y: falling, z: -50 }, 0.01);
 		});
 
+		it("stand or topple by where their weight sits", () => {
+			addFloor(physics);
+			// A post 3 m tall on a 30 cm base: upright with its weight in the middle, over on its side with it 40 cm out
+			const tilt = (entity: IgeEntity) => {
+				const q = entity.quaternion() || { x: 0, y: 0, z: 0, w: 1 };
+				return (Math.acos(Math.max(-1, Math.min(1, 1 - 2 * (q.x * q.x + q.z * q.z)))) * 180) / Math.PI;
+			};
+			const post = (x: number, options: Partial<IgePhysicsBodyOptions>) => {
+				const entity = new IgeEntity().translateTo(x, 0, 0);
+				physics.addBody(entity, { shape: box(15, 150, 15), offset: { x: 0, y: 150, z: 0 }, ...options });
+				return entity;
+			};
+			const plain = post(0, {});
+			const leaning = post(1000, { centreOfMass: { x: 40, y: 150, z: 0 } });
+			// Most of its weight in its foot: shoved at the top it rocks and stays up; with its weight in the middle it falls
+			const footed = post(2000, { centreOfMass: { x: 0, y: 10, z: 0 } });
+			const middled = post(3000, {});
+			run(physics, 2);
+			expect(tilt(plain)).toBeLessThan(1);
+			expect(tilt(leaning)).toBeGreaterThan(80);
+			expect(leaning._translate.x).toBeGreaterThan(1000);
+			for (const entity of [footed, middled]) {
+				const body = physics.bodyOf(entity)!;
+				body.applyImpulse(body.mass() * 40, 0, 0, { x: entity._translate.x, y: 290, z: 0 });
+			}
+			run(physics, 4);
+			expect(tilt(footed)).toBeLessThan(20);
+			expect(tilt(middled)).toBeGreaterThan(80);
+		});
+
+		it("don't sink into thin ground when fast with continuous collision (ccd)", () => {
+			// Ground a centimetre thick; a thin bar thrown down at it at 40 m/s, spinning like a felled lamp post
+			addStatic(0, -0.5, 0, 2000, 0.5, 2000);
+			const lowest = (entity: IgeEntity) => {
+				const q = entity.quaternion() || { x: 0, y: 0, z: 0, w: 1 };
+				let y = Infinity;
+				for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+					const v = { x: sx * 10, y: sy * 200, z: sz * 10 };
+					const tx = 2 * (q.y * v.z - q.z * v.y), tz = 2 * (q.x * v.y - q.y * v.x);
+					y = Math.min(y, entity._translate.y + v.y + q.w * (2 * (q.z * v.x - q.x * v.z)) + (q.z * tx - q.x * tz));
+				}
+				return y;
+			};
+			const results = [false, true].map((ccd, i) => {
+				const entity = new IgeEntity().translateTo(i * 1000, 400, 0);
+				const body = physics.addBody(entity, { shape: box(10, 200, 10), ccd, linearDamping: 0 });
+				body.setVelocity(0, -4000, 0);
+				body.setAngularVelocity(0, 0, 6);
+				let deepest = Infinity;
+				run(physics, 2, () => { deepest = Math.min(deepest, lowest(entity)); });
+				return { deepest, end: lowest(entity) };
+			});
+			// It may dig in for a step before the contact pushes it out, but never through, and it ends lying on top
+			expect(results[1].deepest).toBeGreaterThan(-5);
+			expect(results[1].end).toBeGreaterThan(-3);
+			expect(results[1].deepest).toBeGreaterThan(results[0].deepest - 1e-6);
+		});
+
 		it("can be taken out of the simulation and put back", () => {
 			addFloor(physics);
 			const crate = addDynamic(0, 300, 0);

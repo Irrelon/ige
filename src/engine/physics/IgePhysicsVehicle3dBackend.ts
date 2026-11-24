@@ -48,6 +48,8 @@ export interface IgeVehicleWheelSpec {
 	handbrakeTorque: number;
 	/** Tyre grip multiplier. */
 	grip: number;
+	/** Tallest step (a kerb) the wheel rides up onto. */
+	stepHeight: number;
 	entity?: IgeEntity;
 }
 
@@ -68,8 +70,12 @@ interface IgeVehicleDrivetrain {
 		shiftUpRpm: number;
 		shiftDownRpm: number;
 		shiftTime: number;
+		/** N·m per radian per second of slip across the clutch. */
+		clutchStrength: number;
 	};
 	friction: number;
+	/** How much wheelspin and locked brakes use up a tyre's sideways grip, 0..1 (a friction circle at 1). */
+	combinedGrip: number;
 	/** Share of sideways grip the handbrake's wheels keep while it's fully on. */
 	handbrakeGrip: number;
 	/** Radians. */
@@ -85,6 +91,8 @@ export interface IgeVehicleSpec extends IgeVehicleDrivetrain {
 	unitsPerMetre: number;
 	/** Collision shape, already offset from the entity's origin. */
 	chassis: IgePhysicsShape;
+	/** Boxes over the wheels that collide but weigh nothing (see wheelGuards()). */
+	guards: IgeVehicleGuard[];
 	centreOfMass: Vec3;
 	wheels: IgeVehicleWheelSpec[];
 	steering: { rate: number; highSpeed: number; highSpeedLock: number };
@@ -97,6 +105,12 @@ export interface IgeVehicleSpec extends IgeVehicleDrivetrain {
 	airControl: number;
 	selfRighting: number;
 	weightShift: number;
+}
+
+/** A wheel guard: a box over a wheel, relative to the entity's origin. */
+export interface IgeVehicleGuard {
+	position: Vec3;
+	halfExtents: Vec3;
 }
 
 /** One wheel as a backend builds it (metres, radians). */
@@ -119,6 +133,12 @@ export interface IgeVehicleBackendWheel {
 	brakeTorque: number;
 	handbrakeTorque: number;
 	grip: number;
+	/**
+	 * Tallest step (a kerb) the wheel rides up onto: the backend must find
+	 * ground this far above the bottom of the wheel at full bump from above
+	 * (the step's top, facing up), not from the side.
+	 */
+	stepHeight: number;
 }
 
 /**
@@ -131,6 +151,11 @@ export interface IgeVehicleBackendSpec extends IgeVehicleDrivetrain {
 	layer: number;
 	/** Relative to the entity's origin. */
 	chassis: IgePhysicsBackendShape;
+	/**
+	 * Boxes over the wheels, part of the chassis for collision only: the
+	 * mass and inertia are the chassis shape's alone.
+	 */
+	guards: IgeVehicleGuard[];
 	centreOfMass: Vec3;
 	wheels: IgeVehicleBackendWheel[];
 }
@@ -208,6 +233,13 @@ export interface IgeVehicleBackend {
 	 * falls over like any body; on, both come back.
 	 */
 	setUpright (on: boolean): void;
+	/**
+	 * Change to a new spec in place, carrying on from where it is
+	 * (IgePhysicsVehicle3d.setOptions()). False, or left out, when the
+	 * backend can't make this change in place (a new shape, wheels of
+	 * another size): the vehicle is then made again from its state.
+	 */
+	retune? (spec: IgeVehicleBackendSpec): boolean;
 	/** Remove everything from the world and free it. */
 	destroy (): void;
 }
@@ -216,11 +248,15 @@ export interface IgeVehicleBackend {
 export interface IgeVehicleHost {
 	unitsPerMetre (): number;
 	removeVehicle (vehicle: any): void;
+	/** Change a vehicle to a new spec: in place when its backend can, else made again where it is (setOptions()). */
+	_retuneVehicle (vehicle: any, spec: IgeVehicleSpec): IgeVehicleBackend;
 	/** The entity whose body this is, if it has one. */
 	_entityOfBody (body: IgePhysicsBodyHandle): IgeEntity | null;
 }
 
 const DEG = Math.PI / 180;
+/** The tallest step a wheel rides up by default, as a share of its radius (22 cm for the default car's 34 cm wheels). */
+const STEP_SHARE = 0.65;
 
 /** Default wheels in metres, before scaling to IGE units. */
 interface DefaultWheel extends Omit<IgePhysicsWheelOptions, "entity"> {
@@ -335,6 +371,7 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 			brakeTorque: w.brakeTorque ?? d.brakeTorque,
 			handbrakeTorque,
 			grip: w.grip ?? grip,
+			stepHeight: Math.max(0, options.stepHeight ?? (w.radius ?? d.radius * u) * STEP_SHARE),
 			entity: (w as IgePhysicsWheelOptions).entity
 		};
 	});
@@ -394,6 +431,8 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 		centreOfMass = { x: x / wheels.length, y: y / wheels.length, z: z / wheels.length };
 	}
 
+	const guards = options.wheelGuards === false ? [] : wheelGuards(wheels, mass, u);
+
 	const gearbox = options.gearbox ?? {};
 	const engine = {
 		maxTorque: options.engine?.maxTorque ?? base.engine.maxTorque,
@@ -407,6 +446,7 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 		unitsPerMetre: u,
 		mass,
 		chassis,
+		guards,
 		centreOfMass: { ...centreOfMass },
 		wheels,
 		differentials,
@@ -419,13 +459,15 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 			finalDrive: gearbox.finalDrive ?? base.finalDrive,
 			shiftUpRpm: Math.min(gearbox.shiftUpRpm ?? base.shiftUpRpm, engine.maxRpm - 1),
 			shiftDownRpm: gearbox.shiftDownRpm ?? 2000,
-			shiftTime: gearbox.shiftTime ?? 0.2
+			shiftTime: gearbox.shiftTime ?? 0.2,
+			clutchStrength: Math.max(0.01, gearbox.clutchStrength ?? engine.maxTorque / (type === "motorcycle" ? 75 : 50))
 		},
 		friction: options.friction ?? 0.4,
+		combinedGrip: Math.max(0, Math.min(1, options.combinedGrip ?? (type === "car" ? 1 : 0))),
 		handbrakeGrip: Math.max(0, Math.min(1, options.handbrakeGrip ?? 0.4)),
 		maxLean: (options.maxLean ?? 45) * DEG,
 		maxTilt: Math.min(options.maxTilt ?? base.maxTilt, 180) * DEG,
-		wheelCast: options.wheelCast ?? "cylinder",
+		wheelCast: options.wheelCast ?? (type === "motorcycle" ? "cylinder" : "ray"),
 		steering: {
 			rate: steering.rate ?? base.steering.rate,
 			highSpeed: steering.highSpeed ?? base.steering.highSpeed * u,
@@ -458,6 +500,36 @@ function defaultCarChassis (u: number, wheels: IgeVehicleWheelSpec[]): IgePhysic
 	return shape;
 }
 
+/** A wheel guard's bottom is this far (metres) above the tallest step its wheel rides up, so kerbs pass under it. */
+const GUARD_CLEARANCE = 0.05;
+
+/**
+ * A box over each wheel's upper half where it sits at rest on its
+ * springs, as wide as the tyre (and a centimetre more), so a wheel side-on
+ * to a low wall or a bollard, or a motorcycle's front wheel meeting a
+ * wall, doesn't poke into it (the wheels are casts, not bodies). Its
+ * bottom is above the tallest step the wheel rides up, so kerbs pass
+ * under it.
+ */
+function wheelGuards (wheels: IgeVehicleWheelSpec[], mass: number, u: number): IgeVehicleGuard[] {
+	const guards: IgeVehicleGuard[] = [];
+	const share = mass / wheels.length;
+	for (const wheel of wheels) {
+		const sag = wheel.stiffness > 0 ? ((share * 9.81) / wheel.stiffness) * u : 0;
+		const rest = Math.max(wheel.suspensionMin, Math.min(wheel.suspensionMax, wheel.suspensionMax - sag));
+		const d = wheel.suspensionDirection, p = wheel.position;
+		const centre = { x: p.x + d.x * rest, y: p.y + d.y * rest, z: p.z + d.z * rest };
+		const bottom = centre.y - wheel.radius + wheel.stepHeight + GUARD_CLEARANCE * u;
+		const top = centre.y + wheel.radius * 0.8;
+		if (top - bottom < 0.05 * u) continue;
+		guards.push({
+			position: { x: centre.x, y: (bottom + top) / 2, z: centre.z },
+			halfExtents: { x: wheel.width / 2 + 0.01 * u, y: (top - bottom) / 2, z: wheel.radius + 0.01 * u }
+		});
+	}
+	return guards;
+}
+
 /** A spec in the backend's units: metres, with the layer as an index. */
 export function vehicleBackendSpec (spec: IgeVehicleSpec, layer: number): IgeVehicleBackendSpec {
 	const u = spec.unitsPerMetre;
@@ -467,6 +539,7 @@ export function vehicleBackendSpec (spec: IgeVehicleSpec, layer: number): IgeVeh
 		layer,
 		mass: spec.mass,
 		chassis: toBackendShape(spec.chassis, { x: 1, y: 1, z: 1 }, u),
+		guards: spec.guards.map((g) => ({ position: metres(g.position), halfExtents: metres(g.halfExtents) })),
 		centreOfMass: metres(spec.centreOfMass),
 		wheels: spec.wheels.map((w) => ({
 			position: metres(w.position),
@@ -482,13 +555,15 @@ export function vehicleBackendSpec (spec: IgeVehicleSpec, layer: number): IgeVeh
 			driven: w.driven,
 			brakeTorque: w.brakeTorque,
 			handbrakeTorque: w.handbrakeTorque,
-			grip: w.grip
+			grip: w.grip,
+			stepHeight: w.stepHeight / u
 		})),
 		differentials: spec.differentials.map((d) => ({ ...d })),
 		antiRollBars: spec.antiRollBars.map((a) => ({ ...a })),
 		engine: { ...spec.engine },
 		gearbox: { ...spec.gearbox, ratios: [...spec.gearbox.ratios], reverseRatios: [...spec.gearbox.reverseRatios] },
 		friction: spec.friction,
+		combinedGrip: spec.combinedGrip,
 		handbrakeGrip: spec.handbrakeGrip,
 		maxLean: spec.maxLean,
 		maxTilt: spec.maxTilt,
@@ -513,6 +588,15 @@ function scaleShape (shape: IgePhysicsShape, u: number): IgePhysicsShape {
 		default:
 			return shape;
 	}
+}
+
+/** Options with changes laid over them: engine, gearbox and steering field by field, the rest replaced. */
+export function mergeVehicleOptions (options: IgePhysicsVehicleOptions, changes: Partial<IgePhysicsVehicleOptions>): IgePhysicsVehicleOptions {
+	const merged: IgePhysicsVehicleOptions = { ...options, ...changes };
+	for (const key of ["engine", "gearbox", "steering"] as const) {
+		if (changes[key] && options[key]) (merged as any)[key] = { ...options[key], ...changes[key] };
+	}
+	return merged;
 }
 
 /** Copy a state (deep, plain numbers), filling what's missing from fallback. */

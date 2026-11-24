@@ -4,6 +4,7 @@
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
 import type { IgePhysicsImpact } from "@/engine/physics/IgePhysics3dTypes";
+import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type {
 	IgePhysicsVehicle3dApi,
 	IgePhysicsVehicleInput,
@@ -777,4 +778,243 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles on kerbs and landing
 			expect(vehicle.tilt()).toBeLessThan(type === "car" ? 1 : 10);
 		});
 	}
+});
+
+
+/*
+ * Kerbs met head-on and at an angle, wheel guards, combined grip, the
+ * clutch, and changing options after a vehicle is made.
+ */
+describe.each(physicsTestBackends())("IgePhysics3d vehicles up kerbs, guards, grip, clutch and options on $name", (backend) => {
+	let physics: IgePhysics3d;
+
+	beforeEach(async () => {
+		physics = await createTestPhysics({}, backend);
+		addFloor(physics, 200000);
+	});
+
+	afterEach(() => physics.destroy());
+
+	/**
+	 * A saloon whose body is narrower than its wheels and starts 26 cm off
+	 * the ground, as a game's own models give: the wheels stick out past
+	 * the body, which only the wheel guards cover.
+	 */
+	function saloon (extra: Partial<IgePhysicsVehicleOptions> = {}): IgePhysicsVehicleOptions {
+		const mass = 1400, share = mass / 4, k = share * (2 * Math.PI * 1.6) ** 2, r = 0.33;
+		const rest = 0.3 - (share * 9.81) / k;
+		return {
+			mass, grip: 1.25, engine: { maxTorque: 360 }, antiRoll: 15000,
+			chassis: {
+				type: "compound", children: [
+					{ shape: { type: "box", halfExtents: { x: 0.75 * U, y: 0.17 * U, z: 2.3 * U } }, position: { x: 0, y: 0.43 * U, z: 0 } },
+					{ shape: { type: "box", halfExtents: { x: 0.65 * U, y: 0.3 * U, z: 1.1 * U } }, position: { x: 0, y: 0.9 * U, z: -0.2 * U } }
+				]
+			},
+			wheels: [[0.78, 1.4], [-0.78, 1.4], [0.78, -1.35], [-0.78, -1.35]].map(([x, z], i) => ({
+				position: { x: x * U, y: (r + rest) * U, z: z * U }, radius: r * U, width: 0.24 * U,
+				suspensionStiffness: k, steer: i < 2 ? 34 : 0
+			})),
+			...extra
+		};
+	}
+
+	/** A raised slab from z = 0 on, `height` tall: a box, or a road tile's kind of kerb (a triangle mesh: a top and a face). */
+	function addKerb (height: number, mesh: boolean) {
+		const entity = new IgeEntity();
+		if (!mesh) {
+			entity.translateTo(0, height / 2, 10000);
+			physics.addBody(entity, { type: "static", shape: { type: "box", halfExtents: { x: 20000, y: height / 2, z: 10000 } } });
+			return;
+		}
+		const x0 = -20000, x1 = 20000, z0 = 0, z1 = 20000, h = height;
+		const vertices = new Float32Array([x0, 0, z0, x1, 0, z0, x1, h, z0, x0, h, z0, x0, 0, z1, x1, 0, z1, x1, h, z1, x0, h, z1]);
+		// The top facing up, the face towards -z
+		const indices = new Uint32Array([3, 6, 2, 3, 7, 6, 0, 2, 1, 0, 3, 2]);
+		physics.addBody(entity, { type: "static", shape: { type: "mesh", geometry: { id: `kerb${height}`, vertices, indices } as IgeGeometryData3d } });
+	}
+
+	/**
+	 * Drive at a kerb at a speed, heading `yaw` degrees off square, and coast
+	 * up it from just before it: the speed before, and after every wheel is
+	 * up and half a second more (or how far it got).
+	 */
+	function strike (options: IgePhysicsVehicleOptions, kmh: number, yaw: number, height: number, mesh: boolean) {
+		addKerb(height, mesh);
+		const a = (yaw * Math.PI) / 180, back = 1500 + kmh * 120;
+		const x = -Math.sin(a) * back, z = -Math.cos(a) * back;
+		const vehicle = physics.addVehicle(new IgeEntity().translateTo(x, 20, z), options);
+		vehicle.setState({ ...vehicle.getState(), position: { x, y: 20, z }, rotation: { x: 0, y: Math.sin(a / 2), z: 0, w: Math.cos(a / 2) } });
+		let before = 0, up = -1, time = 0;
+		for (; time < 30; time += 1 / 60) {
+			const s = vehicle.speedKmh(), front = vehicle.getState().position.z + Math.cos(a) * 250;
+			const coasting = front > -150;
+			vehicle.drive(coasting ? {} : { forward: Math.max(0, Math.min(1, (kmh - s) * 0.3)), brake: Math.max(0, Math.min(1, (s - kmh - 2) * 0.2)) });
+			physics.update(1 / 60);
+			if (!coasting) {
+				before = vehicle.speedKmh();
+				continue;
+			}
+			let onTop = 0;
+			for (let i = 0; i < vehicle.wheelCount(); i++) if (vehicle.wheel(i).contact && vehicle.wheel(i).point.y > height * 0.6) onTop++;
+			if (onTop === vehicle.wheelCount() && up < 0) up = time;
+			if ((up >= 0 && time > up + 0.5) || vehicle.speedKmh() < 0.5) break;
+		}
+		return { before, after: vehicle.speedKmh(), mounted: up >= 0, vehicle };
+	}
+
+	// Coasting on the flat over the same distance keeps 87 to 93% (engine braking); a kerb used to stop cars dead
+	for (const [mesh, height] of [[false, 15], [true, 20]] as const) {
+		for (const kmh of [10, 30, 60]) {
+			for (const yaw of [0, 30]) {
+				for (const [name, options] of [["the default car", {}], ["a saloon with its wheels outside its body", saloon()]] as const) {
+					it(`${name} drives up a ${height} cm ${mesh ? "tile" : "box"} kerb at ${kmh} km/h ${yaw ? "at 30 degrees" : "head-on"}, keeping most of its speed`, () => {
+						const result = strike(options, kmh, yaw, height, mesh);
+						expect(result.mounted).toBe(true);
+						expect(result.after / result.before).toBeGreaterThan(0.8);
+						expect(result.vehicle.tilt()).toBeLessThan(8);
+					});
+				}
+			}
+		}
+	}
+
+	it("keeps its wheels out of a low wall side-on and a motorcycle's front wheel out of a wall, with its wheel guards", () => {
+		const wall = (x: number, y: number, z: number, hx: number, hy: number, hz: number) => {
+			const entity = new IgeEntity().translateTo(x, y, z);
+			physics.addBody(entity, { type: "static", shape: { type: "box", halfExtents: { x: hx, y: hy, z: hz } } });
+		};
+		// A 40 cm wall along the saloon's right side, its face at x = -300; the wheels' outer faces are 12 cm outside its body
+		const side = (guards: boolean, z: number) => {
+			wall(-325, 20, z, 25, 20, 600);
+			const vehicle = physics.addVehicle(new IgeEntity().translateTo(-100, 20, z), saloon({ wheelGuards: guards }));
+			run(physics, 1);
+			vehicle.setState({ ...vehicle.getState(), velocity: { x: -6 * U, y: 0, z: 0 } });
+			let deepest = Infinity;
+			run(physics, 1.5, () => {
+				const state = vehicle.getState();
+				for (const wz of [140, -135]) deepest = Math.min(deepest, state.position.x + rotate({ x: -78 - 12, y: 30, z: wz }, state.rotation).x);
+			});
+			return deepest;
+		};
+		expect(side(true, 4000)).toBeGreaterThan(-300 - 2);
+		expect(side(false, 8000)).toBeLessThan(-300 - 5);
+
+		// A motorcycle ridden into a wall at 20 km/h: the front of its front wheel (1.06 m ahead of its origin) stays out
+		const nose = (guards: boolean, x: number) => {
+			wall(x, 100, 12000, 300, 100, 25); // its face at z = 11975
+			const bike = physics.addVehicle(new IgeEntity().translateTo(x, 20, 11300), { type: "motorcycle", wheelGuards: guards });
+			run(physics, 1);
+			const speed = (20 / 3.6) * U;
+			bike.setState({ ...bike.getState(), velocity: { x: 0, y: 0, z: speed }, wheelSpin: [speed / 31, speed / 31] });
+			let furthest = -Infinity;
+			run(physics, 2.5, () => {
+				bike.drive({ forward: 0.6 });
+				const state = bike.getState();
+				furthest = Math.max(furthest, state.position.z + rotate({ x: 0, y: 70, z: 106 }, state.rotation).z);
+			});
+			return furthest;
+		};
+		const guarded = nose(true, 0);
+		expect(guarded).toBeLessThan(11975 + 2);
+		expect(guarded).toBeGreaterThan(11975 - 30);
+	});
+
+	it("loses sideways grip to wheelspin with combined grip: a powerful car does doughnuts, one with traction control doesn't", () => {
+		// Full lock and full throttle from rest for five seconds; the slip angle is how far the car points from where it goes
+		const doughnut = (options: IgePhysicsVehicleOptions, x: number) => {
+			const vehicle = physics.addVehicle(new IgeEntity().translateTo(x, 20, 0), options);
+			run(physics, 1);
+			let slip = 0, samples = 0, turned = 0, last = heading(vehicle);
+			run(physics, 5, (time) => {
+				vehicle.drive({ forward: 1, right: 1 });
+				const now = heading(vehicle);
+				turned += Math.abs(((now - last + 540) % 360) - 180);
+				last = now;
+				// At the rear axle, which a car turning without sliding drives straight along
+				const v = vehicle.velocity(), w = vehicle.angularVelocity().y;
+				const arm = rotate({ x: 0, y: 0, z: -135 }, vehicle.getState().rotation);
+				const vx = v.x + w * arm.z, vz = v.z - w * arm.x;
+				if (time > 2 && Math.hypot(vx, vz) > 100) {
+					const moving = (Math.atan2(vx, vz) * 180) / Math.PI;
+					slip += Math.abs(((moving - now + 540) % 360) - 180);
+					samples++;
+				}
+			});
+			return { slip: slip / samples, turned };
+		};
+		const powerful = (combinedGrip: number) => saloon({ engine: { maxTorque: 560 }, grip: 1.45, tractionControl: false, combinedGrip });
+		const loose = doughnut(powerful(1), 0);
+		const apart = doughnut(powerful(0), 4000);
+		const tidy = doughnut(saloon({ combinedGrip: 1 }), 8000);
+		expect(loose.slip).toBeGreaterThan(12);
+		expect(apart.slip).toBeLessThan(6);
+		expect(loose.turned).toBeGreaterThan(apart.turned + 60);
+		expect(tidy.slip).toBeLessThan(10);
+	});
+
+	it("pulls a heavy vehicle away in first with a clutch as strong as its engine", () => {
+		// 11 tonnes and 1,250 N·m at 2,800 rpm: with a clutch of fixed strength (10, as every vehicle had) it slipped, the
+		// revs ran up and the box changed up at walking pace
+		const bus = (clutchStrength: number | undefined, x: number) => {
+			const vehicle = physics.addVehicle(new IgeEntity().translateTo(x, 20, -20000), {
+				mass: 11000, chassis: { type: "box", halfExtents: { x: 125, y: 150, z: 550 } }, chassisOffset: { x: 0, y: 200, z: 0 },
+				engine: { maxTorque: 1250, maxRpm: 2800, minRpm: 700 }, antiRoll: 40000,
+				gearbox: { ratios: [4.5, 2.8, 1.8, 1.25, 0.8], finalDrive: 6, shiftUpRpm: 2400, shiftDownRpm: 1200, clutchStrength },
+				wheels: [380, -280, -400].flatMap((z, i) => [105, -105].map((side) => ({ position: { x: side, y: 75, z }, radius: 50, width: 30, steer: i === 0 ? 35 : 0 })))
+			});
+			run(physics, 1);
+			let shiftedAt = -1;
+			run(physics, 12, () => {
+				vehicle.drive({ forward: 1 });
+				if (shiftedAt < 0 && vehicle.gear() > 1) shiftedAt = vehicle.speedKmh();
+			});
+			return shiftedAt;
+		};
+		const fixed = bus(10, 0);
+		const scaled = bus(undefined, 3000);
+		// First gear tops out at 16.8 km/h at the shift point; a slipping clutch changes up before the wheels get there
+		expect(scaled).toBeGreaterThan(16);
+		expect(fixed).toBeGreaterThan(0);
+		expect(fixed).toBeLessThan(scaled - 2);
+	});
+
+	it("changes options while driving, carrying on at the same speed, in place or made again", () => {
+		const make = (x: number) => physics.addVehicle(new IgeEntity().translateTo(x, 20, -40000), {});
+		const tuned = make(0), plain = make(3000);
+		run(physics, 1);
+		run(physics, 4, () => {
+			tuned.drive({ forward: 1 });
+			plain.drive({ forward: 1 });
+		});
+		const speed = tuned.speedKmh(), gear = tuned.gear();
+		expect(speed).toBeGreaterThan(40);
+
+		// In place: more power, less weight, stiffer springs
+		tuned.setOptions({ mass: 1000, engine: { maxTorque: 900 }, antiRoll: 20000 });
+		expect(tuned.speedKmh()).toBeCloseTo(speed, 0);
+		expect(tuned.gear()).toBe(gear);
+		expect(tuned.options().engine?.maxTorque).toBe(900);
+		expect(tuned.options().mass).toBe(1000);
+		const before = { tuned: tuned.speedKmh(), plain: plain.speedKmh() };
+		run(physics, 2, () => {
+			tuned.drive({ forward: 1 });
+			plain.drive({ forward: 1 });
+		});
+		expect(tuned.speedKmh() - before.tuned).toBeGreaterThan((plain.speedKmh() - before.plain) * 1.3);
+		for (let i = 0; i < 4; i++) expect(tuned.wheel(i).contact).toBe(true);
+
+		// Made again: bigger wheels. Still the same vehicle, still moving, still found by raycasts
+		const moving = tuned.speedKmh();
+		tuned.setOptions({ wheels: [[78, 135], [-78, 135], [78, -130], [-78, -130]].map(([x, z], i) => ({ position: { x, y: 58, z }, radius: 38, steer: i < 2 ? 32 : 0 })) });
+		expect(tuned.speedKmh()).toBeCloseTo(moving, 0);
+		run(physics, 1, () => tuned.drive({ forward: 1 }));
+		expect(tuned.speedKmh()).toBeGreaterThan(moving);
+		expect(tuned.upsideDown()).toBe(false);
+		const p = tuned.getState().position;
+		const hit = physics.raycast({ x: p.x, y: 1000, z: p.z }, { x: 0, y: -1, z: 0 }, 2000);
+		expect(hit?.entity).toBe(tuned.entity);
+		expect(physics.vehicleOf(tuned.entity)).toBe(tuned);
+		expect(() => tuned.setOptions({ type: "motorcycle" })).toThrow();
+	});
 });

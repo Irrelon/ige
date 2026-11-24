@@ -285,7 +285,15 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 
 	createBody (desc: IgePhysicsBackendBodyDesc): IgePhysicsBodyHandle {
 		const jolt = this._jolt;
-		const { shape, cleanup } = this._createShape(desc.shape, desc.density);
+		const built = this._createShape(desc.shape, desc.density);
+		const cleanup = built.cleanup;
+		let shape = built.shape;
+		const com = desc.centreOfMass;
+		if (com && desc.type === "dynamic") {
+			const own = shape.GetCenterOfMass();
+			this._vec.Set(com.x - own.GetX(), com.y - own.GetY(), com.z - own.GetZ());
+			shape = new jolt.OffsetCenterOfMassShape(shape, this._vec);
+		}
 		const p = desc.position, r = desc.rotation;
 		this._rvec.Set(p.x, p.y, p.z);
 		this._quat.Set(r.x, r.y, r.z, r.w);

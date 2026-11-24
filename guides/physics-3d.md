@@ -23,11 +23,20 @@ physics.start(); // steps every engine frame, after entity updates, at a fixed 1
 
 `IgePhysics3d.create({ backend })` picks the engine: `"jolt"` (the default) or a backend factory. Tuning that only
 one engine has goes under its own key, e.g. `jolt: { maxBodyPairs, maxContactConstraints }`; other backends ignore it.
-The old top-level `maxBodyPairs` and `maxContactConstraints` still work, with a warning, and will go in a later
+The old top-level `maxBodyPairs` and `maxContactConstraints` still work, with a warning, and go in the next minor
 version. `physics.backendName()` says which engine is running.
 
 Steps run at a fixed rate (`fixedTimeStep`), and entities are drawn between the last two steps (`interpolate`,
-default true), so motion stays smooth on 120 Hz screens or when frames are uneven.
+default true), so motion stays smooth on 120 Hz screens or when frames are uneven. The engine's frame delta is each
+frame's exact length (it was whole milliseconds, so a 120 Hz frame's 8.33 ms came as 8, 8 and 9, and everything
+interpolated juddered by up to a millisecond's movement a frame: 2.4 cm at 130 km/h).
+
+**Following a body with a camera.** `start()` steps the world in the engine's `postUpdate` phase, and the engine runs
+a phase's behaviours newest first, so a `postUpdate` behaviour added after `start()` runs *before* the step: a camera
+placed there follows where the body was a frame ago while the body is drawn where it is now, and the body shakes
+against the camera by its speed times the change in frame time (up to 14 cm a frame at 130 km/h in the driving spike).
+Place cameras, and anything else that follows a body, in `preTick`, which runs after the step and before drawing:
+`ige.engine.addBehaviour(IgeBehaviourType.preTick, "camera", (_e, tickDelta) => chase.update(tickDelta / 1000))`.
 
 Jolt (about 0.9 MB gzipped) is loaded when the world is created, so games without physics don't download it.
 
@@ -99,8 +108,15 @@ before each world step, on the main thread, and interpolated like bodies. A crow
   legs) and `heightfield` (grid terrain: `heights`, `size` samples per side, `spacing`; static only, starting at the
   entity's origin along +x and +z).
 - Options: `density` (kg per cubic metre, default 1000), `restitution` (bounciness), `linearDamping`,
-  `angularDamping`, `gravityFactor`, `ccd` (continuous collision for small fast bodies so they don't pass through
-  walls), `layer` (see below) and `impacts`. Until November 2026 Jolt ignored `density`, so every body was 1000.
+  `angularDamping`, `gravityFactor`, `ccd`, `centreOfMass`, `layer` (see below) and `impacts`. Until November 2026
+  Jolt ignored `density`, so every body was 1000: give props their real weight (a 75 cm wooden crate about 35 kg,
+  density 83).
+- `ccd: true` sweeps the body through each step (continuous collision), so a fast or thin body can't pass into or
+  through a wall or the ground in one step: debris, projectiles, a felled lamp post. A 4 m bar thrown down at 40 m/s
+  sank 58 cm into the ground for a step without it, 4 cm with it.
+- `centreOfMass: { x, y, z }` (IGE units from the entity's origin) puts the body's weight there rather than spread
+  evenly through its shape: a lamp post or a sign on a heavy base stands and falls like one, and a shape with a big,
+  light part (a lamp's arm and head) doesn't topple over by itself.
 - `impacts: 220` (or `true` for 100) makes the body emit `"impact"` when a step changes its velocity by more than
   that (IGE units per second), with the speed change, the impulse (the speed change times the mass) and the bodies
   touching it: sounds, splinters, damage from a falling crate. `body.on("impact", ({ speed, impulse, others }) => ...)`.
@@ -119,7 +135,11 @@ Cars, vans, buses and motorcycles have their own guide: [vehicles-3d.md](vehicle
 ```typescript
 const car = physics.addVehicle(carEntity); // an arcade-leaning saloon
 car.drive({ forward: throttle, right: steer, brake, handbrake }); // each frame
+car.setOptions({ engine: { maxTorque: 650 } }); // tuning while it's driven
 ```
+
+They ride up kerbs (`stepHeight`), have wheel guards that keep wheels out of low walls, share each tyre's grip
+between driving and cornering (`combinedGrip`), and take a clutch as strong as their engine.
 
 ## Collision layers
 
@@ -275,7 +295,7 @@ The interface is `IgePhysicsBackend` in `src/engine/physics/IgePhysicsBackend.ts
 | Area | Calls |
 |---|---|
 | The world | `step()`, `setGravity()`, `optimize()`, `activeBodyCount()`, `threaded()`, `destroy()` |
-| Bodies | `createBody()` (static, dynamic or kinematic; box, sphere, capsule, mesh, convex, compound and heightfield shapes; density, friction, restitution, damping, gravity factor, locked rotation, continuous collision, sensors), `destroyBody()`, `setBodyEnabled()`, `readBodyPose()`, `readBodyVelocity()`, `setBodyVelocity()`, `setBodyTransform()`, `moveKinematic()`, `addImpulse()`, `bodyMass()`, `bodyAwake()`, `setBodyAwake()` |
+| Bodies | `createBody()` (static, dynamic or kinematic; box, sphere, capsule, mesh, convex, compound and heightfield shapes; density, centre of mass, friction, restitution, damping, gravity factor, locked rotation, continuous collision, sensors), `destroyBody()`, `setBodyEnabled()`, `readBodyPose()`, `readBodyVelocity()`, `setBodyVelocity()`, `setBodyTransform()`, `moveKinematic()`, `addImpulse()`, `bodyMass()`, `bodyAwake()`, `setBodyAwake()` |
 | Layers | Named by index: static layers don't collide with each other; every other pair does unless ignored |
 | Queries | `raycast()` (nearest hit, distance and normal, by what a layer collides with), `touching()` (what overlaps a body: sensors and impacts are built on it) |
 | Characters | `createCharacter()` (walks up steps and slopes, sticks to the floor, pushes bodies with a limited strength, optionally unpushable), `characterBody()`, `moveCharacter()`, `readCharacter()`, `setCharacterState()`, `setCharacterEnabled()`, `destroyCharacter()` |
