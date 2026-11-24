@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="yes" name="mobile-web-app-capable" />
+  <meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+  <meta content="https://www.isogenicengine.com" name="game-engine-origin" />
+  <title>Vehicles - Isogenic Engine</title>
+
+  <link href="../../css/ige.css" media="all" rel="stylesheet" type="text/css" />
+  <script src="./index.bundle.js" type="module"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #8fb3d9;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .panel {
+      position: absolute;
+      color: #fff;
+      background: rgba(10, 14, 20, 0.72);
+      border-radius: 8px;
+      padding: 10px 14px;
+      z-index: 1000;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    #info { top: 12px; left: 12px; max-width: 320px; }
+    #info h2 { margin: 0 0 6px 0; font-size: 16px; color: #ffd166; }
+    #info .muted { color: #b8c2cc; }
+    #info kbd {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+      padding: 0 4px;
+      font-family: inherit;
+      font-size: 12px;
+    }
+
+    #hud {
+      right: 16px;
+      bottom: 16px;
+      min-width: 220px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    #hud .speed { font-size: 48px; font-weight: 700; line-height: 1; }
+    #hud .unit { font-size: 14px; color: #b8c2cc; margin-left: 4px; }
+    #hud .row { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; }
+    #hud .gear { font-size: 28px; font-weight: 700; color: #ffd166; }
+    #rpmBar { height: 8px; background: rgba(255, 255, 255, 0.15); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+    #rpmFill { height: 100%; width: 0; background: linear-gradient(90deg, #06d6a0, #ffd166 70%, #ef476f); }
+  </style>
+</head>
+<body>
+<div id="info" class="panel">
+  <h2>Vehicles</h2>
+  <div><kbd>W</kbd>/<kbd>↑</kbd> throttle, <kbd>S</kbd>/<kbd>↓</kbd> brake and reverse</div>
+  <div><kbd>A</kbd> <kbd>D</kbd>/<kbd>←</kbd> <kbd>→</kbd> steer, <kbd>Space</kbd> handbrake</div>
+  <div><kbd>C</kbd> switch car / motorcycle, <kbd>R</kbd> put it back on its wheels</div>
+  <div class="muted">Gamepad: right trigger throttle, left trigger brake and reverse, left stick steer, A handbrake, Y switch, B reset</div>
+  <div class="muted" style="margin-top: 6px;">Physics: <span id="physicsStatus">loading...</span></div>
+</div>
+
+<div id="hud" class="panel">
+  <div><span id="vehicleName">Car</span></div>
+  <div><span id="speed" class="speed">0</span><span class="unit">km/h</span></div>
+  <div class="row"><span><span id="rpm">0</span> rpm</span><span id="gear" class="gear">N</span></div>
+  <div id="rpmBar"><div id="rpmFill"></div></div>
+  <div class="row muted"><span id="state">grounded</span><span id="slip"></span></div>
+</div>
+
+<div class="igeLoading loadingFloat">
+  <div class="loadingLogo"></div>
+  <div class="loadingCircle"></div>
+  <div class="loadingCircleInner"></div>
+  <div class="loadingText" id="loadingText">Loading vehicles...</div>
+</div>
+</body>
+</html>

@@ -8,6 +8,10 @@ import { invertMat4 } from "@/engine/webgl/IgeRaycast";
 import { IgeRagdoll3d, type IgeRagdollOptions } from "@/engine/physics/IgeRagdoll3d";
 import { IgePhysicsCharacter3d, type IgePhysicsCharacterOptions } from "@/engine/physics/IgePhysicsCharacter3d";
 import { matrixToQuaternion } from "@/engine/webgl/IgeModelParts";
+import { IgePhysicsVehicle3d } from "@/engine/physics/IgePhysicsVehicle3d";
+import { IgeJoltVehicle3d } from "@/engine/physics/IgeJoltVehicle3d";
+import { resolveVehicleSpec } from "@/engine/physics/IgePhysicsVehicle3dBackend";
+import type { IgePhysicsVehicle3dApi, IgePhysicsVehicleOptions } from "@/engine/physics/IgePhysicsVehicle3dApi";
 
 export { matrixToQuaternion };
 
@@ -429,6 +433,9 @@ export class IgePhysics3d extends IgeEventingClass {
 	_sensors: IgePhysicsSensor3d[] = [];
 	_characters: IgePhysicsCharacter3d[] = [];
 	_characterCollision?: JoltApi.CharacterVsCharacterCollisionSimple;
+	_vehicles: IgePhysicsVehicle3d[] = [];
+	/** Each vehicle's chassis, registered so raycasts, sensors and wheels report the vehicle's entity. */
+	_vehicleBodies: Map<IgePhysicsVehicle3d, IgePhysicsBody3d> = new Map();
 	_sensorCollector?: JoltApi.CollideShapeAllHitCollisionCollector;
 	_sensorSettings?: JoltApi.CollideShapeSettings;
 	_unitScale?: JoltApi.Vec3;
@@ -660,6 +667,9 @@ export class IgePhysics3d extends IgeEventingClass {
 	/** Remove a body from the world and free it. */
 	removeBody (body: IgePhysicsBody3d): void {
 		if (body._destroyed) return;
+		// A vehicle's chassis (e.g. from a raycast hit) goes with its vehicle
+		const vehicle = (body as any)._vehicle as IgePhysicsVehicle3d | undefined;
+		if (vehicle) return this.removeVehicle(vehicle);
 		if (body._enabled) this._bodies.RemoveBody(body._id);
 		this._bodies.DestroyBody(body._id);
 		body._destroyed = true;
@@ -848,6 +858,53 @@ export class IgePhysics3d extends IgeEventingClass {
 	}
 
 	/**
+	 * Make an entity a vehicle: a car (4 or more wheels) or a motorcycle,
+	 * driven with drive() and moving its entity and wheel entities every
+	 * frame. With no options it's an arcade-leaning saloon car with its
+	 * origin on the ground. See IgePhysicsVehicle3dApi and
+	 * guides/vehicles-3d.md.
+	 * @example #A car driven from input
+	 *     const car = physics.addVehicle(carEntity, { wheels: [...] });
+	 *     // each frame:
+	 *     car.drive({ forward: throttle, right: steer, brake, handbrake });
+	 */
+	addVehicle (entity: IgeEntity, options: IgePhysicsVehicleOptions = {}): IgePhysicsVehicle3dApi {
+		const spec = resolveVehicleSpec(options, this._options.unitsPerMetre);
+		const backend = new IgeJoltVehicle3d(this, entity, spec);
+		const vehicle = new IgePhysicsVehicle3d(this, entity, spec, backend);
+
+		// Raycasts, sensors and other vehicles' wheels report the vehicle's entity
+		const body = new IgePhysicsBody3d(this, entity, { type: "dynamic", shape: spec.chassis, layer: spec.layer }, backend._body);
+		(body as any)._vehicle = vehicle;
+		this._byBodyId.set(body._id.GetIndexAndSequenceNumber(), body);
+		this._vehicleBodies.set(vehicle, body);
+		this._vehicles.push(vehicle);
+		(entity as any)._physicsVehicle3d = vehicle;
+		return vehicle;
+	}
+
+	/** Remove a vehicle and free it. */
+	removeVehicle (vehicle: IgePhysicsVehicle3dApi): void {
+		const own = vehicle as IgePhysicsVehicle3d;
+		const index = this._vehicles.indexOf(own);
+		if (index < 0) return;
+		this._vehicles.splice(index, 1);
+		const body = this._vehicleBodies.get(own);
+		if (body) {
+			this._byBodyId.delete(body._id.GetIndexAndSequenceNumber());
+			body._destroyed = true;
+			this._vehicleBodies.delete(own);
+		}
+		if ((own.entity as any)._physicsVehicle3d === own) (own.entity as any)._physicsVehicle3d = undefined;
+		own._free();
+	}
+
+	/** The vehicle made from an entity by addVehicle(), if any. */
+	vehicleOf (entity: IgeEntity): IgePhysicsVehicle3dApi | undefined {
+		return (entity as any)._physicsVehicle3d;
+	}
+
+	/**
 	 * Advance the simulation by dt seconds in fixed steps (start() calls
 	 * this every frame), then move entities to their bodies.
 	 */
@@ -859,10 +916,12 @@ export class IgePhysics3d extends IgeEventingClass {
 		const started = performance.now();
 		while (this._accumulator >= step) {
 			for (const character of this._characters) character._update(step);
+			for (const vehicle of this._vehicles) vehicle._preStep(step);
 			this._moveKinematicBodies(step);
 			if (this._impactBodies.length) this._recordImpactVelocities();
 			this._interface.Step(step, 1);
 			this._captureBodies();
+			for (const vehicle of this._vehicles) vehicle._postStep();
 			if (this._impactBodies.length) this._checkImpacts(step);
 			this._accumulator -= step;
 			steps++;
@@ -873,6 +932,7 @@ export class IgePhysics3d extends IgeEventingClass {
 		const alpha = this._options.interpolate ? this._accumulator / step : 1;
 		this._syncEntities(alpha);
 		for (const character of this._characters) character._sync(alpha);
+		for (const vehicle of this._vehicles) vehicle._sync(alpha);
 
 		if (steps > 0) {
 			this._stepMs = performance.now() - started;
@@ -890,13 +950,14 @@ export class IgePhysics3d extends IgeEventingClass {
 		}
 	}
 
-	/** Counts (bodies include ragdoll parts) and the time the last update spent stepping. */
-	stats (): { bodies: number; activeBodies: number; ragdolls: number; stepMs: number; steps: number; threaded: boolean } {
+	/** Counts (bodies include ragdoll parts and vehicles) and the time the last update spent stepping. */
+	stats (): { bodies: number; activeBodies: number; ragdolls: number; vehicles: number; stepMs: number; steps: number; threaded: boolean } {
 		let ragdollParts = 0;
 		for (const ragdoll of this._ragdolls) ragdollParts += ragdoll._parts.length;
 		return {
-			bodies: this._list.length + ragdollParts,
+			bodies: this._list.length + ragdollParts + this._vehicles.length,
 			ragdolls: this._ragdolls.length,
+			vehicles: this._vehicles.length,
 			activeBodies: this._system.GetNumActiveBodies(this._jolt.EBodyType_RigidBody),
 			stepMs: this._stepMs,
 			steps: this._stepsLastUpdate,
@@ -937,6 +998,7 @@ export class IgePhysics3d extends IgeEventingClass {
 		this.stop();
 		const jolt = this._jolt;
 		for (const ragdoll of [...this._ragdolls]) this.removeRagdoll(ragdoll);
+		for (const vehicle of [...this._vehicles]) this.removeVehicle(vehicle);
 		for (const sensor of [...this._sensors]) this.removeSensor(sensor);
 		for (const character of [...this._characters]) this.removeCharacter(character);
 		if (this._characterCollision) jolt.destroy(this._characterCollision);

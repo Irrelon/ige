@@ -102,6 +102,15 @@ puts it; `teleport()` and `enabled()` work as for bodies.
 - After adding many bodies at once (loading a level), the world rebuilds its spatial index automatically; call
   `physics.optimize()` yourself after other bulk changes.
 
+## Vehicles
+
+Cars, vans, buses and motorcycles have their own guide: [vehicles-3d.md](vehicles-3d.md).
+
+```typescript
+const car = physics.addVehicle(carEntity); // an arcade-leaning saloon
+car.drive({ forward: throttle, right: steer, brake, handbrake }); // each frame
+```
+
 ## Collision layers
 
 ```typescript

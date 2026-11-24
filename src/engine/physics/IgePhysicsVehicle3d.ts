@@ -1,0 +1,485 @@
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import { invertMat4 } from "@/engine/webgl/IgeRaycast";
+import { matrixToQuaternion } from "@/engine/webgl/IgeModelParts";
+import type {
+	IgePhysicsQuat,
+	IgePhysicsVec3,
+	IgePhysicsVehicle3dApi,
+	IgePhysicsVehicleInput,
+	IgePhysicsVehicleState,
+	IgePhysicsWheelReadout
+} from "@/engine/physics/IgePhysicsVehicle3dApi";
+import {
+	copyVehicleState,
+	type IgeVehicleBackend,
+	type IgeVehicleHost,
+	type IgeVehicleSpec,
+	type IgeVehicleWheelSample
+} from "@/engine/physics/IgePhysicsVehicle3dBackend";
+
+type Vec3 = IgePhysicsVec3;
+type Quat = IgePhysicsQuat;
+
+/** Below this forward speed (metres per second) the vehicle counts as stopped, for reversing. */
+const STOPPED_SPEED = 1;
+/** A kinematic state further than this (metres) from the vehicle teleports it rather than sweeping it through the world. */
+const SNAP_DISTANCE = 5;
+/** Traction control lets the driven wheels slip this fast (metres per second) before easing off... */
+const TRACTION_SLIP = 1.5;
+/** ...and has closed the throttle right down by this much more. */
+const TRACTION_RANGE = 3;
+
+interface WheelTrack {
+	readout: IgePhysicsWheelReadout;
+	sample: IgeVehicleWheelSample;
+	/** Suspension length, steer and unwrapped spin at the last two steps. */
+	previous: Float64Array;
+	current: Float64Array;
+	/** The backend's spin angle at the last step (wrapped), to unwrap the next. */
+	rawSpin: number;
+}
+
+function emptySample (): IgeVehicleWheelSample {
+	return {
+		suspensionLength: 0, steerAngle: 0, spinAngle: 0, spin: 0, contact: false,
+		point: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, longitudinalSlip: 0, lateralSlip: 0, entity: null
+	};
+}
+
+/** v rotated by the unit quaternion q. */
+function rotate (v: Vec3, x: number, y: number, z: number, w: number): Vec3 {
+	const tx = 2 * (y * v.z - z * v.y);
+	const ty = 2 * (z * v.x - x * v.z);
+	const tz = 2 * (x * v.y - y * v.x);
+	return { x: v.x + w * tx + (y * tz - z * ty), y: v.y + w * ty + (z * tx - x * tz), z: v.z + w * tz + (x * ty - y * tx) };
+}
+
+/** a * b. */
+function multiply (a: Quat, b: Quat): Quat {
+	return {
+		x: a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+		y: a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+		z: a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+		w: a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
+	};
+}
+
+function axisAngle (axis: Vec3, angle: number): Quat {
+	const s = Math.sin(angle / 2);
+	return { x: axis.x * s, y: axis.y * s, z: axis.z * s, w: Math.cos(angle / 2) };
+}
+
+/** The angle a - b brought into -PI..PI. */
+function wrapDelta (a: number, b: number): number {
+	let d = (a - b) % (2 * Math.PI);
+	if (d > Math.PI) d -= 2 * Math.PI;
+	else if (d < -Math.PI) d += 2 * Math.PI;
+	return d;
+}
+
+const X_AXIS = { x: 1, y: 0, z: 0 };
+
+/**
+ * A wheeled vehicle or motorcycle (see IgePhysicsVehicle3dApi), made with
+ * IgePhysics3d.addVehicle(). This part is the same for every physics
+ * backend: it shapes the driver's input (steering rate, less lock at
+ * speed, braking before reversing), places the entity and wheels between
+ * fixed steps, reports what the vehicle is doing and handles network
+ * state and kinematic mode. The simulation itself is the backend's.
+ */
+export class IgePhysicsVehicle3d implements IgePhysicsVehicle3dApi {
+	classId = "IgePhysicsVehicle3d";
+	readonly entity: IgeEntity;
+	readonly type: "car" | "motorcycle";
+	_host: IgeVehicleHost;
+	_spec: IgeVehicleSpec;
+	_backend: IgeVehicleBackend;
+	_input: IgePhysicsVehicleInput = { forward: 0, right: 0, brake: 0, handbrake: 0 };
+	/** Where the steering is now, -1..1 (follows the input at the steering rate). */
+	_steer: number = 0;
+	/** Pose at the last two steps: x, y, z, qx, qy, qz, qw (IGE units). */
+	_previous = new Float64Array([0, 0, 0, 0, 0, 0, 1]);
+	_current = new Float64Array([0, 0, 0, 0, 0, 0, 1]);
+	_velocity: Vec3 = { x: 0, y: 0, z: 0 };
+	_angularVelocity: Vec3 = { x: 0, y: 0, z: 0 };
+	_wheels: WheelTrack[];
+	_kinematic: boolean = false;
+	/** Kinematic: the state being followed and how long ago (seconds of steps) it was given. */
+	_target?: IgePhysicsVehicleState;
+	_targetAge: number = 0;
+	/** Traction control's share of the throttle, 0..1. */
+	_traction: number = 1;
+	_enabled: boolean = true;
+	_destroyed: boolean = false;
+	/** Whether the pose needs placing on the entity (false once at rest and placed). */
+	_moving: boolean = true;
+
+	constructor (host: IgeVehicleHost, entity: IgeEntity, spec: IgeVehicleSpec, backend: IgeVehicleBackend) {
+		this._host = host;
+		this.entity = entity;
+		this.type = spec.type;
+		this._spec = spec;
+		this._backend = backend;
+		this._wheels = spec.wheels.map((wheel) => ({
+			readout: {
+				contact: false, compression: 0, longitudinalSlip: 0, lateralSlip: 0, steer: 0, spin: 0,
+				point: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, entity: null
+			},
+			sample: emptySample(),
+			previous: new Float64Array([wheel.suspensionMax, 0, 0]),
+			current: new Float64Array([wheel.suspensionMax, 0, 0]),
+			rawSpin: 0
+		}));
+		this._capture(true);
+		this._sync(1);
+	}
+
+	drive (input: Partial<IgePhysicsVehicleInput>): this {
+		const clamp = (v: number | undefined, min: number) => Math.max(min, Math.min(1, Number.isFinite(v) ? v as number : 0));
+		this._input.forward = clamp(input.forward, -1);
+		this._input.right = clamp(input.right, -1);
+		this._input.brake = clamp(input.brake, 0);
+		this._input.handbrake = clamp(input.handbrake, 0);
+		return this;
+	}
+
+	input (): IgePhysicsVehicleInput {
+		return { ...this._input };
+	}
+
+	shift (gear: number): this {
+		this._backend.shift(Math.round(gear));
+		return this;
+	}
+
+	speed (): number {
+		const c = this._current;
+		const forward = rotate({ x: 0, y: 0, z: 1 }, c[3], c[4], c[5], c[6]);
+		const v = this._velocity;
+		return v.x * forward.x + v.y * forward.y + v.z * forward.z;
+	}
+
+	speedKmh (): number {
+		return (this.speed() / this._spec.unitsPerMetre) * 3.6;
+	}
+
+	velocity (): Vec3 {
+		return { ...this._velocity };
+	}
+
+	angularVelocity (): Vec3 {
+		return { ...this._angularVelocity };
+	}
+
+	rpm (): number {
+		if (this._kinematic) return this._target?.rpm ?? this._spec.engine.minRpm;
+		return this._backend.rpm();
+	}
+
+	gear (): number {
+		if (this._kinematic) return this._target?.gear ?? 0;
+		return this._backend.gear();
+	}
+
+	wheelCount (): number {
+		return this._wheels.length;
+	}
+
+	wheel (index: number): IgePhysicsWheelReadout {
+		const track = this._wheels[index];
+		if (!track) throw new Error(`IgePhysicsVehicle3d: no wheel ${index}`);
+		return track.readout;
+	}
+
+	grounded (): boolean {
+		return this._wheels.some((w) => w.readout.contact);
+	}
+
+	tilt (): number {
+		const c = this._current;
+		const up = rotate({ x: 0, y: 1, z: 0 }, c[3], c[4], c[5], c[6]);
+		return (Math.acos(Math.max(-1, Math.min(1, up.y))) * 180) / Math.PI;
+	}
+
+	upsideDown (): boolean {
+		return this.tilt() > 90;
+	}
+
+	getState (out?: IgePhysicsVehicleState): IgePhysicsVehicleState {
+		const c = this._current;
+		const v = this._velocity, a = this._angularVelocity;
+		const state: IgePhysicsVehicleState = out ?? {
+			position: { x: 0, y: 0, z: 0 },
+			rotation: { x: 0, y: 0, z: 0, w: 1 },
+			velocity: { x: 0, y: 0, z: 0 },
+			angularVelocity: { x: 0, y: 0, z: 0 }
+		};
+		state.position = { x: c[0], y: c[1], z: c[2] };
+		state.rotation = { x: c[3], y: c[4], z: c[5], w: c[6] };
+		state.velocity = { x: v.x, y: v.y, z: v.z };
+		state.angularVelocity = { x: a.x, y: a.y, z: a.z };
+		state.rpm = this.rpm();
+		state.gear = this.gear();
+		state.steer = this._kinematic ? this._target?.steer ?? 0 : this._steer;
+		state.input = this._kinematic && this._target?.input ? { ...this._target.input } : { ...this._input };
+		state.wheelSpin = this._wheels.map((w) => w.sample.spin);
+		return state;
+	}
+
+	setState (state: IgePhysicsVehicleState): this {
+		if (this._destroyed) return this;
+		if (this._kinematic) {
+			const previous = this._target;
+			this._target = copyVehicleState(state);
+			this._targetAge = 0;
+			// Far from where it is (a respawn, or a long gap): jump there
+			const c = this._current;
+			const u = this._spec.unitsPerMetre;
+			const gap = Math.hypot(state.position.x - c[0], state.position.y - c[1], state.position.z - c[2]);
+			if (!previous || gap > SNAP_DISTANCE * u) this._teleport(this._target);
+			return this;
+		}
+		if (state.input) this.drive(state.input);
+		this._steer = Number.isFinite(state.steer) ? Math.max(-1, Math.min(1, state.steer!)) : this._input.right;
+		this._teleport(state);
+		return this;
+	}
+
+	kinematic (): boolean;
+	kinematic (val: boolean): this;
+	kinematic (val?: boolean): boolean | this {
+		if (val === undefined) return this._kinematic;
+		if (val === this._kinematic || this._destroyed) return this;
+		if (val) {
+			this._target = this.getState();
+			this._targetAge = 0;
+			this._backend.setKinematic(true);
+			this._kinematic = true;
+		} else {
+			// Carry on from where it is, at the speed the last state gave
+			// (the speed it was being moved at, or what it was told to do next)
+			const target = this._target;
+			const state = this.getState();
+			this._kinematic = false;
+			this._backend.setKinematic(false);
+			if (target) {
+				state.velocity = { ...target.velocity };
+				state.angularVelocity = { ...target.angularVelocity };
+				if (target.input) state.input = { ...target.input };
+			}
+			this._steer = state.steer ?? 0;
+			if (state.input) this.drive(state.input);
+			this._teleport(state);
+			this._target = undefined;
+		}
+		return this;
+	}
+
+	enabled (): boolean;
+	enabled (val: boolean): this;
+	enabled (val?: boolean): boolean | this {
+		if (val === undefined) return this._enabled;
+		if (val === this._enabled || this._destroyed) return this;
+		this._enabled = val;
+		this._backend.setEnabled(val);
+		if (val) this._capture(true);
+		return this;
+	}
+
+	destroy (): void {
+		this._host.removeVehicle(this);
+	}
+
+	/** Free the backend's objects (the world calls this from removeVehicle()). */
+	_free (): void {
+		if (this._destroyed) return;
+		this._destroyed = true;
+		this._backend.destroy();
+	}
+
+	/** Put the chassis and drivetrain in a state now, with nothing between the old pose and the new. */
+	_teleport (state: IgePhysicsVehicleState): void {
+		this._backend.setState({
+			position: state.position,
+			rotation: state.rotation,
+			velocity: state.velocity ?? { x: 0, y: 0, z: 0 },
+			angularVelocity: state.angularVelocity ?? { x: 0, y: 0, z: 0 },
+			rpm: state.rpm,
+			gear: state.gear,
+			wheelSpin: state.wheelSpin
+		});
+		this._capture(true);
+		this._sync(1);
+	}
+
+	/** Before each fixed step: hand the backend this step's controls, or the kinematic target. */
+	_preStep (dt: number): void {
+		if (!this._enabled || this._destroyed) return;
+		const backend = this._backend;
+
+		if (this._kinematic && this._target) {
+			const target = this._target;
+			this._targetAge += dt;
+			const t = Math.min(this._targetAge, this._spec.extrapolate);
+			const p = target.position, v = target.velocity, w = target.angularVelocity;
+			const position = { x: p.x + v.x * t, y: p.y + v.y * t, z: p.z + v.z * t };
+			// Turn on at the angular velocity (world axes)
+			const angle = Math.hypot(w.x, w.y, w.z) * t;
+			let rotation = target.rotation;
+			if (angle > 1e-9) {
+				const len = Math.hypot(w.x, w.y, w.z);
+				rotation = multiply(axisAngle({ x: w.x / len, y: w.y / len, z: w.z / len }, angle), rotation);
+			}
+			backend.setInput(0, target.steer ?? 0, 0, 0);
+			backend.moveKinematic(position, rotation, dt);
+			backend.preStep(dt);
+			return;
+		}
+
+		const spec = this._spec;
+		const input = this._input;
+		const speed = this.speed();
+		const stopped = STOPPED_SPEED * spec.unitsPerMetre;
+
+		// Steering: less lock at speed, eased towards the input at the steering rate
+		const { rate, highSpeed, highSpeedLock } = spec.steering;
+		const fade = highSpeed > 0 ? Math.min(1, Math.abs(speed) / highSpeed) : 0;
+		const target = input.right * (1 + (highSpeedLock - 1) * fade);
+		const most = rate === Infinity ? Infinity : rate * dt;
+		this._steer += Math.max(-most, Math.min(most, target - this._steer));
+
+		// Brake before changing direction; brake held while stopped reverses
+		let forward = input.forward, brake = input.brake;
+		if (spec.reverseOnBrake && brake > 0 && forward <= 0 && speed < stopped) {
+			forward = -brake;
+			brake = 0;
+		}
+		if (forward > 0 && speed < -stopped) {
+			brake = Math.max(brake, forward);
+			forward = 0;
+		} else if (forward < 0 && speed > stopped) {
+			brake = Math.max(brake, -forward);
+			forward = 0;
+		}
+
+		// Traction control: ease off while the driven wheels spin
+		if (spec.tractionControl) {
+			let spin = 0;
+			if (forward !== 0) {
+				const direction = Math.sign(forward);
+				this._wheels.forEach((track, index) => {
+					if (spec.wheels[index].driven && track.readout.contact) spin = Math.max(spin, track.readout.longitudinalSlip * direction);
+				});
+			}
+			const u = spec.unitsPerMetre;
+			const allowed = Math.max(0.1, 1 - Math.max(0, spin - TRACTION_SLIP * u) / (TRACTION_RANGE * u));
+			this._traction += (allowed - this._traction) * Math.min(1, dt * 12);
+			forward *= this._traction;
+		}
+
+		backend.setInput(forward, this._steer, brake, input.handbrake);
+		backend.preStep(dt);
+	}
+
+	/** After each fixed step: read the pose and wheels back. */
+	_postStep (): void {
+		if (!this._enabled || this._destroyed) return;
+		this._capture(false);
+	}
+
+	/** Read the latest step (and make it the previous one too when resetting). */
+	_capture (reset: boolean): void {
+		const backend = this._backend;
+		const previous = this._previous, current = this._current;
+		if (!reset) previous.set(current);
+		backend.readPose(current);
+		if (reset) previous.set(current);
+		backend.readVelocity(this._velocity, this._angularVelocity);
+		this._moving = true;
+
+		const spec = this._spec;
+		const toDegrees = 180 / Math.PI;
+		this._wheels.forEach((track, index) => {
+			const wheel = spec.wheels[index];
+			const sample = track.sample;
+			backend.readWheel(index, sample);
+			const spin = reset ? sample.spinAngle : track.current[2] + wrapDelta(sample.spinAngle, track.rawSpin);
+			if (!reset) track.previous.set(track.current);
+			track.current[0] = sample.suspensionLength;
+			track.current[1] = sample.steerAngle;
+			track.current[2] = spin;
+			track.rawSpin = sample.spinAngle;
+			if (reset) track.previous.set(track.current);
+
+			const r = track.readout;
+			const travel = wheel.suspensionMax - wheel.suspensionMin;
+			r.contact = sample.contact;
+			r.compression = travel > 0 ? Math.max(0, Math.min(1, (wheel.suspensionMax - sample.suspensionLength) / travel)) : 0;
+			r.longitudinalSlip = sample.longitudinalSlip;
+			r.lateralSlip = sample.lateralSlip;
+			r.steer = -sample.steerAngle * toDegrees;
+			r.spin = sample.spin;
+			r.point.x = sample.point.x; r.point.y = sample.point.y; r.point.z = sample.point.z;
+			r.normal.x = sample.normal.x; r.normal.y = sample.normal.y; r.normal.z = sample.normal.z;
+			r.entity = sample.entity;
+		});
+	}
+
+	/** Place the entity and pose the wheels alpha of the way from the previous step to the latest. */
+	_sync (alpha: number): void {
+		if (!this._enabled || this._destroyed) return;
+		const a = this._previous, b = this._current;
+		const entity = this.entity;
+
+		if (this._moving) {
+			let x = a[0] + (b[0] - a[0]) * alpha;
+			let y = a[1] + (b[1] - a[1]) * alpha;
+			let z = a[2] + (b[2] - a[2]) * alpha;
+			// Normalised lerp along the shorter arc
+			const sign = a[3] * b[3] + a[4] * b[4] + a[5] * b[5] + a[6] * b[6] < 0 ? -1 : 1;
+			const qx = a[3] + (b[3] * sign - a[3]) * alpha, qy = a[4] + (b[4] * sign - a[4]) * alpha;
+			const qz = a[5] + (b[5] * sign - a[5]) * alpha, qw = a[6] + (b[6] * sign - a[6]) * alpha;
+			const len = Math.hypot(qx, qy, qz, qw) || 1;
+			let q: Quat = { x: qx / len, y: qy / len, z: qz / len, w: qw / len };
+
+			// Into the parent's space when the parent isn't at the origin
+			const parentMatrix = (entity._parent as IgeEntity | null)?._worldMatrix4?.matrix;
+			if (parentMatrix && !isIdentity(parentMatrix)) {
+				const inverse = invertMat4(parentMatrix);
+				if (inverse) {
+					const lx = inverse[0] * x + inverse[4] * y + inverse[8] * z + inverse[12];
+					const ly = inverse[1] * x + inverse[5] * y + inverse[9] * z + inverse[13];
+					const lz = inverse[2] * x + inverse[6] * y + inverse[10] * z + inverse[14];
+					x = lx; y = ly; z = lz;
+					const pq = matrixToQuaternion(parentMatrix);
+					q = multiply({ x: -pq.x, y: -pq.y, z: -pq.z, w: pq.w }, q);
+				}
+			}
+			entity.translateTo(x, y, z);
+			entity.quaternion(q);
+			let still = true;
+			for (let i = 0; i < 7; i++) if (a[i] !== b[i]) still = false;
+			if (still) this._moving = false;
+		}
+
+		// Wheels, in the vehicle entity's space
+		const spec = this._spec;
+		this._wheels.forEach((track, index) => {
+			const wheel = spec.wheels[index];
+			if (!wheel.entity) return;
+			const p = track.previous, c = track.current;
+			const length = p[0] + (c[0] - p[0]) * alpha;
+			const steer = p[1] + (c[1] - p[1]) * alpha;
+			const spin = p[2] + (c[2] - p[2]) * alpha;
+			const d = wheel.suspensionDirection;
+			wheel.entity.translateTo(wheel.position.x + d.x * length, wheel.position.y + d.y * length, wheel.position.z + d.z * length);
+			wheel.entity.quaternion(multiply(axisAngle(wheel.steeringAxis, steer), axisAngle(X_AXIS, spin % (2 * Math.PI))));
+		});
+	}
+}
+
+function isIdentity (m: ArrayLike<number>): boolean {
+	return m[0] === 1 && m[5] === 1 && m[10] === 1 && m[15] === 1 &&
+		m[1] === 0 && m[2] === 0 && m[4] === 0 && m[6] === 0 && m[8] === 0 && m[9] === 0 &&
+		m[12] === 0 && m[13] === 0 && m[14] === 0;
+}
