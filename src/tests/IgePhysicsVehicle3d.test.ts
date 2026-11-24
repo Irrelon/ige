@@ -5,6 +5,7 @@ import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
 import type {
 	IgePhysicsVehicle3dApi,
+	IgePhysicsVehicleInput,
 	IgePhysicsVehicleOptions,
 	IgePhysicsVehicleState
 } from "@/engine/physics/IgePhysicsVehicle3dApi";
@@ -402,4 +403,166 @@ describe("IgePhysics3d vehicles", () => {
 		run(physics, 2, () => vehicle.drive({ forward: 1 }));
 		expect(vehicle.speedKmh()).toBeGreaterThan(20);
 	});
+});
+
+
+/*
+ * Kerbs and jumps: a vehicle should sit on its wheels, not bounce about
+ * between them. A kerb is a static block 15 cm high.
+ */
+describe("IgePhysics3d vehicles on kerbs and landing jumps", () => {
+	let physics: IgePhysics3d;
+	const KERB = 15;
+
+	beforeEach(async () => {
+		physics = await createTestPhysics();
+		addFloor(physics, 200000);
+	});
+
+	afterEach(() => physics.destroy());
+
+	/** A static block on the floor, height tall, over x0..x1 and z0..z1: a kerb or a raised pavement. */
+	function addBlock (x0: number, x1: number, z0: number, z1: number, height: number) {
+		const block = new IgeEntity();
+		block.translateTo((x0 + x1) / 2, height / 2, (z0 + z1) / 2);
+		physics.addBody(block, { type: "static", shape: { type: "box", halfExtents: { x: (x1 - x0) / 2, y: height / 2, z: (z1 - z0) / 2 } } });
+	}
+
+	/** A vehicle at x, y, z, turned yaw degrees left of +Z. */
+	function addVehicle (options: IgePhysicsVehicleOptions, x: number, y: number, z: number, yaw: number = 0) {
+		const vehicle = physics.addVehicle(new IgeEntity().translateTo(x, y, z), options);
+		const half = (yaw * Math.PI) / 360;
+		vehicle.setState({ ...vehicle.getState(), position: { x, y, z }, rotation: { x: 0, y: Math.sin(half), z: 0, w: Math.cos(half) } });
+		return vehicle;
+	}
+
+	/** Throttle and brakes holding a speed in km/h. */
+	function cruise (vehicle: IgePhysicsVehicle3dApi, kmh: number) {
+		return () => {
+			const speed = vehicle.speedKmh();
+			return { forward: Math.max(0, Math.min(1, (kmh - speed) * 0.3)), brake: Math.max(0, Math.min(1, (speed - kmh - 2) * 0.2)) };
+		};
+	}
+
+	/** Step until a condition holds (30 seconds at most). */
+	function until (vehicle: IgePhysicsVehicle3dApi, condition: () => boolean, input: () => Partial<IgePhysicsVehicleInput> = () => ({})) {
+		for (let time = 0; !condition() && time < 30; time += 1 / 60) {
+			vehicle.drive(input());
+			physics.update(1 / 60);
+		}
+		expect(condition()).toBe(true);
+	}
+
+	/**
+	 * Step a vehicle for some seconds, noting how many times each wheel
+	 * lifts off, when (seconds from the start) every wheel was first on the
+	 * floor (not on a kerb), and when the body was last moving up or down
+	 * at over 0.1 m/s, or pitching or rolling at over 0.1 radians a second.
+	 */
+	function watch (vehicle: IgePhysicsVehicle3dApi, seconds: number, input: () => Partial<IgePhysicsVehicleInput> = () => ({})) {
+		const n = vehicle.wheelCount();
+		const touching = Array.from({ length: n }, (_, i) => vehicle.wheel(i).contact);
+		const result = { liftOffs: touching.map(() => 0), touchDowns: touching.map(() => 0), down: -1, unsettled: -1 };
+		for (let step = 1; step <= Math.round(seconds * 60); step++) {
+			vehicle.drive(input());
+			physics.update(1 / 60);
+			const time = step / 60;
+			let down = true;
+			for (let i = 0; i < n; i++) {
+				const wheel = vehicle.wheel(i);
+				if (wheel.contact !== touching[i]) {
+					if (wheel.contact) result.touchDowns[i]++;
+					else result.liftOffs[i]++;
+					touching[i] = wheel.contact;
+				}
+				if (!wheel.contact || wheel.point.y > KERB / 3) down = false;
+			}
+			if (down && result.down < 0) result.down = time;
+			const v = vehicle.velocity(), w = vehicle.angularVelocity();
+			if (Math.abs(v.y) > 0.1 * U || Math.hypot(w.x, w.z) > 0.1) result.unsettled = time;
+		}
+		return result;
+	}
+
+	for (const type of ["car", "motorcycle"] as const) {
+		it(`keeps every wheel on flat ground at rest: ${type}`, () => {
+			const vehicle = addVehicle({ type }, 0, 20, 0);
+			run(physics, 1.5);
+			const rest = watch(vehicle, 3);
+			expect(rest.liftOffs).toEqual(rest.liftOffs.map(() => 0));
+			for (let i = 0; i < vehicle.wheelCount(); i++) expect(vehicle.wheel(i).contact).toBe(true);
+			expect(rest.unsettled).toBe(-1);
+		});
+	}
+
+	it("sits still with one side up a kerb, and drives along it", () => {
+		// The left wheels (+X) on a raised pavement, the right ones in the road
+		addBlock(50, 5000, -20000, 20000, KERB);
+		const vehicle = addVehicle({}, 0, 20 + KERB, -10000);
+		run(physics, 2);
+		const parked = watch(vehicle, 3);
+		expect(parked.liftOffs).toEqual([0, 0, 0, 0]);
+		expect(parked.unsettled).toBe(-1);
+		expect(vehicle.tilt()).toBeGreaterThan(3);
+		expect(vehicle.tilt()).toBeLessThan(8);
+
+		until(vehicle, () => vehicle.speedKmh() > 29, cruise(vehicle, 30));
+		const driving = watch(vehicle, 3, cruise(vehicle, 30));
+		expect(driving.liftOffs).toEqual([0, 0, 0, 0]);
+		expect(vehicle.tilt()).toBeLessThan(8);
+	});
+
+	for (const [type, kmh] of [["car", 10], ["car", 30], ["car", 60], ["motorcycle", 30]] as const) {
+		it(`drops off a kerb at ${kmh} km/h with one bounce, settled within half a second: ${type}`, () => {
+			addBlock(-2000, 2000, -10000, 0, KERB);
+			const vehicle = addVehicle({ type }, 0, 20 + KERB, -(1500 + kmh * 100));
+			until(vehicle, () => vehicle.getState().position.z > -300, cruise(vehicle, kmh));
+			const drop = watch(vehicle, 4, cruise(vehicle, kmh));
+			// Each wheel leaves the edge at most once (slowly, it rolls down it), and lands once
+			for (const lifts of drop.liftOffs) expect(lifts).toBeLessThanOrEqual(1);
+			expect(drop.down).toBeGreaterThan(0);
+			expect(drop.unsettled - drop.down).toBeLessThan(0.5);
+			// (A motorcycle stands pitched a couple of degrees: its springs sag by different amounts)
+			expect(vehicle.tilt()).toBeLessThan(type === "car" ? 1 : 5);
+		});
+	}
+
+	for (const kmh of [10, 30]) {
+		it(`drives off a kerb at an angle at ${kmh} km/h, a wheel at a time, without rocking`, () => {
+			// Heading 30 degrees left of +Z, so the front left wheel goes over the edge first and the back right last
+			addBlock(-20000, 20000, -20000, 0, KERB);
+			const vehicle = addVehicle({}, -1000, 20 + KERB, -1732, 30);
+			until(vehicle, () => vehicle.getState().position.z > -400, cruise(vehicle, kmh));
+			const drop = watch(vehicle, 5, cruise(vehicle, kmh));
+			for (const lifts of drop.liftOffs) expect(lifts).toBeLessThanOrEqual(1);
+			expect(drop.down).toBeGreaterThan(0);
+			// It pitches and rolls as the last wheel drops, so a little longer than straight off
+			expect(drop.unsettled - drop.down).toBeLessThan(0.6);
+			expect(vehicle.tilt()).toBeLessThan(1);
+		});
+	}
+
+	for (const type of ["car", "motorcycle"] as const) {
+		it(`lands from a jump without bouncing back off its wheels: ${type}`, () => {
+			const vehicle = addVehicle({ type }, 0, 20, 0);
+			run(physics, 1);
+			// 1.5 m up at 50 km/h, its wheels turning at that speed
+			const speed = (50 / 3.6) * U;
+			const state = vehicle.getState();
+			vehicle.setState({
+				...state,
+				position: { ...state.position, y: 150 },
+				velocity: { x: 0, y: 0, z: speed },
+				wheelSpin: state.wheelSpin!.map(() => speed / (type === "car" ? 34 : 31))
+			});
+			until(vehicle, () => !vehicle.grounded());
+			const landing = watch(vehicle, 3);
+			for (const lifts of landing.liftOffs) expect(lifts).toBe(0);
+			expect(landing.down).toBeGreaterThan(0);
+			expect(landing.unsettled - landing.down).toBeLessThan(0.5);
+			expect(Math.abs(vehicle.velocity().y)).toBeLessThan(0.05 * U);
+			expect(vehicle.upsideDown()).toBe(false);
+			expect(vehicle.tilt()).toBeLessThan(type === "car" ? 1 : 10);
+		});
+	}
 });

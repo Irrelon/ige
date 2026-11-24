@@ -121,7 +121,13 @@ export interface IgePhysicsVehicleOptions {
 		/** Seconds a shift takes, with the engine disconnected (default 0.2). */
 		shiftTime?: number;
 	};
-	/** Anti-roll bar rate for each axle in N/m (default 10000; 0 for none). */
+	/**
+	 * Anti-roll bar rate for each axle in N/m (default 10000; 0 for none).
+	 * The default car rolls under 2 degrees at 1.2 g with it. A bar too stiff
+	 * for the simulation to keep steady at its step rate is limited to the
+	 * stiffest it can (about 170,000 N/m for the default car at 60 steps a
+	 * second).
+	 */
 	antiRoll?: number;
 	/**
 	 * Tyre grip multiplier (default 1.2: a little more than a road tyre).

@@ -24,8 +24,8 @@ car.drive({ forward: throttle, right: steer, brake, handbrake });
 ```
 
 With no options, it's a 1,300 kg rear-wheel-drive saloon about 4.4 m long, with its origin on the ground under its
-middle. It does 0 to 100 km/h in about 6 seconds, stops from 100 km/h in 35 m, corners at about 1.2 g with very little
-body roll, and swings round about 140 degrees in a handbrake turn from 60 km/h.
+middle. It does 0 to 100 km/h in about 6 seconds, stops from 100 km/h in 35 m, corners at about 1.2 g rolling under 2
+degrees, and swings round about 140 degrees in a handbrake turn from 60 km/h.
 
 **Axes.** A vehicle faces +Z of its entity with +Y up, so its left is +X and its right is -X. That's glTF's
 convention, which most vehicle models already use.
@@ -91,7 +91,7 @@ around Y for the other side.
 
 Wheels front and rear are told apart by where they are along Z. Wheels level with each other (within a wheel's
 radius) make an axle. Driven wheels on an axle share a differential, and an axle with wheels on both sides gets an
-anti-roll bar (`antiRoll`, 10,000 N/m; 0 for none).
+anti-roll bar (`antiRoll`, 10,000 N/m; 0 for none): stiffer keeps the body flatter in corners.
 
 ## Options
 
@@ -106,7 +106,7 @@ anti-roll bar (`antiRoll`, 10,000 N/m; 0 for none).
 | `drive` | `"rear"` | `"front"`, `"rear"` or `"all"` |
 | `engine` | 500 N·m, 1000 to 6500 rpm | `maxTorque`, `minRpm`, `maxRpm` |
 | `gearbox` | auto, 2.66 / 1.78 / 1.3 / 1.0 / 0.74, reverse 2.9, final drive 3.42 | `mode`, `ratios`, `reverseRatios`, `finalDrive`, `shiftUpRpm`, `shiftDownRpm`, `shiftTime` |
-| `antiRoll` | 10000 N/m | Per axle |
+| `antiRoll` | 10000 N/m | Per axle, see "Suspension" |
 | `grip` | 1.2 | Tyre grip; 1 is a road tyre on ground of the default friction (0.5) |
 | `handbrakeGrip` | 0.4 | Sideways grip the handbrake's wheels keep |
 | `friction` | 0.4 | The body's own, when it scrapes along things |
@@ -121,6 +121,19 @@ anti-roll bar (`antiRoll`, 10,000 N/m; 0 for none).
 
 Grip is measured against ground of the engine's default friction (0.5). Ground with less friction is slippery for
 every vehicle (ice at 0.05), and ground with more is grippier.
+
+## Suspension
+
+Each wheel's spring defaults to a 1.5 Hz bounce for its share of the mass, with half of critical damping, and 0.2 m
+of travel. Driving off a 15 cm kerb, the default car's wheels drop and land once, and the body is still again within
+0.25 s of the back wheels landing; landing from a 1.5 m drop at 50 km/h it doesn't leave the ground again and is still
+within 0.4 s. Parked or driving along with one side up a kerb, no wheel lifts off. The tests check all of these
+(below).
+
+Anti-roll bars are real rates: 10,000 N/m on the default car rolls it 1.7 degrees at 1.2 g, 40,000 about 0.7. The
+simulation works a bar out once a step, so a very stiff one would set the body rocking between its wheels by itself:
+a bar too stiff to keep steady at the step rate is limited to the stiffest that does (about 170,000 N/m for the
+default car at 60 steps a second).
 
 ## Motorcycles
 
@@ -259,25 +272,34 @@ steps, works out the readouts, and handles state and kinematic targets. Undernea
 
 `IgeJoltVehicle3d` is Jolt's: a body (which can switch to kinematic) with Jolt's `VehicleConstraint`, a
 `WheeledVehicleController` or `MotorcycleController`, and a step listener. A second backend needs suspension casts
-with springs and dampers, tyre friction from slip, an engine, gearbox and differentials, a lean controller for
-motorcycles, and a kinematic mode that still pushes bodies, and must report each wheel's suspension length, steering
-and spin angles, spin rate, contact and slip.
+with springs and dampers, anti-roll bars, tyre friction from slip, an engine, gearbox and differentials, a lean
+controller for motorcycles, and a kinematic mode that still pushes bodies, and must report each wheel's suspension
+length, steering and spin angles, spin rate, contact and slip.
 
-Two things in the Jolt backend are worth knowing when tuning:
+Three things in the Jolt backend are worth knowing when tuning:
 
 - Jolt combines tyre and ground friction as `sqrt(tyre * ground)`, so its tyre curves are scaled for `grip` to mean
   the same on ground of friction 0.5.
-- Jolt's tyre curve gives no grip at zero slip, which makes driven wheels flick between rolling and spinning on
-  alternate steps when pulling away. Car tyres get full grip at zero slip instead. Motorcycles keep Jolt's curve, which
-  its lean controller is tuned for.
+- Jolt hands an anti-roll bar's impulse to each wheel's suspension as a velocity bias, and the suspension is a soft
+  constraint, so the bar pushes with that bias times the constraint's effective mass (about 50 kg for the default car
+  at 60 Hz). `IgeJoltVehicle3d._setAntiRollBars()` divides that out, so `antiRoll` is in N/m. Given to Jolt as it
+  was, the default 10,000 acted like 530,000 N/m, 18 times stiffer than the springs: cars rocked between their wheels
+  at 15 Hz, and one parked with a side up a kerb, or driving off one at an angle, hopped from wheel to wheel and could
+  tip over.
+- Jolt reads its tyre curve once a step, from the slip at the start of the step, and its curve gives no grip at zero
+  slip, so driven wheels pulling away flick between rolling and spinning on alternate steps (with every wheel on the
+  ground throughout). Car tyres get full grip at zero slip instead. Motorcycles keep Jolt's curve: with grip at zero
+  slip, a heavier, more powerful bike fell onto its tilt limit when weaving and after jumps.
 
 ## Example and tests
 
-`src/examples/vehicles` is a drivable car and motorcycle on a field with roads, ramps, speed bumps and crates, with a
-chase camera and a readout of speed, revs and gear. Build it with
+`src/examples/vehicles` is a drivable car and motorcycle on a field with roads, a pavement behind a 15 cm kerb, ramps,
+speed bumps and crates, with a chase camera and a readout of speed, revs and gear. Build it with
 `npx webpack --config ./config/webpack.config.cjs --config-name vehicles`, and serve `dist/esm` with the
 cross-origin isolation headers (see [physics-3d.md](physics-3d.md), "Threads") to run Jolt threaded.
 
 `src/tests/IgePhysicsVehicle3d.test.ts` drives vehicles headlessly in jest through the public API only, so the same
 tests can run against another backend: only `createTestPhysics()` in `src/tests/support/physics3dTestWorld.ts` knows
-which one it is. `src/tests/IgeJoltVehicle3d.test.ts` checks that Jolt gets back every byte a vehicle takes.
+which one it is. Its kerb and jump tests drive off a 15 cm kerb straight and at an angle, park and drive with one side
+up a kerb, and land from 1.5 m, counting wheels lifting off and how long the body takes to be still.
+`src/tests/IgeJoltVehicle3d.test.ts` checks that Jolt gets back every byte a vehicle takes.
