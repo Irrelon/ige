@@ -22,12 +22,12 @@ export interface IgeCreateRendererOptions {
 
 let webGlSupport: boolean | undefined;
 
-/** Whether the browser can create a WebGL context (checked once). */
+/** Whether the browser can create a WebGL 2 context (IgeWebGlRenderer needs WebGL 2; checked once). */
 export function igeWebGlAvailable (): boolean {
 	if (webGlSupport !== undefined) return webGlSupport;
 	try {
 		const canvas = typeof document !== "undefined" ? document.createElement("canvas") : undefined;
-		webGlSupport = !!canvas && !!(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+		webGlSupport = !!canvas && !!(canvas.getContext("webgl2"));
 	} catch {
 		webGlSupport = false;
 	}

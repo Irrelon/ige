@@ -119,6 +119,9 @@
 		},
 		"jolt-physics": {
 			"optional": true
+		},
+		"three": {
+			"optional": true
 		}
 	},
 	"sideEfects": false

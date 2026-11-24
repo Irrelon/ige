@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 
 const argv = yargs.default("src", "src/**").argv;
-const ignorePatterns = ["**/node_modules/**", "**/*.old*", "**/*.test*", "**/editor/**"];
+const ignorePatterns = ["**/node_modules/**", "**/*.old*", "**/*.test*", "**/editor/**", "**/IgeThreeJsRenderer.ts"];
 
 function createIndexFile (folder) {
 	//console.info(`index: ${folder}`);

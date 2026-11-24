@@ -1,121 +1,40 @@
-# WebGL 3D Renderer Test Example
+# WebGL renderer example
 
-This example demonstrates the custom WebGL 3D renderer implementation for IGE.
+A tour of `IgeWebGlRenderer`: 2D sprites, primitive 3D shapes, a glTF model, lights and a switchable camera in one scene.
 
-## Status: Phase 1 Complete - Partial Compilation Issues
+## What it shows
 
-The WebGL renderer implementation is **functionally complete** for Phase 1, with all core systems in place:
+- A grid of animated `fairy.png` sprites drawn as textured planes in 3D space.
+- A row of coloured cubes (`IgePrimitiveGeometry.createCube()` with `material()`) lit by the scene's lights, spinning.
+- Ducks loaded from `assets/models/Duck.glb` with `igeGltfLoader`, built into entities and spun.
+- Lights: an ambient light, a directional "sun" and an orbiting point light.
+- The camera slowly orbits the scene in perspective mode.
+- `?panel=1` adds a panel viewport (picture-in-picture, bottom right) with a scene, lights, shadow and two cameras of its own, cutting between them every three seconds.
 
-### ✅ Completed Components
-- IgeMatrix4 - 4x4 transformation matrices
-- Dual matrix system (2D + 3D)
-- IgeWebGlRenderer - Main renderer with full pipeline
-- All manager classes (Resource, Shader, Texture, Geometry, Camera, Batch, State)
-- Built-in shaders (sprite and model)
-- Complete scene graph traversal with frustum culling
-- Render batching system
-- Billboard-mode sprites
+## Controls
 
-### 🔧 Known Compilation Issues
+| Key | Action |
+|-----|--------|
+| P | Perspective camera (orbit resumes) |
+| O | Orthographic camera |
+| Up / Down | Zoom the orthographic view in and out |
+| 1 - 4 | Camera presets: isometric, isometric 45 degrees, top-down, side-scroller |
+| L | Toggle lighting |
+| S | Toggle shadows |
+| D | Cycle the shadow debug mode |
+| M (with `?panel=1`) | Show or hide the panel |
+| E (with `?panel=1`) | Toggle the panel's colour-shift effect |
 
-The example currently has TypeScript compilation errors that need to be resolved:
+The page also shows a status line, frame rate and entity count.
 
-1. **IgeGeometryData3d Interface** - The interface needs to be enhanced with specific vertex array properties (Phase 2, Week 4 task):
-   ```typescript
-   // Need to add these properties to IgeGeometryData3d:
-   vertices?: Float32Array
-   normals?: Float32Array
-   uvs?: Float32Array
-   indices?: Uint16Array | Uint32Array
-   // etc.
-   ```
+## Running it
 
-2. **Minor Type Compatibility** - Some null/undefined handling needs adjustment
+Build the examples with `npm run build-examples` (or `npm run build-examples-watch` while editing), serve the repository folder with any static server and open this example's `index.html` in a browser that supports WebGL 2. Textures and models load relative to `src/assets`, so serve from the repo root.
 
-### 📝 Implementation Summary
+## Files
 
-**Total Files Created: 25+**
-- Core: IgeMatrix4, IgeWebGlRenderer
-- Managers: 9 manager classes
-- Shaders: 4 GLSL shaders + library
-- Batching: Render batch and state management
+- `index.ts`: starts the engine and creates the client.
+- `client.ts`: builds the scene, lights, entities, keyboard controls and the optional panel.
+- `index.html`: the page with the loading screen and stats display.
 
-**Architecture Highlights:**
-- WebGL 2 (drawn through the GPU device)
-- Instanced rendering for sprites
-- Frustum culling
-- Opaque/transparent pass separation
-- State change minimization
-- Context loss/restore handling
-
-### 🚀 What Works
-
-The renderer is architecturally complete and would render successfully once the TypeScript errors are fixed. The rendering pipeline handles:
-
-- 2D sprites as billboards in 3D space
-- Full 3D model support (when geometry data is properly typed)
-- Hierarchical transforms
-- Multiple viewports
-- Camera frustum culling
-- Texture mapping
-- Alpha blending
-
-### 🎯 Next Steps to Test
-
-1. **Fix Type Definitions** (5-10 minutes):
-   - Update `IgeGeometryData3d` interface with vertex array properties
-   - Fix null/undefined handling in a few places
-
-2. **Build the Example**:
-   ```bash
-   npm run build-examples
-   ```
-
-3. **Serve and Test**:
-   ```bash
-   # Serve the dist folder with any static file server
-   npx http-server dist/esm/examples/webGlRenderer -p 8080
-   ```
-
-4. **View in Browser**:
-   Open `http://localhost:8080` to see the animated sprite grid
-
-### 📊 Expected Output
-
-When running, you should see:
-- A 5x5 grid of animated fairy sprites
-- Sprites rotating at different speeds
-- Sprites bobbing up and down in 3D space
-- Camera slowly orbiting around the scene
-- FPS counter and entity count in the top-left
-
-### 🔬 What This Tests
-
-- WebGL context creation
-- Shader compilation
-- Texture loading and binding
-- 4x4 matrix calculations
-- Scene graph traversal
-- Render batching
-- Billboard-mode rendering
-- Camera animation
-- Real-time FPS rendering
-
-## Architecture Overview
-
-```
-IgeWebGlRenderer
-├── IgeWebGlResourceManager (GPU resources)
-├── IgeWebGlShaderManager (shader compilation)
-├── IgeWebGlTextureManager (texture management)
-├── IgeWebGlGeometryManager (VBO/IBO management)
-├── IgeWebGlInstancing (batching + GPU instancing)
-├── IgeWebGlCameraController (camera matrices + frustum)
-└── IgeWebGlStateManager (state tracking)
-```
-
-## Conclusion
-
-Phase 1 of the WebGL 3D renderer is **architecturally complete and production-ready**. The implementation includes all planned features and optimization systems. Only minor TypeScript type fixes are needed to successfully compile and test the renderer.
-
-The foundation is solid for Phase 2 (GLTF loading) and Phase 3 (PBR lighting) enhancements!
+See `guides/webgl-models.md` and `guides/panel-viewport.md` for the features used.
