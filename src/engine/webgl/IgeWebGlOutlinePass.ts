@@ -245,7 +245,7 @@ export class IgeWebGlOutlinePass {
 		if (width <= 0 || height <= 0) return false;
 		d.invalidate();
 		const sampler = { minFilter: "nearest", magFilter: "nearest", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" } as const;
-		if (!this._texture) this._texture = d.createTexture({ width, height, format: "rgba8unorm", sampler, label: "outline mask" });
+		if (!this._texture) this._texture = d.createTexture({ width, height, format: "rgba8unorm", sampler, memory: "renderTargets", label: "outline mask" });
 		else d.resizeTexture(this._texture, width, height);
 		this._width = width;
 		this._height = height;

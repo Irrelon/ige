@@ -121,6 +121,8 @@ export class IgeParticleSystem3d extends IgeEntity {
 	_renderData: Float32Array;
 	/** Incremented whenever _renderData changes (renderer upload check). */
 	_renderVersion: number = 0;
+	/** Particles were spawned since _renderData was last packed (packed by renderData() or the next update). */
+	_renderDirty: boolean = false;
 
 	/** Where random numbers come from: Math.random, or a seeded sequence after seed(). */
 	_random: () => number = () => Math.random();
@@ -260,8 +262,12 @@ export class IgeParticleSystem3d extends IgeEntity {
 	/**
 	 * Returns the packed render data and live particle count. Each particle
 	 * uses PARTICLE_INSTANCE_FLOATS floats: x, y, z, size, r, g, b, a.
+	 * Particles spawned since the last update() (a burst() after the
+	 * systems have updated) are packed first, so `count` never runs ahead
+	 * of `data` (the renderer uploads and draws exactly that many).
 	 */
 	renderData (): { data: Float32Array; count: number } {
+		if (this._renderDirty) this._buildRenderData(false);
 		return { data: this._renderData, count: this._liveCount };
 	}
 
@@ -277,6 +283,10 @@ export class IgeParticleSystem3d extends IgeEntity {
 
 		const i = this._liveCount++;
 		const p3 = i * 3;
+		if (!this._renderDirty) {
+			this._renderDirty = true;
+			markSceneChanged();
+		}
 
 		// Position: origin plus a random point inside the emitter sphere
 		let px = origin.x, py = origin.y, pz = origin.z;
@@ -369,7 +379,9 @@ export class IgeParticleSystem3d extends IgeEntity {
 		}
 	}
 
-	_buildRenderData () {
+	/** Pack the live particles for drawing (`mark`: report the change, unless whoever made it already has). */
+	_buildRenderData (mark: boolean = true) {
+		this._renderDirty = false;
 		const o = this._options;
 		const out = this._renderData;
 		const pos = this._particlePosition;
@@ -418,7 +430,7 @@ export class IgeParticleSystem3d extends IgeEntity {
 		}
 
 		this._renderVersion++;
-		markSceneChanged();
+		if (mark) markSceneChanged();
 	}
 }
 

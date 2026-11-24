@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Shadow fit - Isogenic Engine</title>
+  <script src="./index.bundle.js" type="module"></script>
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; background: #9db5c9; }
+    #hud {
+      position: absolute; top: 8px; left: 8px; z-index: 1000; white-space: pre;
+      font: 12px/1.4 monospace; color: #fff; background: rgba(0, 0, 0, 0.6); padding: 8px 10px; border-radius: 4px;
+    }
+    #keys {
+      position: absolute; bottom: 8px; left: 8px; z-index: 1000;
+      font: 12px/1.4 monospace; color: #fff; background: rgba(0, 0, 0, 0.6); padding: 6px 10px; border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<div id="hud">Loading...</div>
+<div id="keys">V: camera (top, low, street) · F: fit · C: caching · S: decal and particle stress · Space: pause · B: shadow box</div>
+</body>
+</html>

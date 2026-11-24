@@ -272,6 +272,8 @@ const bones = humanoidBones(model.skins![0].skeleton)!;
     `blood.project(wallPoint, wallNormal, levelRoot, { size: 70 })`. `normal` points out of the surface; `maxAngle`
     (default 75 degrees) keeps a floor splat off the sides of steps, or wraps corners at about 100. Animated
     characters don't receive projected decals. Mount level geometry under one root entity to target it all at once.
+- Add decals and particles whenever suits the game, before or after the systems update in a frame (after the physics
+  step, say): what's added is packed for drawing when the frame is drawn.
 
 ## HUD, picking and split screen
 
@@ -313,6 +315,58 @@ every 2 s, and only when the GPU time says the next step would fit in 80% of the
 refused for that level for 30 s, then 60 s and so on, so a steady scene settles instead of hunting. The offscreen
 targets are made again only when the scale changes. See `IgeDynamicResolution`.
 
+## Shadows fitted to the view
+
+By default the sun's shadow map is a square, `shadowManager.frustumSize()` each way round the camera's target,
+whatever the camera sees. A top-down view is wider than it is tall, and the square lands on the ground turned and
+stretched by the sun's angle, so the view's corners can fall outside it and lose their shadows. At street level the
+square ends well before the view does.
+
+`shadowFit()` fits the map to each view instead:
+
+```typescript
+// 100 units a metre: shadows to 180 m from the camera, over a town whose tallest roof is 25 m
+renderer.shadowFit({ enabled: true, distance: 18000, minY: 0, maxY: 2500 });
+```
+
+- The map covers what the camera can see that can take a shadow: its frustum out to `distance` (along the view),
+  cut to the heights `minY` to `maxY` (the ground to the tallest roof). A top-down view gets every corner; a street
+  view gets shadows out to `distance`. Something just out of view still casts into it (its shadow falls along the
+  light, where the map is).
+- Each view (split screen, panels) has its own fit. Views close enough to share a map (`shadowSharing()`) share a fit
+  round all of them.
+- The map's size steps about 9% at a time and its middle is snapped to its texels, so shadows don't shimmer as the
+  camera moves.
+- With `shadowCaching(true)` the map stays put while the view is inside it, with room round the view (`slack`, 0.15
+  of its size by default) and pushed ahead the way the view is going. It moves only when the view would otherwise
+  reach its edge, so shadows never blink in at the edges, and the static casters are redrawn only then.
+- The map's depth along the light is at least `shadowPlanes()`'s far minus near, so the bias means what it did, with a
+  quarter of that or more back towards the light for tall casters.
+- `distance` is the cap: the further it is, the coarser the shadows. Defaults: off, `distance` the camera's far plane,
+  no height limits, `slack` 0.15.
+
+A single map covers a top-down view well (from 130 m up at 16:9 it's about 235 by 200 m, 5 to 6 cm a texel on a 4096
+map; from 34 m up, under 2 cm). At street level it trades near detail for reach: 6 to 10 cm a texel out to 180 m, 4 to
+5 cm out to 100 m. Cascades (a finer map near the camera) aren't in the engine yet.
+
+## GPU time and memory
+
+`renderer.stats()` has the GPU's time for a recent frame and the GPU memory the renderer holds:
+
+```typescript
+const { gpuMs, gpuMemory } = renderer.stats();
+console.log(`${gpuMs?.toFixed(1)} ms on the GPU, ${(gpuMemory.total / 1048576).toFixed(0)} MB`);
+```
+
+- `gpuMs` comes from a timer query round all of a frame's drawing (`EXT_disjoint_timer_query_webgl2`). Results arrive
+  a frame or two late. It's `null` where the browser has no timer query, before the first result, and with
+  `renderer.gpuTiming(false)` (on by default).
+- `gpuMemory` is in bytes, by kind: `geometry` (mesh vertices and indices), `textures` (images and canvases drawn
+  with), `renderTargets` (post-processing, dynamic resolution, panels, outlines), `shadowMaps` (and their static
+  caches), `buffers` (instances, bones, particles, decals), `canvas` (an estimate of the canvas's own buffers) and
+  `total`. It's counted from what the renderer made (sizes and formats), so the driver's own overhead isn't in it.
+  `renderer.gpuMemory()` gives the same on its own.
+
 ## Performance switches
 
 | Setting | Use |
@@ -320,10 +374,11 @@ targets are made again only when the scale changes. See `IgeDynamicResolution`.
 | `renderer.maxPixelRatio(1.5)` | Fewer pixels on high-DPI screens; usually the biggest GPU saving in split screen |
 | `renderer.backFaceCulling(true)` | Skip triangles facing away (about a fifth less GPU time in the zombie demo) |
 | `renderer.shadowCaching(true)` | Redraw static shadow casters only when they or the shadow frustum change; moving, skinned and `_shadowDynamic` casters are drawn each frame over a copy of the cached map (`stats().shadowCacheRebuilds`, `dynamicShadowDraws`, `shadowCacheCopies`) |
+| `renderer.shadowFit({ enabled, distance, minY, maxY })` | Fit the sun's shadow map to each view (see above): no lost corners top-down, shadows to `distance` at street level |
 | `renderer.shadowSharing(threshold)` | Split-screen views close together share one shadow map |
 | `ige.engine.renderOnDemand(true)` | Draw only when something visible changed (strategy games, menus); setters such as `material()`, `texture()` and `opacity()` count as changes, edits to objects in place need `ige.engine.manualRender()` |
 | `renderer.debugDraw({ bounds, shadowFrustum })`, `debugLine()` | See culling, LOD levels and shadow coverage |
-| `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame |
+| `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame; GPU time and memory (see above) |
 
 ## Physics
 

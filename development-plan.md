@@ -46,7 +46,8 @@ plan prioritises what the target games need.
 | Effects | `IgeParticleSystem3d`, `IgeDecalSystem3d` (flat floor decals with `add()`, decals projected onto walls, steps and uneven terrain with `project()`; multiply-blended so they take the surface's lighting), sprite sheet cells, tint, additive blending and billboard modes |
 | Camera | Perspective and orthographic projection, up vector and look direction, `lookAtPoint()`, presets (`isometric`, `isometric45`, `topDown`, `sideScroller`, `screen2d`) |
 | 2D | WebGL when available (`igeCreateRenderer()`, or no renderer assigned), `screen2d` camera (Canvas 2D style: y down, one unit per pixel, zoom by camera scale), smart textures drawn per entity (redrawn every frame, or when dirty with `cache(true)`), flat 2D sprites with full 2D transforms, entity `preTick` behaviours (run once per frame), `IgeFontEntity` text (native fonts, bitmap font sheets, `bindData()`), texture filters (including filters applied later and animated pre-filters), split screen |
-| Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()` |
+| Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()`, `stats().gpuMs` (GPU time for the whole frame from a timer query) and `stats().gpuMemory` (bytes by kind, counted per buffer and texture) |
+| Shadows | The sun's shadow map fitted to each view with `shadowFit()` (2026-11-24): a top-down view's corners and a street view out to a shadow distance, texel-snapped, and with shadow caching kept still while it holds the view |
 | Physics | `IgePhysics3d` on Jolt (loaded on demand, multithreaded when the page is cross-origin isolated): static, dynamic and kinematic boxes, spheres, capsules, triangle meshes, heightfields, convex hulls and compound shapes on entities, named collision layers, trigger volumes (`addSensor()`, enter and exit events), impact events, player characters (`addCharacter()`, Jolt's CharacterVirtual: steps, slopes, pushing, optionally unpushable), interpolation between fixed steps, character capsules, impulses, raycasts; `createRagdoll()` from a skinned entity's skeleton; `entity.quaternion()` for full 3D rotations. The zombie demo runs on it with `?physics=1` |
 | Loading | `igeLoadAssets()`: textures, cell sheets, models, animation files and JSON in one call with progress; missing files report errors instead of hanging |
 | Networking | Rooms on IgeNetIo (`IgeRoomServer`, `IgeRoomClient`): join codes, seats kept across reconnects, presence, chat, room info, an ordered command stream with snapshots and resync, save and restore |
@@ -71,6 +72,11 @@ On the development machine (Apple silicon, Chrome):
   otherwise).
 - Triangle BVH: a raycast against a 320,000-triangle terrain drops from 38.7 ms to 0.018 ms; projecting a decal onto
   it takes 0.55 ms; building the BVH takes about 0.46 s, once per mesh.
+- Fitted shadow map (`shadowFit()`, a 4096 map, the GTA game's sun): top-down from 130 m at 16:9 about 235 by 200 m
+  (5 to 6 cm a texel; the game's hand-sized square was 259 m, 6.3 cm), from 34 m 64 by 54 m (1.6 cm). Street level,
+  6 to 10 cm a texel out to 180 m, 4 to 5 cm out to 100 m (the old 180 m square: 4.4 cm, but only 90 to 115 m ahead).
+  With caching, driving at 30 m/s it moved 5 times in 240 m at street level, 6 in 300 m from 130 m up and 22 in 240 m
+  from 34 m up.
 
 ### Verified
 
@@ -104,6 +110,14 @@ On the development machine (Apple silicon, Chrome):
 - The automatic renderer (`webGl2d?auto=1`: WebGL with the screen2d camera) and `igeLoadAssets()` in the 2D example and
   zombie demo; a missing texture reports HTTP 404 and no longer blocks `ige.textures.whenLoaded()`.
 
+- The fitted shadow map in the browser (`src/examples/shadowFit`, 2026-11-24): every frame checks a grid of screen
+  points on the ground and roofs (corners included) against the shadow map. Driving top-down (130 m and 34 m) and at
+  street level, caching on and off: no frame with any point outside the map. The old square missed some in nearly
+  every top-down frame (worst 1.28 times its half-size; 2.5 at street level within 180 m).
+- Decals and particles added after their systems update (the engine's postUpdate, as after a physics step): with the
+  old code, 71 `GL_INVALID_OPERATION: glDrawElementsInstanced: Vertex buffer is not big enough` errors in 6 s; fixed,
+  none in 10 s with 111,000 marks and 15,000 smoke bursts added, `gl.getError()` checked every frame.
+
 ### Not verified
 
 - Gamepads with real controllers (the input path is verified with simulated ones).
@@ -127,6 +141,10 @@ On the development machine (Apple silicon, Chrome):
   local and remote players, twin-stick input, upper/lower body animation blending, many small lights, positional
   audio, navigation) are listed there and will come back here as engine work.
 - **Gamepads.** Test with real controllers (simulated ones pass).
+- **Fitted shadows by default?** `shadowFit()` is off by default, so existing scenes draw as before. It needs
+  `distance` and the height band to be set well, which depend on a game's units and scale.
+- **Cascades.** One fitted map covers top-down views finely, but at street level it trades near detail for reach
+  (6 to 10 cm a texel to 180 m). Two cascades (a near map and a far one) would give 2 to 3 cm near the camera.
 
 ### Planned, waiting
 
