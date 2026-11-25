@@ -472,7 +472,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			}
 			const body = this.physics.addBody(crate, {
 				shape: { type: "box", halfExtents: { x: half, y: half, z: half } },
-				density: 250,
+				density: 1000,
 				friction: 0.6,
 				impacts: 220 // hard knocks throw up splinters
 			});

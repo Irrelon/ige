@@ -1,8 +1,10 @@
-# 3D physics with Jolt
+# 3D physics
 
-`IgePhysics3d` gives entities rigid bodies simulated by [Jolt Physics](https://github.com/jrouwe/JoltPhysics) (the
-engine Godot uses by default and Horizon Forbidden West ships with), running as WebAssembly. Jolt was chosen after
-the comparison and benchmark in `development-plan.md` and `benchmarks/physics`. The zombie demo uses it with
+`IgePhysics3d` gives entities rigid bodies. The physics engine behind it is a backend. The default, and so far the only
+one, is [Jolt Physics](https://github.com/jrouwe/JoltPhysics) (the engine Godot uses by default and Horizon Forbidden
+West ships with), running as WebAssembly. Jolt was chosen after the comparison and benchmark in `development-plan.md`
+and `benchmarks/physics`. Nothing in the API depends on Jolt, so a game can move to another engine (Rapier, or IGE's
+own) without changing its code: see [Backends](#backends). The zombie demo uses it with
 `src/examples/zombie-game/index.html?physics=1`.
 
 ## Set up
@@ -14,13 +16,27 @@ npm install jolt-physics     # optional peer dependency, only needed by games th
 ```typescript
 import { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
 
-const physics = await IgePhysics3d.create({ unitsPerMetre: 100 });
+const physics = await IgePhysics3d.create({ unitsPerMetre: 100 }); // Jolt
 // ...add bodies...
 physics.start(); // steps every engine frame, after entity updates, at a fixed 1/60 s
 ```
 
+`IgePhysics3d.create({ backend })` picks the engine: `"jolt"` (the default) or a backend factory. Tuning that only
+one engine has goes under its own key, e.g. `jolt: { maxBodyPairs, maxContactConstraints }`; other backends ignore it.
+The old top-level `maxBodyPairs` and `maxContactConstraints` still work, with a warning, and go in the next minor
+version. `physics.backendName()` says which engine is running.
+
 Steps run at a fixed rate (`fixedTimeStep`), and entities are drawn between the last two steps (`interpolate`,
-default true), so motion stays smooth on 120 Hz screens or when frames are uneven.
+default true), so motion stays smooth on 120 Hz screens or when frames are uneven. The engine's frame delta is each
+frame's exact length (it was whole milliseconds, so a 120 Hz frame's 8.33 ms came as 8, 8 and 9, and everything
+interpolated juddered by up to a millisecond's movement a frame: 2.4 cm at 130 km/h).
+
+**Following a body with a camera.** `start()` steps the world in the engine's `postUpdate` phase, and the engine runs
+a phase's behaviours newest first, so a `postUpdate` behaviour added after `start()` runs *before* the step: a camera
+placed there follows where the body was a frame ago while the body is drawn where it is now, and the body shakes
+against the camera by its speed times the change in frame time (up to 14 cm a frame at 130 km/h in the driving spike).
+Place cameras, and anything else that follows a body, in `preTick`, which runs after the step and before drawing:
+`ige.engine.addBehaviour(IgeBehaviourType.preTick, "camera", (_e, tickDelta) => chase.update(tickDelta / 1000))`.
 
 Jolt (about 0.9 MB gzipped) is loaded when the world is created, so games without physics don't download it.
 
@@ -73,13 +89,13 @@ hero.jump(450); // upward speed, if on the ground
 hero.onGround();
 ```
 
-`addCharacter()` uses Jolt's `CharacterVirtual`, the controller for player characters: its feet are at the entity's
-origin, it walks up steps (`stepHeight`, default 0.3 m) and slopes (`maxSlopeAngle`, default 50 degrees), sticks to
-the floor going down them, pushes dynamic bodies with at most `maxStrength` newtons, and characters collide with
-each other. Other bodies collide with it through an inner body, `hero.body`, which raycasts and sensors report.
-Characters are updated before each world step, on the main thread, and interpolated like bodies. A crowd pushing
-into a character moves it (as a horde would) unless it has `pushable: false`, which keeps it where its own movement
-puts it; `teleport()` and `enabled()` work as for bodies.
+`addCharacter()` makes a player character (Jolt's `CharacterVirtual`): its feet are at the entity's origin, it walks
+up steps (`stepHeight`, default 0.3 m) and slopes (`maxSlopeAngle`, default 50 degrees), sticks to the floor going
+down them, pushes dynamic bodies with at most `maxStrength` newtons, and characters collide with each other. Other
+bodies collide with it through an inner body, `hero.body`, which raycasts and sensors report. Characters are updated
+before each world step, on the main thread, and interpolated like bodies. A crowd pushing into a character moves it
+(as a horde would) unless it has `pushable: false`, which keeps it where its own movement puts it; `teleport()` and
+`enabled()` work as for bodies, and `getState()` / `setState()` save and restore it.
 
 - A body starts at its entity's world position and rotation. After every step, dynamic bodies move their entity
   (position, and rotation through `entity.quaternion()` unless `lockRotation`); kinematic bodies (`type:
@@ -91,16 +107,39 @@ puts it; `teleport()` and `enabled()` work as for bodies.
 - More shapes: `compound` (several child shapes with positions and rotations as one body, e.g. a table from a top and
   legs) and `heightfield` (grid terrain: `heights`, `size` samples per side, `spacing`; static only, starting at the
   entity's origin along +x and +z).
-- Options: `restitution` (bounciness), `linearDamping`, `angularDamping`, `gravityFactor`, `ccd` (continuous
-  collision for small fast bodies so they don't pass through walls), `layer` (see below) and `impacts`.
+- Options: `density` (kg per cubic metre, default 1000), `restitution` (bounciness), `linearDamping`,
+  `angularDamping`, `gravityFactor`, `ccd`, `centreOfMass`, `layer` (see below) and `impacts`. Until November 2026
+  Jolt ignored `density`, so every body was 1000: give props their real weight (a 75 cm wooden crate about 35 kg,
+  density 83).
+- `ccd: true` sweeps the body through each step (continuous collision), so a fast or thin body can't pass into or
+  through a wall or the ground in one step: debris, projectiles, a felled lamp post. A 4 m bar thrown down at 40 m/s
+  sank 58 cm into the ground for a step without it, 4 cm with it.
+- `centreOfMass: { x, y, z }` (IGE units from the entity's origin) puts the body's weight there rather than spread
+  evenly through its shape: a lamp post or a sign on a heavy base stands and falls like one, and a shape with a big,
+  light part (a lamp's arm and head) doesn't topple over by itself.
 - `impacts: 220` (or `true` for 100) makes the body emit `"impact"` when a step changes its velocity by more than
-  that (IGE units per second), with the speed change and the bodies touching it: sounds, splinters, damage from a
-  falling crate. `body.on("impact", ({ speed, others }) => ...)`.
+  that (IGE units per second), with the speed change, the impulse (the speed change times the mass) and the bodies
+  touching it: sounds, splinters, damage from a falling crate. `body.on("impact", ({ speed, impulse, others }) => ...)`.
 - `body.enabled(false)` takes a body out of the simulation (e.g. while a character is dead), `teleport(x, y, z)`
-  moves it (respawns), `destroy()` frees it. `physics.bodyOf(entity)` finds an entity's body.
+  moves it (respawns), `destroy()` frees it. `physics.bodyOf(entity)` finds an entity's body. Also `velocity()`,
+  `setVelocity()`, `angularVelocity()`, `setAngularVelocity()`, `mass()` and `asleep()`.
+- `physics.gravity(-20)` changes gravity (metres per second squared).
 - Entities with dynamic bodies should be mounted to the scene, or to a parent that doesn't move.
 - After adding many bodies at once (loading a level), the world rebuilds its spatial index automatically; call
   `physics.optimize()` yourself after other bulk changes.
+
+## Vehicles
+
+Cars, vans, buses and motorcycles have their own guide: [vehicles-3d.md](vehicles-3d.md).
+
+```typescript
+const car = physics.addVehicle(carEntity); // an arcade-leaning saloon
+car.drive({ forward: throttle, right: steer, brake, handbrake }); // each frame
+car.setOptions({ engine: { maxTorque: 650 } }); // tuning while it's driven
+```
+
+They ride up kerbs (`stepHeight`), have wheel guards that keep wheels out of low walls, share each tyre's grip
+between driving and cornering (`combinedGrip`), and take a clutch as strong as their engine.
 
 ## Collision layers
 
@@ -156,8 +195,8 @@ following the spine. Pass `parts` to choose them by hand.
 ### Bodies that stay down
 
 A ragdoll is simulated until it's destroyed, so a game where the dead stay where they fell builds up hundreds of
-them. Give it `restAfter` and it comes to rest instead: once Jolt has put every part to sleep, or at the latest after
-that many seconds of simulation, its bodies and joints are removed and the skeleton keeps its last pose.
+them. Give it `restAfter` and it comes to rest instead: once the engine has put every part to sleep, or at the
+latest after that many seconds of simulation, its bodies and joints are removed and the skeleton keeps its last pose.
 
 ```typescript
 const ragdoll = physics.createRagdoll(zombie, { layer: "corpses", velocity, restAfter: 5 });
@@ -194,8 +233,8 @@ const hit = physics.raycast({ x, y: 100, z }, { x: dirX, y: 0, z: dirZ }, 2000);
 if (hit) console.log(hit.entity.id(), hit.point, hit.normal, hit.distance);
 ```
 
-`raycast()` tests physics shapes (fast, uses Jolt's spatial index): line of sight, bullets, ground checks. For exact
-picking against rendered meshes use the renderer's `raycast()` instead.
+`raycast()` tests physics shapes (fast, uses the engine's spatial index): line of sight, bullets, ground checks. For
+exact picking against rendered meshes use the renderer's `raycast()` instead.
 
 ## Performance
 
@@ -212,8 +251,72 @@ silicon Mac in Chrome:
 
 Ragdoll parts are registered with the world, so raycasts, sensors and impacts report the ragdoll's entity.
 
+## Saving and restoring state
+
+Bodies, characters, ragdolls and vehicles give their state as plain numbers, safe to send over the network or keep as
+JSON. A body that changes hands (another player's machine takes it over) or moves to another server's world is made
+there with the same options, then given the state:
+
+```typescript
+const state = body.getState(); // { position, rotation, velocity, angularVelocity, asleep }
+send(JSON.stringify(state));
+
+// Elsewhere: the same options, then the state
+const copy = otherWorld.addBody(entity, sameOptions);
+copy.setState(JSON.parse(message));
+```
+
+- A body's `position` is its entity's origin, not the shape's centre, so offsets don't matter. `rotation` is always
+  upright for `lockRotation` bodies. A body that was asleep stays asleep.
+- `character.getState()` gives `position` (the feet) and `velocity`; `ragdoll.getState()` gives each part's body in
+  order, for a ragdoll made with the same parts.
+- Vehicles have their own, with the drivetrain and the controls (see [vehicles-3d.md](vehicles-3d.md)).
+- The options (shape, mass, layer) aren't part of a state. In the tests a body restored in another world, in flight,
+  lands and tumbles within 5 units of the original two seconds later. Physics isn't deterministic across machines,
+  though, so keep sending states rather than inputs alone.
+
 ## Limits
 
 - Ragdolls pose the skeleton from the latest step (not interpolated).
 - Impact events find the bodies touching after the step; a glancing hit on something that has already bounced away
   reports no `others`.
+- Backends may let resting bodies sink a little into what holds them up: Jolt up to 2 cm.
+
+## Backends
+
+A backend is the physics engine behind `IgePhysics3d`. `IgePhysics3d` keeps everything that is the same whatever the
+engine: IGE units, entities, fixed steps and interpolation, layer names, sensor enter and exit, impact events,
+character and vehicle input, ragdolls posing skeletons, and state as JSON. A backend only simulates. It works in SI
+units (metres, kilograms, seconds, radians and newtons, Y up), sees no entities, and hands out opaque handles for its
+bodies, characters and ragdolls. No engine types leave it.
+
+The interface is `IgePhysicsBackend` in `src/engine/physics/IgePhysicsBackend.ts`. A backend must provide:
+
+| Area | Calls |
+|---|---|
+| The world | `step()`, `setGravity()`, `optimize()`, `activeBodyCount()`, `threaded()`, `destroy()` |
+| Bodies | `createBody()` (static, dynamic or kinematic; box, sphere, capsule, mesh, convex, compound and heightfield shapes; density, centre of mass, friction, restitution, damping, gravity factor, locked rotation, continuous collision, sensors), `destroyBody()`, `setBodyEnabled()`, `readBodyPose()`, `readBodyVelocity()`, `setBodyVelocity()`, `setBodyTransform()`, `moveKinematic()`, `addImpulse()`, `bodyMass()`, `bodyAwake()`, `setBodyAwake()` |
+| Layers | Named by index: static layers don't collide with each other; every other pair does unless ignored |
+| Queries | `raycast()` (nearest hit, distance and normal, by what a layer collides with), `touching()` (what overlaps a body: sensors and impacts are built on it) |
+| Characters | `createCharacter()` (walks up steps and slopes, sticks to the floor, pushes bodies with a limited strength, optionally unpushable), `characterBody()`, `moveCharacter()`, `readCharacter()`, `setCharacterState()`, `setCharacterEnabled()`, `destroyCharacter()` |
+| Ragdolls | `createRagdoll()` (capsules joined by swing-twist joints, parts not colliding with each other), `destroyRagdoll()` |
+| Vehicles | `createVehicle()`, returning an `IgeVehicleBackend` (see [vehicles-3d.md](vehicles-3d.md)) |
+
+Queries run after the step on the main thread, so a threaded engine needs no callbacks from its workers.
+
+To write one:
+
+1. Make a factory: `{ name: "rapier", create (config) { ... } }`. `create()` loads the engine (dynamically, so games that
+   don't use it don't download it) and returns the world. `config` has the gravity, the layers by index, the ignored
+   pairs, `threads`, `maxBodies`, and everything given to `IgePhysics3d.create()` for options of its own.
+2. Implement `IgePhysicsBackend`, using `IgeJoltBackend.ts` (and `IgeJoltVehicle3d.ts`) as the reference. Free
+   everything a call makes in the call that removes it.
+3. Add it to `BACKENDS` in `src/tests/support/physics3dTestWorld.ts`. The behaviour suite
+   (`src/tests/IgePhysics3dContract.test.ts`: falling and resting, every shape, layers, sensors, raycasts, characters
+   on steps and slopes, pushing, impacts, ragdolls, state round trips, freeing) and the vehicle suite
+   (`IgePhysicsVehicle3d.test.ts`) then run against it too. `IGE_PHYSICS_BACKENDS=rapier npx jest` runs them for it
+   alone.
+4. Games choose it with `IgePhysics3d.create({ backend: myRapierBackend() })`.
+
+Jolt's own checks (that every byte of WebAssembly memory comes back) are in `IgeJoltBackend.test.ts` and
+`IgeJoltVehicle3d.test.ts`.

@@ -13,7 +13,7 @@ and performance benchmark. `src/examples/hex-realms` (a large hex-map strategy p
 test bed; its README lists the engine gaps found while building it (see "Engine gaps from Hex Realms" below).
 
 Guides: [`guides/webgl-models.md`](guides/webgl-models.md) (3D models and characters),
-[`guides/physics-3d.md`](guides/physics-3d.md) (Jolt physics: bodies, characters, ragdolls),
+[`guides/physics-3d.md`](guides/physics-3d.md) (3D physics: bodies, characters, ragdolls, backends),
 [`guides/2d-on-webgl.md`](guides/2d-on-webgl.md) (moving a 2D project to the WebGL renderer) and
 [`guides/online-rooms.md`](guides/online-rooms.md) (online games with rooms, seats and ordered commands).
 
@@ -47,7 +47,7 @@ plan prioritises what the target games need.
 | Camera | Perspective and orthographic projection, up vector and look direction, `lookAtPoint()`, presets (`isometric`, `isometric45`, `topDown`, `sideScroller`, `screen2d`) |
 | 2D | WebGL when available (`igeCreateRenderer()`, or no renderer assigned), `screen2d` camera (Canvas 2D style: y down, one unit per pixel, zoom by camera scale), smart textures drawn per entity (redrawn every frame, or when dirty with `cache(true)`), flat 2D sprites with full 2D transforms, entity `preTick` behaviours (run once per frame), `IgeFontEntity` text (native fonts, bitmap font sheets, `bindData()`), texture filters (including filters applied later and animated pre-filters), split screen |
 | Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()` |
-| Physics | `IgePhysics3d` on Jolt (loaded on demand, multithreaded when the page is cross-origin isolated): static, dynamic and kinematic boxes, spheres, capsules, triangle meshes, heightfields, convex hulls and compound shapes on entities, named collision layers, trigger volumes (`addSensor()`, enter and exit events), impact events, player characters (`addCharacter()`, Jolt's CharacterVirtual: steps, slopes, pushing, optionally unpushable), interpolation between fixed steps, character capsules, impulses, raycasts; `createRagdoll()` from a skinned entity's skeleton; `entity.quaternion()` for full 3D rotations. The zombie demo runs on it with `?physics=1` |
+| Physics | `IgePhysics3d` over pluggable backends (`IgePhysicsBackend`: SI units, opaque handles, no engine types), Jolt the first (loaded on demand, multithreaded when the page is cross-origin isolated), chosen with `create({ backend })`: static, dynamic and kinematic boxes, spheres, capsules, triangle meshes, heightfields, convex hulls and compound shapes on entities, named collision layers, trigger volumes (`addSensor()`, enter and exit events), impact events, player characters (`addCharacter()`: steps, slopes, pushing, optionally unpushable), interpolation between fixed steps, impulses, raycasts, `createRagdoll()` from a skinned entity's skeleton, per-body state as JSON for ownership changes and moving between servers; `entity.quaternion()` for full 3D rotations. Behaviour tests run per backend through the public API. The zombie demo runs on it with `?physics=1`. Vehicles: `addVehicle()` makes cars, vans, buses and motorcycles with wheel entities posed, speed, revs, gear and tyre slip readouts, air control, self-righting cars, wheelies and stoppies, motorcycles that can be let fall, impact and landing events, and `getState()` / `setState()` plus a kinematic mode for networked cars; kerbs ridden up (`stepHeight`), wheel guards, combined tyre grip (`combinedGrip`), a clutch as strong as the engine (`gearbox.clutchStrength`), options changed while driving (`setOptions()`); bodies take `ccd` and `centreOfMass`; example `vehicles`, `guides/vehicles-3d.md` |
 | Loading | `igeLoadAssets()`: textures, cell sheets, models, animation files and JSON in one call with progress; missing files report errors instead of hanging |
 | Networking | Rooms on IgeNetIo (`IgeRoomServer`, `IgeRoomClient`): join codes, seats kept across reconnects, presence, chat, room info, an ordered command stream with snapshots and resync, save and restore |
 | Input and picking | Entity pointer events in every viewport (`pointerHitTest()`: mesh boxes, skinned joint boxes, sprite quads; exact triangles with `pointerPicking("triangles")`), `raycast()` for the nearest mesh hit under a screen point, `raycastEntities()` for game rays (line of sight, projectiles); skinned characters are tested in their current pose; large meshes go through a cached triangle BVH (also used by decal projection) |
@@ -93,6 +93,11 @@ On the development machine (Apple silicon, Chrome):
   Physics raycasts (points, normals, misses) and kinematic bodies checked from the console. Player characters walk
   at the set speed, stop at walls, climb a 20-unit step but not a 60-unit block, push crates and trigger sensors.
 
+- The physics backend split (2026-11-24), in Chrome: the vehicles example threaded (driving, air control, landings
+  and crashes in the readout, a wheelie, dropping and picking up the motorcycle, a car rocking off its roof) and the
+  zombie demo with `?physics=1` (characters, the healing sensor, crates found by raycasts, ragdolls; a 0.64 ms step
+  threaded with about 400 bodies). zombie-game typechecks against it with no new errors.
+
 - Gamepads, with simulated controllers (`navigator.getGamepads()` replaced in the page): sticks move players at the
   set speed, the deadzone holds small stick values at zero, A, X and the right trigger attack once per press (not while
   held), and a disconnected pad stops its player.
@@ -127,6 +132,12 @@ On the development machine (Apple silicon, Chrome):
   local and remote players, twin-stick input, upper/lower body animation blending, many small lights, positional
   audio, navigation) are listed there and will come back here as engine work.
 - **Gamepads.** Test with real controllers (simulated ones pass).
+- **Physics density** now applies. Jolt ignored `density` until the backend split, so every body weighed 1000 kg per
+  cubic metre. The zombie demo's and the vehicles example's crates are back at 1000, so they feel as they did; the
+  zombie demo's other props (300) are lighter than before.
+- **Deprecated physics options.** The top-level `maxBodyPairs` and `maxContactConstraints` of
+  `IgePhysics3d.create()` warn once and are read into `jolt: { maxBodyPairs, maxContactConstraints }`. They are
+  removed in the next minor version: pass them under `jolt`.
 
 ### Planned, waiting
 
@@ -139,7 +150,9 @@ On the development machine (Apple silicon, Chrome):
 - **Isometric 2D games move to a 3D layout** (ground on x/z, `isometric` camera preset) to run on WebGL. The engine
   won't map iso-mode x/y/z automatically; iso games that stay on x/y keep `IgeCanvas2dRenderer`.
 - **Materials** have a public API: `entity.material({...})` (`_materialData` still works).
-- **Physics runs on Jolt**, behind IGE's own `IgePhysics3d` interface (benchmark and spike below).
+- **Physics runs on Jolt**, behind IGE's own `IgePhysics3d` interface (benchmark and spike below). Jolt is the first
+  backend, not a commitment (2026-11-24): `IgePhysicsBackend` is the interface another engine (Rapier, IGE's own)
+  implements, checked by the same behaviour tests (`guides/physics-3d.md`, "Backends").
 - **WebGL when available** for 2D (2026-11-09): `igeCreateRenderer()` picks WebGL where the browser supports it (else
   Canvas 2D; isometric games always Canvas 2D), and `ige.engine.start()` does so when no renderer is assigned.
 - **Networking gets rooms** (2026-11-09): `IgeRoomServer` / `IgeRoomClient` (codes, seats, ordered command stream);
