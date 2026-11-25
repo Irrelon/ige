@@ -183,6 +183,7 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 	 */
 	protected _computeBounds(geometry: IgeWebGlGeometry, data: IgeGeometryData3d, vertexCount: number, packed?: IgePackedVertices): void {
 		let cx = 0, cy = 0, cz = 0, radius = -1;
+		let hx = -1, hy = -1, hz = -1;
 
 		if (!data.boundingSphere && !data.vertices && packed && vertexCount > 0) {
 			// Packed only (built in a worker without bounds): measured from what was packed, in the mesh's own units
@@ -191,11 +192,21 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 			cy = b.center[1];
 			cz = b.center[2];
 			radius = b.radius;
+			hx = (b.max[0] - b.min[0]) / 2;
+			hy = (b.max[1] - b.min[1]) / 2;
+			hz = (b.max[2] - b.min[2]) / 2;
 		} else if (data.boundingSphere) {
 			cx = data.boundingSphere.center[0];
 			cy = data.boundingSphere.center[1];
 			cz = data.boundingSphere.center[2];
 			radius = data.boundingSphere.radius;
+			// (A box given too, round the same middle: its half sizes; else the sphere's)
+			const box = data.boundingBox;
+			if (box && Math.abs((box.min[1] + box.max[1]) / 2 - cy) < 1e-6 * Math.max(1, radius)) {
+				hx = (box.max[0] - box.min[0]) / 2;
+				hy = (box.max[1] - box.min[1]) / 2;
+				hz = (box.max[2] - box.min[2]) / 2;
+			}
 		} else if (data.vertices && vertexCount > 0) {
 			const v = data.vertices;
 			let minX = Infinity, minY = Infinity, minZ = Infinity;
@@ -219,6 +230,9 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 			cx = (minX + maxX) / 2;
 			cy = (minY + maxY) / 2;
 			cz = (minZ + maxZ) / 2;
+			hx = (maxX - minX) / 2;
+			hy = (maxY - minY) / 2;
+			hz = (maxZ - minZ) / 2;
 
 			let maxDistSq = 0;
 			for (let i = 0; i < vertexCount; i++) {
@@ -238,6 +252,11 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		geometry.boundsCenterY = cy;
 		geometry.boundsCenterZ = cz;
 		geometry.boundsRadius = radius;
+		// (Skinned meshes move: their sphere, padded, each way)
+		const sphereOnly = hx < 0 || geometry.isSkinned;
+		geometry.boundsHalfX = sphereOnly ? radius : hx;
+		geometry.boundsHalfY = sphereOnly ? radius : hy;
+		geometry.boundsHalfZ = sphereOnly ? radius : hz;
 	}
 
 	/**

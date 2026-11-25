@@ -184,6 +184,13 @@ const INSTANCED_SHADER_IDS = [
 	"decal"
 ];
 
+// The lit shader cross-fading between levels of detail (IgeObject._lodFade): its pixels dithered in or out. A
+// program of its own, so the discard it needs costs nothing to everything else drawn lit.
+{
+	const lit = IgeShaderLibrary.get("lit")!;
+	IgeShaderLibrary.register("lit_fade", lit.vertex, `#define USE_LOD_FADE\n${lit.fragment}`, `${lit.description} (cross-fading levels of detail)`);
+}
+
 for (const id of INSTANCED_SHADER_IDS) {
 	const source = IgeShaderLibrary.get(id);
 	if (!source) continue;

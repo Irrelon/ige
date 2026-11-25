@@ -317,22 +317,26 @@ targets are made again only when the scale changes. See `IgeDynamicResolution`.
 
 ## Shadows fitted to the view
 
-By default the sun's shadow map is a square, `shadowManager.frustumSize()` each way round the camera's target,
-whatever the camera sees. A top-down view is wider than it is tall, and the square lands on the ground turned and
-stretched by the sun's angle, so the view's corners can fall outside it and lose their shadows. At street level the
-square ends well before the view does.
-
-`shadowFit()` fits the map to each view instead:
+The sun's shadow map is fitted to each view (on by default). The old map, a square `shadowManager.frustumSize()`
+each way round the camera's target whatever the camera sees, lost a top-down view's corners (the square lands on the
+ground turned and stretched by the sun's angle) and ended well before a street-level view did.
+`renderer.shadowFit({ enabled: false })` brings it back.
 
 ```typescript
 // 100 units a metre: shadows to 180 m from the camera, over a town whose tallest roof is 25 m
-renderer.shadowFit({ enabled: true, distance: 18000, minY: 0, maxY: 2500 });
+renderer.shadowFit({ distance: 18000, minY: 0, maxY: 2500 });
 ```
 
 - The map covers what the camera can see that can take a shadow: its frustum out to `distance` (along the view),
   cut to the heights `minY` to `maxY` (the ground to the tallest roof). A top-down view gets every corner; a street
   view gets shadows out to `distance`. Something just out of view still casts into it (its shadow falls along the
   light, where the map is).
+- Left at their defaults (`"auto"`), `distance` is as far as the square reached (the depth of the camera's target
+  plus `frustumSize()`; twice `frustumSize()` for a camera with no target), and `minY` / `maxY` are the lowest and
+  highest points of the scene's opaque meshes' bounds that frame. A game that knows its world does better to set
+  them: the tighter the band and the distance, the finer the shadows. `Infinity` / `-Infinity` mean no limit (the
+  camera's far plane, no height band).
+- Shadows fade out over the last tenth of `distance`, so they don't stop in a line.
 - Each view (split screen, panels) has its own fit. Views close enough to share a map (`shadowSharing()`) share a fit
   round all of them.
 - The map's size steps about 9% at a time and its middle is snapped to its texels, so shadows don't shimmer as the
@@ -342,12 +346,64 @@ renderer.shadowFit({ enabled: true, distance: 18000, minY: 0, maxY: 2500 });
   reach its edge, so shadows never blink in at the edges, and the static casters are redrawn only then.
 - The map's depth along the light is at least `shadowPlanes()`'s far minus near, so the bias means what it did, with a
   quarter of that or more back towards the light for tall casters.
-- `distance` is the cap: the further it is, the coarser the shadows. Defaults: off, `distance` the camera's far plane,
-  no height limits, `slack` 0.15.
+- Casters drawn each frame are left out when their shadow can't reach the view (`shadowCasterCulling()`, on by
+  default): a caster's shadow is followed down the light to `minY`, so a caster behind the camera, or one far to the
+  side, is skipped.
 
 A single map covers a top-down view well (from 130 m up at 16:9 it's about 235 by 200 m, 5 to 6 cm a texel on a 4096
 map; from 34 m up, under 2 cm). At street level it trades near detail for reach: 6 to 10 cm a texel out to 180 m, 4 to
-5 cm out to 100 m. Cascades (a finer map near the camera) aren't in the engine yet.
+5 cm out to 100 m. Cascades (below) give the near shadows more.
+
+## Cascaded shadow maps
+
+`renderer.shadowCascades({ count: 3 })` splits the view's depth, out to the fit's `distance`, into slices, each with
+its own box fitted to it the same way, in its own tile of the map. Near the camera the slice is small, so its texels
+are fine; the far slice reaches as far as one map did.
+
+```typescript
+renderer.enableShadows(sun, 4096);                                // four 2048 tiles
+renderer.shadowFit({ distance: 18000, minY: 0, maxY: 2500 });    // 180 m, the ground to the roofs
+renderer.shadowCascades({ count: 3 });                           // 0 to 13 m, 13 to 36 m, 36 to 180 m
+```
+
+- `count`: 1 (the default) is one map over the whole view; 2 to 4 split the map made by `enableShadows()` into a 2 x 2
+  grid of half-size tiles. The memory is the same whatever the count (a 4096 map is four 2048 tiles, 64 MB with its
+  depth at 32 bits); 3 leaves a tile unused and draws one shadow pass fewer than 4.
+- `lambda` (0.8): where the slices end, between even steps from the camera's near plane to `distance` (0) and
+  logarithmic ones (1, each slice a fixed multiple of the last: the most detail near the camera). With a 0.1 m near
+  plane and 180 m: 13 m and 36 m for three slices, 10, 21 and 49 m for four.
+- `blend` (0.1): the far part of each slice, a fraction of its depth, faded into the next, so the change in detail
+  doesn't show as a line. The next slice's box reaches back to cover it.
+- Each tile's middle is snapped to its own texels and its size steps on the same ladder, so shadows don't shimmer;
+  with `shadowCaching()` each tile stays put while its slice is inside it, and only the tiles whose box or static
+  casters changed are redrawn.
+- A view looking down on its ground (a top-down camera) has slices as wide as the view: the split gains nothing, so
+  it keeps the whole map as one (it splits while the nearest slice is under 0.4 of the whole view across the light,
+  and goes back above 0.5). Slices with nothing in the height band (the air between a high camera and the roofs)
+  are folded into the next. Split-screen views sharing a map use the whole map.
+- Casters are culled per cascade: drawn only into the tiles whose box they're in, and (moving casters, or all of
+  them without caching) whose slice their shadow can reach; at that tile's level of detail; and not into a tile
+  where they'd be under a texel across. `stats().shadowCascades` counts the cascades drawn, `shadowCastersCulled` the
+  casters left out of one.
+- Everything that takes shadows takes them in cascades: static, instanced and skinned meshes, the PCF filter
+  (kept inside each tile), decals (which take the lighting of what they're on), LOD levels.
+- Cascades need the fit: with `shadowFit({ enabled: false })` the square is one map.
+- `renderer.shadowDebugMode(5)` colours each surface by its cascade (red, green, blue, yellow; darker outside its
+  box), and `debugDraw({ shadowFrustum: true })` draws each cascade's box in the same colours.
+
+What it costs, measured in the GTA game's city spike (Old Town, its 41 s street-level flight at 30 m/s, a 4096 map,
+shadows to 180 m, 2400 x 1350 with post-processing, no shadow caching, Apple silicon), the count switched between 1,
+3 and 4 every 1.5 s in one run so each gets the same streets and the same load on the machine (two runs):
+
+| Cascades | Texels (near, then each slice) | GPU a frame, mean / p95 | Shadow draws | Triangles, all passes |
+|---|---|---|---|---|
+| 1 | 6 to 10 cm everywhere | 4.5 to 4.7 / 5.7 to 6.2 ms | 48 | 0.76M |
+| 3 | 1.1 cm to 13 m, 3 cm to 36 m, 15 cm beyond | 4.7 to 4.9 / 6.1 to 6.3 ms | 67 | 1.04M |
+| 4 | 0.9 cm to 10 m, 2 cm to 21 m, 5 cm to 49 m, 17 cm beyond | 4.7 to 5.0 / 5.9 to 6.4 ms | 78 | 1.15M |
+
+About 0.2 ms of GPU for 3 or 4 (the city's GPU time goes on pixels, not shadow triangles), 0.05 ms of main thread
+(0.70 to 0.76 ms rendering), and the same memory. The near shadows are five to seven times finer; the far ones about
+twice as coarse as one map's (the far slice is about as wide as the whole view, in a tile half the size).
 
 ## GPU time and memory
 
@@ -374,7 +430,8 @@ console.log(`${gpuMs?.toFixed(1)} ms on the GPU, ${(gpuMemory.total / 1048576).t
 | `renderer.maxPixelRatio(1.5)` | Fewer pixels on high-DPI screens; usually the biggest GPU saving in split screen |
 | `renderer.backFaceCulling(true)` | Skip triangles facing away (about a fifth less GPU time in the zombie demo) |
 | `renderer.shadowCaching(true)` | Redraw static shadow casters only when they or the shadow frustum change; moving, skinned and `_shadowDynamic` casters are drawn each frame over a copy of the cached map (`stats().shadowCacheRebuilds`, `dynamicShadowDraws`, `shadowCacheCopies`) |
-| `renderer.shadowFit({ enabled, distance, minY, maxY })` | Fit the sun's shadow map to each view (see above): no lost corners top-down, shadows to `distance` at street level |
+| `renderer.shadowFit({ enabled, distance, minY, maxY })` | The sun's shadow map fitted to each view (on by default, see above): no lost corners top-down, shadows to `distance` at street level |
+| `renderer.shadowCascades({ count, lambda, blend })` | Split the fitted map into 2 to 4 cascades: fine shadows near the camera, the same reach, the same memory |
 | `renderer.shadowSharing(threshold)` | Split-screen views close together share one shadow map |
 | `ige.engine.renderOnDemand(true)` | Draw only when something visible changed (strategy games, menus); setters such as `material()`, `texture()` and `opacity()` count as changes, edits to objects in place need `ige.engine.manualRender()` |
 | `renderer.debugDraw({ bounds, shadowFrustum })`, `debugLine()` | See culling, LOD levels and shadow coverage |
@@ -418,6 +475,9 @@ Cities and terrain streamed in chunks: merge each chunk's pieces into one mesh p
 and let the renderer upload them a few a frame (`renderer.uploadBudget()`). Quantised glTF files
 (`KHR_mesh_quantization`, as `gltfpack` writes them) load and stay compact on the GPU. See
 [`streaming-geometry.md`](streaming-geometry.md).
+
+Far away and from high up, groups of chunks are drawn as low-detail proxies, one draw a group: `IgeHlod`, see
+"Far away: HLOD" in the same guide.
 
 Textures in glTF files get mipmaps (as their sampler asks; on when it doesn't say). A flat-colour atlas whose swatches
 bleed together far away can turn them off with `renderer.modelTextureMipmaps(false)`.

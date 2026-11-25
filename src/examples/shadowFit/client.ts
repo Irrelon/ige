@@ -14,15 +14,17 @@ import { IgePrimitiveGeometry } from "@/engine/webgl/IgePrimitiveGeometry";
 import { IgeAmbientLight, IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
 
 /**
- * The directional shadow map fitted to the view (renderer.shadowFit()), with GPU time and memory from stats(), and a
- * stress test of decals and particles added after their systems update.
+ * The directional shadow map fitted to the view (renderer.shadowFit(), on by default) and split into cascades
+ * (renderer.shadowCascades()), with GPU time and memory from stats(), and a stress test of decals and particles added
+ * after their systems update.
  *
  * A town of boxes (100 units a metre, like a game in metres scaled up), the sun low in the south-west, and a camera
  * driving a loop round it at 30 m/s: top-down from 130 m, low top-down from 34 m, or at street level. Each frame the
  * page checks that the ground and the roofs the camera sees (a grid across the screen, its corners included) land in
- * the shadow map: "corners" in the readout. Address options: ?view=top|low|street, ?fit=0, ?cache=1, ?dist=180
- * (metres of shadow at street level), ?stress=1, ?pause=1, ?box=1 (draw the shadow box), ?glcheck=1 (gl.getError()
- * every frame), ?speed=30.
+ * the shadow map (in the cascade the shader picks for its depth): "corners" in the readout. Address options:
+ * ?view=top|low|street, ?fit=0, ?cascades=1|2|3|4, ?cache=1, ?dist=180 (metres of shadow at street level), ?stress=1,
+ * ?pause=1, ?box=1 (draw the shadow box), ?tint=1 (colour each cascade), ?glcheck=1 (gl.getError() every frame),
+ * ?speed=30.
  */
 const M = 100;
 const ROOF = 25;
@@ -49,6 +51,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	viewport = new IgeViewport();
 	view: View = (views as readonly string[]).includes(params.get("view") ?? "") ? params.get("view") as View : "top";
 	fit = params.get("fit") !== "0";
+	cascades = Number(params.get("cascades") ?? 1);
+	tint = params.get("tint") === "1";
 	stress = params.get("stress") === "1";
 	paused = params.get("pause") === "1";
 	/** Draw where the shadow map meets the ground (magenta). */
@@ -191,6 +195,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	settings () {
 		const r = this.renderer;
 		r.shadowFit({ enabled: this.fit, distance: (this.view === "street" ? this.distance : Infinity) * M, minY: 0, maxY: ROOF * M });
+		r.shadowCascades({ count: this.cascades });
+		r.shadowDebugMode(this.tint ? 5 : 0);
 		r.shadowCaching(params.get("cache") === "1");
 	}
 
@@ -202,7 +208,11 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		if (key === "s") this.stress = !this.stress;
 		if (key === " ") this.paused = !this.paused;
 		if (key === "b") this.outline = !this.outline;
+		if (key === "k") this.cascades = this.cascades === 1 ? 3 : this.cascades === 3 ? 4 : 1;
+		if (key === "t") this.tint = !this.tint;
 		r.shadowFit({ enabled: this.fit, distance: (this.view === "street" ? this.distance : Infinity) * M });
+		r.shadowCascades({ count: this.cascades });
+		r.shadowDebugMode(this.tint ? 5 : 0);
 	}
 
 	/** Where the camera is on the loop (metres): a 240 m square round the middle blocks, along the streets. */
@@ -257,8 +267,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	check () {
 		const r = this.renderer as unknown as { _cameraController: { getCachedMatrices (id: string): { viewProjection: IgeMatrix4; view: IgeMatrix4 } | undefined }; _shadowLightId: string };
 		const matrices = r._cameraController?.getCachedMatrices(this.viewport.camera.id());
-		const light = this.renderer.shadowManager?.getLightSpaceMatrix(r._shadowLightId);
-		if (!matrices || !light || !this.drawn) return;
+		const cascades = this.renderer.shadowManager?.getCascades(r._shadowLightId) ?? [];
+		if (!matrices || !cascades.length || !this.drawn) return;
 		const inv = matrices.viewProjection.getInverse()?.matrix;
 		if (!inv) return;
 		const v = matrices.view.matrix;
@@ -275,7 +285,10 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 					const a = at(-1), b = at(1), t = (height - a[1]) / (b[1] - a[1]);
 					if (!(t > 0 && t < 1)) continue;
 					const p = [a[0] + (b[0] - a[0]) * t, height, a[2] + (b[2] - a[2]) * t];
-					if (-(v[2] * p[0] + v[6] * p[1] + v[10] * p[2] + v[14]) > limit) continue;
+					const depth = -(v[2] * p[0] + v[6] * p[1] + v[10] * p[2] + v[14]);
+					if (depth > limit) continue;
+					// (In the cascade the shader picks for its depth: the first whose slice ends beyond it)
+					const light = (cascades.find((c) => depth < c.split) ?? cascades[cascades.length - 1]).matrix;
 					const x = light[0] * p[0] + light[4] * p[1] + light[8] * p[2] + light[12];
 					const y = light[1] * p[0] + light[5] * p[1] + light[9] * p[2] + light[13];
 					worst = Math.max(worst, Math.abs(x), Math.abs(y));
@@ -286,11 +299,14 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.worst = Math.max(this.worst, worst);
 	}
 
-	/** Where the last frame's shadow map meets the ground: its four edges, followed along the light down to y = 0. */
+	/** Where the last frame's shadow map (each of its cascades) meets the ground: its four edges, followed along the light down to y = 0. */
 	drawOutline () {
 		const id = (this.renderer as unknown as { _shadowLightId: string })._shadowLightId;
-		const light = this.renderer.shadowManager?.getLightSpaceMatrix(id);
-		if (!light) return;
+		const colors = [{ r: 1, g: 0.1, b: 0.9, a: 1 }, { r: 0.1, g: 1, b: 0.3, a: 1 }, { r: 0.2, g: 0.4, b: 1, a: 1 }, { r: 1, g: 0.9, b: 0.1, a: 1 }];
+		(this.renderer.shadowManager?.getCascades(id) ?? []).forEach((c, k) => this.drawCascadeOutline(c.matrix, colors[k]));
+	}
+
+	drawCascadeOutline (light: Float32Array, color: { r: number; g: number; b: number; a: number }) {
 		const m = new IgeMatrix4();
 		m.matrix.set(light);
 		const inv = m.getInverse()?.matrix;
@@ -303,7 +319,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		const corners = [ground(-1, -1), ground(1, -1), ground(1, 1), ground(-1, 1)];
 		for (let i = 0; i < 4; i++) {
 			const a = corners[i], b = corners[(i + 1) % 4];
-			for (const lift of [0.2, 0.4, 0.6]) this.renderer.debugLine(a[0], lift * M, a[1], b[0], lift * M, b[1], { r: 1, g: 0.1, b: 0.9, a: 1 });
+			for (const lift of [0.2, 0.4, 0.6]) this.renderer.debugLine(a[0], lift * M, a[1], b[0], lift * M, b[1], color);
 		}
 	}
 
@@ -311,13 +327,14 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		const s = this.renderer.stats(), m = s.gpuMemory, mb = (b: number) => (b / 1048576).toFixed(1);
 		const gpu = this.gpuMs.length ? this.gpuMs.reduce((a, b) => a + b, 0) / this.gpuMs.length : null;
 		const fit = this.renderer.shadowFit();
-		const light = this.renderer.shadowManager?.getLightSpaceMatrix((this.renderer as unknown as { _shadowLightId: string })._shadowLightId);
-		const across = light ? [2 / Math.hypot(light[0], light[4], light[8]) / M, 2 / Math.hypot(light[1], light[5], light[9]) / M] : [0, 0];
+		const cascades = this.renderer.shadowManager?.getCascades((this.renderer as unknown as { _shadowLightId: string })._shadowLightId) ?? [];
+		const sizes = cascades.map((c) => `${(2 / Math.hypot(c.matrix[0], c.matrix[4], c.matrix[8]) / M).toFixed(0)} x ${(2 / Math.hypot(c.matrix[1], c.matrix[5], c.matrix[9]) / M).toFixed(0)} m${c.split < Infinity ? ` to ${(c.split / M).toFixed(0)} m` : ""}`);
 		this.fps = Math.round(this.frames * 4);
 		(document.getElementById("hud") as HTMLElement).textContent = [
-			`view ${this.view} · shadow map ${fit.enabled ? "fitted" : "square"} ${across[0].toFixed(0)} x ${across[1].toFixed(0)} m · caching ${this.renderer.shadowCaching() ? "on" : "off"}${this.view === "street" && fit.enabled ? ` · to ${this.distance} m` : ""}`,
+			`view ${this.view} · shadow map ${fit.enabled ? "fitted" : "square"}${this.view === "street" && fit.enabled ? ` to ${this.distance} m` : ""} · caching ${this.renderer.shadowCaching() ? "on" : "off"}`,
+			`cascades ${cascades.length} of ${this.cascades}: ${sizes.join(", ")}`,
 			`corners in the map: ${this.worst <= 1 ? "yes" : "NO"} (worst ${this.worst.toFixed(3)}), frames missing some ${this.missed}`,
-			`fps ${this.fps} · GPU ${gpu === null ? "n/a" : gpu.toFixed(2) + " ms"} · draws ${s.drawCalls} + ${s.instancedDrawCalls} instanced · shadow draws ${s.shadowDrawCalls} · cache rebuilds ${this.cacheRebuilds * 4}/s`,
+			`fps ${this.fps} · GPU ${gpu === null ? "n/a" : gpu.toFixed(2) + " ms"} · draws ${s.drawCalls} + ${s.instancedDrawCalls} instanced · shadow draws ${s.shadowDrawCalls} (casters culled ${s.shadowCastersCulled}) · cache rebuilds ${this.cacheRebuilds * 4}/s`,
 			`GPU memory ${mb(m.total)} MB: geometry ${mb(m.geometry)}, textures ${mb(m.textures)}, render targets ${mb(m.renderTargets)}, shadow maps ${mb(m.shadowMaps)}, buffers ${mb(m.buffers)}, canvas ${mb(m.canvas)}`,
 			`stress ${this.stress ? "on" : "off"} · decals ${this.decals?.decalCount()} · particles ${this.smoke?.particleCount()} · added ${this.added.decals} decals, ${this.added.particles} particles · GL errors ${params.get("glcheck") === "1" ? this.glErrors : "not checked"}`
 		].join("\n");

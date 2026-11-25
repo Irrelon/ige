@@ -33,7 +33,6 @@ varying vec3 v_worldNormal;
 varying vec2 v_uv;
 varying vec4 v_vertexColor;
 varying mat3 v_TBN;
-varying vec4 v_lightSpacePos;
 
 // Material uniforms
 uniform sampler2D u_baseColorTexture;     // Diffuse/albedo texture (works for 2D textures and smart textures)
@@ -105,14 +104,26 @@ uniform float u_spotLightRanges[MAX_SPOT_LIGHTS];
 uniform float u_spotLightAngles[MAX_SPOT_LIGHTS];     // Outer cone angle (cos)
 uniform float u_spotLightPenumbras[MAX_SPOT_LIGHTS];  // Penumbra amount
 
-// Shadow mapping uniforms
+// Shadow mapping uniforms: the directional light's map, in 1 to 4 cascades (tiles of it, each with its own matrix
+// and slice of the view's depth; one cascade is the whole map)
+#define MAX_SHADOW_CASCADES 4
 uniform int u_hasShadowMap;           // Whether shadow map is active
 uniform sampler2D u_shadowMap;        // Shadow map texture
 uniform float u_shadowBias;           // Shadow bias to prevent acne
 uniform float u_shadowNormalBias;     // Normal-based bias
-uniform float u_shadowMapSize;        // Size of shadow map for PCF
-uniform int u_usePackedDepth;         // Whether depth is packed (WebGL 1)
+uniform vec2 u_shadowTexel;           // One texel of the map (1 / its width and height), for PCF
 uniform float u_shadowNormalOffset;  // Normal offset to prevent shadow acne on curved surfaces
+uniform int u_shadowCascadeCount;     // Cascades in use
+uniform mat4 u_shadowCascadeMatrices[MAX_SHADOW_CASCADES]; // Each one's light view * projection
+uniform vec4 u_shadowCascadeTiles[MAX_SHADOW_CASCADES];    // Each one's tile of the map: x, y, width, height (0 to 1)
+uniform vec4 u_shadowCascadeSplits;   // The view depth each slice ends at
+uniform vec4 u_shadowCascadeStarts;   // And starts at
+uniform float u_shadowCascadeBlend;   // The far part of a slice (a fraction of its depth) faded into the next
+uniform float u_shadowFadeEnd;        // The view depth shadows have faded out by, over its last tenth (0: no fade)
+uniform mat4 u_viewMatrix;            // The camera's view (a fragment's depth picks its cascade)
+#ifdef USE_LOD_FADE
+uniform float u_lodFade;              // Dithered cross-fade between levels of detail: > 0 fading in, < 0 fading out
+#endif
 
 // Point light shadow mapping uniforms
 // Each point light shadow uses a single 3x2 atlas texture (1 sampler per light)
@@ -197,57 +208,103 @@ float unpackDepth(vec4 packedDepth) {
 }
 
 // Debug uniform - set to visualize different values:
-// 0 = normal shadow, 1 = projCoords.xy, 2 = projCoords.z, 3 = sampleDepth, 4 = comparison
+// 0 = normal shadow, 1 = projCoords.xy, 2 = projCoords.z, 3 = sampleDepth, 4 = comparison, 5 = the cascade
 uniform int u_shadowDebug;
 
-// Calculate shadow factor using PCF (Percentage Closer Filtering)
-float calculateShadow(vec3 normal, vec3 lightDir) {
-	if (u_hasShadowMap == 0) return 1.0;
+// A cascade's matrix, tile, start and end (a uniform array indexed only by constants, as GLSL ES 1.00 asks)
+mat4 shadowCascadeMatrix(int i) {
+	if (i == 0) return u_shadowCascadeMatrices[0];
+	if (i == 1) return u_shadowCascadeMatrices[1];
+	if (i == 2) return u_shadowCascadeMatrices[2];
+	return u_shadowCascadeMatrices[3];
+}
+vec4 shadowCascadeTile(int i) {
+	if (i == 0) return u_shadowCascadeTiles[0];
+	if (i == 1) return u_shadowCascadeTiles[1];
+	if (i == 2) return u_shadowCascadeTiles[2];
+	return u_shadowCascadeTiles[3];
+}
+float shadowCascadeSplit(int i) {
+	if (i == 0) return u_shadowCascadeSplits.x;
+	if (i == 1) return u_shadowCascadeSplits.y;
+	if (i == 2) return u_shadowCascadeSplits.z;
+	return u_shadowCascadeSplits.w;
+}
+float shadowCascadeStart(int i) {
+	if (i == 0) return u_shadowCascadeStarts.x;
+	if (i == 1) return u_shadowCascadeStarts.y;
+	if (i == 2) return u_shadowCascadeStarts.z;
+	return u_shadowCascadeStarts.w;
+}
 
-	// Perform perspective divide
-	vec3 projCoords = v_lightSpacePos.xyz / v_lightSpacePos.w;
+// Where a world point lands in a cascade's light space: x, y in 0 to 1 across its tile, z its depth in 0 to 1
+vec3 shadowCoords(int cascade, vec3 worldPos) {
+	vec4 p = shadowCascadeMatrix(cascade) * vec4(worldPos, 1.0);
+	return (p.xyz / p.w) * 0.5 + 0.5;
+}
 
-	// Transform to [0,1] range
-	projCoords = projCoords * 0.5 + 0.5;
+// The cascade a fragment's view depth falls in: the first whose slice ends beyond it
+int shadowCascadeAt(float depth) {
+	int k = 0;
+	for (int i = 0; i < MAX_SHADOW_CASCADES - 1; i++) {
+		if (i >= u_shadowCascadeCount - 1 || depth < shadowCascadeSplit(i)) break;
+		k = i + 1;
+	}
+	return k;
+}
 
-	// Check if outside shadow map bounds
+// One cascade's shadow factor at a world point, 3x3 PCF kept inside its tile (1 lit, 0 in shadow)
+float sampleShadowCascade(int cascade, vec3 worldPos, float bias) {
+	vec3 projCoords = shadowCoords(cascade, worldPos);
+
+	// Outside the cascade's box: lit
 	if (projCoords.z > 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 ||
 	    projCoords.y < 0.0 || projCoords.y > 1.0) {
 		return 1.0;
 	}
 
-	// Calculate bias based on surface angle to light
-	float cosTheta = max(dot(normal, lightDir), 0.0);
-	float bias = u_shadowBias + u_shadowNormalBias * (1.0 - cosTheta);
-
-	// Current fragment depth
+	vec4 tile = shadowCascadeTile(cascade);
+	vec2 uv = tile.xy + projCoords.xy * tile.zw;
+	vec2 lo = tile.xy + u_shadowTexel * 0.5;
+	vec2 hi = tile.xy + tile.zw - u_shadowTexel * 0.5;
 	float currentDepth = projCoords.z;
 
-	// PCF sampling for soft shadows
 	float shadow = 0.0;
-	float texelSize = 1.0 / u_shadowMapSize;
-
-	// 3x3 PCF kernel
 	for (int x = -1; x <= 1; x++) {
 		for (int y = -1; y <= 1; y++) {
-			vec2 sampleCoord = projCoords.xy + vec2(float(x), float(y)) * texelSize;
-
-			float sampleDepth;
-			if (u_usePackedDepth == 1) {
-				// WebGL 1: unpack depth from RGBA
-				sampleDepth = unpackDepth(texture2D(u_shadowMap, sampleCoord));
-			} else {
-				// WebGL 2: read depth directly
-				sampleDepth = texture2D(u_shadowMap, sampleCoord).r;
-			}
-
+			vec2 sampleCoord = clamp(uv + vec2(float(x), float(y)) * u_shadowTexel, lo, hi);
+			float sampleDepth = texture2D(u_shadowMap, sampleCoord).r;
 			shadow += (currentDepth - bias > sampleDepth) ? 0.0 : 1.0;
 		}
 	}
+	return shadow / 9.0;
+}
 
-	// Average the samples
-	shadow /= 9.0;
+// Calculate shadow factor using PCF (Percentage Closer Filtering), in the fragment's cascade, faded into the next
+// one over the far part of its slice
+float calculateShadow(vec3 normal, vec3 lightDir) {
+	if (u_hasShadowMap == 0) return 1.0;
 
+	// Calculate bias based on surface angle to light
+	float cosTheta = max(dot(normal, lightDir), 0.0);
+	float bias = u_shadowBias + u_shadowNormalBias * (1.0 - cosTheta);
+	vec3 worldPos = v_worldPosition + normalize(v_worldNormal) * u_shadowNormalOffset;
+
+	if (u_shadowCascadeCount <= 1 && u_shadowFadeEnd <= 0.0) return sampleShadowCascade(0, worldPos, bias);
+
+	float depth = -(u_viewMatrix * vec4(v_worldPosition, 1.0)).z;
+	// Gone by the end of the shadow distance: nothing to sample
+	if (u_shadowFadeEnd > 0.0 && depth >= u_shadowFadeEnd) return 1.0;
+	int k = u_shadowCascadeCount <= 1 ? 0 : shadowCascadeAt(depth);
+	float shadow = sampleShadowCascade(k, worldPos, bias);
+	if (k < u_shadowCascadeCount - 1) {
+		float end = shadowCascadeSplit(k);
+		float band = u_shadowCascadeBlend * (end - shadowCascadeStart(k));
+		float t = band > 0.0 ? clamp((depth - (end - band)) / band, 0.0, 1.0) : 0.0;
+		if (t > 0.0) shadow = mix(shadow, sampleShadowCascade(k + 1, worldPos, bias), t);
+	}
+	// Fading out over the last tenth of the shadow distance, so shadows don't stop in a line
+	if (u_shadowFadeEnd > 0.0) shadow = mix(shadow, 1.0, smoothstep(u_shadowFadeEnd * 0.9, u_shadowFadeEnd, depth));
 	return shadow;
 }
 
@@ -410,17 +467,13 @@ float getPointLightShadow(int i, vec3 lightPos) {
 	return 1.0;
 }
 
-// Debug function to visualize shadow map values
+// Debug function to visualize shadow map values (in the fragment's cascade)
 vec3 debugShadowValues(vec3 normal, vec3 lightDir) {
-	vec3 projCoords = v_lightSpacePos.xyz / v_lightSpacePos.w;
-	projCoords = projCoords * 0.5 + 0.5;
-
-	float centerDepth;
-	if (u_usePackedDepth == 1) {
-		centerDepth = unpackDepth(texture2D(u_shadowMap, projCoords.xy));
-	} else {
-		centerDepth = texture2D(u_shadowMap, projCoords.xy).r;
-	}
+	float depth = -(u_viewMatrix * vec4(v_worldPosition, 1.0)).z;
+	int k = u_shadowCascadeCount <= 1 ? 0 : shadowCascadeAt(depth);
+	vec3 projCoords = shadowCoords(k, v_worldPosition);
+	vec4 tile = shadowCascadeTile(k);
+	float centerDepth = texture2D(u_shadowMap, tile.xy + clamp(projCoords.xy, 0.0, 1.0) * tile.zw).r;
 
 	if (u_shadowDebug == 1) {
 		// Visualize projCoords.xy (should be 0-1 range, show as red/green)
@@ -439,6 +492,11 @@ vec3 debugShadowValues(vec3 normal, vec3 lightDir) {
 		} else {
 			return vec3(0.0, 1.0, 0.0); // Green = lit
 		}
+	} else if (u_shadowDebug == 5) {
+		// The cascade: red, green, blue, yellow, darker where it's outside the cascade's box
+		vec3 c = k == 0 ? vec3(1.0, 0.25, 0.25) : k == 1 ? vec3(0.25, 1.0, 0.25) : k == 2 ? vec3(0.3, 0.45, 1.0) : vec3(1.0, 0.9, 0.2);
+		bool outside = projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0 || projCoords.z > 1.0;
+		return c * (outside ? 0.35 : 1.0) * (0.55 + 0.45 * calculateShadow(normal, lightDir));
 	}
 
 	return vec3(0.0);
@@ -485,7 +543,22 @@ vec3 calculatePBRLight(vec3 N, vec3 V, vec3 L, vec3 radiance, vec3 albedo, float
 	return (kD * albedo + specular * PI) * radiance * NdotL;
 }
 
+// A 4 x 4 ordered dither threshold for the screen pixel (0 to 15/16), for cross-fading levels of detail
+float lodDither() {
+	vec2 p = mod(floor(gl_FragCoord.xy), 4.0);
+	float a = mod(p.x, 2.0), b = mod(p.y, 2.0), c = floor(p.x / 2.0), d = floor(p.y / 2.0);
+	// Bayer: 4 * bayer2(p mod 2) + bayer2(p / 2)
+	float b0 = 2.0 * a * (1.0 - b) + 3.0 * (1.0 - a) * b + a * b;
+	float b1 = 2.0 * c * (1.0 - d) + 3.0 * (1.0 - c) * d + c * d;
+	return (4.0 * b0 + b1) / 16.0;
+}
+
 void main() {
+#ifdef USE_LOD_FADE
+	// Fading in: drawn where the dither is under the fade; fading out: where it's at or over it (together, every pixel once)
+	float lodThreshold = lodDither() + 1.0 / 32.0;
+	if (u_lodFade > 0.0 ? lodThreshold > u_lodFade : lodThreshold <= -u_lodFade) discard;
+#endif
 	// Sample base color texture
 	vec4 texColor = texture2D(u_baseColorTexture, v_uv);
 

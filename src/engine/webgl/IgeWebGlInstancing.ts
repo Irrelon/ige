@@ -79,6 +79,11 @@ export interface IgeWebGlRenderItem {
 	doubleSided: boolean;
 	/** A transparent item draws its depth first, so only its nearest surface blends (material depthPrepass). */
 	depthPrepass?: boolean;
+	/**
+	 * Cross-fading between levels of detail (IgeObject._lodFade, its own or an ancestor's): 0 not fading, 0 to 1
+	 * fading in, -1 to 0 fading out (drawn dithered, never instanced).
+	 */
+	lodFade?: number;
 	castShadow: boolean;
 	/** Drawn in shadow passes only (IgeObject._shadowOnly). */
 	shadowOnly: boolean;

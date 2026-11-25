@@ -14,19 +14,35 @@
  * cache is redrawn only now and then, and never while part of the view is outside the box (no shadows blinking at
  * the view's edges).
  *
+ * Cascades (IgeWebGlRenderer.shadowCascades()): the view's depth is split into slices, nearest first, a blend of
+ * even and logarithmic steps (igeShadowCascadeSplits()), and each slice gets a box of its own, fitted the same way,
+ * in a tile of the map (a 2 x 2 grid of half-size tiles). Near slices are small, so their shadows are fine; the far
+ * slice reaches as far as the single map did. Each slice's box overlaps the slice before it by that slice's blend,
+ * so the shader can fade from one to the next.
+ *
  * Pure maths, no GPU: the renderer and the shadow manager use it, the tests check it.
  */
 
 /** Settings for fitting the directional shadow map to each view. */
 export interface IgeShadowFitSettings {
-	/** Fit the map to each view (default false: a square frustumSize() each way round the camera's target). */
+	/**
+	 * Fit the map to each view (default true). False: a square frustumSize() each way round the camera's target,
+	 * whatever the camera sees (the engine's map before fitting).
+	 */
 	enabled: boolean;
-	/** How far from the camera shadows reach, in world units along its view (default Infinity: its far plane). */
-	distance: number;
-	/** The lowest surface that takes shadows (world y, e.g. the ground; default -Infinity). */
-	minY: number;
-	/** The highest (world y, e.g. the tallest roof; default Infinity). */
-	maxY: number;
+	/**
+	 * How far from the camera shadows reach, in world units along its view. "auto" (the default): as far as the
+	 * square reached, the camera's target's depth plus shadowManager.frustumSize() (twice frustumSize() for a
+	 * camera with no target). Infinity: the camera's far plane.
+	 */
+	distance: number | "auto";
+	/**
+	 * The lowest surface that takes shadows (world y, e.g. the ground). "auto" (the default): the lowest point of
+	 * the scene's opaque meshes' bounds, this frame. -Infinity: no limit.
+	 */
+	minY: number | "auto";
+	/** The highest (world y, e.g. the tallest roof). "auto" (the default): the highest of the meshes' bounds. Infinity: no limit. */
+	maxY: number | "auto";
 	/**
 	 * With shadow caching: room left round the view, a fraction of its size, so the map moves only once the view has
 	 * moved that far (default 0.15). More room, fewer cache redraws and coarser shadows.
@@ -34,7 +50,125 @@ export interface IgeShadowFitSettings {
 	slack: number;
 }
 
-export const IGE_SHADOW_FIT_DEFAULTS: IgeShadowFitSettings = { enabled: false, distance: Infinity, minY: -Infinity, maxY: Infinity, slack: 0.15 };
+export const IGE_SHADOW_FIT_DEFAULTS: IgeShadowFitSettings = { enabled: true, distance: "auto", minY: "auto", maxY: "auto", slack: 0.15 };
+
+/** The most cascades a directional shadow map can have (its four tiles). */
+export const IGE_MAX_SHADOW_CASCADES = 4;
+
+/** Settings for cascaded shadow maps (IgeWebGlRenderer.shadowCascades()). */
+export interface IgeShadowCascadeSettings {
+	/**
+	 * How many slices the view's depth is split into, each with its own part of the map: 1 (the default) is one map
+	 * over the whole view; 2 to 4 split the map into a 2 x 2 grid of half-size tiles, a slice in each (the same
+	 * memory: 3 leaves a tile unused, and costs one shadow pass fewer than 4). Needs shadowFit() on.
+	 */
+	count: number;
+	/**
+	 * Where the slices end: 0 even steps from the camera's near plane to the shadow distance, 1 logarithmic steps
+	 * (each slice a fixed multiple of the one before: the most detail near the camera). Default 0.8.
+	 */
+	lambda: number;
+	/** The far part of each slice, a fraction of its depth, faded into the next slice so the change doesn't show (default 0.1). */
+	blend: number;
+}
+
+export const IGE_SHADOW_CASCADE_DEFAULTS: IgeShadowCascadeSettings = { count: 1, lambda: 0.8, blend: 0.1 };
+
+/**
+ * Where each of `count` slices of a view's depth ends, from `near` to `far` (view depths): a blend of logarithmic
+ * steps (near × (far / near)^(i / count)) and even ones (near + (far - near) × i / count), `lambda` of the first.
+ * Writes `count` values, the last `far`, into `out`.
+ */
+export function igeShadowCascadeSplits (near: number, far: number, count: number, lambda: number, out: number[] = []): number[] {
+	const n = Math.max(near, 1e-6), f = Math.max(far, n * 1.000001);
+	const l = Math.min(1, Math.max(0, lambda));
+	out.length = 0;
+	for (let i = 1; i <= count; i++) {
+		const t = i / count;
+		out.push(i === count ? f : l * n * Math.pow(f / n, t) + (1 - l) * (n + (f - n) * t));
+	}
+	return out;
+}
+
+/**
+ * The half-size across the light (the larger of its two axes) of the smallest box round `count` points (x, y, z
+ * triples): how big a map has to be to hold them, before any edge, ladder or slack.
+ */
+export function igeShadowFitExtent (points: ArrayLike<number>, count: number, basis: IgeShadowLightBasis): number {
+	const { rx, ry, rz, ux, uy, uz } = basis;
+	let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+	for (let i = 0; i < count; i++) {
+		const px = points[i * 3], py = points[i * 3 + 1], pz = points[i * 3 + 2];
+		const x = rx * px + ry * py + rz * pz, y = ux * px + uy * py + uz * pz;
+		if (x < x0) x0 = x;
+		if (x > x1) x1 = x;
+		if (y < y0) y0 = y;
+		if (y > y1) y1 = y;
+	}
+	return count > 0 ? Math.max(x1 - x0, y1 - y0) / 2 : 0;
+}
+
+/**
+ * The tile of the map each of `count` cascades draws into, as fractions of the map (x, y, width, height from its
+ * bottom-left): the whole map for one; for 2 to 4, a 2 x 2 grid of half-size tiles, the first at the bottom left.
+ */
+export function igeShadowCascadeTile (index: number, count: number): [number, number, number, number] {
+	if (count <= 1) return [0, 0, 1, 1];
+	return [(index & 1) * 0.5, (index >> 1) * 0.5, 0.5, 0.5];
+}
+
+/** One cascade's slice of a view's depth: where it starts and ends, and where its box starts (`from`, with the blend). */
+export interface IgeShadowCascadeSlice {
+	start: number;
+	end: number;
+	from: number;
+}
+
+/**
+ * Plan a view's cascades: its depth from the near plane out to `distance` (or its far plane) in `count` slices
+ * (igeShadowCascadeSplits()), keeping those with something in the band `minY` to `maxY` in view (an empty one is
+ * folded into the next, so the slices still meet). Each slice's box starts `blend` of the slice before back from
+ * its start, so the fade from one to the next is in both. Writes the slices into `out` (reusing its objects) and
+ * returns how many; `scratch` takes the corners while it looks.
+ */
+export function igeShadowCascadeSlices (
+	view: ArrayLike<number>,
+	projection: ArrayLike<number>,
+	distance: number,
+	minY: number,
+	maxY: number,
+	settings: Pick<IgeShadowCascadeSettings, "count" | "lambda" | "blend">,
+	out: IgeShadowCascadeSlice[],
+	scratch: number[] = [],
+	splits: number[] = []
+): number {
+	const count = Math.min(Math.max(1, Math.floor(settings.count)), IGE_MAX_SHADOW_CASCADES);
+	const { near, far } = igeProjectionDepthRange(projection);
+	const end = Math.min(distance, far);
+	if (!(end > near)) return 0;
+	igeShadowCascadeSplits(near, end, count, settings.lambda, splits);
+	let used = 0, start = near;
+	for (let i = 0; i < count; i++) {
+		if (igeShadowFitVolume(view, projection, splits[i], minY, maxY, scratch, 0, start) === 0) continue;
+		const slice = (out[used] ??= { start: 0, end: 0, from: 0 });
+		slice.start = start;
+		slice.end = splits[i];
+		used++;
+		start = splits[i];
+	}
+	for (let k = 0; k < used; k++) {
+		const before = k > 0 ? out[k - 1] : undefined;
+		out[k].from = before ? Math.max(near, out[k].start - settings.blend * (before.end - before.start)) : out[k].start;
+	}
+	return used;
+}
+
+/** The near and far planes' depths (along the view) of a projection matrix (column-major; perspective or orthographic). */
+export function igeProjectionDepthRange (projection: ArrayLike<number>): { near: number; far: number } {
+	const m10 = projection[10], m14 = projection[14];
+	if (projection[11] !== 0) return { near: m14 / (m10 - 1), far: m14 / (m10 + 1) };
+	return { near: (m14 + 1) / m10, far: (m14 - 1) / m10 };
+}
 
 /** A light's axes: right (r), up (u) and along the light (f), as the engine's lookAt makes them. */
 export interface IgeShadowLightBasis {
@@ -163,8 +297,9 @@ function clipY (input: number[], output: number[], limit: number, above: boolean
 
 /**
  * What a camera sees that can take a shadow: its frustum (from its view and projection matrices, column-major) out
- * to `distance` along its view, cut to the heights `minY` to `maxY`. Writes the volume's corners into `out` as x, y, z
- * triples (from `offset`) and returns how many it wrote; 0 when the band isn't in view.
+ * to `distance` along its view (from `from`, for a cascade's slice), cut to the heights `minY` to `maxY`. Writes the
+ * volume's corners into `out` as x, y, z triples (from `offset`) and returns how many it wrote; 0 when the band
+ * isn't in view.
  */
 export function igeShadowFitVolume (
 	view: ArrayLike<number>,
@@ -173,7 +308,8 @@ export function igeShadowFitVolume (
 	minY: number,
 	maxY: number,
 	out: number[],
-	offset: number = 0
+	offset: number = 0,
+	from: number = 0
 ): number {
 	if (!igeInvertMatrix4(projection, invProjection) || !igeInvertMatrix4(view, invView)) return 0;
 	const p = invProjection, v = invView;
@@ -188,12 +324,19 @@ export function igeShadowFitVolume (
 	for (let i = 0; i < 4; i++) {
 		const n = i * 3, f = (i + 4) * 3;
 		const dn = -corners[n + 2], df = -corners[f + 2];
-		if (df > distance && df > dn) {
-			const t = Math.max(0, (distance - dn) / (df - dn));
-			corners[f] = corners[n] + (corners[f] - corners[n]) * t;
-			corners[f + 1] = corners[n + 1] + (corners[f + 1] - corners[n + 1]) * t;
-			corners[f + 2] = corners[n + 2] + (corners[f + 2] - corners[n + 2]) * t;
-		}
+		if (!(df > dn)) continue;
+		// The slice's near and far ends, along each edge from its near corner to its far one
+		const t0 = from > dn ? Math.min(1, (from - dn) / (df - dn)) : 0;
+		const t1 = df > distance ? Math.max(0, (distance - dn) / (df - dn)) : 1;
+		if (t1 <= t0) return 0;
+		const nx = corners[n], ny = corners[n + 1], nz = corners[n + 2];
+		const ex = corners[f] - nx, ey = corners[f + 1] - ny, ez = corners[f + 2] - nz;
+		corners[n] = nx + ex * t0;
+		corners[n + 1] = ny + ey * t0;
+		corners[n + 2] = nz + ez * t0;
+		corners[f] = nx + ex * t1;
+		corners[f + 1] = ny + ey * t1;
+		corners[f + 2] = nz + ez * t1;
 	}
 	// Into the world
 	for (let i = 0; i < 8; i++) {
