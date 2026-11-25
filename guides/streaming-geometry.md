@@ -63,7 +63,7 @@ GPU:
   normalised ones -1 to 1), so merging, raycasts and physics work on them. The mesh's `vertexEncodings` tells the
   renderer to pack them back into the file's formats when it uploads them.
 - `igeGltfLoader.keepQuantised = false` uploads them as floats instead.
-- Meshopt-compressed files (`gltfpack -c` or `-cc`: `EXT_meshopt_compression`) are decoded as they load and read the
+- Meshopt-compressed files (`gltfpack -c` or `-cc`: `EXT_meshopt_compression`, or `KHR_meshopt_compression` with `-ce khr`) are decoded as they load and read the
   same after: see "Smaller files: gltfpack" in [`webgl-models.md`](webgl-models.md).
 - Tested with files written to the extension's rules in code, and with `gltfpack`'s own output (a skinned, animated
   character in the tests; a game's city pieces and characters).

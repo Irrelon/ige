@@ -1,8 +1,8 @@
-import type { MeshoptDecoder } from "meshoptimizer/meshopt_decoder.module.js";
+import type { MeshoptDecoder } from "meshoptimizer/decoder";
 
 /**
- * Meshopt-compressed glTF (`EXT_meshopt_compression`, and `KHR_meshopt_compression` written with the same codecs):
- * what `gltfpack -c` and `-cc` write. A compressed buffer view's data sits in its extension, compressed; the view
+ * Meshopt-compressed glTF (`EXT_meshopt_compression`, and Khronos's `KHR_meshopt_compression`): what `gltfpack -c` and
+ * `-cc` write (`-ce khr` for the Khronos name, and version 1 of the vertex codec). A compressed buffer view's data sits in its extension, compressed; the view
  * itself points into a "fallback" buffer that holds nothing in the file (or, with `gltfpack -cf`, an uncompressed copy
  * for loaders that can't decode). Decoding fills the fallback buffers, after which the file reads like any other.
  *
@@ -15,9 +15,9 @@ export type IgeMeshoptDecoder = typeof MeshoptDecoder;
 /** The extension's names: the vendor one gltfpack writes by default, and Khronos's. */
 const EXTENSIONS = ["EXT_meshopt_compression", "KHR_meshopt_compression"] as const;
 
-/** What meshoptimizer's decoder (0.18) reads. */
+/** What meshoptimizer's decoder reads. */
 const MODES = new Set(["ATTRIBUTES", "TRIANGLES", "INDICES"]);
-const FILTERS = new Set(["NONE", "OCTAHEDRAL", "QUATERNION", "EXPONENTIAL"]);
+const FILTERS = new Set(["NONE", "OCTAHEDRAL", "QUATERNION", "EXPONENTIAL", "COLOR"]);
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -28,7 +28,7 @@ let loading: Promise<IgeMeshoptDecoder> | undefined;
  * one after that.
  */
 export function igeMeshoptDecoder (): Promise<IgeMeshoptDecoder> {
-	loading ??= import(/* webpackChunkName: "meshopt-decoder" */ "meshoptimizer/meshopt_decoder.module.js").then(async ({ MeshoptDecoder: decoder }) => {
+	loading ??= import(/* webpackChunkName: "meshopt-decoder" */ "meshoptimizer/decoder").then(async ({ MeshoptDecoder: decoder }) => {
 		if (!decoder.supported) throw new Error("Meshopt-compressed models need WebAssembly, which this browser doesn't have");
 		await decoder.ready;
 		return decoder;
@@ -79,7 +79,7 @@ export function igeDecodeMeshopt (gltf: any, buffers: (ArrayBuffer | undefined)[
 		if (!ext) continue;
 		const mode: string = ext.mode, filter: string = ext.filter ?? "NONE";
 		if (!MODES.has(mode)) throw new Error(`Meshopt buffer view ${i}: unknown mode "${mode}"`);
-		if (!FILTERS.has(filter)) throw new Error(`Meshopt buffer view ${i}: the "${filter}" filter isn't supported (meshoptimizer 0.18 decodes ${[...FILTERS].join(", ")})`);
+		if (!FILTERS.has(filter)) throw new Error(`Meshopt buffer view ${i}: the "${filter}" filter isn't supported (the decoder reads ${[...FILTERS].join(", ")})`);
 		const source = buffers[ext.buffer];
 		if (!source) throw new Error(`Meshopt buffer view ${i}: its compressed data's buffer ${ext.buffer} isn't loaded`);
 		const index = view.buffer ?? 0;
@@ -94,9 +94,7 @@ export function igeDecodeMeshopt (gltf: any, buffers: (ArrayBuffer | undefined)[
 		try {
 			decoder.decodeGltfBuffer(new Uint8Array(target, view.byteOffset ?? 0, count * size), count, size, bytes, mode, filter);
 		} catch (error) {
-			// gltfpack's KHR_meshopt_compression (-ce khr) writes vertex data in the codec's version 1, which 0.18 can't read
-			const version = mode === "ATTRIBUTES" && bytes[0] > 0xa0 && bytes[0] <= 0xaf ? ` (vertex codec version ${bytes[0] - 0xa0}: meshoptimizer 0.18 reads version 0, what gltfpack writes for EXT_meshopt_compression)` : "";
-			throw new Error(`Meshopt buffer view ${i} (${mode}, ${filter}) couldn't be decoded${version}: ${(error as Error).message}`);
+			throw new Error(`Meshopt buffer view ${i} (${mode}, ${filter}) couldn't be decoded: ${(error as Error).message}`);
 		}
 	}
 }

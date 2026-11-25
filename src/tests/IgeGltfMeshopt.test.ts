@@ -1,3 +1,6 @@
+/**
+ * @jest-environment <rootDir>/src/tests/support/jestNativeImportEnvironment.js
+ */
 import { readFileSync } from "fs";
 import path from "path";
 import { IgeEntity } from "@/engine/core/IgeEntity";
@@ -8,9 +11,12 @@ import { igeDecodeMeshopt, igeMeshoptDecoder } from "@/engine/webgl/IgeMeshopt";
 import { createSkeletonInstance, getModelParts, multiplyMat4, restBoneMatrices } from "@/engine/webgl/IgeModelParts";
 import { IgeWebGlSkeletonManager } from "@/engine/webgl/IgeWebGlSkeletonManager";
 
-// meshoptimizer's encoder, to write compressed files here (its UMD build: jest runs CommonJS)
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const MeshoptEncoder = require("meshoptimizer/meshopt_encoder.js");
+// meshoptimizer's encoder, to write compressed files here (an ES module, which the test environment imports natively)
+declare const igeNativeImport: (name: string) => Promise<any>;
+let MeshoptEncoder: any;
+beforeAll(async () => {
+	({ MeshoptEncoder } = await igeNativeImport("meshoptimizer/encoder"));
+});
 
 type Compression = "EXT_meshopt_compression" | "KHR_meshopt_compression";
 
@@ -113,7 +119,9 @@ function plainQuad (): ArrayBuffer {
  */
 async function compressedQuad (name: Compression, edit?: (stream: { compressed: Uint8Array; filter: string }, index: number) => void): Promise<{ json: any; bin: Uint8Array }> {
 	await MeshoptEncoder.ready;
-	const streams = quadStreams().map((s) => ({ ...s, compressed: MeshoptEncoder.encodeGltfBuffer(s.data, s.count, s.stride, s.mode) as Uint8Array }));
+	// EXT files are version 0 of the vertex codec, as gltfpack writes them by default; KHR ones version 1 (gltfpack -ce khr)
+	const version = name === "KHR_meshopt_compression" ? 1 : 0;
+	const streams = quadStreams().map((s) => ({ ...s, compressed: MeshoptEncoder.encodeGltfBuffer(s.data, s.count, s.stride, s.mode, version) as Uint8Array }));
 	streams.forEach((s, i) => edit?.(s, i));
 	const { bytes, offsets } = concat([...streams.map((s) => s.compressed), IMAGE]);
 	const decoded = concat(streams.map((s) => s.data));
@@ -153,7 +161,7 @@ describe("meshopt-compressed glTF (EXT_meshopt_compression, KHR_meshopt_compress
 		expect(plain.indices).toEqual([0, 1, 2, 0, 2, 3]);
 	});
 
-	it("reads KHR_meshopt_compression written with the same codecs", async () => {
+	it("reads KHR_meshopt_compression, with version 1 of the vertex codec", async () => {
 		const plain = summary(await new IgeGltfLoader().parse(plainQuad(), "plainQuad2"));
 		const { json, bin } = await compressedQuad("KHR_meshopt_compression");
 		expect(summary(await new IgeGltfLoader().parse(glb(json, bin), "khrQuad"))).toEqual(plain);
@@ -164,7 +172,7 @@ describe("meshopt-compressed glTF (EXT_meshopt_compression, KHR_meshopt_compress
 			if (i !== 1) return;
 			// Normals as gltfpack -cc writes them: octahedral, 8 bits
 			const n = new Float32Array([0, 1, 0, 0, 0, 1, 0, 0, 0.6, 0.8, 0, 0, 0, 0, -1, 0]);
-			s.compressed = MeshoptEncoder.encodeGltfBuffer(MeshoptEncoder.encodeFilterOct(n, 4, 4, 8), 4, 4, "ATTRIBUTES");
+			s.compressed = MeshoptEncoder.encodeGltfBuffer(MeshoptEncoder.encodeFilterOct(n, 4, 4, 8), 4, 4, "ATTRIBUTES", 0);
 			s.filter = "OCTAHEDRAL";
 		});
 		const normals = summary(await new IgeGltfLoader().parse(glb(json, bin), "octQuad")).normals;
@@ -191,16 +199,25 @@ describe("meshopt-compressed glTF (EXT_meshopt_compression, KHR_meshopt_compress
 		expect(fetched).toEqual([]);
 	});
 
-	it("says why it can't decode: a filter it doesn't know, the codec's newer version", async () => {
+	it("says why it can't decode: a filter it doesn't know, a corrupt stream", async () => {
 		const unknownFilter = await compressedQuad("KHR_meshopt_compression", (s, i) => {
-			if (i === 0) s.filter = "COLOR";
+			if (i === 0) s.filter = "SPIRAL";
 		});
-		await expect(new IgeGltfLoader().parse(glb(unknownFilter.json, unknownFilter.bin), "colorQuad")).rejects.toThrow(/"COLOR" filter isn't supported/);
-		// gltfpack -ce khr writes vertex data in version 1 of the codec (its first byte 0xa1)
-		const version1 = await compressedQuad("KHR_meshopt_compression", (s, i) => {
-			if (i === 0) s.compressed[0] = 0xa1;
+		await expect(new IgeGltfLoader().parse(glb(unknownFilter.json, unknownFilter.bin), "spiralQuad")).rejects.toThrow(/"SPIRAL" filter isn't supported/);
+		const corrupt = await compressedQuad("KHR_meshopt_compression", (s, i) => {
+			if (i === 0) s.compressed[0] = 0xaf;
 		});
-		await expect(new IgeGltfLoader().parse(glb(version1.json, version1.bin), "v1Quad")).rejects.toThrow(/vertex codec version 1/);
+		await expect(new IgeGltfLoader().parse(glb(corrupt.json, corrupt.bin), "corruptQuad")).rejects.toThrow(/couldn't be decoded/);
+	});
+
+	it("decodes colour-filtered streams", async () => {
+		const { json, bin } = await compressedQuad("KHR_meshopt_compression", (s, i) => {
+			if (i !== 1) return;
+			const c = new Uint8Array([0, 127, 0, 255, 0, 0, 127, 255, 0, 127, 0, 255, 0, 0, 127, 255]);
+			s.compressed = MeshoptEncoder.encodeGltfBuffer(c, 4, 4, "ATTRIBUTES", 1);
+			s.filter = "COLOR";
+		});
+		await expect(new IgeGltfLoader().parse(glb(json, bin), "colorQuad")).resolves.toBeDefined();
 	});
 
 	it("decodes in place, without the loader (for workers)", async () => {
@@ -237,6 +254,8 @@ describe("part names", () => {
 describe("gltfpack's own output", () => {
 	// CesiumMan (src/assets/models), without its texture, packed by gltfpack 1.3:
 	// gltfpack -i CesiumMan.glb -o CesiumMan.meshopt.glb -cc -kn -af 0
+	// and, with the Khronos extension (and version 1 of the vertex codec):
+	// gltfpack -i CesiumMan.glb -o CesiumMan.khr.glb -cc -ce khr -kn -af 0
 	// (quantised, meshopt-compressed with octahedral normals, quaternion rotations and exponential translations)
 	const load = (file: string, id: string) => {
 		const bytes = readFileSync(file);
@@ -288,9 +307,10 @@ describe("gltfpack's own output", () => {
 		return new Map(skeleton.data.bones.map((bone, i) => [bone.name, skeleton.worldMatrices.slice(i * 16, i * 16 + 16)]));
 	};
 
-	it("loads with its parts named, its mesh where it was and its animation as it was", async () => {
+	it.each([["CesiumMan.meshopt.glb", "EXT_meshopt_compression"], ["CesiumMan.khr.glb", "KHR_meshopt_compression"]])("loads %s (%s) with its parts named, its mesh where it was and its animation as it was", async (file, extension) => {
 		const original = await load(path.join(__dirname, "../assets/models/CesiumMan.glb"), "cesiumMan");
-		const packed = await load(path.join(__dirname, "support/CesiumMan.meshopt.glb"), "cesiumManMeshopt");
+		const packed = await load(path.join(__dirname, "support", file), `cesiumMan-${file}`);
+		expect(readFileSync(path.join(__dirname, "support", file)).includes(extension)).toBe(true);
 		// The mesh's node has no name (gltfpack -kn): it's named after the node above
 		expect(getModelParts(packed).map((p) => p.name)).toEqual(getModelParts(original).map((p) => p.name));
 		// Within a millimetre (it's about 1.5 m tall) in the rest pose, after skinning

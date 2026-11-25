@@ -53,13 +53,15 @@ npx gltfpack -i character.glb -o character.min.glb -kn -km -af 0 -cc   # quantis
 - **Quantised** meshes (`KHR_mesh_quantization`, gltfpack's default): 16-bit positions and texture coordinates, 8-bit
   normals and skin weights, kept that compact on the GPU too (see "Quantised glTF" in
   [`streaming-geometry.md`](streaming-geometry.md)). About half the file.
-- **Meshopt-compressed** on top (`-c`, or `-cc` for more: `EXT_meshopt_compression`): a third to a half smaller again
-  as served raw or gzipped, though only a few percent once brotli has had both. Decoded by meshoptimizer's WebAssembly
-  decoder (the `meshoptimizer` package, a dependency of the engine), loaded the first time a file needs it; decoding
-  takes a few milliseconds a megabyte. `KHR_meshopt_compression` is read too when written with the same codecs, but
-  gltfpack's `-ce khr` writes the codec's version 1, which this decoder (meshoptimizer 0.18) can't read: keep
-  gltfpack's default, `EXT_meshopt_compression`. `igeDecodeMeshopt(json, buffers, await igeMeshoptDecoder())`
-  (`IgeMeshopt.ts`) decodes a file's buffers without the loader, e.g. in a worker.
+- **Meshopt-compressed** on top (`-c`, or `-cc` for more): a third to a half smaller again as served raw or gzipped,
+  though only a few percent once brotli has had both. Both names of the extension are read: gltfpack's default
+  `EXT_meshopt_compression`, and Khronos's `KHR_meshopt_compression` (`-ce khr`, which also writes version 1 of the
+  vertex codec: a little smaller again; it needs gltfpack and meshoptimizer 0.25 or later, and the engine uses 1.3).
+  Decoded by meshoptimizer's WebAssembly decoder (the `meshoptimizer` package, a dependency of the engine, imported as
+  `meshoptimizer/decoder` and loaded the first time a file needs it); decoding takes a few milliseconds a megabyte. A
+  game that bundles the engine's source (Vite) should list `meshoptimizer` in `resolve.dedupe`, so the engine's import
+  and the game's are one copy. `igeDecodeMeshopt(json, buffers, await igeMeshoptDecoder())` (`IgeMeshopt.ts`) decodes a
+  file's buffers without the loader, e.g. in a worker.
 - **`-kn`** keeps named nodes, so parts can still be shown by name. gltfpack hangs each mesh on an unnamed child of
   its node and drops the mesh's name; a part with neither name is named after the nearest named node above it, so
   `model(m, { parts: ["Body_01"] })` works on the packed file as on the original. `-km` keeps materials apart.

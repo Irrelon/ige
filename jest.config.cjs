@@ -12,7 +12,7 @@ module.exports = {
 	modulePaths: [compilerOptions.baseUrl],
 	moduleNameMapper: {
 		"^@/(.*)$": "<rootDir>/src/$1",
-		// meshoptimizer's ES module build, which the engine imports, as CommonJS
-		"^meshoptimizer/meshopt_decoder\\.module\\.js$": "<rootDir>/src/tests/support/meshoptDecoder.cjs"
+		// meshoptimizer's ES module decoder, which the engine imports, as CommonJS
+		"^meshoptimizer/decoder$": "<rootDir>/src/tests/support/meshoptDecoder.cjs"
 	}
 };
