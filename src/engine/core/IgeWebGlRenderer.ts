@@ -37,7 +37,7 @@ import {
 	type IgeWebGlRenderItem
 } from "@/engine/webgl/IgeWebGlInstancing";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
-import { igeGpuUniformLayout, type IgeGpuBlendState, type IgeGpuBuffer, type IgeGpuRenderPass, type IgeGpuRenderPipeline, type IgeGpuRenderPipelineDesc, type IgeGpuTexture, type IgeGpuUniform, type IgeGpuVertexBufferLayout } from "@/engine/gpu/IgeGpuDevice";
+import { igeGpuUniformLayout, type IgeGpuBlendState, type IgeGpuBuffer, type IgeGpuMemory, type IgeGpuRenderPass, type IgeGpuRenderPipeline, type IgeGpuRenderPipelineDesc, type IgeGpuTexture, type IgeGpuUniform, type IgeGpuVertexBufferLayout } from "@/engine/gpu/IgeGpuDevice";
 import { type IgeWebGl2GpuDevice, webGl2ExternalTexture, webGl2Framebuffer, webGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
 import { EFFECT_ATTRIBUTES, IgeGpuMeshPrograms, INSTANCE_LAYOUT, meshLayout, meshTopology } from "@/engine/webgl/IgeGpuMeshPrograms";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
@@ -50,6 +50,7 @@ import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 import { getModelParts, takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
 import type { IgeHeightfieldRayOptions } from "@/engine/webgl/IgeHeightfieldRay";
 import { IgeDynamicResolution, IgeGpuFrameTimer, type IgeDynamicResolutionSettings } from "@/engine/webgl/IgeDynamicResolution";
+import { IGE_SHADOW_FIT_DEFAULTS, type IgeShadowFitBox, type IgeShadowFitSettings, igeShadowFitBox, igeShadowFitVolume } from "@/engine/webgl/IgeShadowFit";
 import { IGE_POST_PROCESS_DEFAULTS, igePictureEffectsOn, IgeWebGlPostProcess, type IgePostProcessSettings } from "@/engine/webgl/IgeWebGlPostProcess";
 import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
 import { type IgeUiSettings, type IgeUiView, placeUi } from "@/engine/webgl/IgeUiLayout";
@@ -238,6 +239,25 @@ export interface IgeWebGlRenderStats {
 	/** Shadow casters left out of the directional shadow pass because their shadow can't land in the view (see shadowCasterCulling()). */
 	shadowCastersCulled: number;
 	viewports: number;
+	/**
+	 * The GPU's time for a recent frame, ms: a timer query round all of a frame's drawing (shadow maps, views,
+	 * post-processing, outlines, the UI layer, panels and overlays), a frame or two behind. Null where the browser has
+	 * no timer query (EXT_disjoint_timer_query_webgl2), before the first result, or with gpuTiming(false).
+	 */
+	gpuMs: number | null;
+	/** The GPU memory the renderer holds now, bytes by kind (see gpuMemory()). */
+	gpuMemory: IgeWebGlGpuMemory;
+}
+
+/**
+ * The GPU memory a renderer holds, in bytes: counted from what it made (each buffer's and texture's size and format),
+ * not asked of the driver, which adds its own padding and copies.
+ */
+export interface IgeWebGlGpuMemory extends IgeGpuMemory {
+	/** The canvas's drawing buffer: colour, depth and stencil, its antialiasing samples and the picture shown. An estimate. */
+	canvas: number;
+	/** All of the above. */
+	total: number;
 }
 
 /**
@@ -516,8 +536,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _shadowShareThreshold: number = 0.35;
 	protected _sharedShadowFrame: number = -1;
 	protected _pendingBlobTextures: Set<string> = new Set();
-	/** Each particle and decal system's instances, and each decal system's projected triangles, on the device. */
-	protected _particleBuffers: Map<IgeWebGlInstanceSource, { buffer: IgeGpuBuffer; version: number; lastFrame: number }> = new Map();
+	/**
+	 * Each particle and decal system's instances (the render version and instance count uploaded: what's drawn), and
+	 * each decal system's projected triangles, on the device.
+	 */
+	protected _particleBuffers: Map<IgeWebGlInstanceSource, { buffer: IgeGpuBuffer; version: number; count: number; lastFrame: number }> = new Map();
 	protected _decalMeshBuffers: Map<IgeDecalSystem3d, { buffer: IgeGpuBuffer; version: number; lastFrame: number }> = new Map();
 	/** The view being drawn, in device px from the canvas's bottom-left, and whether it's scissored to it (the effect passes draw into it). */
 	protected _view = { x: 0, y: 0, w: 0, h: 0, clip: false };
@@ -556,6 +579,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _fixedScale = 1;
 	protected _dynamicRes = new IgeDynamicResolution();
 	protected _gpuTimer: IgeGpuFrameTimer | null = null;
+	/** Times what's drawn after the scene (outlines, UI layer, panels, overlays), so stats().gpuMs is the whole frame. */
+	protected _gpuTimerTail: IgeGpuFrameTimer | null = null;
+	/** Timer queries round each frame for stats().gpuMs (see gpuTiming()). */
+	protected _gpuTiming = true;
 	protected _rafHandle = 0;
 	/** The scale this frame's scene is drawn at (1 when it isn't drawn offscreen). */
 	protected _frameScale = 1;
@@ -567,7 +594,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		density: 0.001
 	};
 
-	protected _stats: IgeWebGlRenderStats = {
+	protected _stats: Omit<IgeWebGlRenderStats, "gpuMemory"> = {
+		gpuMs: null,
 		drawCalls: 0,
 		instancedDrawCalls: 0,
 		instances: 0,
@@ -588,6 +616,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 	// Cull back faces of opaque meshes (off by default, see backFaceCulling())
 	protected _backFaceCulling: boolean = false;
+
+	// The directional shadow map fitted to each view (off by default, see shadowFit()): the settings, each view's box
+	// (and the shared map's), and the corners of what the views see
+	protected _shadowFit: IgeShadowFitSettings = { ...IGE_SHADOW_FIT_DEFAULTS };
+	protected _shadowFitBoxes: WeakMap<object, IgeShadowFitBox> = new WeakMap();
+	protected _shadowFitShared: object = {};
+	protected _shadowFitPoints: number[] = [];
 
 	// Cached static shadow casters (off by default, see shadowCaching())
 	protected _shadowCaching: boolean = false;
@@ -836,6 +871,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._contextLost = true;
 		this._gpuTimer?.contextLost();
 		this._gpuTimer = null;
+		this._gpuTimerTail?.contextLost();
+		this._gpuTimerTail = null;
 		this._postProcess?.contextLost();
 		this._outlinePass?.contextLost();
 		this._outlinePass = undefined;
@@ -1185,7 +1222,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * To keep the frustum still while the camera pans, it re-centres in
 	 * steps of 1/8 of shadowManager.frustumSize() instead of following the
 	 * camera exactly, so the area covered may lag the view by that much;
-	 * allow for it in the frustum size. Caching pauses on frames where
+	 * allow for it in the frustum size. With shadowFit() on, the fitted map
+	 * stays put instead while the view is inside it (with room to move, its
+	 * `slack`) and is moved once it isn't, never leaving part of the view
+	 * uncovered. Caching pauses on frames where
 	 * split-screen views each render their own shadow map (it helps when
 	 * there is one view or the views share a map).
 	 */
@@ -1197,7 +1237,54 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 		this._shadowCaching = val;
 		this._shadowMapHoldsCache = false;
+		// (Its static casters' map isn't kept while caching is off)
+		if (!val && this._shadowLightId) this._shadowManager?.deleteShadowCache(this._shadowLightId);
 		return this;
+	}
+
+	/**
+	 * Gets / sets fitting the directional shadow map to each view (off by default: a square
+	 * shadowManager.frustumSize() each way round the camera's target, whatever the camera sees). Fitted, the map
+	 * covers what the camera can see that can take a shadow: its frustum out to `distance`, cut to the heights
+	 * `minY` to `maxY` (the ground and the tallest roof), so a top-down view's corners and a street-level view's
+	 * far end get shadows, and no more than that is covered (finer shadows where the view is small). Per view, split
+	 * screen and panels included. Its sizes step about 9% at a time and its middle is snapped to the map's texels, so
+	 * shadows don't shimmer as the camera moves; with shadowCaching() it stays put while the view is inside it (see
+	 * `slack`). The depth along the light is at least shadowManager.shadowPlanes()'s far - near (so the bias means what
+	 * it did), with at least a quarter of that back towards the light for tall casters out of view.
+	 * @example #Shadows to 180 m ahead at street level, over a town whose tallest roof is 25 m (100 units a metre)
+	 *     renderer.shadowFit({ enabled: true, distance: 18000, minY: 0, maxY: 2500 });
+	 */
+	shadowFit(): IgeShadowFitSettings;
+	shadowFit(settings: Partial<IgeShadowFitSettings>): this;
+	shadowFit(settings?: Partial<IgeShadowFitSettings>): IgeShadowFitSettings | this {
+		if (settings === undefined) return { ...this._shadowFit };
+		this._shadowFit = { ...this._shadowFit, ...settings };
+		this._renderOnDemandWake();
+		return this;
+	}
+
+	/**
+	 * Add the corners of what a view sees that can take a shadow (see shadowFit()) to the fit's points, after `count`
+	 * points already there. Returns the new count.
+	 */
+	protected _shadowFitAdd(matrices: IgeCameraMatrices, count: number): number {
+		const fit = this._shadowFit, points = this._shadowFitPoints;
+		let n = igeShadowFitVolume(matrices.view.matrix, matrices.projection.matrix, fit.distance, fit.minY, fit.maxY, points, count * 3);
+		// Nothing in the band in view (looking at the sky): the frustum as it is
+		if (n === 0) n = igeShadowFitVolume(matrices.view.matrix, matrices.projection.matrix, fit.distance, -Infinity, Infinity, points, count * 3);
+		return count + n;
+	}
+
+	/** The light space matrix fitted round `count` points for a view (or the shared map), or null to fall back to the square. */
+	protected _shadowFitMatrix(key: object, count: number, follow: boolean): Float32Array | null {
+		if (!this._shadowManager || !this._shadowCastingLight || count === 0) return null;
+		let box = this._shadowFitBoxes.get(key);
+		if (!box) {
+			box = igeShadowFitBox();
+			this._shadowFitBoxes.set(key, box);
+		}
+		return this._shadowManager.fitLightSpaceMatrix(this._shadowLightId, this._shadowCastingLight, this._shadowFitPoints, count, box, { slack: this._shadowFit.slack, follow });
 	}
 
 	/**
@@ -2017,15 +2104,23 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			return false;
 		}
 
-		// Enlarge the frustum just enough to cover every viewport's area
-		this._shadowManager.frustumSize(size + extent);
-		const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(
-			this._shadowLightId,
-			this._shadowCastingLight,
-			undefined,
-			this._shadowCenter((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2)
-		);
-		this._shadowManager.frustumSize(size);
+		// Fitted round everything the views see, or the square enlarged just enough to cover every viewport's area
+		let lightSpaceMatrix: Float32Array | null = null;
+		if (this._shadowFit.enabled && this._cameraController) {
+			let count = 0;
+			for (const viewport of viewports) count = this._shadowFitAdd(this._cameraController.updateCamera(viewport.camera, viewport), count);
+			lightSpaceMatrix = this._shadowFitMatrix(this._shadowFitShared, count, !this._shadowCaching);
+		}
+		if (!lightSpaceMatrix) {
+			this._shadowManager.frustumSize(size + extent);
+			lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(
+				this._shadowLightId,
+				this._shadowCastingLight,
+				undefined,
+				this._shadowCenter((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2)
+			);
+			this._shadowManager.frustumSize(size);
+		}
 
 		if (!lightSpaceMatrix) return false;
 
@@ -2045,10 +2140,52 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
-	 * Per-frame rendering statistics for the most recent frame.
+	 * Per-frame rendering statistics for the most recent frame, the GPU's time for a recent frame (`gpuMs`) and the
+	 * GPU memory held now (`gpuMemory`).
+	 * @example #A frame's GPU time and memory
+	 *     const { gpuMs, gpuMemory } = renderer.stats();
+	 *     console.log(`${gpuMs?.toFixed(1)} ms, ${(gpuMemory.total / 1048576).toFixed(0)} MB`);
 	 */
 	stats(): IgeWebGlRenderStats {
-		return { ...this._stats };
+		return { ...this._stats, gpuMemory: this.gpuMemory() };
+	}
+
+	/**
+	 * The GPU memory the renderer holds now, in bytes by kind: mesh vertices and indices (`geometry`), images and
+	 * canvases drawn with (`textures`), offscreen frames (`renderTargets`: post-processing, dynamic resolution,
+	 * panels, outlines), shadow maps and their static caches (`shadowMaps`), data written each frame (`buffers`:
+	 * instances, bones, particles, decals) and an estimate of the canvas's own buffers (`canvas`). Counted from what
+	 * the renderer made, so the driver's own overhead isn't in it.
+	 */
+	gpuMemory(): IgeWebGlGpuMemory {
+		const m = this._device?.memory() ?? { geometry: 0, textures: 0, renderTargets: 0, shadowMaps: 0, buffers: 0 };
+		const textures = m.textures + (this._textureManager?.memoryBytes() ?? 0);
+		const canvas = this._canvasBytes();
+		return { ...m, textures, canvas, total: m.geometry + textures + m.renderTargets + m.shadowMaps + m.buffers + canvas };
+	}
+
+	/** An estimate of the canvas's own buffers: colour and depth-stencil (each sample, when antialiased, and the resolved colour), and the picture shown. */
+	protected _canvasBytes(): number {
+		const gl = this._canvasContext;
+		if (!gl || this._contextLost) return 0;
+		const pixels = gl.drawingBufferWidth * gl.drawingBufferHeight;
+		const a = gl.getContextAttributes();
+		const depthStencil = a?.depth || a?.stencil ? 4 : 0;
+		const perPixel = a?.antialias ? (4 + depthStencil) * 4 + 4 : 4 + depthStencil;
+		return pixels * (perPixel + 4);
+	}
+
+	/**
+	 * Gets / sets whether each frame is timed on the GPU (a timer query round its drawing) for `stats().gpuMs` (on by
+	 * default; nothing happens where the browser has no timer query). Dynamic resolution times frames either way.
+	 */
+	gpuTiming(): boolean;
+	gpuTiming(val: boolean): this;
+	gpuTiming(val?: boolean): boolean | this {
+		if (val === undefined) return this._gpuTiming;
+		this._gpuTiming = val;
+		if (!val) this._stats.gpuMs = null;
+		return this;
 	}
 
 	/**
@@ -2087,18 +2224,30 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const cc = this._clearColor;
 		this._stateManager.reset();
 		this._stateManager.setScissorTest(false);
+		// GPU timing: the scene's time (what dynamic resolution steers by) and what's drawn after it, from a frame or two ago
+		const dynamicRes = !!this._dynamicRes?.settings.enabled;
+		const timing = dynamicRes || this._gpuTiming;
+		let sceneGpuMs: number | null = null;
+		if (timing) {
+			this._gpuTimer ??= new IgeGpuFrameTimer(gl as WebGL2RenderingContext);
+			sceneGpuMs = this._gpuTimer.poll();
+			if (this._gpuTiming) {
+				this._gpuTimerTail ??= new IgeGpuFrameTimer(gl as WebGL2RenderingContext);
+				const tail = this._gpuTimerTail.poll();
+				stats.gpuMs = sceneGpuMs === null ? null : sceneGpuMs + (tail ?? 0);
+			}
+		}
 		// Dynamic resolution: the scale for this frame, from how recent frames went
-		if (this._dynamicRes?.settings.enabled) {
-			if (!this._gpuTimer) this._gpuTimer = new IgeGpuFrameTimer(gl as WebGL2RenderingContext);
+		if (dynamicRes) {
 			const eng = ige.engine;
 			const cap = eng?._maxRenderRate > 0 ? 1000 / eng._maxRenderRate : 0;
 			const continuous = !(eng?._useManualRender || eng?._renderOnDemand);
-			this._dynamicRes.frame({ now: performance.now(), gpuMs: this._gpuTimer?.poll() ?? null, continuous, capMs: cap });
+			this._dynamicRes.frame({ now: performance.now(), gpuMs: sceneGpuMs, continuous, capMs: cap });
 		}
 		const post = this._postProcessor();
 		const postActive = !!post && post.begin(this._canvasElement!.width, this._canvasElement!.height);
 		this._frameScale = postActive ? post!.renderScale ?? 1 : 1;
-		if (this._dynamicRes?.settings.enabled) this._gpuTimer?.begin();
+		if (timing) this._gpuTimer?.begin();
 		const size = this._frameScale < 1
 			? { width: Math.max(1, Math.round(this._canvasElement!.width * this._frameScale)), height: Math.max(1, Math.round(this._canvasElement!.height * this._frameScale)) }
 			: { width: this._canvasElement!.width, height: this._canvasElement!.height };
@@ -2122,6 +2271,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				post!.end();
 				this._stateManager.reset();
 			}
+			this._gpuTimer?.end();
 			return true;
 		}
 
@@ -2176,6 +2326,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 		this._gpuTimer?.end();
 		this._frameScale = 1;
+		if (this._gpuTiming) this._gpuTimerTail?.begin();
 
 		// Outlines round what's marked (IgeEntity.outline()), crisp over the finished frame
 		this._renderOutlines();
@@ -2188,6 +2339,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// Overlays (the document UI) over the whole canvas, last of all
 		this._renderOverlays();
+		this._gpuTimerTail?.end();
 
 		// Lines queued with debugLine() last one rendered frame
 		this._debugLineVertices = 0;
@@ -3028,14 +3180,20 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// Directional shadow map, centred on this viewport's view target
 		// ------------------------------------------------------------
 		if (this.shadowsEnabled() && this._shadowManager && this._shadowCastingLight && this._sharedShadowFrame !== this._frameId) {
-			const target = (camera as any)._lookAt as { x: number; y: number; z: number } | undefined;
-			const center = target ? this._shadowCenter(target.x, target.y, target.z) : { x: 0, y: 0, z: 0 };
-			const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(
-				this._shadowLightId,
-				this._shadowCastingLight,
-				{ x: camX, y: camY, z: camZ },
-				center
-			);
+			// Fitted to what this view sees (shadowFit()), or the square round its target
+			let lightSpaceMatrix = this._shadowFit.enabled
+				? this._shadowFitMatrix(viewport, this._shadowFitAdd(matrices, 0), !(this._shadowCaching && !inPanel))
+				: null;
+			if (!lightSpaceMatrix) {
+				const target = (camera as any)._lookAt as { x: number; y: number; z: number } | undefined;
+				const center = target ? this._shadowCenter(target.x, target.y, target.z) : { x: 0, y: 0, z: 0 };
+				lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(
+					this._shadowLightId,
+					this._shadowCastingLight,
+					{ x: camX, y: camY, z: camZ },
+					center
+				);
+			}
 
 			if (lightSpaceMatrix) {
 				this._renderDirectionalShadowPass(data, lightSpaceMatrix, frustum);
@@ -3808,7 +3966,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				ly = m[6] / g;
 				lz = m[10] / g;
 				lLen = 2 / g;
-				cullPad = (shadowManager.frustumSize() as number) * SHADOW_CULL_MARGIN;
+				// (A fitted map's size is its matrix's: the larger half-size across the light)
+				const half = this._shadowFit.enabled
+					? Math.max(1 / Math.hypot(m[0], m[4], m[8]), 1 / Math.hypot(m[1], m[5], m[9]))
+					: shadowManager.frustumSize() as number;
+				cullPad = half * SHADOW_CULL_MARGIN;
 			}
 		}
 
@@ -4070,8 +4232,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 	/**
 	 * Upload a particle or decal system's packed render data to its own
-	 * GPU buffer (once per frame, only when it changed). Buffers of systems
-	 * that haven't been seen for a while are deleted.
+	 * GPU buffer (once per frame, only when it changed). The count uploaded
+	 * is kept with it and is what's drawn this frame, so a draw never asks
+	 * for more instances than the buffer holds. Buffers of systems that
+	 * haven't been seen for a while are deleted.
 	 */
 	protected _uploadInstanceData(system: IgeWebGlInstanceSource, floatsPerInstance: number): void {
 		const device = this._device;
@@ -4079,15 +4243,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		let entry = this._particleBuffers.get(system);
 		if (!entry) {
-			entry = { buffer: device.createBuffer({ size: 0, usage: "vertex", stream: true, label: "effect instances" }), version: -1, lastFrame: 0 };
+			entry = { buffer: device.createBuffer({ size: 0, usage: "vertex", stream: true, label: "effect instances" }), version: -1, count: 0, lastFrame: 0 };
 			this._particleBuffers.set(system, entry);
 		}
 		entry.lastFrame = this._frameId;
 
+		// (renderData() packs anything added since the system's update first, so count and data agree)
 		const { data, count } = system.renderData();
-		if (count > 0 && entry.version !== system._renderVersion) {
-			device.writeBuffer(entry.buffer, 0, data.subarray(0, count * floatsPerInstance));
+		if (entry.version !== system._renderVersion || entry.count !== count) {
+			if (count > 0) device.writeBuffer(entry.buffer, 0, data.subarray(0, count * floatsPerInstance));
 			entry.version = system._renderVersion;
+			entry.count = count;
 		}
 
 		// Periodically free buffers belonging to systems no longer rendered
@@ -4249,7 +4415,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const meshes: { system: IgeDecalSystem3d; texture: WebGLTexture | null }[] = [];
 		for (let s = 0; s < systems.length; s++) {
 			const system = systems[s];
-			const { count } = system.renderData();
+			// The instances uploaded this frame (_uploadInstanceData), not the system's count now
+			const count = this._particleBuffers.get(system)?.count ?? 0;
 			if (count === 0) continue;
 			const c = system._boundsCenter;
 			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius)) continue;
@@ -4353,7 +4520,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const drawn: { system: IgeParticleSystem3d; count: number; texture: WebGLTexture | null }[] = [];
 		for (let s = 0; s < systems.length; s++) {
 			const system = systems[s];
-			const { count } = system.renderData();
+			// The instances uploaded this frame (_uploadInstanceData), not the system's count now
+			const count = this._particleBuffers.get(system)?.count ?? 0;
 			if (count === 0) continue;
 			const c = system._boundsCenter;
 			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius)) continue;

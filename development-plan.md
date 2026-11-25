@@ -46,7 +46,8 @@ plan prioritises what the target games need.
 | Effects | `IgeParticleSystem3d`, `IgeDecalSystem3d` (flat floor decals with `add()`, decals projected onto walls, steps and uneven terrain with `project()`; multiply-blended so they take the surface's lighting), sprite sheet cells, tint, additive blending and billboard modes |
 | Camera | Perspective and orthographic projection, up vector and look direction, `lookAtPoint()`, presets (`isometric`, `isometric45`, `topDown`, `sideScroller`, `screen2d`) |
 | 2D | WebGL when available (`igeCreateRenderer()`, or no renderer assigned), `screen2d` camera (Canvas 2D style: y down, one unit per pixel, zoom by camera scale), smart textures drawn per entity (redrawn every frame, or when dirty with `cache(true)`), flat 2D sprites with full 2D transforms, entity `preTick` behaviours (run once per frame), `IgeFontEntity` text (native fonts, bitmap font sheets, `bindData()`), texture filters (including filters applied later and animated pre-filters), split screen |
-| Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()` |
+| Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()`, `stats().gpuMs` (GPU time for the whole frame from a timer query) and `stats().gpuMemory` (bytes by kind, counted per buffer and texture) |
+| Shadows | The sun's shadow map fitted to each view with `shadowFit()` (2026-11-24): a top-down view's corners and a street view out to a shadow distance, texel-snapped, and with shadow caching kept still while it holds the view |
 | Physics | `IgePhysics3d` over pluggable backends (`IgePhysicsBackend`: SI units, opaque handles, no engine types), Jolt the first (loaded on demand, multithreaded when the page is cross-origin isolated), chosen with `create({ backend })`: static, dynamic and kinematic boxes, spheres, capsules, triangle meshes, heightfields, convex hulls and compound shapes on entities, named collision layers, trigger volumes (`addSensor()`, enter and exit events), impact events, player characters (`addCharacter()`: steps, slopes, pushing, optionally unpushable), interpolation between fixed steps, impulses, raycasts, `createRagdoll()` from a skinned entity's skeleton, per-body state as JSON for ownership changes and moving between servers; `entity.quaternion()` for full 3D rotations. Behaviour tests run per backend through the public API. The zombie demo runs on it with `?physics=1`. Vehicles: `addVehicle()` makes cars, vans, buses and motorcycles with wheel entities posed, speed, revs, gear and tyre slip readouts, air control, self-righting cars, wheelies and stoppies, motorcycles that can be let fall, impact and landing events, and `getState()` / `setState()` plus a kinematic mode for networked cars; kerbs ridden up (`stepHeight`), wheel guards, combined tyre grip (`combinedGrip`), a clutch as strong as the engine (`gearbox.clutchStrength`), options changed while driving (`setOptions()`); bodies take `ccd` and `centreOfMass`; example `vehicles`, `guides/vehicles-3d.md`. Aircraft and boats (spike, 2026-11-24): shared water (`physics.water()`, `IgeWater3d`: one wave function for buoyancy, drawing and every machine), `addBoat()` (four presets), `addAircraft()` (light plane, floatplane, jet, airliner, helicopter) and `addBuoyancy()` (crates, wrecks, ragdolls) in engine-neutral code over the backend's forces and torques, GTA-style assists, impact and landing events, JSON state and kinematic mode; example `airSea`, `guides/aircraft-boats-3d.md`. Breakable props: `addBreakable()` cuts a prop where it's hit at run time (`igeFracture()`: seeded and deterministic across browsers, convex pieces with capped cut faces, Voronoi chunks, glass rays and rings, snapped planks, thin walls into shards) or swaps in pre-made pieces; thresholds, the hitter carried through fixed props, debris lifetimes and a world cap, big pieces with stable ids for syncing and a break event clients replay; effects by material; example `breakables`, `guides/breakables-3d.md` |
 | Loading | `igeLoadAssets()`: textures, cell sheets, models, animation files and JSON in one call with progress; missing files report errors instead of hanging |
 | Networking | Rooms on IgeNetIo (`IgeRoomServer`, `IgeRoomClient`): join codes, seats kept across reconnects, presence, chat, room info, an ordered command stream with snapshots and resync, save and restore |
@@ -74,6 +75,11 @@ On the development machine (Apple silicon, Chrome):
 - Breakables (M1 Max, Chrome, threaded Jolt): cutting a prop takes 0.3 to 1.3 ms and spawning its 6 to 30 pieces
   0.4 to 1.8 ms, so it runs on the main thread; no frame went over about 19 ms after a break. Driving through the
   example's street (12 breaks in 12 s) peaked at 109 awake bodies and a 2.4 ms physics step.
+- Fitted shadow map (`shadowFit()`, a 4096 map, the GTA game's sun): top-down from 130 m at 16:9 about 235 by 200 m
+  (5 to 6 cm a texel; the game's hand-sized square was 259 m, 6.3 cm), from 34 m 64 by 54 m (1.6 cm). Street level,
+  6 to 10 cm a texel out to 180 m, 4 to 5 cm out to 100 m (the old 180 m square: 4.4 cm, but only 90 to 115 m ahead).
+  With caching, driving at 30 m/s it moved 5 times in 240 m at street level, 6 in 300 m from 130 m up and 22 in 240 m
+  from 34 m up.
 
 ### Verified
 
@@ -112,6 +118,14 @@ On the development machine (Apple silicon, Chrome):
 - The automatic renderer (`webGl2d?auto=1`: WebGL with the screen2d camera) and `igeLoadAssets()` in the 2D example and
   zombie demo; a missing texture reports HTTP 404 and no longer blocks `ige.textures.whenLoaded()`.
 
+- The fitted shadow map in the browser (`src/examples/shadowFit`, 2026-11-24): every frame checks a grid of screen
+  points on the ground and roofs (corners included) against the shadow map. Driving top-down (130 m and 34 m) and at
+  street level, caching on and off: no frame with any point outside the map. The old square missed some in nearly
+  every top-down frame (worst 1.28 times its half-size; 2.5 at street level within 180 m).
+- Decals and particles added after their systems update (the engine's postUpdate, as after a physics step): with the
+  old code, 71 `GL_INVALID_OPERATION: glDrawElementsInstanced: Vertex buffer is not big enough` errors in 6 s; fixed,
+  none in 10 s with 111,000 marks and 15,000 smoke bursts added, `gl.getError()` checked every frame.
+
 ### Not verified
 
 - Gamepads with real controllers (the input path is verified with simulated ones).
@@ -149,6 +163,10 @@ On the development machine (Apple silicon, Chrome):
 - **Deprecated physics options.** The top-level `maxBodyPairs` and `maxContactConstraints` of
   `IgePhysics3d.create()` warn once and are read into `jolt: { maxBodyPairs, maxContactConstraints }`. They are
   removed in the next minor version: pass them under `jolt`.
+- **Fitted shadows by default?** `shadowFit()` is off by default, so existing scenes draw as before. It needs
+  `distance` and the height band to be set well, which depend on a game's units and scale.
+- **Cascades.** One fitted map covers top-down views finely, but at street level it trades near detail for reach
+  (6 to 10 cm a texel to 180 m). Two cascades (a near map and a far one) would give 2 to 3 cm near the camera.
 
 ### Planned, waiting
 

@@ -101,7 +101,7 @@ export class IgePanelTargets {
 			const samples = effective;
 			const linear = { minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" } as const;
 			const nearest = { minFilter: "nearest", magFilter: "nearest", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" } as const;
-			const color = d.createTexture({ width, height, format: "rgba8unorm", sampler: linear, label: "panel" });
+			const color = d.createTexture({ width, height, format: "rgba8unorm", sampler: linear, memory: "renderTargets", label: "panel" });
 			const renderColor = multisampled ? d.createTexture({ width, height, format: "rgba8unorm", sampleCount: samples, sampler: linear, label: "panel frame" }) : color;
 			const renderDepth = d.createTexture({ width, height, format: "depth24plus-stencil8", sampleCount: multisampled ? samples : undefined, sampler: nearest, label: "panel depth" });
 			const made: IgePanelTarget = {
@@ -116,7 +116,7 @@ export class IgePanelTargets {
 		}
 		// The history frame: made when an effect wants it, freed when none does
 		if (wantHistory && !t.history) {
-			t.history = d.createTexture({ width, height, format: "rgba8unorm", sampler: { minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }, label: "panel history" });
+			t.history = d.createTexture({ width, height, format: "rgba8unorm", sampler: { minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }, memory: "renderTargets", label: "panel history" });
 			t.historyKey = null;
 		} else if (!wantHistory && t.history) {
 			d.destroyTexture(t.history);

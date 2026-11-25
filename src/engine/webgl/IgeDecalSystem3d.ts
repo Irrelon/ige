@@ -250,6 +250,8 @@ export class IgeDecalSystem3d extends IgeEntity {
 		d[o + 9] = options.cell ?? Math.floor(Math.random() * grid * grid);
 		this._decalAge[slot] = 0;
 
+		// Packed when next drawn (renderData()) or updated, whichever comes first
+		if (!this._dirty) markSceneChanged();
 		this._dirty = true;
 		return this;
 	}
@@ -294,6 +296,7 @@ export class IgeDecalSystem3d extends IgeEntity {
 		const color = options.color || DEFAULT_COLOR;
 		this._projected.push({ vertices, r: color.r, g: color.g, b: color.b, opacity: options.opacity ?? 0.9, age: 0 });
 		while (this._projected.length > Math.max(1, this._options.maxProjected)) this._projected.shift();
+		if (!this._meshDirty) markSceneChanged();
 		this._meshDirty = true;
 		return this;
 	}
@@ -323,6 +326,11 @@ export class IgeDecalSystem3d extends IgeEntity {
 	 * floats per vertex (x, y, z, u, v, r, g, b, a), three per triangle.
 	 */
 	meshRenderData (): { data: Float32Array; vertexCount: number } {
+		// Decals projected since the last update() are packed now, so the count matches the data
+		if (this._meshDirty) {
+			this._rebuildMeshRenderData(false);
+			this._meshDirty = false;
+		}
 		return { data: this._meshRenderData, vertexCount: this._meshVertexCount };
 	}
 
@@ -349,9 +357,15 @@ export class IgeDecalSystem3d extends IgeEntity {
 	/**
 	 * Returns the packed render data and decal count. Each decal uses
 	 * DECAL_INSTANCE_FLOATS floats: x, y, z, size, r, g, b, a, rotation,
-	 * atlas cell, 0, 0.
+	 * atlas cell, 0, 0. Decals added since the last update() are packed
+	 * first, so `count` never runs ahead of `data` (the renderer uploads
+	 * and draws exactly that many).
 	 */
 	renderData (): { data: Float32Array; count: number } {
+		if (this._dirty) {
+			this._rebuildRenderData(false);
+			this._dirty = false;
+		}
 		return { data: this._renderData, count: this._count };
 	}
 
@@ -400,7 +414,8 @@ export class IgeDecalSystem3d extends IgeEntity {
 		}
 	}
 
-	_rebuildMeshRenderData (): void {
+	/** Pack the projected decals' triangles (`mark`: report the change, unless whoever made it already has). */
+	_rebuildMeshRenderData (mark: boolean = true): void {
 		const { lifetime, fadeTime } = this._options;
 		let vertexCount = 0;
 		for (const decal of this._projected) vertexCount += decal.vertices.length / PROJECTED_DECAL_VERTEX_FLOATS;
@@ -451,10 +466,11 @@ export class IgeDecalSystem3d extends IgeEntity {
 		}
 
 		this._meshRenderVersion++;
-		markSceneChanged();
+		if (mark) markSceneChanged();
 	}
 
-	_rebuildRenderData (): void {
+	/** Pack the flat decals, oldest first (`mark`: report the change, unless whoever made it already has). */
+	_rebuildRenderData (mark: boolean = true): void {
 		const { lifetime, fadeTime, maxDecals: max } = this._options;
 		const d = this._decalData;
 		const out = this._renderData;
@@ -503,6 +519,6 @@ export class IgeDecalSystem3d extends IgeEntity {
 		}
 
 		this._renderVersion++;
-		markSceneChanged();
+		if (mark) markSceneChanged();
 	}
 }

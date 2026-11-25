@@ -600,8 +600,8 @@ export class IgeWebGlPostProcess {
 		this._samples = samples;
 		const format: IgeGpuTextureFormat = half ? "rgba16float" : "rgba8unorm";
 
-		this._msaaColor = d.createTexture({ width, height, format, sampleCount: samples, sampler: LINEAR, label: "post frame" });
-		this._msaaDepth = d.createTexture({ width, height, format: "depth24plus-stencil8", sampleCount: samples, sampler: NEAREST, label: "post frame depth" });
+		this._msaaColor = d.createTexture({ width, height, format, sampleCount: samples, sampler: LINEAR, memory: "renderTargets", label: "post frame" });
+		this._msaaDepth = d.createTexture({ width, height, format: "depth24plus-stencil8", sampleCount: samples, sampler: NEAREST, memory: "renderTargets", label: "post frame depth" });
 
 		this._scene = this._target(width, height);
 		const hw = Math.max(1, width >> 1), hh = Math.max(1, height >> 1);
@@ -610,14 +610,14 @@ export class IgeWebGlPostProcess {
 	}
 
 	protected _target (w: number, h: number): IgeGpuTexture {
-		return this._device.createTexture({ width: w, height: h, format: this._half ? "rgba16float" : "rgba8unorm", sampler: LINEAR, label: "post target" });
+		return this._device.createTexture({ width: w, height: h, format: this._half ? "rgba16float" : "rgba8unorm", sampler: LINEAR, memory: "renderTargets", label: "post target" });
 	}
 
 	/** Depth of field: resolve the depth, blur at half size by how out of focus each sample is, then blend by depth. Returns the texture to composite. */
 	protected _depthOfField (scene: IgeGpuTexture): IgeGpuTexture {
 		const d = this._device, s = this.settings;
 		if (!this._dofDepth) {
-			this._dofDepth = d.createTexture({ width: this._w, height: this._h, format: "depth24plus-stencil8", sampler: NEAREST, label: "post depth" });
+			this._dofDepth = d.createTexture({ width: this._w, height: this._h, format: "depth24plus-stencil8", sampler: NEAREST, memory: "renderTargets", label: "post depth" });
 			this._dofHalf = this._target(Math.max(1, this._w >> 1), Math.max(1, this._h >> 1));
 			this._dofOut = this._target(this._w, this._h);
 		}

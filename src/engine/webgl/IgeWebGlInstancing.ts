@@ -330,7 +330,7 @@ export class IgeWebGlBonePalette {
 	constructor (device: IgeGpuDevice) {
 		this._device = device;
 		this._texture = device.createTexture({
-			width: 0, height: 0, format: "rgba32float", label: "bone palette",
+			width: 0, height: 0, format: "rgba32float", memory: "buffers", label: "bone palette",
 			sampler: { minFilter: "nearest", magFilter: "nearest", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }
 		});
 	}

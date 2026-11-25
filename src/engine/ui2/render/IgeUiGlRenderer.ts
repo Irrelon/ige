@@ -1640,7 +1640,7 @@ export class IgeUiGlRenderer {
 		const tw = Math.max(w, have?.w ?? 0), th = Math.max(h, have?.h ?? 0);
 		// (Read with its smaller levels when they're asked for: made before it's read)
 		const sampler = { minFilter: "linear" as const, magFilter: "linear" as const, mipmapFilter: mips ? "linear" as const : "none" as const, addressModeU: "clamp-to-edge" as const, addressModeV: "clamp-to-edge" as const };
-		if (!have) return { tex: d.createTexture({ width: tw, height: th, format: "rgba8unorm", mipmaps: true, sampler, label: "ui2 target" }), w: tw, h: th };
+		if (!have) return { tex: d.createTexture({ width: tw, height: th, format: "rgba8unorm", mipmaps: true, sampler, memory: "renderTargets", label: "ui2 target" }), w: tw, h: th };
 		d.resizeTexture(have.tex, tw, th);
 		d.setSampler(have.tex, sampler);
 		have.w = tw;

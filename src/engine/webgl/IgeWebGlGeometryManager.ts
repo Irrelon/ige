@@ -41,11 +41,11 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 	protected _upload(geometry: IgeWebGlGeometry, vertices: Float32Array, indices?: Uint16Array | Uint32Array): void {
 		const gl = this._gl, d = this._device;
 		d.invalidate();
-		geometry.gpuVertex = d.createBuffer({ size: vertices.byteLength, usage: "vertex", label: `${geometry.id} vertices` });
+		geometry.gpuVertex = d.createBuffer({ size: vertices.byteLength, usage: "vertex", memory: "geometry", label: `${geometry.id} vertices` });
 		d.writeBuffer(geometry.gpuVertex, 0, vertices);
 		geometry.vertexBuffer = webGl2Buffer(d, geometry.gpuVertex);
 		if (indices) {
-			geometry.gpuIndex = d.createBuffer({ size: indices.byteLength, usage: "index", label: `${geometry.id} indices` });
+			geometry.gpuIndex = d.createBuffer({ size: indices.byteLength, usage: "index", memory: "geometry", label: `${geometry.id} indices` });
 			d.writeBuffer(geometry.gpuIndex, 0, indices);
 			geometry.indexBuffer = webGl2Buffer(d, geometry.gpuIndex);
 		}

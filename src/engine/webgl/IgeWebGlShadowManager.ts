@@ -4,6 +4,7 @@ import type { IgeWebGlProgram } from "@/engine/webgl/IgeWebGlProgram";
 import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
 import type { IgeGpuRenderPass, IgeGpuSamplerDesc, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
 import { type IgeWebGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import { type IgeShadowFitBox, igeFitShadowBox, igeShadowBoxMatrix, igeShadowLightBasis } from "@/engine/webgl/IgeShadowFit";
 
 /**
  * Shadow map configuration.
@@ -303,7 +304,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		this.deleteShadowCache(lightId);
 
 		this._device.invalidate();
-		const depth = this._device.createTexture({ width: cfg.size, height: cfg.size, format: "depth32float", sampler: NEAREST, label: `${lightId} shadow map` });
+		const depth = this._device.createTexture({ width: cfg.size, height: cfg.size, format: "depth32float", sampler: NEAREST, memory: "shadowMaps", label: `${lightId} shadow map` });
 
 		this._shadowMaps.set(lightId, {
 			depth,
@@ -344,7 +345,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		if (existing) this.deleteShadowCache(lightId);
 
 		const cache: IgeShadowCacheData = {
-			depth: this._device.createTexture({ width: shadowMap.size, height: shadowMap.size, format: "depth32float", sampler: NEAREST, label: `${lightId} static shadow casters` }),
+			depth: this._device.createTexture({ width: shadowMap.size, height: shadowMap.size, format: "depth32float", sampler: NEAREST, memory: "shadowMaps", label: `${lightId} static shadow casters` }),
 			size: shadowMap.size,
 			matrix: new Float32Array(16),
 			signatureA: 0,
@@ -467,6 +468,34 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		// Copy to shadow map data
 		shadowMap.lightSpaceMatrix.set(this._lightSpaceMatrix.matrix);
 
+		return shadowMap.lightSpaceMatrix;
+	}
+
+	/**
+	 * Fit a directional light's shadow map round what a view sees (see IgeShadowFit): `points` are the corners of the
+	 * volume that can take shadows (x, y, z triples, igeShadowFitVolume()), `box` the view's fitted box, kept between
+	 * frames. The box is snapped to the map's texels, steps through a ladder of sizes, and with `follow` false is left
+	 * where it is while it still holds the view (shadow caching). Its depth spans at least the shadow planes' far -
+	 * near, so the bias means what it did. Returns the light space matrix (null: the light has no map).
+	 */
+	fitLightSpaceMatrix(
+		lightId: string,
+		light: IgeDirectionalLight,
+		points: ArrayLike<number>,
+		count: number,
+		box: IgeShadowFitBox,
+		options: { slack: number; follow: boolean }
+	): Float32Array | null {
+		const shadowMap = this._shadowMaps.get(lightId);
+		if (!shadowMap || count === 0) return null;
+		const basis = igeShadowLightBasis(light.direction() as { x: number; y: number; z: number });
+		igeFitShadowBox(box, points, count, basis, {
+			mapSize: shadowMap.size,
+			depthSpan: Math.max(this._shadowFar - this._shadowNear, 1e-3),
+			slack: options.slack,
+			follow: options.follow
+		});
+		igeShadowBoxMatrix(box, basis, shadowMap.lightSpaceMatrix);
 		return shadowMap.lightSpaceMatrix;
 	}
 
@@ -620,8 +649,8 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const d = this._device;
 		d.invalidate();
 		const float = this._pointShadowFormat === "r32f" && d.limits.floatTargets;
-		const atlas = d.createTexture({ width: atlasWidth, height: atlasHeight, format: float ? "r32float" : "rgba8unorm", sampler: NEAREST, label: `${lightId} point shadow atlas` });
-		const depth = d.createTexture({ width: atlasWidth, height: atlasHeight, format: "depth16unorm", sampler: NEAREST, label: `${lightId} point shadow depth` });
+		const atlas = d.createTexture({ width: atlasWidth, height: atlasHeight, format: float ? "r32float" : "rgba8unorm", sampler: NEAREST, memory: "shadowMaps", label: `${lightId} point shadow atlas` });
+		const depth = d.createTexture({ width: atlasWidth, height: atlasHeight, format: "depth16unorm", sampler: NEAREST, memory: "shadowMaps", label: `${lightId} point shadow depth` });
 
 		const lightSpaceMatrices: IgeMatrix4[] = [];
 		for (let i = 0; i < 6; i++) {
