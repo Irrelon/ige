@@ -1,8 +1,8 @@
 /**
  * Mesh merging (static batching): many placed pieces become one mesh per material, so a block of a city full of
  * buildings, props and road tiles is a draw or two instead of hundreds. Each piece's transform is applied to its
- * positions and normals (mirrored pieces keep their faces' winding), its indices offset, and its texture coordinates
- * and vertex colours kept. Plain typed-array work with no engine or DOM: it runs in a worker as well as on the main
+ * positions, normals and tangents (mirrored pieces keep their faces' winding), its indices offset, and its texture
+ * coordinates and vertex colours kept. Plain typed-array work with no engine or DOM: it runs in a worker as well as on the main
  * thread, and can hand back meshes already packed (and quantised) for the renderer to upload as they are.
  *
  * @example #A street of houses as one mesh per material, quantised, in a worker
@@ -11,9 +11,10 @@
  *     postMessage(merged, merged.flatMap((m) => geometryTransferables(m.geometry)));
  */
 import { type IgeVertexArrays, type IgeVertexEncodings, packVertices, unpackVertices, vertexBounds, type IgePackedVertices } from "@/engine/webgl/IgeVertexPacking";
+import { igeComputeTangents } from "@/engine/webgl/IgeTangents";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 
-/** A piece's mesh: float arrays (positions needed; normals, texture coordinates and colours if it has them), or a packed mesh. */
+/** A piece's mesh: float arrays (positions needed; normals, texture coordinates, colours and tangents if it has them), or a packed mesh. */
 export interface IgeMergeSource extends IgeVertexArrays {
 	indices?: ArrayLike<number>;
 	packed?: IgePackedVertices;
@@ -78,21 +79,25 @@ class Grow<T extends Float32Array | Uint32Array> {
 	}
 }
 
-/** Positions, normals, texture coordinates and colours of one material's mesh as it's built. */
+/** Positions, normals, texture coordinates, colours and tangents of one material's mesh as it's built. */
 class MergeWriter {
 	pos: Grow<Float32Array>;
 	nrm?: Grow<Float32Array>;
 	uv?: Grow<Float32Array>;
 	col?: Grow<Float32Array>;
+	tan?: Grow<Float32Array>;
+	/** Some of its pieces have tangents and some don't: the whole mesh's are worked out when it's finished. */
+	computeTangents = false;
 	idx: Grow<Uint32Array>;
 	verts = 0;
 	pieces = 0;
 
-	constructor (normals: boolean, uvs: boolean, colors: boolean, room: number) {
+	constructor (normals: boolean, uvs: boolean, colors: boolean, room: number, tangents: boolean = false) {
 		this.pos = new Grow(Float32Array, room * 3);
 		if (normals) this.nrm = new Grow(Float32Array, room * 3);
 		if (uvs) this.uv = new Grow(Float32Array, room * 2);
 		if (colors) this.col = new Grow(Float32Array, room * 4);
+		if (tangents) this.tan = new Grow(Float32Array, room * 4);
 		this.idx = new Grow(Uint32Array, room * 2);
 	}
 
@@ -101,8 +106,15 @@ class MergeWriter {
 		this.nrm?.reserve(verts * 3);
 		this.uv?.reserve(verts * 2);
 		this.col?.reserve(verts * 4);
+		this.tan?.reserve(verts * 4);
 		this.idx.reserve(indices);
 	}
+}
+
+/** Whether a piece's arrays have a tangent for every vertex (meshes with a normal map do). */
+function pieceHasTangents (s: IgeVertexArrays): boolean {
+	const count = Math.floor(s.vertices!.length / 3);
+	return !!s.tangents && count > 0 && s.tangents.length === count * 4;
 }
 
 /** The arrays of a piece's mesh (a packed one unpacked). */
@@ -116,7 +128,9 @@ function sourceArrays (g: IgeMergeSource): IgeVertexArrays & { indices?: ArrayLi
  * Merges placed pieces into one mesh per material (in the order materials first appear). Each piece's matrix moves
  * its positions and turns its normals (by the inverse transpose, so stretched pieces stay lit right); a mirroring
  * matrix flips its triangles' winding so they still face out. Normals, texture coordinates and colours are kept when
- * any piece of the material has them (pieces without get up, 0,0 and white or their `color`). Indices are 16-bit
+ * any piece of the material has them (pieces without get up, 0,0 and white or their `color`). Tangents (for normal
+ * maps) are turned with their pieces when every piece has them, and worked out afresh for the merged mesh when only
+ * some do (it needs normals and texture coordinates). Indices are 16-bit
  * when a mesh has 65,535 vertices or fewer. Each mesh has its bounds (box and sphere) for culling.
  */
 export function mergeGeometry (pieces: IgeMergePiece[], options: IgeMergeOptions = {}): IgeMergedGeometry[] {
@@ -133,15 +147,17 @@ export function mergeGeometry (pieces: IgeMergePiece[], options: IgeMergeOptions
 	let n = 0;
 	for (const [material, list] of groups) {
 		const sources = list.map((p) => sourceArrays(p.geometry));
-		let normals = false, uvs = false, colors = false, room = 0;
+		let normals = false, uvs = false, colors = false, room = 0, withTangents = 0;
 		for (let i = 0; i < list.length; i++) {
 			const s = sources[i];
 			if (s.normals) normals = true;
 			if (s.uvs) uvs = true;
 			if (s.colors || list[i].color) colors = true;
+			if (pieceHasTangents(s)) withTangents++;
 			room += Math.floor(s.vertices!.length / 3);
 		}
-		const w = new MergeWriter(normals, uvs, colors, room);
+		const w = new MergeWriter(normals, uvs, colors, room, withTangents === list.length);
+		w.computeTangents = withTangents > 0 && withTangents < list.length && normals && uvs;
 		for (let i = 0; i < list.length; i++) addPiece(w, list[i], sources[i]);
 		out.push(finish(w, material, `${options.id ?? "merged"}_${n++}`, options));
 	}
@@ -153,7 +169,7 @@ function addPiece (w: MergeWriter, piece: IgeMergePiece, src: IgeVertexArrays & 
 	const pos = src.vertices!;
 	const count = Math.floor(pos.length / 3);
 	if (count === 0) return;
-	const nrm = src.normals, uv = src.uvs;
+	const nrm = src.normals, uv = src.uvs, tan = src.tangents;
 	const colSize = src.colors ? Math.round(src.colors.length / count) : 0;
 	const col = colSize === 3 || colSize === 4 ? src.colors : undefined;
 	const indices = src.indices;
@@ -205,6 +221,22 @@ function addPiece (w: MergeWriter, piece: IgeMergePiece, src: IgeVertexArrays & 
 			} else {
 				q[o * 3] = 0; q[o * 3 + 1] = 1; q[o * 3 + 2] = 0;
 			}
+		}
+		if (w.tan) {
+			// Tangents run along the surface, so turn with the matrix itself; a mirror flips the handedness
+			const q = w.tan.a;
+			const tx = tan![v * 4], ty = tan![v * 4 + 1], tz = tan![v * 4 + 2], tw = tan![v * 4 + 3];
+			let x = tx, y = ty, z = tz;
+			if (m) {
+				x = m[0] * tx + m[4] * ty + m[8] * tz;
+				y = m[1] * tx + m[5] * ty + m[9] * tz;
+				z = m[2] * tx + m[6] * ty + m[10] * tz;
+				const len = Math.sqrt(x * x + y * y + z * z);
+				if (len > 0) {
+					x /= len; y /= len; z /= len;
+				}
+			}
+			q[o * 4] = x; q[o * 4 + 1] = y; q[o * 4 + 2] = z; q[o * 4 + 3] = mirrored ? -tw : tw;
 		}
 		if (w.uv) {
 			const t = w.uv.a;
@@ -278,6 +310,11 @@ function finish (w: MergeWriter, material: unknown, id: string, options: IgeMerg
 	if (w.uv) arrays.uvs = w.uv.a.slice(0, verts * 2);
 	if (w.col) arrays.colors = w.col.a.slice(0, verts * 4);
 	const indices = verts <= 65535 ? Uint16Array.from(w.idx.a.subarray(0, w.idx.n)) : w.idx.a.slice(0, w.idx.n);
+	if (w.tan) arrays.tangents = w.tan.a.slice(0, verts * 4);
+	else if (w.computeTangents) {
+		const tangents = igeComputeTangents({ vertices, normals: arrays.normals as Float32Array, uvs: arrays.uvs as Float32Array, indices });
+		if (tangents) arrays.tangents = tangents;
+	}
 	const b = vertexBounds(vertices, verts);
 	const geometry: IgeGeometryData3d = {
 		id,

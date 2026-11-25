@@ -1,5 +1,6 @@
 import { mergeGeometry, type IgeMergeSource } from "@/engine/webgl/IgeGeometryMerge";
 import { IGE_QUANTISED_ENCODINGS, unpackVertices } from "@/engine/webgl/IgeVertexPacking";
+import { igeComputeTangents } from "@/engine/webgl/IgeTangents";
 
 /** One triangle in the XY plane facing +Z, texture coordinates at its corners. */
 function triangle (): IgeMergeSource {
@@ -133,6 +134,34 @@ describe("mergeGeometry", () => {
 		const [m] = mergeGeometry([{ geometry: big }, { geometry: triangle() }]);
 		expect(m.geometry.indices).toBeInstanceOf(Uint32Array);
 		expect(Array.from(m.geometry.indices!)).toEqual([0, 1, 69999, 70000, 70001, 70002]);
+	});
+
+	it("turns tangents with their pieces and flips their handedness when mirrored", () => {
+		// The triangle's u runs along +x: tangent +x, handedness 1
+		const withTangents = (): IgeMergeSource => ({ ...triangle(), tangents: new Float32Array([1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1]) });
+		const [m] = mergeGeometry([
+			{ geometry: withTangents(), matrix: trs(0, 0, 0, Math.PI / 2, 3, 1, 1) },
+			{ geometry: withTangents(), matrix: trs(0, 0, 0, 0, -1, 1, 1) }
+		]);
+		const t = Array.from(m.geometry.tangents!).map((x) => +x.toFixed(5));
+		// A quarter turn about y (stretched along its own x): +x to -z, unit length
+		expect(t.slice(0, 4)).toEqual([0, 0, -1, 1]);
+		// Mirrored in x: the tangent follows the mirror and the handedness flips
+		expect(t.slice(12, 16)).toEqual([-1, 0, 0, -1]);
+	});
+
+	it("works out tangents for the merged mesh when only some pieces have them", () => {
+		const plain = triangle();
+		const mapped: IgeMergeSource = { ...triangle(), tangents: new Float32Array([1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1]) };
+		const [m] = mergeGeometry([{ geometry: plain }, { geometry: mapped, matrix: trs(5, 0, 0) }]);
+		// The same as tangents made from the merged mesh's positions, normals and texture coordinates
+		expect(m.geometry.tangents).toEqual(igeComputeTangents(m.geometry));
+		expect(Array.from(m.geometry.tangents!.slice(0, 3)).map((x) => +x.toFixed(5))).toEqual([1, 0, 0]);
+		// None have them: none made
+		expect(mergeGeometry([{ geometry: triangle() }])[0].geometry.tangents).toBeUndefined();
+		// Packed with them: compact
+		const [packed] = mergeGeometry([{ geometry: mapped }], { pack: IGE_QUANTISED_ENCODINGS });
+		expect(packed.geometry.packed!.attributes.map((a) => a.name)).toEqual(["position", "normal", "uv", "tangent"]);
 	});
 
 	it("hands back packed, quantised meshes ready to upload, and reads packed pieces", () => {

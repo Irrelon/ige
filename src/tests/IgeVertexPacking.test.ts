@@ -44,6 +44,7 @@ function oldInterleave (d: IgeGeometryData3d): Float32Array {
 		if (colorSize) out.push(d.colors![i * colorSize], d.colors![i * colorSize + 1], d.colors![i * colorSize + 2], colorSize === 4 ? d.colors![i * colorSize + 3] : 1);
 		if (d.boneWeights) out.push(...Array.from(d.boneWeights.subarray(i * 4, i * 4 + 4)));
 		if (d.boneIndices) out.push(...Array.from(d.boneIndices.subarray(i * 4, i * 4 + 4)));
+		if (d.tangents && d.tangents.length === n * 4) out.push(...Array.from(d.tangents.subarray(i * 4, i * 4 + 4)));
 	}
 	return new Float32Array(out);
 }
@@ -101,6 +102,40 @@ describe("packVertices", () => {
 		expect(packed.uvDecode).toEqual({ scale: [40, 40], offset: [-3, -3] });
 		const back = unpackVertices(packed);
 		for (let i = 0; i < mesh.uvs.length; i++) expect(back.uvs![i]).toBeCloseTo(mesh.uvs[i], 3);
+	});
+
+	it("packs tangents last, as the renderer interleaved them, only when every vertex has one", () => {
+		const mesh = box(-1, 0, -2, 3, 5, 2);
+		mesh.boneWeights = new Float32Array(24 * 4).fill(0.25);
+		mesh.boneIndices = new Uint8Array(24 * 4).map((_, i) => i % 5);
+		mesh.tangents = new Float32Array(24 * 4).map((_, i) => (i % 4 === 3 ? (i % 8 === 3 ? 1 : -1) : (i % 4) / 4));
+		const packed = packVertices(mesh);
+		expect(packed.stride).toBe((3 + 3 + 2 + 4 + 4 + 4) * 4);
+		expect(packed.attributes.map((a) => `${a.name}:${a.format}@${a.offset}`).slice(-2)).toEqual(["boneIndices:float32x4@48", "tangent:float32x4@64"]);
+		expect(new Float32Array(packed.data)).toEqual(oldInterleave(mesh));
+		expect(geometryGpuBytes(mesh)).toBe(packed.data.byteLength + mesh.indices!.byteLength);
+		// Not four for every vertex: left out
+		const short = { ...box(0, 0, 0, 1, 1, 1), tangents: new Float32Array(24 * 3) };
+		expect(packVertices(short).attributes.map((a) => a.name)).toEqual(["position", "normal", "uv"]);
+	});
+
+	it("quantises tangents to 4 bytes, handedness exact", () => {
+		const mesh = box(-32, 0, -32, 32, 25, 32);
+		const tangents = new Float32Array(24 * 4);
+		for (let i = 0; i < 24; i++) {
+			const a = i * 0.3;
+			tangents.set([Math.cos(a), 0, Math.sin(a), i % 2 ? 1 : -1], i * 4);
+		}
+		mesh.tangents = tangents;
+		const packed = packVertices(mesh, IGE_QUANTISED_ENCODINGS);
+		expect(packed.stride).toBe(20);
+		expect(packed.attributes.map((a) => `${a.name}:${a.format}@${a.offset}`)).toEqual(["position:snorm16x4@0", "normal:snorm8x4@8", "uv:unorm16x2@12", "tangent:snorm8x4@16"]);
+		const back = unpackVertices(packed);
+		for (let i = 0; i < tangents.length; i++) {
+			if (i % 4 === 3) expect(back.tangents![i]).toBe(tangents[i]);
+			else expect(Math.abs(back.tangents![i] - tangents[i])).toBeLessThan(1 / 127);
+		}
+		expect(geometryGpuBytes({ ...mesh, vertexEncodings: IGE_QUANTISED_ENCODINGS })).toBe(24 * 20 + 36 * 2);
 	});
 
 	it("keeps float32 positions on skinned meshes that would need a decode", () => {

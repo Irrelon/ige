@@ -1,6 +1,6 @@
 import { IgeGltfLoader } from "@/engine/webgl/IgeGltfLoader";
 import { getModelParts } from "@/engine/webgl/IgeModelParts";
-import { packVertices, positionDecodeMatrix, unpackVertices } from "@/engine/webgl/IgeVertexPacking";
+import { IGE_QUANTISED_ENCODINGS, packVertices, positionDecodeMatrix, unpackVertices } from "@/engine/webgl/IgeVertexPacking";
 import { IgeWebGlGeometryManager } from "@/engine/webgl/IgeWebGlGeometryManager";
 import { meshLayout } from "@/engine/webgl/IgeGpuMeshPrograms";
 import { IgeWebGl2GpuDevice } from "@/engine/gpu/IgeWebGl2GpuDevice";
@@ -139,6 +139,9 @@ describe("quantised glTF (KHR_mesh_quantization)", () => {
 			uv: "unorm16", uvDecode: { scale: [65535, 65535], offset: [0, 0] }
 		});
 		expect(new Loader().encodings({ accessors: [{ componentType: 5126, type: "VEC3", count: 1 }] }, { POSITION: 0 })).toBeUndefined();
+		// Tangents stored as normalized bytes stay compact (the mesh keeps them when its material has a normal map)
+		const tangents = { accessors: [{ componentType: 5126, type: "VEC3", count: 1 }, { componentType: 5120, normalized: true, type: "VEC4", count: 1 }] };
+		expect(new Loader().encodings(tangents, { POSITION: 0, TANGENT: 1 })).toEqual({ tangent: "snorm8" });
 	});
 
 	it("reads sparse accessors and accessors with no buffer view", () => {
@@ -205,5 +208,25 @@ describe("packed geometry on the GPU", () => {
 		expect(geometry.boundsCenterY).toBeCloseTo(1000, 0);
 		manager.deleteGeometry("fromWorker");
 		expect(manager.gpuBytes()).toBe(0);
+	});
+
+	it("gives a mesh with tangents an a_tangent attribute, so its normal map is used", () => {
+		const gl = recordingGl([]);
+		const manager = new IgeWebGlGeometryManager(gl, {} as any, new IgeWebGl2GpuDevice(gl));
+		const quad = {
+			vertices: new Float32Array([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0]),
+			normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]),
+			uvs: new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]),
+			tangents: new Float32Array([1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1]),
+			indices: new Uint16Array([0, 1, 2, 0, 2, 3])
+		};
+		const floats = manager.createGeometryFromData("tangentFloats", { id: "tangentFloats", ...quad })!;
+		expect(floats.hasTangents).toBe(true);
+		expect(floats.attributes.find((a) => a.name === "a_tangent")).toMatchObject({ size: 4, offset: 32, stride: 48 });
+		const compact = manager.createGeometryFromData("tangentCompact", { id: "tangentCompact", ...quad, vertexEncodings: IGE_QUANTISED_ENCODINGS })!;
+		expect(compact.hasTangents).toBe(true);
+		expect(meshLayout(compact).layout.attributes.map((a) => a.format)).toEqual(["snorm16x4", "snorm8x4", "unorm16x2", "snorm8x4"]);
+		const plain = manager.createGeometryFromData("noTangents", { id: "noTangents", ...quad, tangents: undefined })!;
+		expect(plain.hasTangents).toBe(false);
 	});
 });

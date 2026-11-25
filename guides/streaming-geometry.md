@@ -22,6 +22,7 @@ A mesh's vertices are normally 32-bit floats: a position, normal and texture coo
 | Normal | 12 | 4 | `snorm8` |
 | Texture coordinate | 8 | 4 | `unorm16`, fitted when it's outside 0 to 1 |
 | Colour | 16 | 4 | `unorm8` |
+| Tangent (normal-mapped meshes) | 16 | 4 | `snorm8` (its handedness exact) |
 
 A position in 16 bits over a 64 m chunk is 1 mm apart. A normal in 8 bits is within half a degree.
 
@@ -90,10 +91,11 @@ const merged = mergeGeometry([
 ```
 
 - **Transforms.** Each piece's `matrix` (column-major, like `IgeMatrix4`) moves its positions and turns its normals
-  by the inverse transpose, so stretched pieces stay lit right. A mirroring matrix flips the piece's winding, so its
+  by the inverse transpose, so stretched pieces stay lit right. Tangents turn with the matrix itself. A mirroring matrix flips the piece's winding, so its
   faces still point out with back-face culling on.
 - **Attributes.** Normals, texture coordinates and vertex colours are kept when any piece of the material has them.
-  Pieces without get an up normal, 0,0, and white (or their `color`).
+  Pieces without get an up normal, 0,0, and white (or their `color`). Tangents (for normal maps) are kept when every
+  piece has them; when only some do, the merged mesh's are made afresh (`igeComputeTangents()`).
 - **Indices** are offset per piece, and 16-bit when the mesh has 65,535 vertices or fewer.
 - **Bounds.** Each mesh has its box and sphere, for culling.
 - **Per-piece hooks.** `uvTransform: { scale, offset }` moves a piece's texture coordinates into its cell of an atlas.

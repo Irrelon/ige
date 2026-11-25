@@ -105,13 +105,14 @@ export interface IgeUnpackedVertices {
 	tangents?: Float32Array;
 }
 
-/** Compact encodings: 16 bytes a vertex for a position, normal and texture coordinate (32 as floats). */
+/** Compact encodings: 16 bytes a vertex for a position, normal and texture coordinate (32 as floats); a tangent adds 4 (16 as floats). */
 export const IGE_QUANTISED_ENCODINGS: Readonly<IgeVertexEncodings> = Object.freeze({
 	position: "snorm16",
 	normal: "snorm8",
 	uv: "unorm16",
 	color: "unorm8",
-	boneWeights: "unorm16"
+	boneWeights: "unorm16",
+	tangent: "snorm8"
 });
 
 const BITS: Record<Exclude<IgeVertexEncoding, "float32">, { bytes: 1 | 2; max: number; signed: boolean }> = {

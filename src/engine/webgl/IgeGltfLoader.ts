@@ -857,13 +857,13 @@ export class IgeGltfLoader extends IgeBaseClass {
 	protected _vertexEncodings(gltf: any, attributes: Record<string, number>): IgeVertexEncodings | undefined {
 		const out: IgeVertexEncodings = {};
 		let quantised = false;
-		const take = (semantic: string, key: "position" | "normal" | "uv" | "color" | "boneWeights") => {
+		const take = (semantic: string, key: "position" | "normal" | "uv" | "color" | "boneWeights" | "tangent") => {
 			const index = attributes[semantic];
 			if (index === undefined) return;
 			const a = gltf.accessors[index];
 			const enc = ENCODINGS[a.componentType as keyof typeof ENCODINGS];
 			if (!enc) return;
-			// Normals, colours and weights must be normalized integers to be anything but floats
+			// Normals, colours, weights and tangents must be normalized integers to be anything but floats
 			if (!a.normalized && key !== "position" && key !== "uv") return;
 			quantised = true;
 			(out as any)[key] = enc.encoding;
@@ -876,6 +876,8 @@ export class IgeGltfLoader extends IgeBaseClass {
 		take("TEXCOORD_0", "uv");
 		take("COLOR_0", "color");
 		take("WEIGHTS_0", "boneWeights");
+		// (Used only when the mesh keeps the file's tangents: those with a normal map)
+		take("TANGENT", "tangent");
 		return quantised ? out : undefined;
 	}
 
