@@ -156,6 +156,16 @@ Any body can be pushed steadily too: `body.applyForce(x, y, z, at?)` (kg * IGE u
 step), `body.applyTorque(x, y, z)` (newton metres) and `body.centreOfMass()`. Bodies take a `mass` instead of a
 density, and a `centreOfMass` of their own.
 
+## Breakable props
+
+Crates, fences, barriers, cones, bins, benches and windows that break when hit hard enough have their own guide:
+[breakables-3d.md](breakables-3d.md).
+
+```typescript
+const breakable = physics.addBreakable(crate, { threshold: 5000, material: "wood", mass: 20 });
+breakable.on("break", (result) => network.send(result.event)); // clients replay it and cut the same pieces
+```
+
 ## Collision layers
 
 ```typescript

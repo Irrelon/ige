@@ -259,4 +259,93 @@ export class IgePrimitiveGeometry {
 			}
 		};
 	}
+
+	/**
+	 * One mesh from many boxes, each with its own size, centre, rotation and
+	 * vertex colour: props built from planks and posts (a crate, a pallet, a
+	 * fence panel, a bench). Each box stays a separate closed part, which is
+	 * what igeFracture() cuts best.
+	 * @param boxes Centre (x, y, z), size (w, h, d), an optional rotation (a unit quaternion) and colour.
+	 * @example #A fence panel: two rails and eight pales
+	 *     const boxes = [{ x: 0, y: 30, z: 0, w: 200, h: 8, d: 3 }, { x: 0, y: 90, z: 0, w: 200, h: 8, d: 3 }];
+	 *     for (let i = 0; i < 8; i++) boxes.push({ x: -88 + i * 25, y: 60, z: 3, w: 18, h: 120, d: 2 });
+	 *     const fence = IgePrimitiveGeometry.createBoxes(boxes, "fencePanel");
+	 */
+	static createBoxes(
+		boxes: { x: number; y: number; z: number; w: number; h: number; d: number; rotation?: { x: number; y: number; z: number; w: number }; color?: { r: number; g: number; b: number; a?: number } }[],
+		id?: string
+	): IgeGeometryData3d {
+		return IgePrimitiveGeometry.createBlocks(boxes.map((box) => {
+			const corners: number[] = [];
+			const q = box.rotation;
+			for (let i = 0; i < 8; i++) {
+				let x = (i & 1 ? 0.5 : -0.5) * box.w, y = (i & 2 ? 0.5 : -0.5) * box.h, z = (i & 4 ? 0.5 : -0.5) * box.d;
+				if (q) {
+					// v' = v + w t + q x t, t = 2 (q x v)
+					const tx = 2 * (q.y * z - q.z * y), ty = 2 * (q.z * x - q.x * z), tz = 2 * (q.x * y - q.y * x);
+					const rx = x + q.w * tx + (q.y * tz - q.z * ty), ry = y + q.w * ty + (q.z * tx - q.x * tz), rz = z + q.w * tz + (q.x * ty - q.y * tx);
+					x = rx; y = ry; z = rz;
+				}
+				corners.push(box.x + x, box.y + y, box.z + z);
+			}
+			return { corners, color: box.color };
+		}), id);
+	}
+
+	/**
+	 * One mesh from many six-sided blocks given by their eight corners: boxes
+	 * pulled out of square (wedges, tapered posts, the segments of a cone's
+	 * wall, a concrete barrier's profile). Corner i is at the (i & 1 ? +x :
+	 * -x, i & 2 ? +y : -y, i & 4 ? +z : -z) end of the block, as for a box,
+	 * so each face's four corners must lie in a plane.
+	 * @param blocks 24 numbers each (x, y, z of the eight corners) and an optional vertex colour.
+	 */
+	static createBlocks(blocks: { corners: ArrayLike<number>; color?: { r: number; g: number; b: number; a?: number } }[], id?: string): IgeGeometryData3d {
+		// Each face's corners, anticlockwise seen from outside
+		const faces = [[4, 5, 7, 6], [1, 0, 2, 3], [6, 7, 3, 2], [0, 1, 5, 4], [5, 1, 3, 7], [0, 4, 6, 2]];
+		const vertices: number[] = [], normals: number[] = [], uvs: number[] = [], colors: number[] = [], indices: number[] = [];
+		const withColor = blocks.some((block) => block.color);
+		const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+		for (const block of blocks) {
+			const c = block.corners;
+			for (const face of faces) {
+				const base = vertices.length / 3;
+				const [a, b, cc, d] = face.map((i) => [c[i * 3], c[i * 3 + 1], c[i * 3 + 2]]);
+				// The normal from the diagonals (works for any planar quad)
+				const e1 = [cc[0] - a[0], cc[1] - a[1], cc[2] - a[2]], e2 = [d[0] - b[0], d[1] - b[1], d[2] - b[2]];
+				let nx = e1[1] * e2[2] - e1[2] * e2[1], ny = e1[2] * e2[0] - e1[0] * e2[2], nz = e1[0] * e2[1] - e1[1] * e2[0];
+				const len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+				nx /= len; ny /= len; nz /= len;
+				for (const p of [a, b, cc, d]) {
+					vertices.push(p[0], p[1], p[2]);
+					normals.push(nx, ny, nz);
+					for (let k = 0; k < 3; k++) {
+						if (p[k] < min[k]) min[k] = p[k];
+						if (p[k] > max[k]) max[k] = p[k];
+					}
+					if (withColor) {
+						const color = block.color || { r: 1, g: 1, b: 1, a: 1 };
+						colors.push(color.r, color.g, color.b, color.a ?? 1);
+					}
+				}
+				uvs.push(0, 0, 1, 0, 1, 1, 0, 1);
+				indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+			}
+		}
+		const centre = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
+		return {
+			id: id || primitiveId("blocks"),
+			type: "primitive",
+			vertices: new Float32Array(vertices),
+			normals: new Float32Array(normals),
+			uvs: new Float32Array(uvs),
+			...(withColor ? { colors: new Float32Array(colors) } : {}),
+			indices: vertices.length / 3 > 65535 ? new Uint32Array(indices) : new Uint16Array(indices),
+			boundingBox: { min: min as [number, number, number], max: max as [number, number, number] },
+			boundingSphere: {
+				center: centre as [number, number, number],
+				radius: Math.sqrt((max[0] - centre[0]) ** 2 + (max[1] - centre[1]) ** 2 + (max[2] - centre[2]) ** 2)
+			}
+		};
+	}
 }
