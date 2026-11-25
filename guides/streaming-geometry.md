@@ -9,7 +9,8 @@ stuttering as chunks arrive. Four parts work together:
    thread only copies it to the GPU.
 4. **An upload budget.** Chunks reach the GPU a few at a time, so no frame does all the work.
 
-The `src/examples/geometryStreaming` example uses all four. "Measured", below, has what they save.
+The `src/examples/geometryStreaming` example uses all four. "Measured", below, has what they save. Far away, groups of
+chunks are drawn as low-detail proxies (HLOD, `IgeHlod`): "Far away: HLOD", below, and the `hlodCity` example.
 
 ## Compact vertices
 
@@ -193,6 +194,98 @@ averages of 100 to 460), so compare runs with each other, not with a quiet machi
 - The worst frames left (about 28 to 33 ms) aren't chunk work: they come and go with the machine's other load.
 - CesiumMan, skinned, takes 44 bytes a vertex with compact normals, texture coordinates and weights, instead of 64.
 
+## Far away: HLOD
+
+`IgeHlod` (hierarchical level of detail) draws a big world's distant chunks as groups: 2 x 2 chunks as one low-detail
+proxy, then 4 x 4, 8 x 8 and so on, each one draw, so a city can be seen whole from a street, a rooftop or an
+aircraft. The example `hlodCity` is a 10 km city of 64 m chunks (25,600 of them, 11,000 triangles each at full
+detail) flown from street level to 4 km up.
+
+```typescript
+import { IgeHlod } from "@/engine/webgl/IgeHlod";
+
+const hlod = new IgeHlod({
+	cellSize: 64,                              // a chunk (level 0)
+	cells: { x: 160, z: 160 },                 // the world, in chunks; origin defaults to 0, 0
+	minY: 0, maxY: 170,                        // the heights its content spans
+	levels: [                                  // level 1 (2 x 2 chunks) upwards
+		{ distance: 300 }, { distance: 600 }, { distance: 1200 }, { distance: 2400 }, { distance: 4800 }
+	],
+	maxDistance: 12000,                        // nothing beyond (put the fog's end here)
+	load: (node, signal) => buildInWorker(node) // a chunk (level 0) or a group's proxy
+}).mount(scene);
+```
+
+- **The cut.** The chunks are a quadtree's leaves. Each frame (its `preUpdate` behaviour, for the viewports showing
+  its scene) IgeHlod picks a cut through the tree: a group nearer the camera than its level's `distance` is replaced
+  by its four children, and so on down to the chunks. Each level can be given a `screenSize` instead (device pixels
+  across a group's box under which it's used), which also works for orthographic cameras. With split screen, the
+  nearest camera decides.
+- **No holes, no flicker.** A group is split only once all its children are ready (it stays drawn meanwhile); a
+  group's children stay drawn until the group is ready. A level is taken up 10% closer than its threshold and let go
+  10% further (`hysteresis`).
+- **Cross-fades.** The old level and the new one fade over `fade` seconds (0.3): each pixel drawn by one or the other
+  through the same dither (`IgeObject._lodFade`, the `lit_fade` program), so nothing is blended or sorted and the
+  rest of the scene's draws pay nothing. `fade: 0` swaps at once.
+- **Content.** `load(node, signal)` returns (or resolves to) an entity (mounted under the IgeHlod entity: keep it at
+  the origin), `{ meshes: [{ geometry, material }], castShadow }` (IgeHlod makes the entities and releases the meshes
+  when it lets the node go), or `null` (nothing there). `node` has its `level`, `x`, `z`, `key` and the chunks it
+  covers (`cells`) and its box. The load is aborted (`signal`) if the node isn't wanted before it's done.
+- **Loading.** The nodes of the cut load nearest first, `concurrency` (4) at a time, and their parents ahead of need
+  (`prefetch`, 1 level), so flying up finds the groups ready. A node's meshes reach the GPU (in the renderer's
+  `uploadBudget()`) before it's drawn; `discardArrays: true` frees their CPU copies once they're up.
+- **Letting go.** What's left the cut is kept `keep` seconds (10), then let go: entities destroyed, meshes released,
+  `unload(node, content)` called (free an entity's meshes there).
+- **From high up, raise the camera's near plane.** A 24-bit depth buffer tells depths apart in steps of about
+  d² / (near × 2^24): with a 1 m near plane, surfaces 4 km away need to be more than a metre apart, and roofs and
+  ledges closer than that shimmer as the camera moves. The example sets the near plane to half the camera's height
+  above the tallest roof (`cameraNear()` in `hlodCity/city.ts`): nothing in view is nearer than that. Before the fix
+  a sideways nudge of 25 cm at 4 km up changed 2.2% of the picture's pixels; after, 0.1% (the edges' own aliasing).
+- `hlod.stats()`: nodes drawn per level, fading, loaded, loading, loads, unloads, and `holes` (chunks in range with
+  nothing ready to draw them: 0 once settled). `hlod.select(viewpoints)` picks for cameras you give
+  (`{ x, y, z, pixelsPerUnit?, orthographic? }`), e.g. a server or a test.
+
+### Building proxies
+
+`igeBuildHlodProxy(pieces, options)` (`IgeHlodBuilder`) builds a group's proxy from its chunks' pieces (the pieces
+`mergeGeometry()` takes: the chunks' own pieces, their merged meshes, or the proxies of the level below). Like
+`mergeGeometry()` it's plain typed-array code: run it in a worker and post the meshes back with
+`geometryTransferables()`.
+
+```typescript
+// hlodWorker.ts: a group of chunks to 2^level x 0.5 m
+const error = 0.5 * Math.pow(2, level);
+const proxies = igeBuildHlodProxy(piecesOf(level, x, z), {
+	id: `hlod_${level}_${x}_${z}`, error, heightError: error / 4,
+	material: () => "city",                  // every piece into one mesh: one draw
+	pack: IGE_QUANTISED_ENCODINGS
+});
+postMessage(proxies, proxies.flatMap((p) => geometryTransferables(p.geometry)));
+```
+
+1. **Merged** into one mesh per material; `material` maps the pieces' materials onto the proxy's (all onto one key
+   for one draw: an atlas's swatches, or vertex colours, keep the colours apart).
+2. **Small parts dropped**: parts under `minSize` (default `error`) across in two directions, so dots and lines
+   (bollards, posts, ledges, window frames) but not walls. Parts are found by the triangles that share corners.
+3. **Simplified** to `error`. `"cluster"` (the default) snaps every corner to a grid of cells `error` across and
+   `heightError` tall (offset half a cell, so ground at 0 stays in one row), keeps each triangle with three corners
+   left (once), flat-shades them and keeps each corner's texture coordinate and colour. Flat faces (roofs, floors,
+   the ground) keep their own height and only their outlines are snapped, so flat faces stacked within a row of
+   cells (a roof slab on a building's top) stay apart instead of ending up in one plane, where they'd fight for the
+   same pixels and shimmer as the camera moves. It's fast and goes on
+   reducing where pieces touch or overlap. `"collapse"` is the engine's quadric edge-collapse simplifier
+   (`IgeMeshSimplifier`): it keeps topology and seams, but stops at small closed parts (a box stays 12 triangles).
+4. **Packed** if asked (quantised, ready to upload).
+
+Each proxy mesh says how many triangles it has (`triangles`), had (`sourceTriangles`) and how many parts were dropped.
+Skipping what a level would drop anyway before merging (a generator knows its windows' size) saves building it: the
+example leaves windows and ledges out of every proxy.
+
+The example's numbers, for a sense of scale: a chunk is 11,100 triangles and builds in about 4 ms in a worker; a 2 x 2
+proxy is 930 triangles (from 44,000), 4 x 4 3,700, 8 x 8 5,600, 16 x 16 21,000 and 32 x 32 58,000 (from 11 million),
+building in 3, 9, 19, 76 and 250 ms. A game would bake its far levels ahead of time, or keep them once built, rather
+than build a 32 x 32 group from its chunks while flying.
+
 ## A streaming checklist
 
 - Build chunks in workers with `mergeGeometry(..., { pack: IGE_QUANTISED_ENCODINGS })`; post with
@@ -201,3 +294,5 @@ averages of 100 to 460), so compare runs with each other, not with a quiet machi
 - Put chunks in by making their entities; call `discardGeometryArrays()` on each mesh.
 - Take chunks out with `entity.destroy()` and `renderer.releaseGeometry(mesh)`.
 - Watch `stats().uploadMs`, `uploadsQueued` and `gpuMemory.geometry`.
+- Far off, draw groups of chunks as proxies with `IgeHlod` (above): it asks for chunks and proxies as it needs them,
+  so the game's own streamer can become its `load()`.

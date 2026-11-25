@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+  <title>HLOD city - Isogenic Engine</title>
+  <script src="./index.bundle.js" type="module"></script>
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; background: #a8bdd1; }
+    #hud {
+      position: absolute; top: 8px; left: 8px; z-index: 1000; white-space: pre;
+      font: 12px/1.4 monospace; color: #fff; background: rgba(0, 0, 0, 0.6); padding: 8px 10px; border-radius: 4px;
+    }
+    #keys {
+      position: absolute; bottom: 8px; left: 8px; z-index: 1000;
+      font: 12px/1.4 monospace; color: #fff; background: rgba(0, 0, 0, 0.6); padding: 6px 10px; border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<div id="hud">Loading...</div>
+<div id="keys">WASD fly · Q/E down, up · arrows or drag: look · Shift: faster · 1-5: street, rooftops, 400 m, 1.5 km, 4 km · H: HLOD · T: tint levels · C: cascades · B: shadow boxes</div>
+</body>
+</html>

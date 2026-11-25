@@ -69,6 +69,10 @@ export class IgeWebGlGeometry extends IgeBaseClass {
 	boundsCenterY: number = 0;
 	boundsCenterZ: number = 0;
 	boundsRadius: number = -1;
+	// Local-space half sizes of its bounding box (round the bounds centre); the radius each way when only a sphere is known
+	boundsHalfX: number = -1;
+	boundsHalfY: number = -1;
+	boundsHalfZ: number = -1;
 	// Radius of the mesh as authored. boundsRadius is padded for skinned
 	// meshes so animated poses stay inside it; level-of-detail selection
 	// uses this one, which roughly matches the model's visible size.

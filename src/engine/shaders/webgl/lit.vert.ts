@@ -28,9 +28,6 @@ uniform mat4 u_viewMatrix;       // Camera view matrix
 uniform mat4 u_projectionMatrix; // Camera projection matrix
 uniform vec3 u_cameraPosition;   // Camera world position
 
-// Shadow mapping uniforms
-uniform mat4 u_lightSpaceMatrix; // Light view * projection matrix for shadow mapping
-uniform float u_shadowNormalOffset; // Normal offset to prevent shadow acne on curved surfaces
 
 // Varyings passed to fragment shader
 varying vec3 v_worldPosition;    // Position in world space
@@ -38,7 +35,6 @@ varying vec3 v_worldNormal;      // Normal in world space
 varying vec2 v_uv;               // Texture coordinates
 varying vec4 v_vertexColor;      // Vertex colour (white when the geometry has none)
 varying mat3 v_TBN;              // Tangent-Bitangent-Normal matrix for normal mapping
-varying vec4 v_lightSpacePos;    // Position in light space for shadow mapping
 ${instanceMaterialVaryingsChunk}
 
 // Optional per-vertex colour, multiplied into the base colour. Read only
@@ -72,10 +68,6 @@ void main() {
 	// Calculate bitangent
 	vec3 B = cross(N, T) * a_tangent.w;
 	v_TBN = mat3(T, B, N);
-
-	// Calculate position in light space for shadow mapping
-	vec3 shadowPos = worldPos.xyz + v_worldNormal * u_shadowNormalOffset;
-	v_lightSpacePos = u_lightSpaceMatrix * vec4(shadowPos, 1.0);
 ${forwardInstanceMaterialChunk}
 	// Transform to clip space
 	gl_Position = u_projectionMatrix * u_viewMatrix * worldPos;
