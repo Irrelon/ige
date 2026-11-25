@@ -98,8 +98,8 @@ compound of them), an `id` of `${key}#${index}`, and `big` true or false.
 - `physics.breakables.maxDebris(150)` caps the small pieces in the whole world. Past it, the oldest go at once.
 - Pieces start with the prop's own motion, a push from what hit it, a burst away from the hit and a tumble. `burst`
   scales the burst.
-- Small pieces use continuous collision so they don't fly through walls (`continuous: "small" | "all" | "none"`).
-  Today that's the bodies' `ccd` option; when the neutral `continuous` body option lands, it plugs in there.
+- Small pieces use continuous collision so they don't fly through walls (`continuous: "small" | "all" | "none"`):
+  the bodies' `ccd` option, which every physics backend takes.
 - `debrisLayer` puts small pieces on their own collision layer, e.g. one that characters ignore.
 - `maxPieces` (default 40) drops the smallest pieces of a break past that many.
 

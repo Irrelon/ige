@@ -380,3 +380,51 @@ describe.each(physicsTestBackends())("how long breaking takes on $name", (backen
 		physics.destroy();
 	});
 });
+
+describe.each(physicsTestBackends())("breakables with boats and water on $name", (backend) => {
+	let physics: IgePhysics3d;
+
+	beforeEach(async () => {
+		physics = await createTestPhysics({}, backend);
+		// A sea 30 m deep, its surface at y = 0
+		physics.addBody(new IgeEntity().translateTo(0, -3050, 0), { type: "static", shape: { type: "box", halfExtents: { x: 100000, y: 50, z: 100000 } } });
+		physics.water({ level: 0 });
+	});
+
+	afterEach(() => physics.destroy());
+
+	it("breaks a fixed prop a boat rams, and lets the boat carry on", () => {
+		// A fence across the boat's path, standing in the water
+		const fence = prop(fenceMesh(), 0, -40, 1500);
+		const breakable = physics.addBreakable(fence, { ...FENCE, key: "jetty" });
+		expect(breakable.body.type).toBe("static");
+		const entity = new IgeEntity().translateTo(0, 0, 0);
+		const boat = physics.addBoat(entity, { preset: "speedboat" });
+		run(physics, 1);
+		let hitAt = 0;
+		breakable.on("break", (result: IgeBreakResult) => { hitAt = result.event.hitVelocity!.z; });
+		run(physics, 6, () => boat.drive({ throttle: 1 }));
+		expect(breakable.broken()).toBe(true);
+		// Hit at speed, and through: past where the fence stood and still going
+		expect(hitAt).toBeGreaterThan(5 * 100);
+		expect(boat.speedKmh()).toBeGreaterThan(30);
+		expect(entity._translate.z).toBeGreaterThan(2500);
+	});
+
+	it("floats pieces given buoyancy, and frees their buoyancy with them", () => {
+		const entity = prop(crateMesh("floatingCrate"), 0, 100, 0);
+		physics.addBody(entity, { shape: { type: "box", halfExtents: { x: 30, y: 30, z: 30 } }, density: 90 });
+		const breakable = physics.addBreakable(entity, { ...CRATE, key: "flotsam", debrisLifetime: 3, fadeTime: 0.5 });
+		const result = breakable.break({ point: { x: 0, y: 130, z: 0 }, impulse: { x: 0, y: -500, z: 0 } })!;
+		for (const piece of result.pieces) physics.addBuoyancy(piece.body);
+		expect(physics.stats().floating).toBe(result.pieces.length);
+		run(physics, 2);
+		// Wood floats: every piece near the surface, none on the sea bed
+		for (const piece of result.pieces) expect(piece.entity._translate.y).toBeGreaterThan(-100);
+		// Small pieces fade and go, their buoyancy with them
+		run(physics, 4);
+		const left = result.pieces.filter((p) => !p.removed()).length;
+		expect(left).toBeLessThan(result.pieces.length);
+		expect(physics.stats().floating).toBe(left);
+	});
+});

@@ -963,7 +963,7 @@ export class IgeBreakable3d extends IgeEventingClass {
 				friction: material.friction,
 				restitution: material.restitution,
 				layer: piece.big ? options.layer ?? propLayer : options.debrisLayer ?? options.layer ?? propLayer,
-				// Continuous collision (the neutral `continuous` body option will take over from ccd)
+				// Continuous collision (the body option every backend takes)
 				ccd: continuous === "all" || (continuous === "small" && !piece.big),
 				linearDamping: 0.1,
 				angularDamping: 0.2
