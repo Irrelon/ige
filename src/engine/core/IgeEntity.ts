@@ -3,6 +3,7 @@ import { igeNetLatestEntityHost } from "@/engine/network/entities/igeNetEntityHo
 import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import { markSceneChanged } from "@/engine/utils/sceneChange";
 import { IgeBounds } from "@/engine/core/IgeBounds";
+import { IgeSubtreeCull, igeSubtreeCullRoots } from "@/engine/core/IgeSubtreeCull";
 import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
 import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
 import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
@@ -195,11 +196,21 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		if (parent !== this._tfParent) return false;
 		if (parent && parent._transformVersion !== this._tfParentVersion) return false;
 		if (webGl !== this._tfWebGl || (webGl && !this._worldMatrix4)) return false;
+		if (this._ownInputsChanged(c)) return false;
 
+		if (!this._worldMatrix.compare(this._oldWorldMatrix)) return false;
+		if (webGl && !this._worldMatrix4!.compare(this._oldWorldMatrix4!)) return false;
+
+		return true;
+	}
+
+	/** Whether this entity's own transform values (not its parent's matrix) differ from those of the last rebuild. */
+	_ownInputsChanged (c: Float64Array): boolean {
+		const parent = this._parent;
 		const t = this._translate, r = this._rotate, sc = this._scale, o = this._origin;
 		const b2 = this._bounds2d, b3 = this._bounds3d;
 		const q = this._quaternion;
-		if (
+		return (
 			c[19] !== (q ? q.x : 0) || c[20] !== (q ? q.y : 0) || c[21] !== (q ? q.z : 0) || c[22] !== (q ? q.w : 2) ||
 			c[0] !== t.x || c[1] !== t.y || c[2] !== t.z ||
 			c[3] !== r.x || c[4] !== r.y || c[5] !== r.z ||
@@ -209,14 +220,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			c[14] !== b3.x || c[15] !== b3.y || c[16] !== b3.z ||
 			c[17] !== this._renderMode ||
 			c[18] !== (parent ? parent._bounds3d.z : 0)
-		) {
-			return false;
-		}
-
-		if (!this._worldMatrix.compare(this._oldWorldMatrix)) return false;
-		if (webGl && !this._worldMatrix4!.compare(this._oldWorldMatrix4!)) return false;
-
-		return true;
+		);
 	}
 
 	/**
@@ -280,8 +284,17 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		if (this._transformInputsUnchanged(webGl)) {
 			this._tfDirty = false;
+			this._tfNoted = false;
 			this._transformChanged = false;
 			return this;
+		}
+
+		// Moved by itself (not just by its parent) in a way the tracked points didn't pass on (a direct _tfDirty, a
+		// quaternion written in place, a new parent, a bone it follows): tell what's culled with it
+		if (igeSubtreeCullRoots.count && this._parent && !this._tfNoted) {
+			const c = this._tfInputs;
+			if (!c || this._attachBone !== undefined || this._parent !== this._tfParent) this._subtreeChanged();
+			else if ((this._tfDirty || this._quaternion !== null || this._renderMode !== c[17]) && this._ownInputsChanged(c)) this._subtreeChanged();
 		}
 
 		this._localMatrix.identity();
@@ -416,6 +429,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		this._recordTransformInputs(webGl);
 		this._tfDirty = false;
+		this._tfNoted = false;
 
 		return this;
 	}
@@ -428,8 +442,11 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * method chaining.
 	 */
 	show () {
-		if (this._hidden) markSceneChanged();
-		this._hidden = false;
+		if (this._hidden) {
+			markSceneChanged();
+			this._hidden = false;
+			this._subtreeChanged(true);
+		}
 		return this;
 	}
 
@@ -1079,7 +1096,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	texture (): IgeTexture | undefined;
 	texture (texture?: IgeTexture) {
 		if (texture !== undefined) {
-			if (texture !== this._texture) this._renderChanged();
+			if (texture !== this._texture) {
+				this._renderChanged();
+				this._subtreeChanged(true);
+			}
 			this._texture = texture;
 			return this;
 		}
@@ -1142,6 +1162,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		} else {
 			this._quaternion = null;
 		}
+		if (!this._tfDirty) this._markTfDirty();
 		return this;
 	}
 
@@ -1162,7 +1183,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			return this._geometryData;
 		}
 
-		if (data !== this._geometryData) this._renderChanged();
+		if (data !== this._geometryData) {
+			this._renderChanged();
+			this._subtreeChanged(true);
+		}
 		this._geometryData = data;
 		return this;
 	}
@@ -1302,6 +1326,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		this._renderChanged();
+		this._subtreeChanged(true);
 		return this;
 	}
 
@@ -1324,6 +1349,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this._skeletonData = instance.data;
 		this._skeleton = instance;
 		this._renderChanged();
+		this._subtreeChanged(true);
 		return this;
 	}
 
@@ -1395,6 +1421,69 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this._outline = next;
 		this._renderChanged();
 		return this;
+	}
+
+	/**
+	 * Gets / sets whether the WebGL renderer culls this entity and everything
+	 * mounted under it as one (off by default): while their joint box (and the
+	 * shadow it can cast) is outside every view, none of them is walked or
+	 * drawn that frame. For things made of many entities that move about the
+	 * world, such as vehicles (a body, wheels and lights) or groups of props.
+	 *
+	 * The box is kept in this entity's own space, so moving it costs nothing.
+	 * It's taken as the subtree is walked (and afresh every 30 walks while
+	 * it's in view, so it shrinks after something moved back), and grows
+	 * round anything under it that moves, is mounted, shown or given a new
+	 * mesh meanwhile. Something under it that can't be bounded without walking it
+	 * every frame keeps it walked every frame, as if this were off: skinned
+	 * meshes (their bones can go anywhere), particle and decal systems, UI
+	 * layer elements, preTick behaviours (they'd stop running), entities
+	 * following a bone, and meshes with no bounds. (This entity's own preTick
+	 * behaviours run either way.) Change what's under it through the methods
+	 * (mount(), show(), geometry(), model(), texture(), translateTo() and the
+	 * like, or writes to _translate, _rotate and _scale): fields set directly,
+	 * such as _geometryData or _hidden, aren't noticed while it's culled. A
+	 * mesh changed in place (its vertices or bounding box) needs geometry()
+	 * with a new one.
+	 *
+	 * Views cull by their frustum, out to the camera's far plane. Each change
+	 * under it while it's out of view costs a little (its box is grown), so
+	 * skip work on it then (subtreeCulled()); and where most such things are
+	 * in view it costs more than it saves. Static shadow casters under it
+	 * come and go from the static shadow cache as it goes in and out of view
+	 * (the cache redraws then): best for things that move.
+	 * stats().subtreesCulled counts the entities culled this way.
+	 * @example #A car of seven entities culled as one
+	 *     car.cullSubtree(true);
+	 *     // Its wheels needn't be posed while it's out of view
+	 *     if (!car.subtreeCulled()) wheels.pose(car);
+	 */
+	cullSubtree (val: boolean): this;
+	cullSubtree (): boolean;
+	cullSubtree (val?: boolean) {
+		if (val === undefined) return !!this._subtreeCull;
+		if (val === !!this._subtreeCull) return this;
+		if (val) {
+			this._subtreeCull = new IgeSubtreeCull();
+			igeSubtreeCullRoots.count++;
+		} else {
+			this._subtreeCull = undefined;
+			igeSubtreeCullRoots.count--;
+			if (!this._hidden) markSceneChanged();
+		}
+		return this;
+	}
+
+	/**
+	 * Whether the WebGL renderer left this entity and everything under it out
+	 * of the last frame it drew, as outside every view (see cullSubtree()).
+	 * Game code can skip work on it meanwhile, such as posing its parts.
+	 */
+	subtreeCulled (): boolean {
+		const cull = this._subtreeCull;
+		if (!cull) return false;
+		const renderer = ige.engine?.renderer() as { frameId?: () => number } | undefined;
+		return typeof renderer?.frameId === "function" && cull.culledFrame === renderer.frameId();
 	}
 
 	/**
@@ -1495,8 +1584,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this._ui = undefined;
 			return this;
 		}
-		if (!this._ui) this._ui = { layer, space: "world", offsetX: 0, offsetY: 0 };
-		else this._ui.layer = layer;
+		if (!this._ui) {
+			this._ui = { layer, space: "world", offsetX: 0, offsetY: 0 };
+			this._subtreeChanged(true);
+		} else this._ui.layer = layer;
 		this._renderChanged();
 		return this;
 	}
@@ -1558,7 +1649,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	_uiSettings (): IgeUiSettings {
-		return (this._ui ??= { layer: 0, space: "world", offsetX: 0, offsetY: 0 });
+		if (!this._ui) {
+			this._ui = { layer: 0, space: "world", offsetX: 0, offsetY: 0 };
+			// (Now in the UI layer: drawn wherever it's pinned, so what's culled as one above can't leave it out)
+			this._subtreeChanged(true);
+		}
+		return this._ui;
 	}
 
 	/**
@@ -1628,6 +1724,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this._attachBoneSkeleton = undefined;
 		this._attachBoneIndex = -1;
 		this._tfInputs = undefined; // rebuild the transform on the next update
+		this._subtreeChanged(true);
 		return this;
 	}
 

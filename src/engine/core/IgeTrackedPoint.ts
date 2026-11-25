@@ -6,6 +6,8 @@ import { IgePoint3d } from "@/engine/core/IgePoint3d";
  */
 export interface IgeTransformOwner {
 	_tfDirty: boolean;
+	/** Sets _tfDirty (and tells what's culled with it, see IgeObject._markTfDirty()). */
+	_markTfDirty (): void;
 }
 
 /**
@@ -13,7 +15,8 @@ export interface IgeTransformOwner {
  * with a different value. Direct writes such as `entity._translate.x = 5`
  * are caught the same as translateTo(), so an object whose owner isn't
  * marked dirty is known to have unchanged transform inputs without
- * comparing them.
+ * comparing them. Only the first write since the owner's last rebuild
+ * calls it (_markTfDirty()); later ones find it dirty already.
  */
 export class IgeTrackedPoint3d extends IgePoint3d {
 	owner: IgeTransformOwner | null = null;
@@ -27,7 +30,7 @@ export class IgeTrackedPoint3d extends IgePoint3d {
 		if (v !== this._x) {
 			this._x = v;
 			const o = this.owner;
-			if (o) o._tfDirty = true;
+			if (o && !o._tfDirty) o._markTfDirty();
 		}
 	}
 
@@ -37,7 +40,7 @@ export class IgeTrackedPoint3d extends IgePoint3d {
 		if (v !== this._y) {
 			this._y = v;
 			const o = this.owner;
-			if (o) o._tfDirty = true;
+			if (o && !o._tfDirty) o._markTfDirty();
 		}
 	}
 
@@ -47,7 +50,7 @@ export class IgeTrackedPoint3d extends IgePoint3d {
 		if (v !== this._z) {
 			this._z = v;
 			const o = this.owner;
-			if (o) o._tfDirty = true;
+			if (o && !o._tfDirty) o._markTfDirty();
 		}
 	}
 }
@@ -66,7 +69,7 @@ export class IgeTrackedPoint2d extends IgePoint2d {
 		if (v !== this._x) {
 			this._x = v;
 			const o = this.owner;
-			if (o) o._tfDirty = true;
+			if (o && !o._tfDirty) o._markTfDirty();
 		}
 	}
 
@@ -76,7 +79,7 @@ export class IgeTrackedPoint2d extends IgePoint2d {
 		if (v !== this._y) {
 			this._y = v;
 			const o = this.owner;
-			if (o) o._tfDirty = true;
+			if (o && !o._tfDirty) o._markTfDirty();
 		}
 	}
 }

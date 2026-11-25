@@ -476,6 +476,49 @@ console.log(`${gpuMs?.toFixed(1)} ms on the GPU, ${(gpuMemory.total / 1048576).t
 | `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame; GPU time and memory (see above; meshes' bytes are `gpuMemory.geometry`); uploads |
 | `renderer.uploadBudget({ bytes, ms })` | Spread mesh uploads across frames, so streaming in chunks doesn't stutter (see [`streaming-geometry.md`](streaming-geometry.md)) |
 | `quantiseGeometry(mesh)` | Half the GPU memory for a mesh: 16-bit positions, 8-bit normals, 16-bit texture coordinates |
+| `entity.cullSubtree(true)` | Leave a thing made of many entities (a vehicle) out of the frame, unwalked, while it and its shadow are out of view (see below; `stats().subtreesCulled`) |
+| `ige.engine.debugTiming(true)` | Time every entity's update and draw, for `ige.engine.sceneGraph()` and `analyseTiming()`. Off by default: it costs milliseconds a frame in a scene of a few thousand entities |
+
+## Things made of many entities: culling them as one
+
+The renderer walks every entity of a scene each frame, turning meshes into render items, and only then culls each
+mesh against the views. A vehicle of seven entities (a body, four wheels, a light bar) costs seven entities' walking
+even when it's behind the camera. `entity.cullSubtree(true)` makes the renderer cull an entity and everything mounted
+under it as one: while their joint box, and the shadow it can cast, is outside every view, none of it is walked or
+drawn.
+
+```typescript
+const car = new IgeEntity().cullSubtree(true).mount(scene);
+// ... body, wheels and lights mounted under car
+
+// Game code can skip work on it while it's out of view
+if (!car.subtreeCulled()) wheels.pose(car);
+```
+
+- **The box** is kept in the entity's own space, so moving or turning it costs nothing. It's taken as the subtree is
+  walked, and grows round anything under it that moves, is mounted or shown, or gets a new mesh (through the methods:
+  `translateTo()`, `mount()`, `show()`, `geometry()`, `model()`, `texture()`, or writes to `_translate`, `_rotate` and
+  `_scale`; fields such as `_geometryData` or `_hidden` set directly aren't noticed). While it's in view it's walked with
+  its box kept, which is taken afresh every 30 walks, so it shrinks again after something moved back.
+- **Shadows**: it's kept while its shadow can land in a view: swept down the sun's light to the lowest surface that
+  takes a shadow (the `shadowFit()` band), with room for the map's texels. A light from below or level with the
+  ground, or a shadow-casting point light in reach, keeps it walked. Static casters under it leave the static shadow
+  cache as it goes out of view and join it again as it comes back (the cache redraws then), so it suits things that
+  move.
+- **Walked every frame instead** (as if this were off), because they can't be bounded without walking them: skinned
+  meshes (their bones can go anywhere), particle and decal systems, the UI layer, preTick behaviours (they'd stop
+  running), entities following a bone and meshes with no bounds anywhere under it. The entity's own preTick behaviours
+  run either way. Huge things (ground under it) are simply always in view.
+- **Not changed**: raycasts and picking walk the scene themselves; the engine's update pass still updates every
+  entity.
+- **Cost**: one box test per view a frame for each entity culled this way, and a little for each entity under it that
+  changes while it's out of view. Measured on 300 seven-entity vehicles driving round a city, a sixth of them in view
+  (`src/tests/IgeSubtreeCullBench.test.ts`, the renderer's walk, run in plain Node): 0.43 ms a frame without, 0.21 ms
+  with their wheels posed only when `subtreeCulled()` is false, about the same as without (0.43 ms) when every wheel
+  is still posed each frame (each change under a culled entity is noted and its box grown), and 0.09 ms if the game
+  hides them itself. Either way the items fall from 1,801 to 319, and with them each view's and shadow cascade's
+  per-item work. With every vehicle in view it costs more than it saves (0.42 to 0.72 ms in the same scene): use it
+  where most of the things are off screen.
 
 ## Texture maps (normal, metallic-roughness, occlusion)
 

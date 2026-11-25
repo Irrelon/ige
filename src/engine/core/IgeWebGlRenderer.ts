@@ -27,6 +27,7 @@ import type { IgeWebGlGeometry } from "@/engine/webgl/IgeWebGlGeometry";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
 import { IgeFrustum } from "@/engine/webgl/IgeFrustum";
+import { type IgeSubtreeCull, igeAffineInvert, igeAffineMultiply, igeSubtreeHeights, igeSubtreeOutside, igeSubtreeSphere, SUBTREE_RETAKE_WALKS } from "@/engine/core/IgeSubtreeCull";
 import {
 	IgeWebGlBonePalette,
 	IgeWebGlInstanceBuffer,
@@ -255,6 +256,11 @@ export interface IgeWebGlRenderStats {
 	shadowCastersCulled: number;
 	/** Directional shadow cascades drawn this frame, summed over views (one each when the map isn't split; see shadowCascades()). */
 	shadowCascades: number;
+	/**
+	 * Entities culled with everything under them this frame (IgeEntity.cullSubtree()): outside every view, as was the
+	 * shadow they could cast into one, so nothing under them was walked or drawn.
+	 */
+	subtreesCulled: number;
 	viewports: number;
 	/**
 	 * The GPU's time for a recent frame, ms: a timer query round all of a frame's drawing (shadow maps, views,
@@ -300,6 +306,27 @@ interface IgeWebGlSceneFrameData {
 	/** The lowest and highest points of the opaque meshes' bounds (world y): what can take a shadow (shadowFit()'s "auto" band). */
 	minY: number;
 	maxY: number;
+	/**
+	 * Entities culled with everything under them (IgeEntity.cullSubtree()) whose box is known, reached by the walk and
+	 * left until every view's camera is known (after the walk, so the preTick behaviours have moved things): then
+	 * each is drawn (walked) or left out (_finishScenes()).
+	 */
+	deferred: IgeEntity[];
+}
+
+/** One view of a scene, for culling subtrees (IgeEntity.cullSubtree()): its frustum, and where its shadows come from. */
+interface IgeSubtreeView {
+	frustum: IgeFrustum;
+	/** It draws directional shadows. */
+	shadow: boolean;
+	/** The shadow can be followed down the light to the lowest surface that takes one (the light comes from above). */
+	sweep: boolean;
+	/** The way the light travels (unit). */
+	lx: number;
+	ly: number;
+	lz: number;
+	/** Room left round a caster's shadow for the map's texels and filtering (world units). */
+	margin: number;
 }
 
 /** Anything that supplies packed per-instance data (particles, decals). */
@@ -346,6 +373,8 @@ type IgeLocalBox = { minX: number; minY: number; minZ: number; maxX: number; max
 /** Local-space bounding boxes for pointer picking (cached per geometry and model). */
 const geometryBoxCache: WeakMap<IgeGeometryData3d, IgeLocalBox> = new WeakMap();
 const partsBoxCache: WeakMap<object, IgeLocalBox> = new WeakMap();
+/** Models' boxes for culling subtrees (every part, none skinned; see IgeEntity.cullSubtree()). */
+const subtreePartsBoxCache: WeakMap<object, IgeLocalBox> = new WeakMap();
 
 function geometryBox (data: IgeGeometryData3d): IgeLocalBox | null {
 	let box = geometryBoxCache.get(data);
@@ -606,6 +635,20 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _lineData = new Float32Array(33);
 	/** Passed to entity preTick behaviours, which expect a Canvas 2D context. */
 	protected _tickContext = new IgeDummyContext();
+	/** The frame's main viewports (for culling subtrees: which views show a scene). */
+	protected _frameViews: IgeViewport[] = [];
+	/** Scenes walked since their deferred subtrees were last decided (see _finishScenes()). */
+	protected _collectedScenes: IgeObject[] = [];
+	/** The views of the scene whose deferred subtrees are being decided; null while scenes are walked. */
+	protected _subtreeViews: IgeSubtreeView[] | null = null;
+	protected _subtreeViewPool: IgeSubtreeView[] = [];
+	/** The lowest surface that takes a shadow in the scene being decided (the fit's band), for following shadows down. */
+	protected _subtreeFloor = -Infinity;
+	/** Shadow-casting point lights that can reach the scene being decided: x, y, z and reach, four numbers each. */
+	protected _subtreePoints: number[] = [];
+	protected _subtreePath: IgeObject[] = [];
+	protected _subtreeCentre = { x: 0, y: 0, z: 0 };
+	protected _subtreeHeights = { min: 0, max: 0 };
 	protected _defaultParticleTexture: IgeGpuTexture | null = null;
 	protected _defaultDecalTexture: IgeGpuTexture | null = null;
 	protected _lightFrustum: IgeFrustum = new IgeFrustum();
@@ -660,6 +703,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		shadowCacheCopies: 0,
 		shadowCastersCulled: 0,
 		shadowCascades: 0,
+		subtreesCulled: 0,
 		viewports: 0,
 		uploads: 0,
 		uploadBytes: 0,
@@ -1773,6 +1817,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				this._bonePalette?.begin();
 				this._forgetCollected(panel.viewport._scene);
 				this._collectScene(panel.viewport._scene);
+				this._finishScenes();
 				this._uploadBonePalette();
 				this._lightManager = panel.lights;
 				this._shadowCastingLight = panel._shadowLight;
@@ -1800,6 +1845,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._forgetCollected(panel.viewport._scene);
 			this._collectScene(panel.viewport._scene);
 		}
+		this._finishScenes();
 		this._uploadBonePalette();
 	}
 
@@ -2554,6 +2600,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		stats.shadowCacheCopies = 0;
 		stats.shadowCastersCulled = 0;
 		stats.shadowCascades = 0;
+		stats.subtreesCulled = 0;
 		this._directionalPassesLastFrame = this._directionalPassesThisFrame;
 		this._directionalPassesThisFrame = 0;
 		stats.viewports = viewports ? viewports.length : 0;
@@ -2619,6 +2666,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._bonePalette?.begin();
 
 		const views: IgeViewport[] = hasViews ? viewports : [];
+		this._frameViews = views;
 		for (let i = 0; i < views.length; i++) {
 			this._collectScene(views[i]._scene);
 		}
@@ -2635,6 +2683,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				}
 			}
 		}
+		// Every view's camera is placed now: subtrees culled as one are drawn or left out, and the scenes finished
+		this._finishScenes();
 
 		// Upload the bone palette once; every viewport and shadow pass reads it (the passes not yet on the device on
 		// BONE_TEXTURE_UNIT, left bound there for the frame)
@@ -2726,13 +2776,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._stateManager!.invalidateTextureBindings();
 	}
 
-	/** Collect a scene's renderables for this frame (once per scene, however many views draw it). */
+	/**
+	 * Collect a scene's renderables for this frame (once per scene, however many views draw it). Subtrees culled as
+	 * one (IgeEntity.cullSubtree()) are left for _finishScenes(), which must follow before the scene is drawn.
+	 */
 	protected _collectScene(scene: IgeObject | undefined): void {
 		if (!scene) return;
-		const stats = this._stats;
 		let data = this._sceneData.get(scene);
 		if (!data) {
-			data = { frameId: -1, models: [], sprites: [], particles: [], decals: [], ui: [], uiSettings: [], minY: Infinity, maxY: -Infinity };
+			data = { frameId: -1, models: [], sprites: [], particles: [], decals: [], ui: [], uiSettings: [], minY: Infinity, maxY: -Infinity, deferred: [] };
 			this._sceneData.set(scene, data);
 		}
 
@@ -2744,8 +2796,25 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			data.decals.length = 0;
 			data.ui.length = 0;
 			data.uiSettings.length = 0;
+			data.deferred.length = 0;
 			this._collectRenderables(scene, data);
+			(this._collectedScenes ??= []).push(scene);
+		}
+	}
+
+	/**
+	 * Finish the scenes collected since last time, now every view's camera is placed: the heights that can take a
+	 * shadow measured, each subtree culled as one that was left for now drawn (walked) or left out, and the particles
+	 * and decals uploaded.
+	 */
+	protected _finishScenes(): void {
+		const scenes = (this._collectedScenes ??= []);
+		for (let i = 0; i < scenes.length; i++) {
+			const scene = scenes[i];
+			const data = this._sceneData.get(scene);
+			if (!data) continue;
 			this._measureHeights(data);
+			if (data.deferred.length) this._decideSubtrees(scene, data);
 			if (data.particles.length || data.decals.length) this._gpuBegin();
 			for (let p = 0; p < data.particles.length; p++) {
 				this._uploadInstanceData(data.particles[p], PARTICLE_FLOATS);
@@ -2753,8 +2822,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			for (let d = 0; d < data.decals.length; d++) {
 				this._uploadInstanceData(data.decals[d], DECAL_INSTANCE_FLOATS);
 			}
-			stats.items += data.models.length + data.sprites.length;
+			this._stats.items += data.models.length + data.sprites.length;
 		}
+		scenes.length = 0;
 	}
 
 	/**
@@ -2774,6 +2844,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			if (item.cy - half < minY) minY = item.cy - half;
 			if (item.cy + half > maxY) maxY = item.cy + half;
 		}
+		// Subtrees culled as one, not walked yet: their boxes (whether they're drawn or not, so the band stays put)
+		const deferred = data.deferred, heights = (this._subtreeHeights ??= { min: 0, max: 0 });
+		for (let i = 0; i < deferred.length; i++) {
+			const root = deferred[i], cull = root._subtreeCull;
+			if (!cull || cull.empty() || !root._worldMatrix4) continue;
+			igeSubtreeHeights(root._worldMatrix4.matrix, cull, heights);
+			if (heights.min < minY) minY = heights.min;
+			if (heights.max > maxY) maxY = heights.max;
+		}
 		data.minY = minY;
 		data.maxY = maxY;
 	}
@@ -2781,8 +2860,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/**
 	 * Walk a scene graph once, refreshing transforms and turning every
 	 * renderable entity into pooled render items with world-space bounds.
+	 * `group`: the nearest entity above culled with everything under it
+	 * (IgeEntity.cullSubtree()), whose box this entity's meshes go into.
 	 */
-	protected _collectRenderables(obj: IgeObject, data: IgeWebGlSceneFrameData, isSceneRoot: boolean = true, ui?: IgeUiSettings): void {
+	protected _collectRenderables(obj: IgeObject, data: IgeWebGlSceneFrameData, isSceneRoot: boolean = true, ui?: IgeUiSettings, group?: IgeSubtreeCull): void {
 		if (obj._hidden) {
 			return;
 		}
@@ -2796,17 +2877,30 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			(obj as IgeEntity).updateTransform();
 		}
 
-		const entity = obj as IgeEntity;
-		const geometryData = entity._geometryData;
-
 		// Entity preTick behaviours: the Canvas 2D renderer runs them as it
 		// draws each entity; here they run once per frame, with a 2D context
 		// whose drawing calls do nothing, so logic in them still works
 		const behaviours = (obj as any)._behaviours;
 		if (behaviours && behaviours[IgeBehaviourType.preTick]?.length) {
 			obj._processBehaviours(IgeBehaviourType.preTick, this._tickContext);
+			// (Culled as one, the subtree above would skip them: it's walked every frame instead)
+			if (group) group.volatile = true;
 		}
 
+		// Culled with everything under it (unless it's in the UI layer, which is drawn wherever it is)
+		const cull = obj._subtreeCull;
+		if (cull && !isSceneRoot && !ui && !(obj as IgeEntity)._ui) {
+			this._collectSubtree(obj as IgeEntity, cull, data, group);
+			return;
+		}
+
+		this._collectContent(obj, data, ui, group);
+	}
+
+	/** An entity's own renderables (its transform current, its behaviours run), then its children's. */
+	protected _collectContent(obj: IgeObject, data: IgeWebGlSceneFrameData, ui: IgeUiSettings | undefined, group: IgeSubtreeCull | undefined): void {
+		const entity = obj as IgeEntity;
+		const geometryData = entity._geometryData;
 		const parts = entity._modelParts;
 		// The UI layer (IgeEntity.uiLayer()): its own settings, or its UI ancestor's
 		const uiHere = entity._ui ?? ui;
@@ -2848,12 +2942,392 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			data.sprites.push(entity);
 		}
 
+		// What it draws goes into the box of the subtree it's culled with
+		if (group) this._subtreeContentBox(entity, group, uiHere);
+
 		const children = obj._children;
 		if (children) {
 			for (let i = 0; i < children.length; i++) {
-				this._collectRenderables(children[i], data, false, uiHere);
+				this._collectRenderables(children[i], data, false, uiHere, group);
 			}
 		}
+	}
+
+	/**
+	 * An entity culled with everything under it (IgeEntity.cullSubtree()), reached by the walk. With its box known (and
+	 * grown round what changed under it), it's left for _finishScenes() to draw or leave out once every view's camera
+	 * is placed (or then and there, while that's happening); otherwise it's walked, taking its box as it goes. Either
+	 * way its box goes into the box of the subtree above it, if any.
+	 */
+	protected _collectSubtree(root: IgeEntity, cull: IgeSubtreeCull, data: IgeWebGlSceneFrameData, group: IgeSubtreeCull | undefined): void {
+		if (cull.valid && !cull.volatile && this._subtreeRefresh(root, cull)) {
+			if (!this._subtreeViews) {
+				data.deferred.push(root);
+				this._subtreeInto(group, root, cull);
+				return;
+			}
+			if (!this._subtreeVisible(root, cull)) {
+				this._subtreeCulled(cull);
+				this._subtreeInto(group, root, cull);
+				return;
+			}
+		}
+		this._walkSubtree(root, cull, data, group);
+	}
+
+	/**
+	 * Walk a subtree culled as one (drawing what's in it). Its box is taken afresh as it goes, unless it's known and up
+	 * to date (then it's kept, but taken afresh every SUBTREE_RETAKE_WALKS walks, to shrink round what's there now).
+	 */
+	protected _walkSubtree(root: IgeEntity, cull: IgeSubtreeCull, data: IgeWebGlSceneFrameData, group: IgeSubtreeCull | undefined): void {
+		if (cull.valid && !cull.volatile && cull.changedCount === 0 && cull.keptWalks < SUBTREE_RETAKE_WALKS) {
+			// (Anything changed meanwhile is noted for next time; anything that can't be bounded is still noticed)
+			cull.keptWalks++;
+			cull.boxing = false;
+			try {
+				this._collectContent(root, data, undefined, cull);
+			} finally {
+				cull.boxing = true;
+			}
+			this._subtreeInto(group, root, cull);
+			return;
+		}
+		cull.keptWalks = 0;
+		cull.clear();
+		const m = root._worldMatrix4?.matrix;
+		if (!m || !igeAffineInvert(m, cull.inv)) {
+			// No world matrix to take a box in (not built yet, or a zero scale): walked with what's above it, its box left
+			cull.invalidate();
+			this._collectContent(root, data, undefined, group);
+			return;
+		}
+		// (Changes noted while it's walked are taken in by the walk itself)
+		cull.valid = false;
+		this._collectContent(root, data, undefined, cull);
+		cull.valid = true;
+		this._subtreeInto(group, root, cull);
+	}
+
+	/** A subtree culled as one was left out of this frame. */
+	protected _subtreeCulled(cull: IgeSubtreeCull): void {
+		cull.culledFrame = this._frameId;
+		this._stats.subtreesCulled++;
+	}
+
+	/** A subtree's box into the box of the subtree above it (or its volatility). */
+	protected _subtreeInto(group: IgeSubtreeCull | undefined, root: IgeEntity, cull: IgeSubtreeCull): void {
+		if (!group) return;
+		if (cull.volatile) {
+			group.volatile = true;
+			return;
+		}
+		// (One whose box is kept holds this one's already)
+		if (!group.boxing || !root._worldMatrix4) return;
+		group.addSubtree(igeAffineMultiply(group.toRoot, group.inv, root._worldMatrix4.matrix), cull);
+	}
+
+	/**
+	 * Grow a subtree's box round the entities noted as changed under it since it was taken. Returns false when the box
+	 * can't be used (it's to be taken again by a walk): something changed can't be bounded without walking it every
+	 * frame, the entity itself changed what it draws, or too much keeps changing.
+	 */
+	protected _subtreeRefresh(root: IgeEntity, cull: IgeSubtreeCull): boolean {
+		if (cull.changedCount === 0) return true;
+		const m = root._worldMatrix4?.matrix;
+		if (!m || !igeAffineInvert(m, cull.inv)) {
+			cull.invalidate();
+			return false;
+		}
+		const path = (this._subtreePath ??= []);
+		// (Bringing transforms up to date can note more: they're taken in a second go, which notes no more)
+		for (let pass = 0; cull.changedCount > 0; pass++) {
+			if (pass === 3) {
+				cull.invalidate();
+				return false;
+			}
+			const count = cull.take(), list = cull.taken;
+			for (let i = 0; i < count; i++) {
+				const obj = list[i];
+				if (obj === root) {
+					cull.done();
+					cull.invalidate();
+					return false;
+				}
+				if (!obj._alive) continue;
+				// Still under the root and shown: anything else draws nothing here now (its old box stays, only too big)
+				path.length = 0;
+				let o: IgeObject | null = obj, shown = true;
+				for (; o && o !== root; o = o._parent) {
+					if (o._hidden) shown = false;
+					path.push(o);
+				}
+				if (o !== root || !shown) continue;
+				// Its transform and those above it, from the root down (they may have moved since the engine's update)
+				for (let k = path.length - 1; k >= 0; k--) {
+					const e = path[k] as IgeEntity;
+					if (typeof e.updateTransform === "function") e.updateTransform();
+				}
+				this._subtreeBox(obj as IgeEntity, cull);
+				if (cull.volatile) {
+					cull.done();
+					return false;
+				}
+			}
+			cull.done();
+		}
+		return true;
+	}
+
+	/** Grow a subtree's box round an entity under it and everything under that (its transform current), as drawn. */
+	protected _subtreeBox(entity: IgeEntity, cull: IgeSubtreeCull): void {
+		const behaviours = (entity as any)._behaviours;
+		if (behaviours && behaviours[IgeBehaviourType.preTick]?.length) {
+			cull.volatile = true;
+			return;
+		}
+		this._subtreeContentBox(entity, cull, undefined);
+		const children = entity._children;
+		for (let i = 0; i < children.length && !cull.volatile; i++) {
+			const child = children[i] as IgeEntity;
+			if (child._hidden) continue;
+			if (typeof child.updateTransform === "function") child.updateTransform();
+			this._subtreeBox(child, cull);
+		}
+	}
+
+	/**
+	 * Grow a subtree's box round what one entity under it draws itself, as _collectContent() would draw it; or mark
+	 * the subtree volatile when that can't be bounded without walking it every frame.
+	 */
+	protected _subtreeContentBox(entity: IgeEntity, cull: IgeSubtreeCull, ui: IgeUiSettings | undefined): void {
+		if (ui || entity._ui || entity._skeleton || entity._attachBone !== undefined ||
+			(entity as unknown as IgeParticleSystem3d)._isParticleSystem3d || (entity as unknown as IgeDecalSystem3d)._isDecalSystem3d) {
+			// UI elements go where they're pinned, skinned meshes where their bones are, the rest where they are emitted
+			cull.volatile = true;
+			return;
+		}
+		const world = entity._worldMatrix4?.matrix;
+		if (!world || !cull.boxing) return;
+		const parts = entity._modelParts;
+		const geometryData = entity._geometryData;
+		if (parts && parts.length > 0) {
+			// (Every part, shown or not: one shown later needs no note)
+			const box = this._subtreePartsBox(parts);
+			if (!box) {
+				// A skinned part goes where its bones are; a part with no bounds is drawn wherever it is
+				cull.volatile = true;
+				return;
+			}
+			cull.addBox(igeAffineMultiply(cull.toRoot, cull.inv, world), box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+		} else if (geometryData && (geometryData.vertices || geometryData.packed || geometryData.gpuOnly)) {
+			const toRoot = igeAffineMultiply(cull.toRoot, cull.inv, world);
+			let box = this._subtreeMeshBox(geometryData);
+			// (And the mesh it draws while a new one waits to upload)
+			const before = this._uploads?.limited ? this._drawnGeometry?.get(entity) : undefined;
+			if (box && before && before !== geometryData) {
+				const was = this._subtreeMeshBox(before);
+				if (was) cull.addBox(toRoot, was.minX, was.minY, was.minZ, was.maxX, was.maxY, was.maxZ);
+				else box = null;
+			}
+			if (!box) {
+				// No bounds: drawn wherever it is, never culled
+				cull.volatile = true;
+				return;
+			}
+			cull.addBox(toRoot, box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+		} else if (entity._texture) {
+			// A sprite: the sphere its quad turns in (as the views cull it), from its middle
+			const inv = cull.inv;
+			const x = world[12], y = world[13], z = world[14];
+			const worldScale = Math.sqrt(Math.max(
+				world[0] * world[0] + world[1] * world[1] + world[2] * world[2],
+				world[4] * world[4] + world[5] * world[5] + world[6] * world[6]
+			));
+			const radius = Math.max(entity._bounds2d.x, entity._bounds2d.y) * 0.75 *
+				Math.max(Math.abs(entity._scale.x), Math.abs(entity._scale.y), worldScale, 1e-6);
+			const invScale = Math.sqrt(Math.max(
+				inv[0] * inv[0] + inv[1] * inv[1] + inv[2] * inv[2],
+				inv[4] * inv[4] + inv[5] * inv[5] + inv[6] * inv[6],
+				inv[8] * inv[8] + inv[9] * inv[9] + inv[10] * inv[10]
+			));
+			cull.addSphere(
+				inv[0] * x + inv[4] * y + inv[8] * z + inv[12],
+				inv[1] * x + inv[5] * y + inv[9] * z + inv[13],
+				inv[2] * x + inv[6] * y + inv[10] * z + inv[14],
+				radius * invScale
+			);
+		}
+	}
+
+	/**
+	 * A model's box in its own space, every part's mesh with its node transform (cached); null when a part is skinned
+	 * (it goes where its bones are) or has no bounds.
+	 */
+	protected _subtreePartsBox(parts: IgeModelPart[]): IgeLocalBox | null {
+		const cached = subtreePartsBoxCache.get(parts);
+		if (cached) return cached;
+		const box: IgeLocalBox = { minX: Infinity, minY: Infinity, minZ: Infinity, maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity };
+		for (const part of parts) {
+			if (part.skinned) return null;
+			const b = this._subtreeMeshBox(part.geometryData);
+			if (!b) return null;
+			const m = part.matrix;
+			for (let c = 0; c < 8; c++) {
+				const x = c & 1 ? b.maxX : b.minX, y = c & 2 ? b.maxY : b.minY, z = c & 4 ? b.maxZ : b.minZ;
+				const wx = m ? m[0] * x + m[4] * y + m[8] * z + m[12] : x;
+				const wy = m ? m[1] * x + m[5] * y + m[9] * z + m[13] : y;
+				const wz = m ? m[2] * x + m[6] * y + m[10] * z + m[14] : z;
+				if (wx < box.minX) box.minX = wx;
+				if (wy < box.minY) box.minY = wy;
+				if (wz < box.minZ) box.minZ = wz;
+				if (wx > box.maxX) box.maxX = wx;
+				if (wy > box.maxY) box.maxY = wy;
+				if (wz > box.maxZ) box.maxZ = wz;
+			}
+		}
+		subtreePartsBoxCache.set(parts, box);
+		return box;
+	}
+
+	/** A mesh's box in its own space: its data's, else its uploaded copy's; null when it has none. */
+	protected _subtreeMeshBox(data: IgeGeometryData3d): IgeLocalBox | null {
+		const box = geometryBox(data);
+		if (box) return box;
+		const sphere = data.boundingSphere;
+		if (sphere) {
+			const [x, y, z] = sphere.center, r = sphere.radius;
+			return { minX: x - r, minY: y - r, minZ: z - r, maxX: x + r, maxY: y + r, maxZ: z + r };
+		}
+		const g = this._geometryManager?.getGeometry(data.id);
+		if (!g || g.boundsRadius < 0) return null;
+		return {
+			minX: g.boundsCenterX - g.boundsHalfX, minY: g.boundsCenterY - g.boundsHalfY, minZ: g.boundsCenterZ - g.boundsHalfZ,
+			maxX: g.boundsCenterX + g.boundsHalfX, maxY: g.boundsCenterY + g.boundsHalfY, maxZ: g.boundsCenterZ + g.boundsHalfZ
+		};
+	}
+
+	/**
+	 * Draw or leave out each subtree culled as one that the walk of a scene left for now: its box (grown round what
+	 * changed since) tested against every view of the scene, and the shadow it could cast into one.
+	 */
+	protected _decideSubtrees(scene: IgeObject, data: IgeWebGlSceneFrameData): void {
+		const deferred = data.deferred;
+		this._shadowFitBand(data);
+		this._subtreeFloor = this._shadowBandMin;
+		const views = this._subtreeViewsOf(scene);
+		this._subtreeViews = views;
+		try {
+			for (let i = 0; i < deferred.length; i++) {
+				const root = deferred[i], cull = root._subtreeCull;
+				// (Destroyed or hidden by a later preTick behaviour: nothing to draw)
+				if (!root._alive || root._hidden) continue;
+				if (!cull) {
+					// (cullSubtree(false) since: walked as usual)
+					this._collectContent(root, data, undefined, undefined);
+					continue;
+				}
+				// (A later preTick behaviour may have moved it)
+				root.updateTransform();
+				// No view to test against (nothing would show it): walked, as if this were off
+				if (views.length === 0 || !this._subtreeRefresh(root, cull) || this._subtreeVisible(root, cull)) {
+					this._walkSubtree(root, cull, data, undefined);
+				} else {
+					this._subtreeCulled(cull);
+				}
+			}
+		} finally {
+			this._subtreeViews = null;
+		}
+	}
+
+	/**
+	 * The views of a scene (the frame's viewports showing it, and its shown panels), each with its frustum as it will
+	 * be drawn and how its shadows fall; and the shadow-casting point lights that reach it (_subtreePoints).
+	 */
+	protected _subtreeViewsOf(scene: IgeObject): IgeSubtreeView[] {
+		const pool = (this._subtreeViewPool ??= []);
+		const views: IgeSubtreeView[] = [];
+		const points = (this._subtreePoints ??= []);
+		points.length = 0;
+		const add = (viewport: IgeViewport, light: IgeDirectionalLight | null | undefined) => {
+			const camera = viewport.camera;
+			if (!camera || !this._cameraController) return;
+			const matrices = this._cameraController.updateCamera(camera, viewport);
+			const view = (pool[views.length] ??= {
+				frustum: new IgeFrustum(), shadow: false, sweep: false, lx: 0, ly: -1, lz: 0, margin: 0
+			});
+			for (let p = 0; p < 6; p++) {
+				const from = matrices.frustum.planes[p];
+				view.frustum.planes[p].set(from.a, from.b, from.c, from.d);
+			}
+			view.shadow = !!light && !!this._shadowManager && this.shadowsEnabled();
+			if (view.shadow) {
+				const d = light!.direction() as { x: number; y: number; z: number };
+				const len = Math.hypot(d.x, d.y, d.z) || 1;
+				view.lx = d.x / len;
+				view.ly = d.y / len;
+				view.lz = d.z / len;
+				// (A light from below or the side, or no floor known: where its shadows land can't be bounded)
+				view.sweep = view.ly < -0.05 && Number.isFinite(this._subtreeFloor);
+				// As the pass's caster culling allows, measured on the whole map: a fiftieth of its half-size
+				const reach = this._shadowFit.enabled ? this._shadowFitDistance(camera, matrices) : (this._shadowManager!.frustumSize() as number);
+				view.margin = SHADOW_CULL_MARGIN * reach;
+			}
+			views.push(view);
+		};
+		let main = false;
+		for (const viewport of this._frameViews ?? []) {
+			if (viewport._scene !== scene) continue;
+			this._applyDefaultCameraPreset(viewport);
+			add(viewport, this._shadowCastingLight);
+			main = true;
+		}
+		for (const panel of this._visiblePanels ?? []) {
+			if (panel.viewport._scene === scene) add(panel.viewport, panel._shadowLight);
+		}
+		// Point light shadows are drawn for the main views (from every scene's casters)
+		if (main && this._shadowManager) {
+			for (const light of this._shadowCastingPointLights) {
+				const data = this._shadowManager.getPointShadowMapData(light.id());
+				const far = data?.farPlane ?? ((light as any)._range as number || 500);
+				points.push(light._translate.x, light._translate.y, light._translate.z, far);
+			}
+		}
+		return views;
+	}
+
+	/** Whether a subtree culled as one (its box current) or the shadow it can cast reaches any view of its scene. */
+	protected _subtreeVisible(root: IgeEntity, cull: IgeSubtreeCull): boolean {
+		// Nothing drawn under it
+		if (cull.empty()) return false;
+		const m = root._worldMatrix4?.matrix;
+		if (!m) return true;
+		const views = this._subtreeViews!;
+		let heights = false;
+		for (let i = 0; i < views.length; i++) {
+			const view = views[i];
+			if (!igeSubtreeOutside(view.frustum, m, cull)) return true;
+			if (!view.shadow) continue;
+			if (!view.sweep) return true;
+			// Its shadow runs down the light from it to the lowest surface that takes one
+			if (!heights) {
+				igeSubtreeHeights(m, cull, (this._subtreeHeights ??= { min: 0, max: 0 }));
+				heights = true;
+			}
+			const reach = Math.max(0, this._subtreeHeights.max - this._subtreeFloor) / -view.ly;
+			if (!igeSubtreeOutside(view.frustum, m, cull, view.margin, view.lx, view.ly, view.lz, 0, reach)) return true;
+		}
+		const points = this._subtreePoints;
+		if (points.length) {
+			const c = (this._subtreeCentre ??= { x: 0, y: 0, z: 0 });
+			const radius = igeSubtreeSphere(m, cull, c);
+			for (let i = 0; i < points.length; i += 4) {
+				const reach = points[i + 3] + radius;
+				const dx = c.x - points[i], dy = c.y - points[i + 1], dz = c.z - points[i + 2];
+				if (dx * dx + dy * dy + dz * dz <= reach * reach) return true;
+			}
+		}
+		return false;
 	}
 
 	/**

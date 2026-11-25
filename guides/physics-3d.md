@@ -154,7 +154,9 @@ It pushes what it walks into each time it's replayed, so replay where nothing lo
   that (IGE units per second), with the speed change, the impulse (the speed change times the mass) and the bodies
   touching it: sounds, splinters, damage from a falling crate. `body.on("impact", ({ speed, impulse, others }) => ...)`.
 - `body.enabled(false)` takes a body out of the simulation (e.g. while a character is dead), `teleport(x, y, z)`
-  moves it (respawns), `destroy()` frees it. `physics.bodyOf(entity)` finds an entity's body. Also `velocity()`,
+  moves it (respawns), `destroy()` frees it. `enabled(true)` puts it back still: a kinematic body where its entity
+  is now (it doesn't sweep across from where it was taken out, shoving what it meets), a dynamic body where it was
+  taken out (moving its entity meanwhile is undone; `teleport()` moves it). `physics.bodyOf(entity)` finds an entity's body. Also `velocity()`,
   `setVelocity()`, `angularVelocity()`, `setAngularVelocity()`, `mass()` and `asleep()`.
 - `physics.gravity(-20)` changes gravity (metres per second squared).
 - Entities with dynamic bodies should be mounted to the scene, or to a parent that doesn't move.

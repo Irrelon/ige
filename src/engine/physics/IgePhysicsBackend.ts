@@ -179,7 +179,10 @@ export interface IgePhysicsBackend {
 
 	createBody (desc: IgePhysicsBackendBodyDesc): IgePhysicsBodyHandle;
 	destroyBody (body: IgePhysicsBodyHandle): void;
-	/** Take a body out of the simulation (it keeps its state) or put it back, awake. */
+	/**
+	 * Take a body out of the simulation (it keeps its place and drops its velocity) or put it back, awake. A kinematic
+	 * body put back is placed where its entity is by IgePhysics3d (setBodyTransform()), not moved there.
+	 */
 	setBodyEnabled (body: IgePhysicsBodyHandle, enabled: boolean): void;
 	/** Position (the shape's centre) and rotation: out = x, y, z, qx, qy, qz, qw. */
 	readBodyPose (body: IgePhysicsBodyHandle, out: Float64Array): void;

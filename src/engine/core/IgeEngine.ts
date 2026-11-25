@@ -691,7 +691,7 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	analyseTiming () {
 		if (!ige.config.debug._timing) {
 			this.log(
-				"Cannot analyse timing because the ige.config.debug._timing flag is not enabled so no timing data has been recorded!",
+				"Cannot analyse timing because debug timing is off, so no timing data has been recorded: call ige.engine.debugTiming(true) first",
 				"warning"
 			);
 		}
@@ -1066,9 +1066,11 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	/**
 	 * Enables or disables the engine's debug timing system. The
 	 * timing system will time all update and rendering code down
-	 * the scenegraph and is useful for tracking long-running code
-	 * but comes with a small performance penalty when enabled.
-	 * Enabled by default.
+	 * the scenegraph and is useful for tracking long-running code,
+	 * but it times every entity's update and draw each frame, which
+	 * costs milliseconds a frame in a scene of a few thousand
+	 * entities. Disabled by default: turn it on in the pages that
+	 * show the timings (sceneGraph(), analyseTiming(), the editor).
 	 * @param {Boolean=} val If true, will enable debug timing mode.
 	 * @returns {*}
 	 */
