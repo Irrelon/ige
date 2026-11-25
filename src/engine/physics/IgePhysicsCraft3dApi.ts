@@ -254,8 +254,10 @@ export interface IgePhysicsAircraftOptions {
 	engine?: "propeller" | "jet";
 	/** Seconds the engine takes to go from idle to full. */
 	spoolTime?: number;
-	/** Wing angle of attack at which it stalls, degrees (default 15). */
+	/** Wing angle of attack at which it stalls, degrees (default 20). */
 	stallAngle?: number;
+	/** Seconds a stall lasts: the nose drops by itself and the wing flies again in about this long (default 1). */
+	stallRecovery?: number;
 	/** Turn rates at full stick, degrees per second: pitch, roll and yaw. */
 	pitchRate?: number;
 	rollRate?: number;
@@ -276,12 +278,19 @@ export interface IgePhysicsAircraftOptions {
 	gearTime?: number;
 	/** Floats (a floatplane): buoyancy points under its pontoons. */
 	floats?: { points: IgePhysicsFloatPoint[]; volume: number; drag?: IgePhysicsWaterDrag };
-	/** Arcade help: wings and nose level themselves when the stick is let go (planes); hover holds height and the helicopter levels itself (default true). */
+	/**
+	 * Arcade help (default true). Planes: wings and nose level themselves when the stick is let go, banked turns are
+	 * coordinated, a hard pull at speed flies at the edge of the stall rather than over it, and low over the ground
+	 * (or water, on floats) with the gear down and sinking it flares for you. Helicopters: hover holds height, and let
+	 * go of the cyclic it levels and stops its drift.
+	 */
 	assists?: boolean;
 	/** Helicopters: climb and descent rates at full collective (IGE units per second) and the most it tilts (degrees). */
 	climbRate?: number;
 	descentRate?: number;
 	maxTilt?: number;
+	/** Helicopters: seconds it takes to level once the cyclic is let go (default 0.5). */
+	levelTime?: number;
 	/** Helicopters: seconds for the rotor to spin up. */
 	spinUp?: number;
 	/** Friction against what it scrapes along (default 0.5). */

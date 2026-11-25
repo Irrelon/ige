@@ -76,15 +76,17 @@ What it does:
 - **Propeller.** It only pushes while it's under water: a boat leaping off a wave revs, and a boat on dry land goes
   nowhere. `propellerInWater()` says which.
 - **Rudder.** It turns the boat harder the faster it goes (full effect from `turnSpeed`), and a little at low speed
-  in the propeller's wash. Going astern, it turns the other way.
+  in the propeller's wash, but never tighter than 2.5 g across the water, so a speedboat flat out turns at about 28
+  degrees a second rather than its full `turnRate`. Going astern, it turns the other way.
 - **Planing.** At speed a speedboat's hull lifts out of the water (less of it under, less drag) and its bow rises,
   most around `planing.speed`, settling a little once it's up on the plane.
 - **Arcade help.** It leans into turns (`bank`), is hard to capsize and rights itself if it does (`stability`), in a
-  second or two from upside down.
+  second or two from upside down. The propeller pushes level with the centre of mass, so full throttle can't stand
+  it on its stern, and leaping clear of the water off a swell it holds itself about level, so it lands flat.
 
 | Preset | Size | Mass | Top speed | Feel |
 |---|---|---|---|---|
-| `speedboat` (default) | 7 x 2.4 m | 1.8 t | 100 km/h | Quick, bow up getting going, banks into turns |
+| `speedboat` (default) | 7 x 2.4 m | 1.8 t | 180 km/h | Quick (0 to 100 km/h in about 2.5 s), bow up getting going, banks into turns, leaps the swell |
 | `fishingBoat` | 12 x 4 m | 15 t | 32 km/h | Heavy and steady |
 | `yacht` | 22 x 6 m | 60 t | 58 km/h | Big, lifts its bow a little |
 | `cargoShip` | 120 x 20 m | 8,000 t | 32 km/h | Slow to get going, slower to turn |
@@ -145,37 +147,55 @@ so a game can set them only when the player moves them.
 
 What it does:
 
-- **Lift** from airspeed and the wing's angle of attack, straight up to `stallAngle` (15 degrees), then falling away
-  softly. The wing has a 2-degree incidence, so it lifts a little with the fuselage level.
-- **Stalls.** Past the stall angle, lift drops, drag climbs and the nose drops by itself, even with the stick held
-  back, until the wing flies again. Let the stick go and open the throttle to recover. `stalled()` says when.
+- **Lift** from airspeed and the wing's angle of attack, straight up to `stallAngle` (20 degrees for the light plane),
+  then falling away softly. The wing has a 2-degree incidence, so it lifts a little with the fuselage level.
+- **Stalls** are rare: it takes being really slow and nose-high. Past the stall angle, lift drops, drag climbs and
+  the nose drops by itself, even with the stick held back, briskly enough that the wing flies again in about
+  `stallRecovery` seconds (1; a short nod of 10 to 20 degrees). `stalled()` says when.
 - **Drag**: parasitic (set so it tops out at `maxSpeed` at full throttle), induced, flaps, lowered gear.
 - **Thrust** along the nose. A propeller's falls off with speed, a jet's doesn't.
 - **Control.** The stick sets turn rates (`pitchRate`, `rollRate`, `yawRate`), reached at the `response` rate through
   the body's inertia, and only as far as the airflow allows: the controls do little until `controlSpeed`, but a
   propeller's wash helps the elevator and rudder taxiing. It weathervanes into the airflow and side-slip pushes it
   back in line with its nose, so it flies where it points.
-- **Assists** (`assists: false` to turn off): let go of the stick and the wings level and the nose eases level; banked
-  turns are coordinated, so the nose comes round with the bank.
+- **Assists** (`assists: false` to turn off):
+  - let go of the stick and the wings level and the nose eases level; banked turns are coordinated, so the nose comes
+    round with the bank;
+  - a hard pull flies at the edge of the stall, not over it: the nose comes up no faster than the airflow follows it.
+    This fades out below 1.3 times the stall speed (so slow and nose-high it can still stall), and holds after a
+    stall until it has its speed back, so it doesn't stall again straight away;
+  - **auto-flare**: low over the ground (or the water, on floats) with the gear down and sinking, the sink eases off
+    as it gets lower (to about half a metre a second at the ground, from 5 m up for the light plane and 12 m for the
+    airliner) and the nose comes up to about 5 degrees, so it touches down gently without careful timing. Pushing
+    the stick forward overrides the nose; the gear up, it doesn't flare;
+  - on its wheels at speed, the nose follows the way it's rolling, so a crabbed touchdown straightens up.
 - **Landing gear.** Each wheel is a sprung strut found by a ray down to the ground, with its own spring and damper (a
   1.5 Hz bounce for its share of the weight), tyre grip sideways, rolling resistance, brakes on the main wheels and
   steering on the nose wheel (full lock taxiing, little at take-off speed). Retracted, it lands on its belly.
   `gearEntities` (or `entity` per wheel in `gear`) are posed: compression, steering, spin, and folding away.
+- **Forgiving touchdowns.** A firm or crooked landing (3 m/s down, 5 degrees of crab, a wing low) neither bounces nor
+  tips it: the struts are damped two and a half times harder springing back out than going in, and soak up the blow
+  when they bottom out; the tyres' grip acts most of the way up towards the centre of mass, so it can't roll the
+  aircraft over its wheels; roll is damped while it's on its wheels; for half a second after touching down the tyres
+  skid sideways as they spin up, and the nose wheel castors at speed, so the nose swings into the direction it's
+  going rather than snatching it sideways. Only a real crash ends badly.
 - **Floats** (the floatplane) are buoyancy points: it floats, taxis and turns on the water with the rudder in the
   propeller's wash, and takes off when the wing lifts it clear.
 
-| Preset | Mass | Stall | Top speed | Take-off run | Feel |
-|---|---|---|---|---|---|
-| `lightPlane` (default) | 1.1 t | 90 km/h | 234 km/h | about 170 m | Forgiving, quick to answer |
-| `floatplane` | 1.25 t | 94 km/h | 209 km/h | about 15 s on the water | The light plane on floats |
-| `jet` | 9 t | 198 km/h | 900 km/h | about 240 m | Fast, high thrust, rolls hard |
-| `airliner` | 65 t | 223 km/h | 864 km/h | about 900 m | Heavy, slow to answer, a long run |
+| Preset | Mass | Stall | Stall angle | Top speed | Take-off run | Feel |
+|---|---|---|---|---|---|---|
+| `lightPlane` (default) | 1.1 t | 60 km/h | 20° | 234 km/h | about 115 m | Forgiving, quick to answer |
+| `floatplane` | 1.25 t | 63 km/h | 20° | 209 km/h | about 13 s on the water | The light plane on floats |
+| `jet` | 9 t | 132 km/h | 23° | 900 km/h | about 110 m | Fast, high thrust, rolls hard |
+| `airliner` | 65 t | 149 km/h | 19° | 864 km/h | about 630 m | Heavy, slow to answer, a long run |
 
-Stall speeds are for level flight with flaps up; full flaps take 10 to 15% off. Options fall back to the preset:
-`mass`, `shape`, `centreOfMass`, `wingArea` (m²), `stallSpeed`, `maxSpeed`, `thrust` (newtons), `engine`
-(`"propeller"` or `"jet"`), `spoolTime`, `stallAngle`, `pitchRate`, `rollRate`, `yawRate`, `response`,
-`controlSpeed`, `flaps` (`{ lift, drag }`), `gear`, `retractable`, `gearTime`, `floats`, `assists`, `friction`,
-`impacts`, `extrapolate`, `layer` and `rotorEntity` (a propeller, spun about its Z).
+Stall speeds are for level flight with flaps up; full flaps take 10 to 15% off. A stall lasts about half a second in
+the light plane, floatplane and jet (`stallRecovery` 1) and a little over a second in the airliner
+(`stallRecovery` 1.5). Options fall back to the preset: `mass`, `shape`, `centreOfMass`, `wingArea` (m²),
+`stallSpeed`, `maxSpeed`, `thrust` (newtons), `engine` (`"propeller"` or `"jet"`), `spoolTime`, `stallAngle`,
+`stallRecovery` (seconds), `pitchRate`, `rollRate`, `yawRate`, `response`, `controlSpeed`, `flaps`
+(`{ lift, drag }`), `gear`, `retractable`, `gearTime`, `floats`, `assists`, `friction`, `impacts`, `extrapolate`,
+`layer` and `rotorEntity` (a propeller, spun about its Z).
 
 The wing's most lift is worked out from the stall speed, and its drag from the top speed, so a plane is tuned with
 figures you'd look up: weight, wing area, stall speed, top speed, thrust.
@@ -205,8 +225,11 @@ The rotor pushes along the helicopter's up, so tilting it flies it. With the ass
 
 - **Hover.** Sitting on the ground with the collective centred, it stays down. Raise the collective to lift off; centre
   it and it settles and holds that height, even tilted in forward flight.
-- **Level.** The cyclic tilts it to a target angle (up to `maxTilt`, 32 degrees). Let go and it levels and leans back
-  against its drift, slowing to a hover.
+- **Level.** The cyclic tilts it to a target angle (up to `maxTilt`, 32 degrees). Let go and it's level within
+  `levelTime` (half a second), without overshooting, then leans back against its drift (about 2.5 degrees per m/s,
+  at most 60% of `maxTilt`) and brakes it, so it stops without wobbling or coming back: a drift of a few metres a
+  second in about two seconds, from flat out in about seven. A gamepad stick near the middle blends into this, so
+  small movements fly slowly rather than switching the levelling off.
 - **Landing.** Descending near the ground (or water), it eases down to about half a metre a second, so it sets down
   softly on a helipad or a roof.
 
@@ -252,9 +275,10 @@ physics.addBody(entity, { shape, mass: 20, centreOfMass: { x: 0, y: -55, z: 0 } 
 
 ## Limits
 
-- Arcade, not a simulator: control is by turn rate, there's no wind, no ground effect, no torque from the propeller,
-  air density is sea level's everywhere (no ceiling), and the lift and drag of the wing and tail act at the centre of
-  mass (stability comes from the controller and the assists, not the tail's own lift).
+- Arcade, not a simulator: control is by turn rate, there's no wind, no ground effect (bar the auto-flare's
+  cushion), no torque from the propeller, air density is sea level's everywhere (no ceiling), and the lift and drag of
+  the wing and tail act at the centre of mass (stability comes from the controller and the assists, not the tail's
+  own lift). The low stall speeds come from a wing that lifts more than a real one could, not from a bigger wing.
 - Water is a height field. Waves don't break, wakes and splashes aren't simulated, and a hull's sample points are
   columns, so very thin or tilted shapes float only roughly right. Buoyancy acts per point, so a few points per hull is
   cheap: eight to twelve for a boat.
@@ -291,10 +315,17 @@ chase camera and a readout. Build it with `npx webpack --config ./config/webpack
 | Helicopter | W S collective, arrows cyclic, A D yaw | Triggers collective, left stick, bumpers |
 | Boat | W S throttle, A D or left right rudder | Triggers, left stick |
 
-1 to 6 (or C, or gamepad Y) pick a craft, R (or B) puts it back at its start.
+1 to 6 (or C, or gamepad Y) pick a craft, R (or B) puts it back at its start. P shows a tuning panel for the
+current craft: sliders for its main figures (planes: stall speed, stall recovery, pitch and roll rates, top speed,
+thrust; the helicopter: level time, most tilt, top speed; the speedboat: top speed, thrust, turn rate), applied live
+by remaking the craft where it is. Each craft's tune is kept in the browser's localStorage and used whenever the
+example starts; "Copy JSON" gives it in the presets' units (m/s, degrees, newtons, seconds) to fold into
+`IgePhysicsCraft3dPresets.ts`; "Reset to preset" forgets it.
 
 `src/tests/IgePhysicsCraft3d.test.ts` flies and drives them headlessly through the public API, once per backend:
-boats floating at their depth, righting themselves, throttle, turning and planing, crates floating or sinking by
-density, a light plane's take-off speed, climb, stall, recovery and landing, a jet's top speed, an airliner's run, a
-floatplane on the water, a helicopter's hover, flight and landing (on a helipad too), impacts, state round trips and
-kinematic mode. `IgeWater3d.test.ts` checks the waves; `IgeJoltCraft3d.test.ts` that Jolt gets back every byte.
+boats floating at their depth, righting themselves, throttle, turning and planing, a speedboat flat out on the
+example's waves and turning hard at top speed, crates floating or sinking by density, a light plane's take-off speed,
+climb, stall, recovery and landing, every plane's stall speed, a hard pull at twice it that doesn't stall, stall
+recovery and `stallRecovery`, firm crabbed and wing-low touchdowns that neither bounce nor tip, the auto-flare, a
+jet's top speed, an airliner's run, a floatplane on the water, a helicopter's hover, flight and landing (on a helipad
+too), its levelling and drift stop after the cyclic is let go, impacts, state round trips and kinematic mode. `IgeWater3d.test.ts` checks the waves; `IgeJoltCraft3d.test.ts` that Jolt gets back every byte.

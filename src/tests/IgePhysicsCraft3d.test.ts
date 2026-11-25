@@ -39,6 +39,23 @@ function turn (axis: { x: number; y: number; z: number }, degrees: number) {
 	return { x: axis.x * s, y: axis.y * s, z: axis.z * s, w: Math.cos((degrees * Math.PI) / 360) };
 }
 
+/** Rotation a, then b about the turned axes. */
+function combine (a: { x: number; y: number; z: number; w: number }, b: { x: number; y: number; z: number; w: number }) {
+	return {
+		x: a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+		y: a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+		z: a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+		w: a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
+	};
+}
+
+/** The air-and-sea example's sea: a long swell, a shorter chop across it and a ripple (IGE units). */
+const EXAMPLE_WAVES = [
+	{ direction: 25, length: 6000, amplitude: 32, steepness: 0.4 },
+	{ direction: 70, length: 2300, amplitude: 12, steepness: 0.5, phase: 1.3 },
+	{ direction: -30, length: 1100, amplitude: 5, steepness: 0.35, phase: 2.1 }
+];
+
 /** A skinned entity with a chain of five bones 30 units apart, standing up: enough for a ragdoll. */
 function chain (x: number, y: number): IgeEntity {
 	const bones = [0, 1, 2, 3, 4].map((index) => ({
@@ -78,7 +95,7 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 	afterEach(() => physics.destroy());
 
 	/** A sea 30 m deep, its surface at y = 0. */
-	function sea (waves: { direction: number; length: number; amplitude: number }[] = []) {
+	function sea (waves: { direction: number; length: number; amplitude: number; steepness?: number; phase?: number }[] = []) {
 		const bed = new IgeEntity().translateTo(0, -3050, 0);
 		physics.addBody(bed, { type: "static", shape: { type: "box", halfExtents: { x: 500000, y: 50, z: 500000 } } });
 		return physics.water({ level: 0, waves })!;
@@ -146,14 +163,16 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 			sea();
 			const { entity, boat } = addBoat({ preset: "speedboat" });
 			run(physics, 2);
-			let fastest = 0;
-			run(physics, 15, () => {
+			let fastest = 0, hundred = 0;
+			run(physics, 15, (time) => {
 				boat.drive({ throttle: 1 });
 				fastest = Math.max(fastest, boat.speedKmh());
+				if (!hundred && boat.speedKmh() > 100) hundred = time;
 			});
-			expect(boat.speedKmh()).toBeGreaterThan(85); // 28 m/s is about 100 km/h
-			expect(fastest).toBeLessThan(105);
-			expect(entity._translate.z).toBeGreaterThan(200 * U);
+			expect(boat.speedKmh()).toBeGreaterThan(165); // 50 m/s is 180 km/h
+			expect(fastest).toBeLessThan(185);
+			expect(hundred).toBeLessThan(4);
+			expect(entity._translate.z).toBeGreaterThan(500 * U);
 			expect(Math.abs(entity._translate.x)).toBeLessThan(5 * U);
 			expect(boat.propellerInWater()).toBe(true);
 
@@ -164,9 +183,9 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 				boat.drive({ throttle: 1, steer: 1 });
 				lean = Math.max(lean, boat.attitude().roll);
 			});
-			expect(boat.attitude().heading - before).toBeLessThan(-40);
+			expect(boat.attitude().heading - before).toBeLessThan(-35);
 			expect(lean).toBeGreaterThan(4);
-			expect(boat.speedKmh()).toBeGreaterThan(50);
+			expect(boat.speedKmh()).toBeGreaterThan(100);
 			expect(boat.tilt()).toBeLessThan(30);
 
 			// Astern
@@ -203,6 +222,48 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 			run(physics, 8, () => boat.drive({ throttle: 1 }));
 			expect(boat.submerged()).toBeLessThan(restShare * 0.8);
 			expect(boat.attitude().pitch).toBeLessThan(most);
+		});
+
+		it("stay on top of the waves at full speed, and bank round full-rudder turns without flipping (speedboats)", () => {
+			sea(EXAMPLE_WAVES);
+			const { boat } = addBoat({ preset: "speedboat" });
+			run(physics, 2);
+			let lowest = Infinity, highest = -Infinity, tilt = 0, airborne = 0;
+			run(physics, 20, (time) => {
+				boat.drive({ throttle: 1 });
+				if (time < 6) return;
+				// Up to speed: bow up a little, leaping the odd crest, but no porpoising or flips
+				const pitch = boat.attitude().pitch;
+				lowest = Math.min(lowest, pitch);
+				highest = Math.max(highest, pitch);
+				tilt = Math.max(tilt, boat.tilt());
+				if (boat.airborne()) airborne += 1 / 60;
+			});
+			expect(boat.speedKmh()).toBeGreaterThan(160);
+			expect(lowest).toBeGreaterThan(-8);
+			expect(highest).toBeLessThan(15);
+			expect(tilt).toBeLessThan(20);
+			expect(airborne).toBeLessThan(5);
+
+			// Full rudder at top speed: it leans into the turn and stays upright, round and round
+			const before = boat.attitude().heading;
+			let lean = 0;
+			tilt = 0;
+			run(physics, 8, () => {
+				boat.drive({ throttle: 1, steer: 1 });
+				lean = Math.max(lean, boat.attitude().roll);
+				tilt = Math.max(tilt, boat.tilt());
+			});
+			expect(Math.abs(boat.attitude().heading - before)).toBeGreaterThan(30);
+			expect(lean).toBeGreaterThan(8);
+			expect(tilt).toBeLessThan(35);
+			// Flicked from side to side
+			run(physics, 8, (time) => {
+				boat.drive({ throttle: 1, steer: Math.sin(time * 2) > 0 ? 1 : -1 });
+				tilt = Math.max(tilt, boat.tilt());
+			});
+			expect(tilt).toBeLessThan(35);
+			expect(boat.speedKmh()).toBeGreaterThan(80);
 		});
 
 		it("only push with the propeller in the water", () => {
@@ -315,17 +376,18 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 			expect(plane.tilt()).toBeLessThan(2);
 			expect(plane.gearDown()).toBe(true);
 
-			// Full throttle; rotate at 28 m/s (the stall speed is 25 m/s)
+			// Full throttle; rotate at 19.5 m/s (the stall speed is 16.7 m/s, 60 km/h)
 			let liftoff = 0;
 			for (let t = 0; t < 40 && !liftoff; t += 1 / 60) {
 				run(physics, 1 / 60, () => {
-					if (plane.airspeed() > 28 * U) holdPitch(plane, 10, { throttle: 1 });
+					if (plane.airspeed() > 19.5 * U) holdPitch(plane, 10, { throttle: 1 });
 					else plane.fly({ throttle: 1 });
 				});
 				if (plane.altitude() > 100) liftoff = plane.airspeed() / U;
 			}
-			expect(liftoff).toBeGreaterThan(25);
-			expect(liftoff).toBeLessThan(34);
+			expect(liftoff).toBeGreaterThan(16.7);
+			expect(liftoff).toBeLessThan(25);
+			expect(entity._translate.z).toBeLessThan(150 * U);
 			expect(plane.engine()).toBeCloseTo(1, 2);
 
 			// Climbs; the gear comes up once it's away
@@ -347,8 +409,8 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 				stalled = plane.stalled();
 			}
 			expect(stalled).toBe(true);
-			expect(plane.angleOfAttack()).toBeGreaterThan(14);
-			expect(plane.airspeed()).toBeLessThan(32 * U);
+			expect(plane.angleOfAttack()).toBeGreaterThan(19);
+			expect(plane.airspeed()).toBeLessThan(18 * U);
 			// Stalled, the nose drops and it sinks, even with the stick held back
 			const pitch = plane.attitude().pitch, height = plane.altitude();
 			run(physics, 2, () => plane.fly({ pitch: -1 }));
@@ -364,14 +426,14 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 			expect(flying).toBeGreaterThan(0);
 			run(physics, 20, () => holdPitch(plane, 8));
 			expect(plane.stalled()).toBe(false);
-			expect(plane.airspeed()).toBeGreaterThan(28 * U);
+			expect(plane.airspeed()).toBeGreaterThan(22 * U);
 			expect(plane.verticalSpeed()).toBeGreaterThan(0);
 			expect(impacts.map((impact) => impact.speed)).toEqual([]);
 
-			// On final for a runway at 33 m/s, gear and flaps down: descend at 3 m/s, flare, touch down, brake
+			// On final for a runway at 23 m/s, gear and flaps down: descend at 3 m/s, flare, touch down, brake
 			landings.length = 0;
 			plane.setState({
-				position: { x: 0, y: 40 * U, z: -600 * U }, rotation: level, velocity: { x: 0, y: 0, z: 33 * U }, angularVelocity: still,
+				position: { x: 0, y: 40 * U, z: -600 * U }, rotation: level, velocity: { x: 0, y: 0, z: 23 * U }, angularVelocity: still,
 				engine: 0.3, gear: 1, flaps: 1, input: { throttle: 0.3, flaps: 1, gear: true }
 			});
 			expect(plane.gearDown()).toBe(true);
@@ -384,7 +446,7 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 					}
 					const height = plane.heightAboveGround() / U;
 					const sink = height > 6 ? -3 : -0.6;
-					const throttle = clamp((33 - plane.airspeed() / U) * 0.2 + 0.3, 0, 1) * (height > 3 ? 1 : 0);
+					const throttle = clamp((23 - plane.airspeed() / U) * 0.2 + 0.3, 0, 1) * (height > 3 ? 1 : 0);
 					holdPitch(plane, clamp(plane.attitude().pitch + (sink - plane.verticalSpeed() / U) * 1.5, -8, 12), { throttle });
 				});
 				touched = touched || landings.length > 0;
@@ -463,13 +525,147 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 			expect(plane.submerged()).toBe(0);
 
 			// Back down onto the water
-			plane.setState({ ...plane.getState(), position: { x: 0, y: 15 * U, z: 0 }, rotation: turn({ x: 1, y: 0, z: 0 }, -3), velocity: { x: 0, y: -1.5 * U, z: 30 * U }, angularVelocity: still });
+			plane.setState({ ...plane.getState(), position: { x: 0, y: 15 * U, z: 0 }, rotation: turn({ x: 1, y: 0, z: 0 }, -3), velocity: { x: 0, y: -1.5 * U, z: 20 * U }, angularVelocity: still });
 			landings.length = 0;
 			run(physics, 12, () => plane.fly({ throttle: 0.2, flaps: 1 }));
 			expect(landings.length).toBeGreaterThanOrEqual(1);
 			expect(landings[0].onWater).toBe(true);
+			expect(landings[0].speed).toBeLessThan(1.5 * U); // it flares over the water
 			expect(plane.submerged()).toBeGreaterThan(0.1);
 			expect(plane.tilt()).toBeLessThan(10);
+		});
+
+		it("stall only when slow and nose-high, briefly, and fly again by themselves", () => {
+			land();
+			const stallKmh = { lightPlane: 60, floatplane: 63, jet: 132, airliner: 149 };
+			(["lightPlane", "floatplane", "jet", "airliner"] as const).forEach((preset, i) => {
+				const { plane } = addAircraft({ preset }, i * 100000, 0);
+				const start = (speed: number) => plane.setState({
+					position: { x: i * 100000, y: 1500 * U, z: 0 }, rotation: level, velocity: { x: 0, y: 0, z: speed * U }, angularVelocity: still,
+					engine: 0.5, gear: 0, input: { throttle: 0.5, gear: false }
+				});
+				const twice = (stallKmh[preset] / 3.6) * 2;
+
+				// A hard pull at twice the stall speed flies at the edge of the stall, not over it
+				start(twice);
+				let stalled = false, steepest = 0;
+				run(physics, 1.5, () => {
+					plane.fly({ pitch: -1 });
+					stalled = stalled || plane.stalled();
+					steepest = Math.max(steepest, plane.angleOfAttack());
+				});
+				expect(stalled).toBe(false);
+				expect(steepest).toBeGreaterThan(5);
+
+				// Slowing in level flight, throttle closed: it stalls at about its stall speed
+				start(twice);
+				const pilot = levelPilot(plane);
+				for (let t = 0; t < 120 && !plane.stalled(); t += 1 / 60) run(physics, 1 / 60, () => pilot({ throttle: 0 }));
+				expect(plane.stalled()).toBe(true);
+				expect((plane.airspeed() / U) * 3.6).toBeGreaterThan(stallKmh[preset] * 0.9);
+				expect((plane.airspeed() / U) * 3.6).toBeLessThan(stallKmh[preset] * 1.05);
+
+				// Stick let go: a short nose drop and it flies again, within a second or two, and stays flying
+				const pitch = plane.attitude().pitch;
+				let lowest = pitch, flying = -1, again = false;
+				for (let t = 0; t < 5; t += 1 / 60) {
+					run(physics, 1 / 60, () => plane.fly({}));
+					lowest = Math.min(lowest, plane.attitude().pitch);
+					if (flying < 0 && !plane.stalled()) flying = t;
+					else if (flying >= 0 && plane.stalled()) again = true;
+				}
+				expect(flying).toBeGreaterThan(0);
+				expect(flying).toBeLessThan(preset === "airliner" ? 2 : 1.2);
+				expect(pitch - lowest).toBeLessThan(25);
+				expect(again).toBe(false);
+				expect(Math.abs(plane.attitude().pitch)).toBeLessThan(10);
+				plane.destroy();
+			});
+		});
+
+		it("recover from a stall as quickly as stallRecovery says", () => {
+			land();
+			const recovery = (stallRecovery: number, x: number) => {
+				const { plane } = addAircraft({ preset: "lightPlane", stallRecovery }, x, 0);
+				plane.setState({ position: { x, y: 1500 * U, z: 0 }, rotation: level, velocity: { x: 0, y: 0, z: 30 * U }, angularVelocity: still, engine: 0, gear: 0, input: { throttle: 0, gear: false } });
+				const pilot = levelPilot(plane);
+				for (let t = 0; t < 120 && !plane.stalled(); t += 1 / 60) run(physics, 1 / 60, () => pilot({ throttle: 0 }));
+				let time = 0;
+				while (plane.stalled() && time < 10) {
+					run(physics, 1 / 60, () => plane.fly({}));
+					time += 1 / 60;
+				}
+				return time;
+			};
+			const quick = recovery(0.5, 0), slow = recovery(3, 100000);
+			expect(quick).toBeLessThan(0.6);
+			expect(slow).toBeGreaterThan(quick * 2);
+			expect(slow).toBeLessThan(3);
+		});
+
+		it("touch down firm and crabbed without bouncing or tipping over", () => {
+			land();
+			// 3 m/s down, the nose 5 degrees right of its track, and a wing low, without the flare (assists off)
+			([["lightPlane", 20, 0], ["lightPlane", 20, 5], ["jet", 45, 5], ["airliner", 50, 5]] as const).forEach(([preset, speed, bank], i) => {
+				const x = i * 50000;
+				const { plane } = addAircraft({ preset, impacts: true, assists: false }, x, 0);
+				const impacts: IgePhysicsImpact[] = [];
+				plane.on("impact", (impact: IgePhysicsImpact) => { impacts.push(impact); });
+				plane.setState({
+					position: { x, y: 0.4 * U, z: 0 }, rotation: combine(turn({ x: 0, y: 1, z: 0 }, -5), turn({ x: 0, y: 0, z: 1 }, bank)),
+					velocity: { x: 0, y: -3 * U, z: speed * U }, angularVelocity: still, engine: 0, gear: 1, flaps: 1, input: { throttle: 0, flaps: 1, gear: true }
+				});
+				let touched = NaN, highest = -Infinity, roll = 0;
+				run(physics, 5, (time) => {
+					plane.fly({ brake: time > 1 ? 1 : 0 });
+					if (Number.isNaN(touched) && plane.grounded()) touched = plane.altitude();
+					if (Number.isNaN(touched)) return;
+					highest = Math.max(highest, plane.altitude());
+					roll = Math.max(roll, Math.abs(plane.attitude().roll));
+				});
+				expect(touched).toBeLessThan(0.4 * U);
+				// No bounce: never more than a few centimetres back up
+				expect(highest - touched).toBeLessThan(0.1 * U);
+				expect(roll).toBeLessThan(bank + 1.5);
+				expect(plane.grounded()).toBe(true);
+				expect(plane.tilt()).toBeLessThan(5);
+				for (let w = 0; w < 3; w++) expect(plane.wheel(w).contact).toBe(true);
+				expect(impacts.map((impact) => impact.speed)).toEqual([]);
+				plane.destroy();
+			});
+		});
+
+		it("flare by themselves low over the ground with the gear down (assists)", () => {
+			land();
+			const touchdown = (assists: boolean, gear: boolean, x: number) => {
+				const { plane } = addAircraft({ preset: "lightPlane", assists }, x, 0);
+				const landings: IgePhysicsCraftLanding[] = [];
+				plane.on("landed", (landing: IgePhysicsCraftLanding) => { landings.push(landing); });
+				plane.setState({
+					position: { x, y: 25 * U, z: 0 }, rotation: turn({ x: 1, y: 0, z: 0 }, 3), velocity: { x: 0, y: -1.6 * U, z: 23 * U }, angularVelocity: still,
+					engine: 0.3, gear: gear ? 1 : 0, flaps: 1, input: { throttle: 0.3, flaps: 1, gear }
+				});
+				// The pilot holds a 2.5 m/s descent at 23 m/s down to 8 m, then lets go of the stick and closes the throttle
+				for (let t = 0; t < 30 && !landings.length; t += 1 / 60) {
+					const height = plane.heightAboveGround() / U;
+					run(physics, 1 / 60, () => {
+						if (height > 8) holdPitch(plane, clamp(plane.attitude().pitch + (-2.5 - plane.verticalSpeed() / U) * 1.5, -10, 10), { throttle: clamp((23 - plane.airspeed() / U) * 0.2 + 0.3, 0, 1) });
+						else plane.fly({ throttle: 0 });
+					});
+				}
+				expect(landings.length).toBe(1);
+				plane.destroy();
+				return landings[0];
+			};
+			const flared = touchdown(true, true, 0);
+			const unflared = touchdown(false, true, 50000);
+			const belly = touchdown(true, false, 100000);
+			expect(flared.onGear).toBe(true);
+			expect(flared.speed).toBeLessThan(1.5 * U);
+			expect(unflared.speed).toBeGreaterThan(flared.speed * 1.8);
+			// Gear up, no flare: it's a belly landing
+			expect(belly.onGear).toBe(false);
+			expect(belly.speed).toBeGreaterThan(flared.speed * 1.25);
 		});
 
 		it("report impacts with what they hit", () => {
@@ -550,6 +746,53 @@ describe.each(physicsTestBackends())("IgePhysics3d boats and aircraft on $name",
 			expect(Math.abs(heli.altitude())).toBeLessThan(5);
 			expect(heli.grounded()).toBe(true);
 			expect(impacts.map((impact) => impact.speed)).toEqual([]);
+		});
+
+		it("level within half a second of letting go of the cyclic, and stop drifting without overshooting", () => {
+			land();
+			const { plane: heli } = addAircraft({ preset: "helicopter" });
+			const hover = () => {
+				heli.setState({ position: { x: 0, y: 5000, z: 0 }, rotation: level, velocity: still, angularVelocity: still, rotor: 1 });
+				run(physics, 2, () => heli.fly({}));
+			};
+			hover();
+			// Tilted fully forward and let go: level in half a second, without tipping back past it
+			heli.setState({ ...heli.getState(), rotation: turn({ x: 1, y: 0, z: 0 }, 32), velocity: still, angularVelocity: still });
+			let back = 0;
+			run(physics, 0.5, () => heli.fly({}));
+			expect(heli.tilt()).toBeLessThan(2);
+			run(physics, 1, () => {
+				heli.fly({});
+				back = Math.max(back, heli.attitude().pitch);
+			});
+			expect(back).toBeLessThan(3);
+
+			// A second's push forward (or sideways), let go: it stops in a couple of seconds, without coming back
+			for (const [pitch, roll] of [[1, 0], [0, 1]]) {
+				hover();
+				run(physics, 1, () => heli.fly({ pitch, roll }));
+				const v = heli.velocity();
+				expect(Math.hypot(v.x, v.z)).toBeGreaterThan(3 * U);
+				const way = { x: v.x / Math.hypot(v.x, v.z), z: v.z / Math.hypot(v.x, v.z) };
+				let reverse = 0, settled = -1;
+				for (let t = 0; t < 4; t += 1 / 60) {
+					run(physics, 1 / 60, () => heli.fly({}));
+					const now = heli.velocity(), along = now.x * way.x + now.z * way.z;
+					reverse = Math.min(reverse, along);
+					if (settled < 0 && Math.hypot(now.x, now.z) < 0.5 * U) settled = t;
+				}
+				expect(settled).toBeGreaterThan(0);
+				expect(settled).toBeLessThan(2.5);
+				expect(reverse).toBeGreaterThan(-0.3 * U);
+				expect(heli.tilt()).toBeLessThan(1);
+			}
+
+			// A gamepad stick held a little off the middle: a slow, steady drift, gently tilted
+			hover();
+			run(physics, 6, () => heli.fly({ pitch: 0.12 }));
+			expect(heli.speed()).toBeGreaterThan(0.3 * U);
+			expect(heli.speed()).toBeLessThan(4 * U);
+			expect(heli.tilt()).toBeLessThan(6);
 		});
 
 		it("land on a helipad on a roof", () => {

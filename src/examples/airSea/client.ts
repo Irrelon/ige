@@ -11,8 +11,10 @@ import { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
 import type { IgePhysicsImpact, IgePhysicsShape } from "@/engine/physics/IgePhysics3dTypes";
 import type {
 	IgePhysicsAircraft3dApi,
+	IgePhysicsAircraftOptions,
 	IgePhysicsAircraftPreset,
 	IgePhysicsBoat3dApi,
+	IgePhysicsBoatOptions,
 	IgePhysicsCraft3dApi,
 	IgePhysicsCraftLanding,
 	IgePhysicsCraftState
@@ -26,6 +28,7 @@ import type { IgeCanInit } from "@/types/IgeCanInit";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeMaterialColor } from "@/types/IgeMaterialData";
 import { createBox, createFlatRects, createWheel, SeaGrid } from "./geometry";
+import { savedTuning, type Tuning, tuningFields, TuningPanel } from "./tuningPanel";
 
 // @ts-ignore
 window.ige = ige;
@@ -37,7 +40,8 @@ window.ige = ige;
  * on an airfield island in a sea with waves. The sea is drawn from the
  * same wave function the boats float on. Floating crates by the jetty.
  *
- * - 1-6 or C pick a craft, R puts it back at its start, H hides the help
+ * - 1-6 or C pick a craft, R puts it back at its start, H hides the help,
+ *   P shows the tuning panel (the craft's main figures, live)
  * - Planes: W S throttle, arrows pitch (up: nose down) and roll, A D rudder
  *   and nose wheel, space brakes, G gear, F flaps
  * - Helicopter: W S up and down (let go: it holds height), arrows tilt, A D turn
@@ -55,6 +59,12 @@ interface Craft {
 	name: string;
 	kind: Kind;
 	craft: IgePhysicsCraft3dApi;
+	/** What it was made with, less the tuning panel's figures, and the entities it poses (set back before it's remade). */
+	options: Record<string, unknown>;
+	posed: IgeEntity[];
+	/** The tuning panel's figures, in the preset's units: the preset's and those in use. */
+	preset: Tuning;
+	tuning: Tuning;
 	start: IgePhysicsCraftState;
 	/** Chase camera distance behind and height above. */
 	distance: number;
@@ -102,6 +112,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	hud: Record<string, HTMLElement | null> = {};
 	event: { text: string; until: number } = { text: "", until: 0 };
 	frames: number = 0;
+	tuning?: TuningPanel;
 
 	constructor () {
 		super();
@@ -147,12 +158,22 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			this.crafts.push(this.buildPlane("jet", "Jet", { x: 0, y: ISLAND_TOP, z: 20000 }, 0, 2000, 480));
 			this.crafts.push(this.buildPlane("airliner", "Airliner", { x: 0, y: ISLAND_TOP, z: -146000 }, 0, 5600, 1500));
 			this.crafts.push(this.buildSpeedboat());
+			// Tunes saved from the tuning panel
+			for (const craft of this.crafts) {
+				const saved = savedTuning(craft.key);
+				if (saved) this.retune(craft, saved);
+			}
 			this.buildSceneryBoats();
 			this.physics.start();
 			this.select(1);
 
 			this.setupInput();
 			this.buildButtons();
+			const panel = document.getElementById("tuning");
+			if (panel) {
+				panel.hidden = true;
+				this.tuning = new TuningPanel(panel, () => this.crafts[this.active], (tuning) => this.retune(this.crafts[this.active], tuning));
+			}
 			// Input before the physics step, camera, sea and readout after it
 			ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "airSeaInput", (_engine: unknown, tickDelta: number) => this.applyInput(Math.min((tickDelta || 16) / 1000, 0.1)));
 			ige.engine.addBehaviour(IgeBehaviourType.postUpdate, "airSeaView", (_engine: unknown, tickDelta: number) => {
@@ -358,11 +379,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			}
 		}
 		const gearEntities = spec.gear.map((wheel) => this.wheel(root, (wheel.radius ?? 0.3) * U, preset === "airliner" ? 50 : 18));
-		const plane = this.physics!.addAircraft(root, { preset, impacts: 300, rotorEntity, gearEntities });
+		const options = { preset, impacts: 300, rotorEntity, gearEntities };
+		const plane = this.physics!.addAircraft(root, options);
 		this.watch(name, plane);
+		const figures = this.figures("plane", spec as unknown as Record<string, number>);
 		return {
-			key: preset, name, kind: "plane", craft: plane, start: plane.getState(), distance, height,
-			throttle: 0, flaps: 0, gear: true
+			key: preset, name, kind: "plane", craft: plane, options, posed: [...gearEntities, ...(rotorEntity ? [rotorEntity] : [])],
+			preset: figures, tuning: { ...figures }, start: plane.getState(), distance, height, throttle: 0, flaps: 0, gear: true
 		};
 	}
 
@@ -379,9 +402,14 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		const tail = new IgeEntity().translateTo(15, 240, -640).mount(root);
 		this.part(tail, createBox(4, 150, 18, "airSeaTailBlade"), dark, 0, 0, 0);
 		this.part(tail, createBox(4, 18, 150, "airSeaTailBlade2"), dark, 0, 0, 0);
-		const heli = this.physics!.addAircraft(root, { preset: "helicopter", impacts: 300, rotorEntity: rotor, tailRotorEntity: tail });
+		const options = { preset: "helicopter" as const, impacts: 300, rotorEntity: rotor, tailRotorEntity: tail };
+		const heli = this.physics!.addAircraft(root, options);
 		this.watch("Helicopter", heli);
-		return { key: "helicopter", name: "Helicopter", kind: "helicopter", craft: heli, start: heli.getState(), distance: 1500, height: 500, throttle: 0, flaps: 0, gear: true };
+		const figures = this.figures("helicopter", spec as unknown as Record<string, number>);
+		return {
+			key: "helicopter", name: "Helicopter", kind: "helicopter", craft: heli, options, posed: [rotor, tail],
+			preset: figures, tuning: { ...figures }, start: heli.getState(), distance: 1500, height: 500, throttle: 0, flaps: 0, gear: true
+		};
 	}
 
 	buildSpeedboat (): Craft {
@@ -393,9 +421,40 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.part(root, createBox(50, 90, 50, "airSeaOutboard"), { r: 0.1, g: 0.1, b: 0.12, a: 1 }, 0, 30, -360);
 		const prop = new IgeEntity().translateTo(0, -15, -380).mount(root);
 		this.part(prop, createBox(60, 10, 4, "airSeaBoatProp"), { r: 0.75, g: 0.75, b: 0.7, a: 1 }, 0, 0, 0, { metallic: 0.8 });
-		const boat = this.physics!.addBoat(root, { preset: "speedboat", impacts: 300, propellerEntity: prop });
+		const options = { preset: "speedboat" as const, impacts: 300, propellerEntity: prop };
+		const boat = this.physics!.addBoat(root, options);
 		this.watch("Speedboat", boat);
-		return { key: "speedboat", name: "Speedboat", kind: "boat", craft: boat, start: boat.getState(), distance: 1100, height: 330, throttle: 0, flaps: 0, gear: true };
+		const figures = this.figures("boat", spec as unknown as Record<string, number>);
+		return {
+			key: "speedboat", name: "Speedboat", kind: "boat", craft: boat, options, posed: [prop],
+			preset: figures, tuning: { ...figures }, start: boat.getState(), distance: 1100, height: 330, throttle: 0, flaps: 0, gear: true
+		};
+	}
+
+	/** A preset's figures that the tuning panel has sliders for. */
+	figures (kind: Kind, preset: Record<string, number>): Tuning {
+		const figures: Tuning = {};
+		for (const key of tuningFields(kind)) figures[key] = preset[key];
+		return figures;
+	}
+
+	/** Remake a craft with new figures (in the preset's units), carrying on where it was. */
+	retune (craft: Craft, tuning: Tuning) {
+		const physics = this.physics;
+		if (!physics || !craft) return;
+		craft.tuning = { ...craft.preset, ...tuning };
+		// Speeds are given in IGE units; the rest as the presets have them
+		const options: Record<string, unknown> = { ...craft.options };
+		for (const [key, value] of Object.entries(craft.tuning)) options[key] = key === "stallSpeed" || key === "maxSpeed" ? value * U : value;
+		const state = craft.craft.getState();
+		const entity = craft.craft.entity;
+		craft.craft.destroy();
+		// Wheels, rotors and propellers are posed from where they are when it's made: back to how they were built
+		for (const posed of craft.posed) posed.quaternion(null);
+		craft.craft = craft.kind === "boat" ? physics.addBoat(entity, options as IgePhysicsBoatOptions) : physics.addAircraft(entity, options as IgePhysicsAircraftOptions);
+		craft.craft.setState(state);
+		this.watch(craft.name, craft.craft);
+		this.tuning?.refresh();
 	}
 
 	/** A fishing boat and a yacht riding the waves offshore. */
@@ -450,6 +509,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.cameraPitch = 0;
 		this.cameraPos = undefined;
 		this.highlightButton();
+		this.tuning?.refresh();
 	}
 
 	/** Back to where it started, stopped. */
@@ -491,6 +551,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		const stronger = (a: number, b: number) => (Math.abs(b) > Math.abs(a) ? b : a);
 
 		for (let i = 0; i < this.crafts.length; i++) if (pressed[`Digit${i + 1}`]) this.select(i);
+		if (pressed.KeyP) this.tuning?.toggle();
 		if (pressed.KeyC || justPressed(IgeGamePadButton.y)) this.select(this.active + 1);
 		if (pressed.KeyH) document.getElementById("info")?.classList.toggle("hidden");
 		const current = this.crafts[this.active];

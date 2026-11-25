@@ -50,8 +50,8 @@ export const BOAT_PRESETS: Record<IgePhysicsBoatPreset, IgeBoatPresetSpec> = {
 		fullness: 0.45,
 		shape: { type: "compound", children: [box(1.2, 0.6, 3.5, 0, 0.6, 0), box(0.9, 0.3, 0.7, 0, 1.45, 0.4)] },
 		centreOfMass: { x: 0, y: 0.35, z: -0.6 },
-		maxSpeed: 28,
-		thrust: 16000,
+		maxSpeed: 50,
+		thrust: 28000,
 		reverse: 0.4,
 		propellerDepth: -0.15,
 		turnRate: 50,
@@ -133,6 +133,8 @@ export interface IgeAircraftPresetSpec {
 	engine: "propeller" | "jet";
 	spoolTime: number;
 	stallAngle: number;
+	/** Seconds a stall lasts: the nose drops by itself and the wing flies again. */
+	stallRecovery: number;
 	pitchRate: number;
 	rollRate: number;
 	yawRate: number;
@@ -145,6 +147,8 @@ export interface IgeAircraftPresetSpec {
 	climbRate: number;
 	descentRate: number;
 	maxTilt: number;
+	/** Helicopters: seconds to level once the cyclic is let go. */
+	levelTime: number;
 	spinUp: number;
 }
 
@@ -178,12 +182,13 @@ const LIGHT_PLANE: IgeAircraftPresetSpec = {
 	},
 	centreOfMass: { x: 0, y: 1.25, z: 0 },
 	wingArea: 16,
-	stallSpeed: 25,
+	stallSpeed: 16.7,
 	maxSpeed: 65,
 	thrust: 3800,
 	engine: "propeller",
 	spoolTime: 0.8,
-	stallAngle: 15,
+	stallAngle: 20,
+	stallRecovery: 1,
 	pitchRate: 55,
 	rollRate: 70,
 	yawRate: 30,
@@ -199,6 +204,7 @@ const LIGHT_PLANE: IgeAircraftPresetSpec = {
 	climbRate: 0,
 	descentRate: 0,
 	maxTilt: 0,
+	levelTime: 0,
 	spinUp: 0
 };
 
@@ -221,7 +227,7 @@ export const AIRCRAFT_PRESETS: Record<IgePhysicsAircraftPreset, IgeAircraftPrese
 			]
 		},
 		centreOfMass: { x: 0, y: 1.7, z: 0.2 },
-		stallSpeed: 26,
+		stallSpeed: 17.4,
 		maxSpeed: 58,
 		thrust: 4200,
 		gear: [],
@@ -244,12 +250,13 @@ export const AIRCRAFT_PRESETS: Record<IgePhysicsAircraftPreset, IgeAircraftPrese
 		},
 		centreOfMass: { x: 0, y: 1.8, z: 0.3 },
 		wingArea: 28,
-		stallSpeed: 55,
+		stallSpeed: 36.7,
 		maxSpeed: 250,
 		thrust: 95000,
 		engine: "jet",
 		spoolTime: 1.5,
-		stallAngle: 18,
+		stallAngle: 23,
+		stallRecovery: 1,
 		pitchRate: 90,
 		rollRate: 220,
 		yawRate: 30,
@@ -265,6 +272,7 @@ export const AIRCRAFT_PRESETS: Record<IgePhysicsAircraftPreset, IgeAircraftPrese
 		climbRate: 0,
 		descentRate: 0,
 		maxTilt: 0,
+		levelTime: 0,
 		spinUp: 0
 	},
 	// A narrow-body airliner: heavy, slow to answer, a long take-off run
@@ -285,12 +293,13 @@ export const AIRCRAFT_PRESETS: Record<IgePhysicsAircraftPreset, IgeAircraftPrese
 		},
 		centreOfMass: { x: 0, y: 3.5, z: 0.8 },
 		wingArea: 122,
-		stallSpeed: 62,
+		stallSpeed: 41.3,
 		maxSpeed: 240,
 		thrust: 220000,
 		engine: "jet",
 		spoolTime: 4,
-		stallAngle: 14,
+		stallAngle: 19,
+		stallRecovery: 1.5,
 		pitchRate: 9,
 		rollRate: 22,
 		yawRate: 6,
@@ -306,6 +315,7 @@ export const AIRCRAFT_PRESETS: Record<IgePhysicsAircraftPreset, IgeAircraftPrese
 		climbRate: 0,
 		descentRate: 0,
 		maxTilt: 0,
+		levelTime: 0,
 		spinUp: 0
 	},
 	// A light utility helicopter on skids
@@ -332,6 +342,7 @@ export const AIRCRAFT_PRESETS: Record<IgePhysicsAircraftPreset, IgeAircraftPrese
 		engine: "jet",
 		spoolTime: 1,
 		stallAngle: 0,
+		stallRecovery: 0,
 		pitchRate: 90,
 		rollRate: 120,
 		yawRate: 90,
@@ -343,6 +354,7 @@ export const AIRCRAFT_PRESETS: Record<IgePhysicsAircraftPreset, IgeAircraftPrese
 		climbRate: 10,
 		descentRate: 8,
 		maxTilt: 32,
+		levelTime: 0.5,
 		spinUp: 4
 	}
 };
