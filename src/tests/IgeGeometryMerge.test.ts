@@ -23,6 +23,28 @@ function quad (): IgeMergeSource {
 	};
 }
 
+/** A flat n × n grid of squares sharing their corners: (n + 1)² vertices, 2n² triangles, tangents along +x. */
+function grid (n: number): IgeMergeSource {
+	const count = (n + 1) * (n + 1);
+	const vertices = new Float32Array(count * 3), normals = new Float32Array(count * 3), uvs = new Float32Array(count * 2), tangents = new Float32Array(count * 4);
+	for (let y = 0, v = 0; y <= n; y++) {
+		for (let x = 0; x <= n; x++, v++) {
+			vertices.set([x, y, 0], v * 3);
+			normals.set([0, 0, 1], v * 3);
+			uvs.set([x / n, y / n], v * 2);
+			tangents.set([1, 0, 0, 1], v * 4);
+		}
+	}
+	const indices = new Uint16Array(n * n * 6);
+	for (let y = 0, i = 0; y < n; y++) {
+		for (let x = 0; x < n; x++, i += 6) {
+			const a = y * (n + 1) + x, b = a + 1, c = a + n + 1, d = c + 1;
+			indices.set([a, b, d, a, d, c], i);
+		}
+	}
+	return { vertices, normals, uvs, tangents, indices };
+}
+
 /** Column-major matrix: scale (sx, sy, sz), then a turn of `angle` about Y, then a move. */
 function trs (tx: number, ty: number, tz: number, angle = 0, sx = 1, sy = 1, sz = 1): number[] {
 	const c = Math.cos(angle), s = Math.sin(angle);
@@ -127,6 +149,55 @@ describe("mergeGeometry", () => {
 		const [dropped] = mergeGeometry([{ geometry: quad(), triangle: (a, b, c) => c !== 3 }]);
 		expect(dropped.vertices).toBe(3);
 		expect(dropped.triangles).toBe(1);
+	});
+
+	it("grows its vertex arrays past the first estimate when triangles get vertices of their own", () => {
+		// Two grids with every triangle on a swatch (three vertices each: far more than the shared corners the first
+		// estimate counted), then a plain grid after them
+		const g = grid(8); // 81 vertices, 128 triangles
+		const swatch = (): [number, number] => [0.25, 0.75];
+		const offsets = [[0, 0], [20, 0], [0, 20]];
+		const [m] = mergeGeometry([
+			{ geometry: g, triangle: swatch, color: [0.2, 0.4, 0.6] },
+			{ geometry: g, triangle: swatch, matrix: trs(20, 0, 0) },
+			{ geometry: g, matrix: trs(0, 20, 0) }
+		], { pack: IGE_QUANTISED_ENCODINGS, keepArrays: true });
+		const geo = m.geometry, idx = geo.indices!, src = g.vertices!, srcUv = g.uvs!, srcIdx = g.indices!;
+		expect(m.vertices).toBe(128 * 3 * 2 + 81);
+		expect(m.triangles).toBe(128 * 3);
+		// Every array holds every vertex
+		expect([geo.vertices!.length, geo.normals!.length, geo.uvs!.length, geo.colors!.length, geo.tangents!.length])
+			.toEqual([3, 3, 2, 4, 4].map((size) => size * m.vertices));
+
+		// Every index refers to a written vertex: its piece's corner, moved, with its normal, tangent, texture coordinate and colour
+		const near = (a: ArrayLike<number>, v: number, want: number[]): boolean => want.every((x, k) => Math.abs(a[v * want.length + k] - x) <= 1e-6);
+		const wrong: number[] = [];
+		for (let t = 0; t < m.triangles; t++) {
+			const piece = Math.floor(t / 128), [ox, oy] = offsets[piece];
+			for (let k = 0; k < 3; k++) {
+				const v = idx[t * 3 + k], s = srcIdx[(t % 128) * 3 + k];
+				const ok = v < m.vertices &&
+					near(geo.vertices!, v, [src[s * 3] + ox, src[s * 3 + 1] + oy, 0]) &&
+					near(geo.normals!, v, [0, 0, 1]) &&
+					near(geo.tangents!, v, [1, 0, 0, 1]) &&
+					near(geo.uvs!, v, piece < 2 ? [0.25, 0.75] : [srcUv[s * 2], srcUv[s * 2 + 1]]) &&
+					near(geo.colors!, v, piece === 0 ? [0.2, 0.4, 0.6, 1] : [1, 1, 1, 1]);
+				if (!ok) {
+					wrong.push(t);
+					break;
+				}
+			}
+		}
+		expect(wrong).toEqual([]);
+
+		// The packed buffer holds every vertex the indices use
+		const packed = geo.packed!;
+		expect(packed.count).toBe(m.vertices);
+		expect(packed.data.byteLength).toBeGreaterThanOrEqual((Math.max(...Array.from(idx)) + 1) * packed.stride);
+		const back = unpackVertices(packed).vertices, p = geo.vertices!;
+		let error = 0;
+		for (let i = 0; i < p.length; i++) error = Math.max(error, Math.abs(back[i] - p[i]));
+		expect(error).toBeLessThan(0.01);
 	});
 
 	it("uses 32-bit indices past 65,535 vertices", () => {
