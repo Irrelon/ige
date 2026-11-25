@@ -2,6 +2,7 @@ import type JoltApi from "jolt-physics";
 import type {
 	IgePhysicsBackend,
 	IgePhysicsBackendBodyDesc,
+	IgePhysicsBackendInertia,
 	IgePhysicsBackendCharacterDesc,
 	IgePhysicsBackendCharacterState,
 	IgePhysicsBackendConfig,
@@ -138,6 +139,8 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 	_collector?: JoltApi.CollideShapeAllHitCollisionCollector;
 	_collideSettings?: JoltApi.CollideShapeSettings;
 	_unitScale?: JoltApi.Vec3;
+	/** Raycast filters that skip one body (made the first time a ray ignores it, freed with the body). */
+	_ignoreFilters: Map<IgeJoltBody, JoltApi.IgnoreSingleBodyFilter> = new Map();
 
 	// Reused Jolt values (never allocate per call)
 	_vec: JoltApi.Vec3;
@@ -265,6 +268,8 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 			this._bodies.DestroyBody(handle.id);
 		}
 		this._byKey.clear();
+		for (const filter of this._ignoreFilters.values()) jolt.destroy(filter);
+		this._ignoreFilters.clear();
 		if (this._characterCollision) jolt.destroy(this._characterCollision);
 		if (this._collector) jolt.destroy(this._collector);
 		if (this._collideSettings) jolt.destroy(this._collideSettings);
@@ -288,18 +293,24 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 		const built = this._createShape(desc.shape, desc.density);
 		const cleanup = built.cleanup;
 		let shape = built.shape;
-		const com = desc.centreOfMass;
-		if (com && desc.type === "dynamic") {
-			const own = shape.GetCenterOfMass();
-			this._vec.Set(com.x - own.GetX(), com.y - own.GetY(), com.z - own.GetZ());
+		const type = desc.sensor ? "kinematic" : desc.type;
+		if (desc.centreOfMass && type === "dynamic") {
+			// Move the centre of mass where it's asked for (the body keeps a reference to the new shape)
+			const com = shape.GetCenterOfMass();
+			const c = desc.centreOfMass;
+			this._vec.Set(c.x - com.GetX(), c.y - com.GetY(), c.z - com.GetZ());
 			shape = new jolt.OffsetCenterOfMassShape(shape, this._vec);
 		}
 		const p = desc.position, r = desc.rotation;
 		this._rvec.Set(p.x, p.y, p.z);
 		this._quat.Set(r.x, r.y, r.z, r.w);
-		const type = desc.sensor ? "kinematic" : desc.type;
 		const motion = type === "static" ? jolt.EMotionType_Static : type === "kinematic" ? jolt.EMotionType_Kinematic : jolt.EMotionType_Dynamic;
 		const settings = new jolt.BodyCreationSettings(shape, this._rvec, this._quat, motion, this._layer(desc.layer));
+		if (desc.mass !== undefined && desc.mass > 0 && type === "dynamic") {
+			settings.mOverrideMassProperties = jolt.EOverrideMassProperties_CalculateInertia;
+			settings.mMassPropertiesOverride.mMass = desc.mass;
+		}
+		if (desc.allowKinematic) settings.mAllowDynamicOrKinematic = true;
 		settings.mFriction = desc.friction;
 		settings.mRestitution = desc.restitution;
 		settings.mLinearDamping = desc.linearDamping;
@@ -324,6 +335,11 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 		if (body.added) this._bodies.RemoveBody(body.id);
 		this._bodies.DestroyBody(body.id);
 		this._byKey.delete(body.key);
+		const ignore = this._ignoreFilters.get(body);
+		if (ignore) {
+			this._jolt.destroy(ignore);
+			this._ignoreFilters.delete(body);
+		}
 	}
 
 	setBodyEnabled (handle: IgePhysicsBodyHandle, enabled: boolean): void {
@@ -393,6 +409,55 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 		}
 	}
 
+	addForce (handle: IgePhysicsBodyHandle, force: Vec3, at?: Vec3): void {
+		const body = handle as IgeJoltBody;
+		if (!body.added || !body.body.IsDynamic()) return;
+		this._vec.Set(force.x, force.y, force.z);
+		if (at) {
+			this._rvec.Set(at.x, at.y, at.z);
+			this._bodies.AddForce(body.id, this._vec, this._rvec, this._jolt.EActivation_Activate);
+		} else {
+			this._bodies.AddForce(body.id, this._vec, this._jolt.EActivation_Activate);
+		}
+	}
+
+	addTorque (handle: IgePhysicsBodyHandle, torque: Vec3): void {
+		const body = handle as IgeJoltBody;
+		if (!body.added || !body.body.IsDynamic()) return;
+		this._vec.Set(torque.x, torque.y, torque.z);
+		this._bodies.AddTorque(body.id, this._vec, this._jolt.EActivation_Activate);
+	}
+
+	readBodyCentreOfMass (handle: IgePhysicsBodyHandle, out: Vec3): void {
+		const c = (handle as IgeJoltBody).body.GetCenterOfMassPosition();
+		out.x = c.GetX(); out.y = c.GetY(); out.z = c.GetZ();
+	}
+
+	readBodyInertia (handle: IgePhysicsBodyHandle, out: IgePhysicsBackendInertia): void {
+		const body = (handle as IgeJoltBody).body;
+		if (body.IsStatic()) {
+			out.moments.x = out.moments.y = out.moments.z = Infinity;
+			out.rotation.x = out.rotation.y = out.rotation.z = 0;
+			out.rotation.w = 1;
+			return;
+		}
+		const motion = body.GetMotionProperties();
+		const d = motion.GetInverseInertiaDiagonal();
+		out.moments.x = d.GetX() > 0 ? 1 / d.GetX() : Infinity;
+		out.moments.y = d.GetY() > 0 ? 1 / d.GetY() : Infinity;
+		out.moments.z = d.GetZ() > 0 ? 1 / d.GetZ() : Infinity;
+		const r = motion.GetInertiaRotation();
+		out.rotation.x = r.GetX(); out.rotation.y = r.GetY(); out.rotation.z = r.GetZ(); out.rotation.w = r.GetW();
+	}
+
+	setBodyKinematic (handle: IgePhysicsBodyHandle, kinematic: boolean): void {
+		const body = handle as IgeJoltBody;
+		if (body.body.IsStatic() || body.body.IsKinematic() === kinematic) return;
+		const jolt = this._jolt;
+		this._bodies.SetMotionType(body.id, kinematic ? jolt.EMotionType_Kinematic : jolt.EMotionType_Dynamic,
+			body.added ? jolt.EActivation_Activate : jolt.EActivation_DontActivate);
+	}
+
 	bodyMass (handle: IgePhysicsBodyHandle): number {
 		const body = (handle as IgeJoltBody).body;
 		if (!body.IsDynamic()) return Infinity;
@@ -413,14 +478,24 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 
 	/* Queries */
 
-	raycast (origin: Vec3, direction: Vec3, maxDistance: number, layer: number, out: IgePhysicsBackendRaycastHit): boolean {
+	raycast (origin: Vec3, direction: Vec3, maxDistance: number, layer: number, out: IgePhysicsBackendRaycastHit, ignore?: IgePhysicsBodyHandle): boolean {
 		this._rvec.Set(origin.x, origin.y, origin.z);
 		this._ray.mOrigin = this._rvec;
 		this._vec.Set(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance);
 		this._ray.mDirection = this._vec;
 		this._rayCollector.Reset();
 		const filters = this._filtersFor(this._layer(layer));
-		this._system.GetNarrowPhaseQuery().CastRay(this._ray, this._raySettings, this._rayCollector, filters.bp, filters.object, this._bodyFilter, this._shapeFilter);
+		let bodyFilter: JoltApi.BodyFilter = this._bodyFilter;
+		if (ignore && this._byKey.has((ignore as IgeJoltBody).key)) {
+			const own = ignore as IgeJoltBody;
+			let filter = this._ignoreFilters.get(own);
+			if (!filter) {
+				filter = new this._jolt.IgnoreSingleBodyFilter(own.id);
+				this._ignoreFilters.set(own, filter);
+			}
+			bodyFilter = filter;
+		}
+		this._system.GetNarrowPhaseQuery().CastRay(this._ray, this._raySettings, this._rayCollector, filters.bp, filters.object, bodyFilter, this._shapeFilter);
 		if (!this._rayCollector.HadHit()) return false;
 
 		const hit = this._rayCollector.mHit;
@@ -576,6 +651,11 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 		const own = handle as IgeJoltCharacter;
 		if (!this._byKey.has(own.inner.key)) return;
 		this._byKey.delete(own.inner.key);
+		const ignore = this._ignoreFilters.get(own.inner);
+		if (ignore) {
+			this._jolt.destroy(ignore);
+			this._ignoreFilters.delete(own.inner);
+		}
 		// The character's destructor removes its inner body from the world
 		if (!own.inner.added) this._bodies.AddBody(own.inner.id, this._jolt.EActivation_DontActivate);
 		this._characterCollision?.Remove(own.character);

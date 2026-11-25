@@ -314,6 +314,45 @@ describe.each(physicsTestBackends())("IgePhysics3d contract on $name", (backend)
 			expect(results[1].deepest).toBeGreaterThan(results[0].deepest - 1e-6);
 		});
 
+		it("take steady forces and torques, and a mass and centre of mass of their own", () => {
+			// 20 kg whatever the density; a sphere's inertia is 2/5 m r² (here 2 kg m²)
+			const { entity, body } = addDynamic(0, 1000, 0, { shape: { type: "sphere", radius: 50 }, mass: 20, linearDamping: 0, angularDamping: 0 });
+			expect(body.mass()).toBeCloseTo(20, 3);
+			expectNear(body.centreOfMass(), { x: 0, y: 1000, z: 0 }, 0.01);
+
+			// Its weight held up, and pushed sideways at 2 m/s²: a force is mass times acceleration (IGE units)
+			run(physics, 1, () => body.applyForce(20 * 2 * 100, 20 * 9.81 * 100, 0));
+			expect(entity._translate.y).toBeCloseTo(1000, 0);
+			expect(body.velocity().x).toBeCloseTo(200, -1);
+			expect(body.velocity().y).toBeCloseTo(0, 0);
+
+			// A torque of 1 N·m about Y spins it up at 0.5 rad/s²
+			body.setVelocity(0, 0, 0);
+			run(physics, 1, () => {
+				body.applyForce(0, 20 * 9.81 * 100, 0);
+				body.applyTorque(0, 1, 0);
+			});
+			expect(body.angularVelocity().y).toBeCloseTo(0.5, 1);
+
+			// A force off the centre pushes and turns it: +X at the top tips it about -Z
+			body.setAngularVelocity(0, 0, 0);
+			run(physics, 0.5, () => {
+				const c = body.centreOfMass();
+				body.applyForce(20 * 100, 20 * 9.81 * 100, 0, { x: c.x, y: c.y + 50, z: c.z });
+			});
+			expect(body.velocity().x).toBeGreaterThan(40);
+			expect(body.angularVelocity().z).toBeLessThan(-1);
+
+			// A low centre of mass: it's where it's put, and a box tipped over rocks back upright on it
+			addFloor(physics);
+			const weeble = addDynamic(2000, 60, 0, { shape: box(30, 60, 30), centreOfMass: { x: 0, y: -55, z: 0 }, friction: 1 });
+			expectNear(weeble.body.centreOfMass(), { x: 2000, y: 5, z: 0 }, 0.01);
+			weeble.body.setState({ ...weeble.body.getState(), rotation: { x: 0, y: 0, z: Math.sin(Math.PI / 8), w: Math.cos(Math.PI / 8) } });
+			run(physics, 3);
+			const up = weeble.body.getState().rotation;
+			expect(Math.abs(up.z)).toBeLessThan(0.05); // within about 6 degrees of upright
+		});
+
 		it("can be taken out of the simulation and put back", () => {
 			addFloor(physics);
 			const crate = addDynamic(0, 300, 0);
@@ -800,7 +839,10 @@ describe("the public physics API", () => {
 		const dir = join(__dirname, "../engine/physics");
 		const neutral = [
 			"IgePhysics3d.ts", "IgePhysics3dTypes.ts", "IgePhysicsBody3d.ts", "IgePhysicsBackend.ts", "IgePhysicsCharacter3d.ts",
-			"IgeRagdoll3d.ts", "IgePhysicsVehicle3d.ts", "IgePhysicsVehicle3dApi.ts", "IgePhysicsVehicle3dBackend.ts"
+			"IgeRagdoll3d.ts", "IgePhysicsVehicle3d.ts", "IgePhysicsVehicle3dApi.ts", "IgePhysicsVehicle3dBackend.ts",
+			// Flight, boats and buoyancy are engine-neutral too: forces through the backend
+			"IgeWater3d.ts", "IgePhysicsBuoyancy3d.ts", "IgePhysicsCraft3d.ts", "IgePhysicsCraft3dApi.ts", "IgePhysicsCraft3dFrame.ts",
+			"IgePhysicsCraft3dPresets.ts", "IgePhysicsBoat3d.ts", "IgePhysicsAircraft3d.ts"
 		];
 		for (const file of neutral) {
 			const source = readFileSync(join(dir, file), "utf8");

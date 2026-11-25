@@ -208,6 +208,9 @@ export class IgeRagdoll3d {
 	readonly entity: IgeEntity;
 	_physics: IgePhysics3d;
 	_parts: PartState[] = [];
+	/** Each part's capsule (IGE units) and the density they were made with: for raycasts and buoyancy. */
+	_partShapes: { radius: number; halfHeight: number }[] = [];
+	_density: number = 1000;
 	/** The backend's joints and bodies. */
 	_handle?: IgePhysicsRagdollHandle;
 	_pose = new Float64Array(7);
@@ -299,6 +302,7 @@ export class IgeRagdoll3d {
 			const centre = { x: start.x + dir.x * length / 2, y: start.y + dir.y * length / 2, z: start.z + dir.z * length / 2 };
 			const q = quatFromUp(dir);
 
+			this._partShapes.push({ radius, halfHeight });
 			desc.parts.push({
 				position: { x: centre.x / u, y: centre.y / u, z: centre.z / u },
 				rotation: q,
@@ -344,6 +348,7 @@ export class IgeRagdoll3d {
 			});
 		});
 
+		this._density = desc.density;
 		const made = physics._backend.createRagdoll(desc);
 		this._handle = made.ragdoll;
 		this._parts = offsets.map((part, index) => ({ boneIndex: part.boneIndex, body: made.parts[index], offset: part.offset }));

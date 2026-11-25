@@ -76,6 +76,8 @@ export interface IgePhysicsBodyOptions {
 	restitution?: number;
 	/** kg per cubic metre, default 1000 (water). */
 	density?: number;
+	/** kg: this mass instead of one from the density (dynamic bodies; inertia from the shape). */
+	mass?: number;
 	/** Default 0.05. */
 	linearDamping?: number;
 	/** Default 0.05. */
@@ -89,8 +91,9 @@ export interface IgePhysicsBodyOptions {
 	 */
 	ccd?: boolean;
 	/**
-	 * Where its weight sits, relative to the entity's origin (IGE units;
-	 * default: the middle of its shape, as if all one material). A lamp
+	 * Where its weight sits, relative to the entity's origin in its own
+	 * axes (IGE units; dynamic bodies; default: the middle of its shape,
+	 * as if all one material). A lamp
 	 * post or a sign on a heavy base stands up and falls like one with it
 	 * low; a shape with a big, light part (a lamp's arm and head) doesn't
 	 * topple over by itself.

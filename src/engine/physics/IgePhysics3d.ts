@@ -15,6 +15,20 @@ import {
 } from "@/engine/physics/IgePhysicsVehicle3dBackend";
 import type { IgePhysicsVehicle3dApi, IgePhysicsVehicleLanding, IgePhysicsVehicleOptions } from "@/engine/physics/IgePhysicsVehicle3dApi";
 import { IgePhysicsBody3d, IgePhysicsSensor3d, multiplyQuat, rotateVector } from "@/engine/physics/IgePhysicsBody3d";
+import { IgeWater3d, type IgeWaterOptions } from "@/engine/physics/IgeWater3d";
+import { IgePhysicsBuoyancy3d, IgePhysicsBuoyancyGroup } from "@/engine/physics/IgePhysicsBuoyancy3d";
+import { IgePhysicsCraft3d } from "@/engine/physics/IgePhysicsCraft3d";
+import { IgePhysicsBoat3d, resolveBoatSpec } from "@/engine/physics/IgePhysicsBoat3d";
+import { IgePhysicsAircraft3d, resolveAircraftSpec } from "@/engine/physics/IgePhysicsAircraft3d";
+import type {
+	IgePhysicsAircraft3dApi,
+	IgePhysicsAircraftOptions,
+	IgePhysicsBoat3dApi,
+	IgePhysicsBoatOptions,
+	IgePhysicsBuoyancy3dApi,
+	IgePhysicsBuoyancyOptions,
+	IgePhysicsCraft3dApi
+} from "@/engine/physics/IgePhysicsCraft3dApi";
 import {
 	type IgePhysicsBackend,
 	type IgePhysicsBackendFactory,
@@ -34,7 +48,8 @@ import type {
 	IgePhysicsVec3
 } from "@/engine/physics/IgePhysics3dTypes";
 
-export { matrixToQuaternion, rotateVector, multiplyQuat, IgePhysicsBody3d, IgePhysicsSensor3d };
+export { matrixToQuaternion, rotateVector, multiplyQuat, IgePhysicsBody3d, IgePhysicsSensor3d, IgeWater3d };
+export type { IgeWaterOptions };
 export type {
 	IgePhysics3dOptions,
 	IgePhysicsBodyOptions,
@@ -146,6 +161,12 @@ export class IgePhysics3d extends IgeEventingClass {
 	_vehicleBodies: Map<IgePhysicsVehicle3d, IgePhysicsBody3d> = new Map();
 	/** Every body by its backend handle, to turn query results into bodies. */
 	_byHandle: Map<IgePhysicsBodyHandle, IgePhysicsBody3d> = new Map();
+	/** The water boats and floating bodies float on (see water()). */
+	_water: IgeWater3d | null = null;
+	/** Boats and aircraft. */
+	_crafts: IgePhysicsCraft3d[] = [];
+	/** Bodies floated with addBuoyancy(). */
+	_floaters: IgePhysicsBuoyancy3d[] = [];
 	_accumulator: number = 0;
 	_behaviourId: string;
 	_stepMs: number = 0;
@@ -280,7 +301,7 @@ export class IgePhysics3d extends IgeEventingClass {
 	}
 
 	/** Make a backend body for an entity at its world transform. */
-	_createBody (entity: IgeEntity, options: IgePhysicsBodyOptions, sensor: boolean): IgePhysicsBodyHandle {
+	_createBody (entity: IgeEntity, options: IgePhysicsBodyOptions, sensor: boolean, allowKinematic: boolean = false): IgePhysicsBodyHandle {
 		const type = sensor ? "kinematic" : options.type || "dynamic";
 		const u = this._options.unitsPerMetre;
 		if (type === "dynamic" && staticOnlyShape(options.shape)) {
@@ -291,6 +312,8 @@ export class IgePhysics3d extends IgeEventingClass {
 		const rotation = options.lockRotation ? { x: 0, y: 0, z: 0, w: 1 } : pose.rotation;
 		const offset = options.offset ? rotateVector(options.offset, rotation.x, rotation.y, rotation.z, rotation.w) : { x: 0, y: 0, z: 0 };
 		const p = pose.position;
+		const o = options.offset || { x: 0, y: 0, z: 0 };
+		const com = options.centreOfMass;
 		return this._backend.createBody({
 			type,
 			shape: toBackendShape(options.shape, pose.scale, u),
@@ -305,12 +328,11 @@ export class IgePhysics3d extends IgeEventingClass {
 			gravityFactor: options.gravityFactor ?? 1,
 			lockRotation: !!options.lockRotation,
 			ccd: !!options.ccd,
-			centreOfMass: options.centreOfMass && {
-				x: (options.centreOfMass.x - (options.offset?.x ?? 0)) / u,
-				y: (options.centreOfMass.y - (options.offset?.y ?? 0)) / u,
-				z: (options.centreOfMass.z - (options.offset?.z ?? 0)) / u
-			},
-			sensor
+			sensor,
+			mass: options.mass,
+			// The shape's origin is the entity's plus the offset
+			centreOfMass: com ? { x: (com.x - o.x) / u, y: (com.y - o.y) / u, z: (com.z - o.z) / u } : undefined,
+			allowKinematic
 		});
 	}
 
@@ -343,6 +365,10 @@ export class IgePhysics3d extends IgeEventingClass {
 		// A vehicle's chassis (e.g. from a raycast hit) goes with its vehicle
 		const vehicle = (body as any)._vehicle as IgePhysicsVehicle3d | undefined;
 		if (vehicle) return this.removeVehicle(vehicle);
+		// ...as does a boat's or aircraft's
+		const craft = (body as any)._craft as IgePhysicsCraft3d | undefined;
+		if (craft && !craft._destroyed) return this.removeCraft(craft);
+		for (const floater of this._floaters.filter((f) => f.body === body)) this.removeBuoyancy(floater);
 		this._backend.destroyBody(body._handle);
 		body._destroyed = true;
 		const index = this._list.indexOf(body);
@@ -366,8 +392,8 @@ export class IgePhysics3d extends IgeEventingClass {
 		this._ragdolls.push(ragdoll);
 
 		// Register the parts so raycasts, sensors and impacts report the entity
-		const wrappers = ragdoll._parts.map((part) =>
-			this._register(new IgePhysicsBody3d(this, entity, { type: "dynamic", shape: { type: "sphere", radius: 1 } }, part.body)));
+		const wrappers = ragdoll._parts.map((part, index) =>
+			this._register(new IgePhysicsBody3d(this, entity, { type: "dynamic", shape: { type: "capsule", ...ragdoll._partShapes[index] }, density: ragdoll._density }, part.body)));
 		this._ragdollBodies.set(ragdoll, wrappers);
 		return ragdoll;
 	}
@@ -376,10 +402,12 @@ export class IgePhysics3d extends IgeEventingClass {
 	removeRagdoll (ragdoll: IgeRagdoll3d): void {
 		const index = this._ragdolls.indexOf(ragdoll);
 		if (index >= 0) this._ragdolls.splice(index, 1);
-		for (const wrapper of this._ragdollBodies.get(ragdoll) || []) {
+		const wrappers = this._ragdollBodies.get(ragdoll) || [];
+		for (const wrapper of wrappers) {
 			this._byHandle.delete(wrapper._handle);
 			wrapper._destroyed = true;
 		}
+		for (const floater of this._floaters.filter((f) => wrappers.includes(f.body))) this.removeBuoyancy(floater);
 		this._ragdollBodies.delete(ragdoll);
 		ragdoll._free();
 	}
@@ -542,6 +570,133 @@ export class IgePhysics3d extends IgeEventingClass {
 	}
 
 	/**
+	 * Gets / sets the water: a level and waves (one shared function of
+	 * position and time, IgeWater3d) that boats and floating bodies float
+	 * on. Its clock moves on with every step; set it with water().time()
+	 * from a shared clock so every machine has the same waves. null removes
+	 * it. See guides/aircraft-boats-3d.md.
+	 * @example #A sea with a gentle swell
+	 *     physics.water({ level: 0, waves: [{ direction: 30, length: 4000, amplitude: 25 }] });
+	 */
+	water (): IgeWater3d | null;
+	water (options: IgeWaterOptions | IgeWater3d | null): IgeWater3d | null;
+	water (options?: IgeWaterOptions | IgeWater3d | null): IgeWater3d | null {
+		if (options === undefined) return this._water;
+		const time = this._water?.time() ?? 0;
+		this._water = options === null ? null : options instanceof IgeWater3d ? options : new IgeWater3d(options, this._options.unitsPerMetre);
+		if (this._water && !(options instanceof IgeWater3d)) this._water.time(time);
+		return this._water;
+	}
+
+	/** A body for a boat or aircraft: dynamic, able to switch to kinematic, pushed by its own forces (no damping). */
+	_addCraftBody (entity: IgeEntity, options: IgePhysicsBodyOptions): IgePhysicsBody3d {
+		const handle = this._createBody(entity, { ...options, linearDamping: 0, angularDamping: 0 }, false, true);
+		const body = this._register(new IgePhysicsBody3d(this, entity, options, handle));
+		this._list.push(body);
+		(entity as any)._physicsBody3d = body;
+		return body;
+	}
+
+	_addCraft<T extends IgePhysicsCraft3d> (craft: T): T {
+		(craft.body as any)._craft = craft;
+		this._crafts.push(craft);
+		(craft.entity as any)._physicsCraft3d = craft;
+		return craft;
+	}
+
+	/**
+	 * Make an entity a boat: buoyancy over its hull on the water (see
+	 * water()), drag, a propeller and rudder, planing, and arcade help (it
+	 * leans into turns, is hard to capsize and rights itself). Driven with
+	 * drive({ throttle, steer }). Presets: "speedboat" (default),
+	 * "fishingBoat", "yacht", "cargoShip". The entity's origin is on the
+	 * keel under the hull's middle, facing +Z. See guides/aircraft-boats-3d.md.
+	 * @example #A speedboat
+	 *     const boat = physics.addBoat(boatEntity, { preset: "speedboat" });
+	 *     // each frame:
+	 *     boat.drive({ throttle, steer });
+	 */
+	addBoat (entity: IgeEntity, options: IgePhysicsBoatOptions = {}): IgePhysicsBoat3dApi {
+		const u = this._options.unitsPerMetre;
+		const spec = resolveBoatSpec(options, u);
+		const layer = spec.layer ? this._layerIndex(spec.layer) : this._defaultLayer(false);
+		const c = spec.centreOfMass;
+		const body = this._addCraftBody(entity, {
+			shape: spec.shape, mass: spec.mass, centreOfMass: { x: c.x * u, y: c.y * u, z: c.z * u }, friction: spec.friction, layer: spec.layer
+		});
+		return this._addCraft(new IgePhysicsBoat3d(this, entity, body, spec, layer));
+	}
+
+	/**
+	 * Make an entity a plane or helicopter, flown with fly({ throttle,
+	 * pitch, roll, yaw, flaps, gear, brake }) or, for helicopters, fly({
+	 * collective, pitch, roll, yaw }). Presets: "lightPlane" (default),
+	 * "floatplane", "jet", "airliner", "helicopter". The entity's origin is
+	 * on the ground under the aircraft resting on its wheels, skids or
+	 * floats, facing +Z. See guides/aircraft-boats-3d.md.
+	 * @example #A light plane on the runway
+	 *     const plane = physics.addAircraft(planeEntity, { preset: "lightPlane" });
+	 *     // each frame:
+	 *     plane.fly({ throttle, pitch, roll, yaw, brake });
+	 */
+	addAircraft (entity: IgeEntity, options: IgePhysicsAircraftOptions = {}): IgePhysicsAircraft3dApi {
+		const u = this._options.unitsPerMetre;
+		const spec = resolveAircraftSpec(options, u);
+		const layer = spec.layer ? this._layerIndex(spec.layer) : this._defaultLayer(false);
+		const c = spec.centreOfMass;
+		const body = this._addCraftBody(entity, {
+			shape: spec.shape, mass: spec.mass, centreOfMass: { x: c.x * u, y: c.y * u, z: c.z * u }, friction: spec.friction, layer: spec.layer, ccd: true
+		});
+		return this._addCraft(new IgePhysicsAircraft3d(this, entity, body, spec, layer));
+	}
+
+	/** Remove a boat or aircraft and free its body. */
+	removeCraft (craft: IgePhysicsCraft3dApi): void {
+		const own = craft as IgePhysicsCraft3d;
+		const index = this._crafts.indexOf(own);
+		if (index < 0 || own._destroyed) return;
+		this._crafts.splice(index, 1);
+		own._destroyed = true;
+		if ((own.entity as any)._physicsCraft3d === own) (own.entity as any)._physicsCraft3d = undefined;
+		this.removeBody(own.body);
+	}
+
+	/** The boat or aircraft made from an entity, if any. */
+	craftOf (entity: IgeEntity): IgePhysicsCraft3dApi | undefined {
+		return (entity as any)._physicsCraft3d;
+	}
+
+	/**
+	 * Float any dynamic body on the water (see water()), or sink it, by its
+	 * density: crates, barrels, wrecks, or a whole ragdoll (a person). A body lighter
+	 * than water floats with that share of it under (a crate of density 300
+	 * rides 30% under); a heavier one sinks, slowed by the water.
+	 * @example #A crate that floats
+	 *     const crate = physics.addBody(entity, { shape: { type: "box", halfExtents: { x: 30, y: 30, z: 30 } }, density: 300 });
+	 *     physics.addBuoyancy(crate);
+	 */
+	addBuoyancy (target: IgePhysicsBody3d | IgeRagdoll3d, options: IgePhysicsBuoyancyOptions = {}): IgePhysicsBuoyancy3dApi {
+		if (target instanceof IgeRagdoll3d) {
+			// A person: every part floats by the ragdoll's density (1000 by default: just afloat in the sea)
+			const parts = (this._ragdollBodies.get(target) || []).map((body) => this.addBuoyancy(body, { drag: options.drag }) as IgePhysicsBuoyancy3d);
+			return new IgePhysicsBuoyancyGroup(parts);
+		}
+		const body = target;
+		if (body.type !== "dynamic") throw new Error("IgePhysics3d: only dynamic bodies float");
+		const floater = new IgePhysicsBuoyancy3d(this, body, options);
+		this._floaters.push(floater);
+		return floater;
+	}
+
+	/** Stop floating a body (see addBuoyancy()). */
+	removeBuoyancy (buoyancy: IgePhysicsBuoyancy3dApi): void {
+		const own = buoyancy as IgePhysicsBuoyancy3d;
+		const index = this._floaters.indexOf(own);
+		if (index >= 0) this._floaters.splice(index, 1);
+		own._destroyed = true;
+	}
+
+	/**
 	 * Advance the simulation by dt seconds in fixed steps (start() calls
 	 * this every frame), then move entities to their bodies.
 	 */
@@ -554,11 +709,15 @@ export class IgePhysics3d extends IgeEventingClass {
 		while (this._accumulator >= step) {
 			for (const character of this._characters) character._update(step);
 			for (const vehicle of this._vehicles) vehicle._preStep(step);
+			for (const floater of this._floaters) floater._preStep();
+			for (const craft of this._crafts) craft._preStep(step);
 			this._moveKinematicBodies(step);
 			if (this._impactBodies.length) this._recordImpactVelocities();
 			this._backend.step(step);
+			this._water?._advance(step);
 			this._captureBodies();
 			for (const vehicle of this._vehicles) vehicle._postStep();
+			for (const craft of this._crafts) craft._postStep(step);
 			if (this._impactBodies.length) this._checkImpacts(step);
 			if (this._vehicles.length) {
 				this._checkVehicleImpacts(step);
@@ -574,6 +733,7 @@ export class IgePhysics3d extends IgeEventingClass {
 		this._syncEntities(alpha);
 		for (const character of this._characters) character._sync(alpha);
 		for (const vehicle of this._vehicles) vehicle._sync(alpha);
+		for (const craft of this._crafts) craft._sync(alpha);
 
 		if (steps > 0) {
 			this._stepMs = performance.now() - started;
@@ -592,13 +752,15 @@ export class IgePhysics3d extends IgeEventingClass {
 	}
 
 	/** Counts (bodies include ragdoll parts and vehicles) and the time the last update spent stepping. */
-	stats (): { bodies: number; activeBodies: number; ragdolls: number; vehicles: number; stepMs: number; steps: number; threaded: boolean; backend: string } {
+	stats (): { bodies: number; activeBodies: number; ragdolls: number; vehicles: number; crafts: number; floating: number; stepMs: number; steps: number; threaded: boolean; backend: string } {
 		let ragdollParts = 0;
 		for (const ragdoll of this._ragdolls) ragdollParts += ragdoll._parts.length;
 		return {
 			bodies: this._list.length + ragdollParts + this._vehicles.length,
 			ragdolls: this._ragdolls.length,
 			vehicles: this._vehicles.length,
+			crafts: this._crafts.length,
+			floating: this._floaters.length,
 			activeBodies: this._backend.activeBodyCount(),
 			stepMs: this._stepMs,
 			steps: this._stepsLastUpdate,
@@ -632,6 +794,8 @@ export class IgePhysics3d extends IgeEventingClass {
 		this.stop();
 		for (const ragdoll of [...this._ragdolls]) this.removeRagdoll(ragdoll);
 		for (const vehicle of [...this._vehicles]) this.removeVehicle(vehicle);
+		for (const craft of [...this._crafts]) this.removeCraft(craft);
+		for (const floater of [...this._floaters]) this.removeBuoyancy(floater);
 		for (const sensor of [...this._sensors]) this.removeSensor(sensor);
 		for (const character of [...this._characters]) this.removeCharacter(character);
 		for (const body of [...this._list]) this.removeBody(body);
