@@ -1,4 +1,5 @@
 import type { IgeAbstractData3d } from "@/types/IgeAbstractData3d";
+import type { IgePackedVertices, IgeVertexEncodings } from "@/engine/webgl/IgeVertexPacking";
 
 /**
  * This type defines the structure of the geometry data object.
@@ -27,10 +28,31 @@ export interface IgeGeometryData3d extends IgeAbstractData3d {
 	skeletonId?: string; // Reference to skeleton data ID
 
 	/**
+	 * The vertices already interleaved in the layout the renderer uploads
+	 * (packVertices(), quantiseGeometry(), mergeGeometry()), e.g. built in a
+	 * worker: uploaded as they are, without repacking on the main thread.
+	 * Used in place of the arrays above when both are present.
+	 */
+	packed?: IgePackedVertices;
+
+	/**
+	 * How the renderer packs the arrays when it uploads them (float32 for
+	 * any not given). A quantised glTF sets this so its vertices stay
+	 * compact on the GPU; see IgeVertexPacking.
+	 */
+	vertexEncodings?: IgeVertexEncodings;
+
+	/**
 	 * Set by IgeWebGlRenderer.discardGeometryArrays(): the vertex arrays
 	 * were freed after upload and the renderer draws its GPU copy.
 	 */
 	gpuOnly?: boolean;
+
+	/**
+	 * Set by IgeWebGlRenderer.discardGeometryArrays() on a mesh waiting in
+	 * the upload queue: its arrays are freed once it's uploaded.
+	 */
+	discardAfterUpload?: boolean;
 
 	// Bounding information
 	boundingBox?: {

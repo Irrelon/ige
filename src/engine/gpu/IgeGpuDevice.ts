@@ -110,6 +110,8 @@ export interface IgeGpuBufferDesc {
 	stream?: boolean;
 	/** What it's counted as in memory() (default "buffers"). */
 	memory?: IgeGpuMemoryKind;
+	/** Its contents, written as it's made (one upload rather than an empty buffer and a write). */
+	data?: ArrayBufferView;
 	label?: string;
 }
 
@@ -140,7 +142,16 @@ export interface IgeGpuShaderModule {
 	label?: string;
 }
 
-export type IgeGpuVertexFormat = "float32" | "float32x2" | "float32x3" | "float32x4" | "uint8x4" | "unorm8x4" | "uint16x4" | "uint32" | "sint32";
+/**
+ * Vertex attribute formats (WebGPU's names). The `unorm` and `snorm` ones are integers the GPU reads as floats from 0 to
+ * 1 or -1 to 1 (compact meshes: positions, normals and texture coordinates in 8 or 16 bits); `uint` and `sint` are read
+ * as integers.
+ */
+export type IgeGpuVertexFormat =
+	| "float32" | "float32x2" | "float32x3" | "float32x4"
+	| "unorm8x2" | "unorm8x4" | "snorm8x2" | "snorm8x4"
+	| "unorm16x2" | "unorm16x4" | "snorm16x2" | "snorm16x4"
+	| "uint8x4" | "uint16x4" | "uint32" | "sint32";
 
 export interface IgeGpuVertexAttribute {
 	shaderLocation: number;

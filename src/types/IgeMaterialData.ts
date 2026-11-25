@@ -114,4 +114,10 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	 * with plain white until the upload finishes.
 	 */
 	textureBlob?: Blob;
+	/**
+	 * How textureBlob's texture is sampled (a glTF sampler's GL filter and
+	 * wrap constants). A minFilter asking for mipmaps gets them; none given,
+	 * the renderer's modelTextureMipmaps() decides.
+	 */
+	textureSampler?: { magFilter?: number; minFilter?: number; wrapS?: number; wrapT?: number };
 }

@@ -198,9 +198,10 @@ export const INSTANCE_FLOATS = 28;
 
 /**
  * Items' instance data (world matrix, colour, emissive, material, bone palette row) packed into `into` (grown, by
- * doubling, when it's too small: the array written is returned).
+ * doubling, when it's too small: the array written is returned). `decode`: the batch's mesh's quantised positions'
+ * decode, applied to each world matrix (world × decode).
  */
-export function packInstances (items: IgeWebGlRenderItem[], start: number, count: number, into: Float32Array): Float32Array {
+export function packInstances (items: IgeWebGlRenderItem[], start: number, count: number, into: Float32Array, decode?: Float32Array): Float32Array {
 	const needed = count * INSTANCE_FLOATS;
 	let data = into;
 	if (data.length < needed) {
@@ -213,7 +214,18 @@ export function packInstances (items: IgeWebGlRenderItem[], start: number, count
 		const item = items[i];
 		const m = item.worldMatrix;
 		const mat = item.material;
-		for (let j = 0; j < 16; j++) data[o + j] = m[j];
+		if (decode) {
+			// The mesh's quantised positions' decode applied: world × decode, into the instance's matrix
+			for (let col = 0; col < 4; col++) {
+				const b0 = decode[col * 4], b1 = decode[col * 4 + 1], b2 = decode[col * 4 + 2], b3 = decode[col * 4 + 3];
+				data[o + col * 4] = m[0] * b0 + m[4] * b1 + m[8] * b2 + m[12] * b3;
+				data[o + col * 4 + 1] = m[1] * b0 + m[5] * b1 + m[9] * b2 + m[13] * b3;
+				data[o + col * 4 + 2] = m[2] * b0 + m[6] * b1 + m[10] * b2 + m[14] * b3;
+				data[o + col * 4 + 3] = m[3] * b0 + m[7] * b1 + m[11] * b2 + m[15] * b3;
+			}
+		} else {
+			for (let j = 0; j < 16; j++) data[o + j] = m[j];
+		}
 		data[o + 16] = mat.r;
 		data[o + 17] = mat.g;
 		data[o + 18] = mat.b;

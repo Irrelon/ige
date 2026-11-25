@@ -330,9 +330,16 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	/**
 	 * Create a WebGL texture from a Blob (e.g., from GLTF embedded image).
 	 * Returns a promise since image loading is asynchronous.
-	 * `options.mipmaps` makes mipmaps and filters trilinearly (material maps; base colour and emissive don't).
+	 * @param sampler The glTF sampler's filters and wraps (GL constants):
+	 * a minFilter asking for mipmaps gets them, LINEAR or NEAREST none.
+	 * @param mipmaps Mipmaps when the sampler doesn't say (default true).
 	 */
-	async createTextureFromBlob(textureId: string, blob: Blob, options?: { mipmaps?: boolean }): Promise<WebGLTexture | null> {
+	async createTextureFromBlob(
+		textureId: string,
+		blob: Blob,
+		sampler?: { magFilter?: number; minFilter?: number; wrapS?: number; wrapT?: number },
+		mipmaps: boolean = true
+	): Promise<WebGLTexture | null> {
 		// Check cache first
 		if (this._blobTextureCache.has(textureId)) {
 			return this._blobTextureCache.get(textureId) || null;
@@ -356,16 +363,17 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 
 				// Create WebGL texture from loaded image
 				// Note: GLTF textures use flipY: false because GLTF UV coordinates
-				// expect origin at top-left, which matches the natural image orientation
-				// Use LINEAR filter (not LINEAR_MIPMAP_LINEAR) to avoid mipmap generation issues, except for
-				// material maps (options.mipmaps): they have mipmaps and trilinear filtering, so detail doesn't shimmer
-				const mipmaps = !!options?.mipmaps;
+				// expect origin at top-left, which matches the natural image orientation.
+				// Mipmapped (WebGL 2 mipmaps any size) unless the sampler says not
+				const gl = this._gl;
+				const minFilter = sampler?.minFilter;
+				const mipmapped = minFilter !== undefined ? minFilter >= gl.NEAREST_MIPMAP_NEAREST && minFilter <= gl.LINEAR_MIPMAP_LINEAR : mipmaps;
 				const texture = this.createTextureFromImage(textureId, img, {
-					wrapS: this._gl.REPEAT,
-					wrapT: this._gl.REPEAT,
-					minFilter: mipmaps ? this._gl.LINEAR_MIPMAP_LINEAR : this._gl.LINEAR,
-					magFilter: this._gl.LINEAR,
-					generateMipmaps: mipmaps,
+					wrapS: sampler?.wrapS ?? gl.REPEAT,
+					wrapT: sampler?.wrapT ?? gl.REPEAT,
+					minFilter: minFilter ?? (mipmapped ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR),
+					magFilter: sampler?.magFilter ?? gl.LINEAR,
+					generateMipmaps: mipmapped,
 					flipY: false
 				});
 

@@ -59,9 +59,9 @@ export function meshLayout (geometry: IgeWebGlGeometry): { layout: IgeGpuVertexB
 	if (geometry.gpuLayout) return geometry.gpuLayout;
 	const attributes = geometry.attributes
 		.filter((a) => MESH_ATTRIBUTES[a.name] !== undefined)
-		.map((a) => ({ shaderLocation: MESH_ATTRIBUTES[a.name], format: FLOAT_FORMATS[a.size], offset: a.offset }));
+		.map((a) => ({ shaderLocation: MESH_ATTRIBUTES[a.name], format: a.format ?? FLOAT_FORMATS[a.size], offset: a.offset }));
 	const layout: IgeGpuVertexBufferLayout = { arrayStride: geometry.attributes[0]?.stride ?? 0, attributes };
-	geometry.gpuLayout = { layout, key: `${geometry.drawMode}:${layout.arrayStride}:${attributes.map((a) => `${a.shaderLocation}@${a.offset}`).join(",")}` };
+	geometry.gpuLayout = { layout, key: `${geometry.drawMode}:${layout.arrayStride}:${attributes.map((a) => `${a.shaderLocation}@${a.offset}${a.format}`).join(",")}` };
 	return geometry.gpuLayout;
 }
 

@@ -203,7 +203,7 @@ describe("Material data maps", () => {
 });
 
 describe("Mipmaps for material maps", () => {
-	it("the texture manager makes mipmaps and trilinear filtering only when asked", async () => {
+	it("the texture manager makes mipmaps and trilinear filtering when asked, and none when not", async () => {
 		const gl = { REPEAT: 1, LINEAR: 2, LINEAR_MIPMAP_LINEAR: 3 };
 		const tm = Object.create(IgeWebGlTextureManager.prototype) as any;
 		tm._gl = gl;
@@ -214,20 +214,21 @@ describe("Mipmaps for material maps", () => {
 		(globalThis as any).Image = class { width = 4; height = 4; onload?: () => void; set src (_: string) { setTimeout(() => this.onload?.(), 0); } };
 		URL.createObjectURL = () => "blob:x";
 		URL.revokeObjectURL = () => undefined;
-		await tm.createTextureFromBlob("base", {} as Blob);
-		await tm.createTextureFromBlob("map", {} as Blob, { mipmaps: true });
+		await tm.createTextureFromBlob("base", {} as Blob, undefined, false);
+		await tm.createTextureFromBlob("map", {} as Blob, undefined, true);
 		const [base, map] = tm.createTextureFromImage.mock.calls.map((c: any[]) => c[2]);
 		expect(base).toMatchObject({ generateMipmaps: false, minFilter: gl.LINEAR });
 		expect(map).toMatchObject({ generateMipmaps: true, minFilter: gl.LINEAR_MIPMAP_LINEAR, magFilter: gl.LINEAR });
 	});
 
-	it("the renderer asks for mipmaps for the three maps and not for base colour or emissive", () => {
+	it("the renderer asks for mipmaps for the three maps, and base colour and emissive follow modelTextureMipmaps()", () => {
 		const r = fakeRenderer(true);
+		r._modelTextureMipmaps = false;
 		const calls: [string, unknown][] = [];
 		r._textureManager = {
 			getBlobTexture: () => null,
-			createTextureFromBlob: (id: string, _blob: Blob, options?: unknown) => {
-				calls.push([id, options]);
+			createTextureFromBlob: (id: string, _blob: Blob, sampler?: unknown, mipmaps?: boolean) => {
+				calls.push([id, { sampler, mipmaps }]);
 				return new Promise(() => undefined);
 			}
 		};
@@ -243,11 +244,11 @@ describe("Mipmaps for material maps", () => {
 			aoTextureId: "ao", aoTextureBlob: blob
 		});
 		const by = Object.fromEntries(calls);
-		expect(by.normal).toEqual({ mipmaps: true });
-		expect(by.mr).toEqual({ mipmaps: true });
-		expect(by.ao).toEqual({ mipmaps: true });
-		expect(by.base).toBeUndefined();
-		expect(by.emissive).toBeUndefined();
+		expect(by.normal).toEqual({ sampler: undefined, mipmaps: true });
+		expect(by.mr).toEqual({ sampler: undefined, mipmaps: true });
+		expect(by.ao).toEqual({ sampler: undefined, mipmaps: true });
+		expect(by.base).toEqual({ sampler: undefined, mipmaps: false });
+		expect(by.emissive).toEqual({ sampler: undefined, mipmaps: false });
 		expect(calls).toHaveLength(5);
 	});
 });
