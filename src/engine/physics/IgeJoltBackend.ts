@@ -20,10 +20,11 @@ import { IgeJoltVehicle3d } from "@/engine/physics/IgeJoltVehicle3d";
 
 /*
  * The Jolt Physics backend (https://github.com/jrouwe/JoltPhysics), running
- * as WebAssembly: the jolt-physics package, loaded when a world is made,
- * multithreaded when the page is cross-origin isolated. Every Jolt object
- * it makes is freed by the call that removes what it belongs to, and the
- * world's own in destroy().
+ * as WebAssembly: the jolt-physics package, loaded when the first world is
+ * made and shared by the worlds after it, multithreaded when the page is
+ * cross-origin isolated (or asked for in Node). Every Jolt object it makes
+ * is freed by the call that removes what it belongs to, and the world's
+ * own in destroy().
  */
 
 export type IgeJolt = typeof JoltApi;
@@ -33,8 +34,9 @@ type Quat = IgePhysicsQuat;
 export interface IgeJoltBackendOptions {
 	/**
 	 * Load and initialise Jolt yourself: a test environment, a custom build.
-	 * Given whether the threaded build is wanted. Default: the jolt-physics
-	 * package (its multithreaded build when threaded).
+	 * Given whether the threaded build is wanted. Default: igeLoadJolt()
+	 * (the jolt-physics package, its multithreaded build when threaded),
+	 * with the world's `jolt: { memory, instance }`.
 	 */
 	load?: (threaded: boolean) => Promise<IgeJolt>;
 	/** Override IgePhysics3dOptions.jolt.maxBodyPairs. */
@@ -43,8 +45,61 @@ export interface IgeJoltBackendOptions {
 	maxContactConstraints?: number;
 }
 
-/** Load the jolt-physics package and initialise it. */
-async function loadJolt (threaded: boolean): Promise<IgeJolt> {
+/** jolt-physics' own WebAssembly memory, in 64 KB pages: 128 MB, fixed (it can't grow). */
+const JOLT_PAGES = 2048;
+/** The most memory a Jolt instance can have (32-bit WebAssembly), in pages. */
+const MAX_PAGES = 65536;
+/** Workers the threaded build starts when it loads (its pthread pool), shared by every world in the instance. */
+export const IGE_JOLT_POOL_THREADS = 16;
+
+export interface IgeJoltLoadOptions {
+	/** The multithreaded build (default false). */
+	threaded?: boolean;
+	/** Megabytes of memory (default 128: the package's own). Rounded up to 64 KB, at most 4096. */
+	memory?: number;
+	/** "shared" (default): the instance already loaded for this build and memory, if any; "own": a new one. */
+	instance?: "shared" | "own";
+}
+
+/** Loaded instances, by build and memory (instance: "shared"). */
+const loaded = new Map<string, Promise<IgeJolt>>();
+/** Initialisations run one at a time (a memory size is set round each). */
+let initialising: Promise<unknown> = Promise.resolve();
+
+/**
+ * Jolt, loaded and initialised: the instance already loaded for this build
+ * and memory size (the default), or a new one. Worlds made with the default
+ * backend get theirs from here; a game can load it ahead of time the same
+ * way.
+ * @example #A server holding several worlds in one instance
+ *     await igeLoadJolt({ memory: 512 });
+ *     const physics = await IgePhysics3d.create({ jolt: { memory: 512 } });
+ */
+export function igeLoadJolt (options: IgeJoltLoadOptions = {}): Promise<IgeJolt> {
+	const threaded = !!options.threaded;
+	const pages = joltPages(options.memory);
+	if (options.instance === "own") return initJolt(threaded, pages);
+	const key = `${threaded ? "mt" : "st"}:${pages}`;
+	let instance = loaded.get(key);
+	if (!instance) {
+		instance = initJolt(threaded, pages);
+		loaded.set(key, instance);
+		instance.catch(() => loaded.delete(key));
+	}
+	return instance;
+}
+
+/** Megabytes as 64 KB pages. */
+function joltPages (memory?: number): number {
+	if (memory === undefined) return JOLT_PAGES;
+	if (!(memory > 0)) throw new Error(`IgePhysics3d: jolt.memory must be a number of megabytes (got ${memory})`);
+	const pages = Math.ceil(memory * 16);
+	if (pages > MAX_PAGES) throw new Error(`IgePhysics3d: jolt.memory can be at most 4096 MB (got ${memory})`);
+	return pages;
+}
+
+/** Import the jolt-physics package and initialise a new instance with this many pages of memory. */
+async function initJolt (threaded: boolean, pages: number): Promise<IgeJolt> {
 	let init: (target?: object) => Promise<IgeJolt>;
 	if (threaded) {
 		// @ts-ignore - subpath export (the package's typings cover the main entry)
@@ -52,7 +107,152 @@ async function loadJolt (threaded: boolean): Promise<IgeJolt> {
 	} else {
 		init = (await import(/* webpackChunkName: "jolt-physics" */ "jolt-physics")).default as unknown as typeof init;
 	}
-	return init();
+	return igeJoltInit(() => init(), pages / 16);
+}
+
+/**
+ * Run a jolt-physics initialisation (the package's default export, or a
+ * build of it) with `memory` megabytes of WebAssembly memory rather than its
+ * fixed 128. igeLoadJolt() uses it; it's for loading Jolt some other way.
+ * `wasm` is the WebAssembly the build loads with (default this realm's; a
+ * test sandbox loading Jolt outside itself passes that realm's).
+ */
+export function igeJoltInit (init: () => Promise<IgeJolt>, memory?: number, wasm: typeof WebAssembly = WebAssembly): Promise<IgeJolt> {
+	const pages = joltPages(memory);
+	if (pages === JOLT_PAGES) return init();
+	// One at a time: the memory size is set by wrapping WebAssembly's constructors while it initialises
+	const run = initialising.then(() => withJoltMemory(pages, init, wasm));
+	initialising = run.catch(() => undefined);
+	return run;
+}
+
+/**
+ * Run `init` (a jolt-physics initialisation) with its WebAssembly memory
+ * at `pages` instead of the package's fixed 2048. The single-threaded build
+ * defines its memory in the module, the threaded one imports a shared
+ * memory its script makes: while `init` runs, a module whose memory (made or
+ * imported) is exactly 2048 pages, and a shared memory of exactly 2048
+ * pages, get `pages` instead. Anything else loading meanwhile is untouched.
+ */
+async function withJoltMemory (pages: number, init: () => Promise<IgeJolt>, namespace: typeof WebAssembly): Promise<IgeJolt> {
+	const wasm = namespace as unknown as {
+		instantiate: (source: unknown, imports?: unknown) => Promise<unknown>;
+		Memory: new (descriptor: { initial: number; maximum?: number; shared?: boolean }) => WebAssembly.Memory;
+	};
+	const instantiate = wasm.instantiate, Memory = wasm.Memory;
+	wasm.instantiate = function (source: unknown, imports?: unknown) {
+		// (ArrayBuffer and views of it from either realm)
+		const bytes = isBuffer(source) ? new Uint8Array(source) : ArrayBuffer.isView(source) ? new Uint8Array(source.buffer, source.byteOffset, source.byteLength) : null;
+		const patched = bytes && igeJoltWasmWithMemory(bytes, JOLT_PAGES, pages);
+		return instantiate.call(namespace, patched ?? source, imports);
+	};
+	const SizedMemory = function (descriptor: { initial: number; maximum?: number; shared?: boolean }) {
+		const jolts = descriptor.shared && descriptor.initial === JOLT_PAGES && descriptor.maximum === JOLT_PAGES;
+		return new Memory(jolts ? { ...descriptor, initial: pages, maximum: pages } : descriptor);
+	} as unknown as typeof Memory;
+	SizedMemory.prototype = Memory.prototype;
+	wasm.Memory = SizedMemory;
+	try {
+		return await init();
+	} finally {
+		wasm.instantiate = instantiate;
+		wasm.Memory = Memory;
+	}
+}
+
+/** An ArrayBuffer (made in any realm). */
+function isBuffer (value: unknown): value is ArrayBuffer {
+	return value instanceof ArrayBuffer || Object.prototype.toString.call(value) === "[object ArrayBuffer]";
+}
+
+/** Read an unsigned LEB128 number: [value, next index]. */
+function readLeb (bytes: Uint8Array, at: number): [number, number] {
+	let value = 0, scale = 1, byte: number;
+	do {
+		byte = bytes[at++];
+		value += (byte & 0x7f) * scale;
+		scale *= 128;
+	} while (byte & 0x80);
+	return [value, at];
+}
+
+function writeLeb (value: number): number[] {
+	const out: number[] = [];
+	do {
+		let byte = value % 128;
+		value = Math.floor(value / 128);
+		if (value) byte |= 0x80;
+		out.push(byte);
+	} while (value);
+	return out;
+}
+
+/**
+ * A WebAssembly module's bytes with its memory (defined in its memory
+ * section, or imported) changed from `from` pages (minimum and maximum) to
+ * `to`, or null when it has no memory of exactly that size.
+ */
+export function igeJoltWasmWithMemory (bytes: Uint8Array, from: number, to: number): Uint8Array | null {
+	if (bytes.length < 8 || bytes[0] !== 0 || bytes[1] !== 0x61 || bytes[2] !== 0x73 || bytes[3] !== 0x6d) return null;
+	let at = 8;
+	while (at < bytes.length) {
+		const sectionAt = at;
+		const id = bytes[at++];
+		let size: number;
+		[size, at] = readLeb(bytes, at);
+		const start = at, end = start + size;
+		let limitsAt = -1, limitsEnd = -1, flags = 0, min = 0, max = -1;
+		const readLimits = () => {
+			limitsAt = at;
+			flags = bytes[at++];
+			[min, at] = readLeb(bytes, at);
+			if (flags & 1) [max, at] = readLeb(bytes, at);
+			limitsEnd = at;
+		};
+		if (id === 5) {
+			// The memory section
+			let count: number;
+			[count, at] = readLeb(bytes, at);
+			if (count === 1) readLimits();
+		} else if (id === 2) {
+			// Imports: the memory's limits
+			let count: number;
+			[count, at] = readLeb(bytes, at);
+			for (let i = 0; i < count && limitsAt < 0; i++) {
+				let length: number;
+				[length, at] = readLeb(bytes, at);
+				at += length;
+				[length, at] = readLeb(bytes, at);
+				at += length;
+				const kind = bytes[at++];
+				if (kind === 0) [, at] = readLeb(bytes, at);
+				else if (kind === 1) { at++; const tableFlags = bytes[at++]; [, at] = readLeb(bytes, at); if (tableFlags & 1) [, at] = readLeb(bytes, at); }
+				else if (kind === 2) readLimits();
+				else if (kind === 3) at += 2;
+				else if (kind === 4) { at++; [, at] = readLeb(bytes, at); }
+				else return null;
+			}
+		}
+		if (limitsAt >= 0) {
+			if (min !== from || max !== from) return null;
+			const body = [...bytes.subarray(start, limitsAt), flags | 1, ...writeLeb(to), ...writeLeb(to), ...bytes.subarray(limitsEnd, end)];
+			const head = [id, ...writeLeb(body.length)];
+			const out = new Uint8Array(sectionAt + head.length + body.length + (bytes.length - end));
+			out.set(bytes.subarray(0, sectionAt), 0);
+			out.set(head, sectionAt);
+			out.set(body, sectionAt + head.length);
+			out.set(bytes.subarray(end), sectionAt + head.length + body.length);
+			return out;
+		}
+		at = end;
+	}
+	return null;
+}
+
+/** Whether this is Node (a server, a test), where the threaded build runs on worker_threads with no isolated page. */
+function inNode (): boolean {
+	const global = globalThis as { process?: { versions?: { node?: string } }; window?: unknown };
+	return !!global.process?.versions?.node && global.window === undefined;
 }
 
 /**
@@ -65,16 +265,19 @@ export function igeJoltPhysics (options: IgeJoltBackendOptions = {}): IgePhysics
 	return {
 		name: "jolt",
 		async create (config: IgePhysicsBackendConfig): Promise<IgePhysicsBackend> {
+			const node = inNode();
 			const isolated = typeof globalThis !== "undefined" && (globalThis as any).crossOriginIsolated === true;
-			const threaded = config.threads === true || (config.threads === "auto" && isolated);
-			if (config.threads === true && !isolated) {
+			// In Node threads are there to ask for; "auto" stays single-threaded (a server decides its own cores)
+			const threaded = config.threads === true || (config.threads === "auto" && isolated && !node);
+			if (config.threads === true && !isolated && !node) {
 				throw new Error("IgePhysics3d: threads need a cross-origin isolated page (COOP/COEP headers)");
 			}
-			const jolt = await (options.load ? options.load(threaded) : loadJolt(threaded));
 			const tuning = config.options.jolt || {};
+			const jolt = await (options.load ? options.load(threaded) : igeLoadJolt({ threaded, memory: tuning.memory, instance: tuning.instance }));
 			return new IgeJoltBackend(jolt, config, threaded, {
 				maxBodyPairs: options.maxBodyPairs ?? tuning.maxBodyPairs ?? 65536,
-				maxContactConstraints: options.maxContactConstraints ?? tuning.maxContactConstraints ?? 20000
+				maxContactConstraints: options.maxContactConstraints ?? tuning.maxContactConstraints ?? 20000,
+				workerThreads: tuning.workerThreads
 			});
 		}
 	};
@@ -126,6 +329,8 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 	readonly name = "jolt";
 	_jolt: IgeJolt;
 	_threaded: boolean;
+	/** Worker threads this world steps on (threaded build), 0 when single-threaded. */
+	_workerThreads: number = 0;
 	/** Seconds per step the world was made for (vehicles' anti-roll bars are worked out for it before their first step). */
 	_fixedTimeStep: number;
 	_layerCount: number;
@@ -153,7 +358,7 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 	_bodyFilter: JoltApi.BodyFilter;
 	_shapeFilter: JoltApi.ShapeFilter;
 
-	constructor (jolt: IgeJolt, config: IgePhysicsBackendConfig, threaded: boolean, tuning: { maxBodyPairs: number; maxContactConstraints: number }) {
+	constructor (jolt: IgeJolt, config: IgePhysicsBackendConfig, threaded: boolean, tuning: { maxBodyPairs: number; maxContactConstraints: number; workerThreads?: number }) {
 		this._jolt = jolt;
 		this._threaded = threaded;
 		this._fixedTimeStep = config.options?.fixedTimeStep ?? 1 / 60;
@@ -164,7 +369,15 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 		settings.mMaxContactConstraints = tuning.maxContactConstraints;
 		if (threaded) {
 			const cores = (typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 4;
-			settings.mMaxWorkerThreads = Math.max(1, Math.min(8, cores - 1));
+			const asked = tuning.workerThreads ?? Math.min(8, cores - 1);
+			settings.mMaxWorkerThreads = Math.max(1, Math.min(IGE_JOLT_POOL_THREADS, Math.floor(asked)));
+			this._workerThreads = settings.mMaxWorkerThreads;
+			const total = (threadsInUse.get(jolt) ?? 0) + this._workerThreads;
+			threadsInUse.set(jolt, total);
+			if (total > IGE_JOLT_POOL_THREADS && !warnedThreads) {
+				warnedThreads = true;
+				console.warn(`IgePhysics3d: the worlds in this Jolt instance ask for ${total} worker threads, more than its ${IGE_JOLT_POOL_THREADS}; give each fewer (jolt: { workerThreads })`);
+			}
 		}
 
 		// Collision layers: static layers don't collide with each other, every
@@ -284,6 +497,7 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 		}
 		this._layerFilters.clear();
 		jolt.destroy(this._interface);
+		if (this._workerThreads) threadsInUse.set(jolt, Math.max(0, (threadsInUse.get(jolt) ?? 0) - this._workerThreads));
 	}
 
 	/* Bodies */
@@ -843,23 +1057,31 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 		const indices = shape.indices;
 		const triangleCount = indices ? Math.floor(indices.length / 3) : Math.floor(vertexCount / 3);
 
-		// Fill both lists in place (no wrapper per vertex)
+		// Fill both lists straight into Jolt's memory. Going through each
+		// element (vertices.at(i)) leaves a JS wrapper per element in the
+		// binding's cache for good: 38 MB of JS heap for a city's collision.
 		const vertices = new jolt.VertexList();
 		vertices.resize(vertexCount);
-		for (let i = 0; i < vertexCount; i++) {
-			const v = vertices.at(i);
-			v.x = source[i * 3];
-			v.y = source[i * 3 + 1];
-			v.z = source[i * 3 + 2];
+		const v = this._listLayout(vertices, jolt.Float3, vertexCount, 12);
+		const f32 = jolt.HEAPF32;
+		if (v.stride === 12) {
+			f32.set(source.subarray(0, vertexCount * 3), v.address >> 2);
+		} else {
+			for (let i = 0, at = v.address >> 2, step = v.stride >> 2; i < vertexCount; i++, at += step) {
+				f32[at] = source[i * 3]; f32[at + 1] = source[i * 3 + 1]; f32[at + 2] = source[i * 3 + 2];
+			}
 		}
 		const triangles = new jolt.IndexedTriangleList();
 		triangles.resize(triangleCount);
-		for (let t = 0; t < triangleCount; t++) {
-			const triangle = triangles.at(t);
-			triangle.set_mIdx(0, indices ? indices[t * 3] : t * 3);
-			triangle.set_mIdx(1, indices ? indices[t * 3 + 1] : t * 3 + 1);
-			triangle.set_mIdx(2, indices ? indices[t * 3 + 2] : t * 3 + 2);
-			triangle.mMaterialIndex = 0;
+		// Each triangle: three indices, a material index (0) and user data (0)
+		const t = this._listLayout(triangles, jolt.IndexedTriangle, triangleCount, 16);
+		const u32 = jolt.HEAPU32;
+		for (let i = 0, at = t.address >> 2, step = t.stride >> 2; i < triangleCount; i++, at += step) {
+			u32[at] = indices ? indices[i * 3] : i * 3;
+			u32[at + 1] = indices ? indices[i * 3 + 1] : i * 3 + 1;
+			u32[at + 2] = indices ? indices[i * 3 + 2] : i * 3 + 2;
+			u32[at + 3] = 0;
+			if (step > 4) u32[at + 4] = 0;
 		}
 		const materials = new jolt.PhysicsMaterialList();
 		const settings = new jolt.MeshShapeSettings(vertices, triangles, materials);
@@ -876,6 +1098,26 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 			throw new Error(`IgePhysics3d: mesh shape failed: ${message}`);
 		}
 		return { shape: result.Get(), cleanup };
+	}
+
+	/**
+	 * Where a list's elements start in Jolt's memory and how far apart
+	 * they are (bytes), from the first two elements' wrappers, which are
+	 * then dropped from the binding's cache. `least`: the smallest size an
+	 * element can be.
+	 */
+	_listLayout (list: { at (index: number): object }, kind: unknown, count: number, least: number): { address: number; stride: number } {
+		const jolt = this._jolt as IgeJolt & { getCache?: (kind: unknown) => Record<number, unknown> };
+		if (!count) return { address: 0, stride: least };
+		const address = jolt.getPointer(list.at(0));
+		const stride = count > 1 ? jolt.getPointer(list.at(1)) - address : least;
+		const cache = jolt.getCache?.(kind);
+		if (cache) {
+			delete cache[address];
+			delete cache[address + stride];
+		}
+		if (stride < least || stride % 4) throw new Error(`IgePhysics3d: unexpected Jolt list layout (${stride} bytes an element)`);
+		return { address, stride };
 	}
 
 	_createConvexShape (shape: Extract<IgePhysicsBackendShape, { type: "convex" }>, density: number): { shape: JoltApi.Shape; cleanup: () => void } {
@@ -899,3 +1141,6 @@ export class IgeJoltBackend implements IgePhysicsBackend {
 }
 
 let nextGroupId = 1;
+/** Worker threads the live threaded worlds ask for, by Jolt instance. */
+const threadsInUse = new WeakMap<IgeJolt, number>();
+let warnedThreads = false;

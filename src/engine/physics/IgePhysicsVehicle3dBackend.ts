@@ -210,8 +210,13 @@ export interface IgeVehicleBackendState {
 export interface IgeVehicleBackend {
 	/** The chassis: raycasts, sensors, impacts and other vehicles' wheels meet it. */
 	readonly body: IgePhysicsBodyHandle;
-	/** Controls for the coming steps, already shaped (forward -1..1, right -1..1, brake 0..1, handbrake 0..1). */
+	/**
+	 * Controls for the coming steps, already shaped (forward -1..1, right -1..1, brake 0..1, handbrake 0..1). The
+	 * throttle, the brake or a change of steering wakes a sleeping vehicle; the handbrake alone doesn't.
+	 */
 	setInput (forward: number, right: number, brake: number, handbrake: number): void;
+	/** Whether the chassis is being simulated (false once it has come to rest and been put to sleep). */
+	awake (): boolean;
 	/** Just before each fixed step of dt seconds. */
 	preStep (dt: number): void;
 	/** Chassis pose after the last step: the entity origin's x, y, z and rotation qx, qy, qz, qw. */

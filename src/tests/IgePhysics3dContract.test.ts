@@ -536,6 +536,48 @@ describe.each(physicsTestBackends())("IgePhysics3d contract on $name", (backend)
 			expect(hero.velocity().y).toBeLessThan(0);
 		});
 
+		it("step on their own (step()), as the world steps them: replaying inputs from a state gives the same place", async () => {
+			// The same ground in two worlds: a floor, a step to walk up and a wall to slide along
+			const ground = (world: IgePhysics3d) => {
+				addFloor(world);
+				world.addBody(new IgeEntity().translateTo(400, 10, 0), { type: "static", shape: box(150, 10, 300) });
+				world.addBody(new IgeEntity().translateTo(0, 100, 260), { type: "static", shape: box(2000, 100, 20) });
+			};
+			ground(physics);
+			const dt = 1 / 60;
+			// Walk east, jump, turn into the wall, stop
+			const inputs = Array.from({ length: 150 }, (_, i) => ({ x: i < 100 ? 250 : 0, z: i >= 60 ? 200 : 0, jump: i === 30 }));
+			const entity = new IgeEntity();
+			const hero = physics.addCharacter(entity, { radius: 30, height: 170 });
+			run(physics, 0.5);
+			const states: IgePhysicsCharacterState[] = [];
+			for (const input of inputs) {
+				states.push(hero.getState());
+				hero.move(input.x, input.z);
+				if (input.jump) hero.jump(300);
+				physics.update(dt);
+			}
+			const end = hero.getState().position;
+			expect(end.x).toBeGreaterThan(400); // up the step
+			expect(end.z).toBeLessThan(240); // stopped by the wall
+
+			// Another world: from the state at an input, replay the rest with step() alone (no world steps)
+			const other = await createTestPhysics({}, backend);
+			ground(other);
+			other.optimize();
+			const copy = other.addCharacter(new IgeEntity().translateTo(-500, 0, -500), { radius: 30, height: 170 });
+			for (const from of [0, 25, 90]) {
+				copy.setState(states[from]);
+				for (const input of inputs.slice(from)) {
+					copy.move(input.x, input.z);
+					if (input.jump) copy.jump(300);
+					copy.step(dt);
+				}
+				expectNear(copy.getState().position, end, 0.5);
+			}
+			other.destroy();
+		});
+
 		it("push light bodies, are shoved by crowds unless unpushable, and can be switched off", () => {
 			addFloor(physics);
 			const pusher = new IgeEntity().translateTo(0, 0, 0);

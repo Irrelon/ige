@@ -38,7 +38,23 @@ against the camera by its speed times the change in frame time (up to 14 cm a fr
 Place cameras, and anything else that follows a body, in `preTick`, which runs after the step and before drawing:
 `ige.engine.addBehaviour(IgeBehaviourType.preTick, "camera", (_e, tickDelta) => chase.update(tickDelta / 1000))`.
 
-Jolt (about 0.9 MB gzipped) is loaded when the world is created, so games without physics don't download it.
+Jolt (about 0.9 MB gzipped) is loaded when the first world is created, so games without physics don't download it.
+Worlds after it share that loaded Jolt (one per build and memory size in a page or process), and its memory: 128 MB,
+the jolt-physics package's own size, which can't grow. An empty world reserves about 10 MB plus about 100 bytes per
+`jolt.maxBodyPairs` and 300 per `jolt.maxContactConstraints` (22 MB at the defaults, 14 MB at 16384 and 8192). For
+more, or bigger, worlds in one page or server:
+
+```typescript
+const physics = await IgePhysics3d.create({
+	maxBodies: 4096,
+	jolt: { memory: 512, maxBodyPairs: 16384, maxContactConstraints: 8192 } // MB for the Jolt they share
+});
+```
+
+`jolt.memory` (megabytes, up to 4096) sets the size of the instance the world goes in; worlds asking for the same size
+share one. `jolt.instance: "own"` gives a world a Jolt of its own instead. `igeLoadJolt({ threaded, memory, instance })`
+loads one ahead of time, and `igeJoltInit(init, memory)` sizes a build loaded some other way. (The size is set by
+patching the module's memory as it's instantiated: jolt-physics has no option for it.)
 
 **Units.** Shapes, positions and velocities are in IGE units; the simulation runs in metres, because physics engines'
 tolerances assume real-world sizes. `unitsPerMetre` (default 100) converts between them: with 100, a 170-unit
@@ -55,6 +71,12 @@ Cross-Origin-Embedder-Policy: require-corp
 They stop the page loading cross-origin resources that don't opt in (some ad and analytics scripts, iframes), so
 check the hosting first; itch.io has a "SharedArrayBuffer support" option for this. Without them the single-threaded
 build runs. The threaded build takes about a second to start its workers.
+
+A world steps on the cores less one, at most 8 (`jolt: { workerThreads }` to choose). The threaded build starts 16
+workers when it loads, shared by every world in it, so several threaded worlds should each take a few. In Node (a
+server) `threads: true` runs the threaded build on `worker_threads`, and `"auto"` is single-threaded: a server
+usually does better with a world per core than with threads in each. Each worker is a whole JavaScript engine in
+Node, about 25 MB.
 
 ## Bodies
 
@@ -96,6 +118,17 @@ bodies collide with it through an inner body, `hero.body`, which raycasts and se
 before each world step, on the main thread, and interpolated like bodies. A crowd pushing into a character moves it
 (as a horde would) unless it has `pushable: false`, which keeps it where its own movement puts it; `teleport()` and
 `enabled()` work as for bodies, and `getState()` / `setState()` save and restore it.
+
+**Predicting a player online.** `hero.step(dt)` moves a character on by `dt` seconds on its own (its `move()`,
+`jump()` and gravity), without stepping the world: exactly what the world does for it before each step. A client
+replays the inputs the authority hasn't applied yet on top of the authority's latest state:
+
+```typescript
+hero.setState(serverState);
+for (const input of pending) hero.move(input.x * SPEED, input.z * SPEED).step(1 / 30);
+```
+
+It pushes what it walks into each time it's replayed, so replay where nothing loose is close, or accept the pushes.
 
 - A body starts at its entity's world position and rotation. After every step, dynamic bodies move their entity
   (position, and rotation through `entity.quaternion()` unless `lockRotation`); kinematic bodies (`type:

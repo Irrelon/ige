@@ -147,9 +147,27 @@ export class IgePhysicsCharacter3d {
 		if (reset) this._previous.set(this._current);
 	}
 
-	/** Advance the character by one step (before the world steps). */
+	/**
+	 * Move the character on by dt seconds, alone: its move(), jump() and
+	 * gravity against the world as it stands, without stepping the world.
+	 * The world does exactly this for each character before each of its
+	 * steps. A client predicting its player replays the inputs the
+	 * authority hasn't applied yet with it: setState() to the authority's
+	 * state, then move() and step() for each input. (It pushes what it walks
+	 * into each time, so replay where nothing loose is close, or accept the
+	 * pushes.)
+	 * @example #Replaying unacknowledged inputs
+	 *     hero.setState(serverState);
+	 *     for (const input of pending) hero.move(input.x * SPEED, input.z * SPEED).step(1 / 30);
+	 */
+	step (dt: number): this {
+		this._update(dt);
+		return this;
+	}
+
+	/** Advance the character by one step (before the world steps; see step()). */
 	_update (dt: number): void {
-		if (!this._enabled) return;
+		if (!this._enabled || this._destroyed) return;
 		const physics = this._physics;
 		const backend = physics._backend;
 		const u = physics.unitsPerMetre();

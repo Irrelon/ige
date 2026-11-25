@@ -625,6 +625,129 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles on $name", (backend)
  * Kerbs and jumps: a vehicle should sit on its wheels, not bounce about
  * between them. A kerb is a static block 15 cm high.
  */
+describe.each(physicsTestBackends())("IgePhysics3d vehicles asleep on $name", (backend) => {
+	let physics: IgePhysics3d;
+
+	beforeEach(async () => {
+		physics = await createTestPhysics({}, backend);
+	});
+
+	afterEach(() => physics.destroy());
+
+	/** The game's kind of car: downforce, the arcade assists and anti-rollover all on. */
+	const ARCADE: IgePhysicsVehicleOptions = {
+		downforce: 0.3,
+		yawAssist: { strength: 1, lateralG: 1.6, highSpeedG: 4, highSpeedGrip: 3 },
+		stabilityAssist: { strength: 1 },
+		antiRoll: 15000
+	};
+
+	function addVehicle (options: IgePhysicsVehicleOptions = ARCADE, x: number = 0, z: number = 0, yaw: number = 0) {
+		const entity = new IgeEntity().translateTo(x, 20, z).rotateTo(0, yaw, 0);
+		return { entity, vehicle: physics.addVehicle(entity, options) };
+	}
+
+	/** Brake every vehicle to a standstill (the handbrake at the end: the brake held at a stop reverses), then let go. */
+	function stop (...vehicles: IgePhysicsVehicle3dApi[]) {
+		for (let t = 0; t < 8 && vehicles.some((v) => Math.abs(v.speedKmh()) > 0.05); t += 1 / 60) {
+			run(physics, 1 / 60, () => vehicles.forEach((v) => v.drive(v.speedKmh() > 10 ? { brake: 1 } : { handbrake: 1 })));
+		}
+		for (const vehicle of vehicles) {
+			expect(Math.abs(vehicle.speedKmh())).toBeLessThan(0.05);
+			vehicle.drive({});
+		}
+	}
+
+	/** Seconds until the vehicle sleeps (Infinity if it doesn't within `most`), driving it with `input` each step. */
+	function timeToSleep (vehicle: IgePhysicsVehicle3dApi, most: number, input: Partial<IgePhysicsVehicleInput> = {}): number {
+		for (let t = 0; t < most; t += 1 / 60) {
+			run(physics, 1 / 60, () => vehicle.drive(input));
+			if (vehicle.asleep()) return t;
+		}
+		return Infinity;
+	}
+
+	it("sleeps once stopped with nothing asked of it, downforce, assists and all; the handbrake and the steering held too", () => {
+		addFloor(physics, 200000);
+		const plain = addVehicle({}, 0).vehicle;
+		const arcade = addVehicle(ARCADE, 1000).vehicle;
+		const bike = addVehicle({ type: "motorcycle" }, 2000).vehicle;
+		// Driven, stopped, then let go
+		run(physics, 1, () => [plain, arcade, bike].forEach((v) => v.drive({ forward: 1 })));
+		stop(plain, arcade, bike);
+		for (const vehicle of [plain, arcade, bike]) expect(timeToSleep(vehicle, 6)).toBeLessThan(6);
+		expect(physics.stats().activeBodies).toBe(0);
+
+		// Parked: the handbrake held, the wheels turned
+		const parked = addVehicle(ARCADE, 3000).vehicle;
+		expect(timeToSleep(parked, 4, { handbrake: 1 })).toBeLessThan(4);
+		const turned = addVehicle(ARCADE, 4000).vehicle;
+		expect(timeToSleep(turned, 4, { right: 1 })).toBeLessThan(4);
+		expect(turned.wheel(0).steer).toBeGreaterThan(5);
+		// It stays asleep, and stays put
+		const before = turned.getState().position;
+		let woke = 0;
+		run(physics, 2, () => {
+			turned.drive({ right: 1 });
+			if (!turned.asleep()) woke++;
+		});
+		expect(woke).toBe(0);
+		expect(turned.getState().position).toEqual(before);
+	});
+
+	it("sleeps parked on a slope on its handbrake", () => {
+		// A 6 degree hill, the car facing across it (gravity rolls it sideways, as anti-rollover sees)
+		const hill = new IgeEntity().translateTo(0, -50, 0).rotateTo((6 * Math.PI) / 180, 0, 0);
+		physics.addBody(hill, { type: "static", shape: { type: "box", halfExtents: { x: 5000, y: 50, z: 5000 } } });
+		const { vehicle } = addVehicle(ARCADE, 0, 0, Math.PI / 2);
+		expect(timeToSleep(vehicle, 6, { handbrake: 1 })).toBeLessThan(6);
+		const at = vehicle.getState().position;
+		run(physics, 2, () => vehicle.drive({ handbrake: 1 }));
+		expect(vehicle.getState().position).toEqual(at);
+	});
+
+	it("wakes on the throttle, the brake, the steering moving, setState() and being hit", () => {
+		addFloor(physics, 200000);
+		const cars = [0, 1, 2, 3, 4].map((i) => addVehicle(ARCADE, i * 1000).vehicle);
+		for (const car of cars) expect(timeToSleep(car, 6)).toBeLessThan(6);
+		const [throttle, brake, steer, placed, hit] = cars;
+
+		run(physics, 1 / 60, () => {
+			throttle.drive({ forward: 1 });
+			brake.drive({ brake: 1 });
+			steer.drive({ right: 1 });
+		});
+		expect(throttle.asleep()).toBe(false);
+		expect(brake.asleep()).toBe(false);
+		expect(steer.asleep()).toBe(false);
+		run(physics, 1, () => throttle.drive({ forward: 1 }));
+		expect(throttle.speedKmh()).toBeGreaterThan(5);
+
+		const state = placed.getState();
+		state.position.x += 100;
+		placed.setState(state);
+		expect(placed.asleep()).toBe(false);
+
+		// A crate dropped on the bonnet
+		physics.addBody(new IgeEntity().translateTo(4000, 300, 100), { shape: { type: "box", halfExtents: { x: 40, y: 40, z: 40 } }, density: 300 });
+		let woke = false;
+		run(physics, 1, () => {
+			woke = woke || !hit.asleep();
+		});
+		expect(woke).toBe(true);
+	});
+
+	it("keeps a ridden motorcycle upright when it stops and sleeps", () => {
+		addFloor(physics, 200000);
+		const { vehicle } = addVehicle({ type: "motorcycle" });
+		run(physics, 1, () => vehicle.drive({ forward: 1 }));
+		stop(vehicle);
+		expect(timeToSleep(vehicle, 6)).toBeLessThan(6);
+		expect(vehicle.tilt()).toBeLessThan(10);
+		expect(vehicle.upsideDown()).toBe(false);
+	});
+});
+
 describe.each(physicsTestBackends())("IgePhysics3d vehicles on kerbs and landing jumps on $name", (backend) => {
 	let physics: IgePhysics3d;
 	const KERB = 15;
