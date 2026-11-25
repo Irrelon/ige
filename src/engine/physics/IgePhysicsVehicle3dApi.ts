@@ -429,6 +429,13 @@ export interface IgePhysicsVehicle3dApi {
 	/** Whether it's more than 90 degrees from upright. */
 	upsideDown (): boolean;
 	/**
+	 * Whether the simulation has put it to sleep: at rest with nothing asked
+	 * of it (the handbrake or the steering held count as nothing). It wakes
+	 * on the throttle or the brake, the steering moving, being hit, or
+	 * setState(). A sleeping vehicle costs next to nothing to step.
+	 */
+	asleep (): boolean;
+	/**
 	 * Whether it's in the air: no wheel on the ground and its body touching
 	 * nothing. (A car on its roof isn't airborne, nor grounded.)
 	 */

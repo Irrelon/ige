@@ -458,6 +458,13 @@ it, e.g. a parked car far from every player.
 The example (a car, a motorcycle and 25 crates, 38 bodies) steps in 0.25 to 0.3 ms with threaded Jolt in Chrome on an
 Apple silicon Mac. Each wheel casts a ray (a car's) or a cylinder (a motorcycle's) down to the ground every step.
 
+**Sleeping.** A vehicle that has stopped with nothing asked of it is put to sleep, like any body, and costs next to
+nothing to step: no throttle or brake, the handbrake and the steering held count as nothing (a parked car). The
+throttle, the brake, the steering moving, being hit or `setState()` wake it; `vehicle.asleep()` says which. The
+assists and downforce leave a sleeping vehicle be (they used to push one every step, so cars with them never slept: a
+city's wrecks and parked cars each cost a driving car's step). A car still rolling, or a motorcycle creeping at a
+walking pace, stays awake until it stops.
+
 ## Limits
 
 - Wheels are casts, not bodies; the chassis shape and the wheel guards are what hit things. A car's front tyre passes
@@ -479,10 +486,12 @@ it fills in the options (`resolveVehicleSpec()`), shapes the input, places the e
 steps, works out the readouts, air control, self-righting and weight shift, impacts and landings, and handles state
 and kinematic targets. Underneath, the world's backend makes an `IgeVehicleBackend` with
 `IgePhysicsBackend.createVehicle()` (see [physics-3d.md](physics-3d.md), "Backends"), from the resolved spec in metres
-(`IgeVehicleBackendSpec`, `IgePhysicsVehicle3dBackend.ts`): `setInput()`, `preStep()`, `readPose()`,
+(`IgeVehicleBackendSpec`, `IgePhysicsVehicle3dBackend.ts`): `setInput()` (the throttle, brake or a change of
+steering wakes it; the handbrake alone doesn't), `awake()`, `preStep()`, `readPose()`,
 `readVelocity()`, `readWheel()` (which reports the ground's body handle), `rpm()`, `gear()`, `shift()`, `setState()`,
 `setKinematic()`, `moveKinematic()`, `setEnabled()`, `addAngularVelocity()`, `accelerate()` (a force and a torque that
-give the chassis an acceleration for a step, and a further torque in N·m: the arcade assists), `scaleGrip()` (a
+give the chassis an acceleration for a step, and a further torque in N·m: the arcade assists; it wakes a sleeping
+chassis but mustn't restart an awake one's sleep timer, or a car pushed every step never sleeps), `scaleGrip()` (a
 multiple of the tyres' sideways grip, another for the handbrake's wheels: grip at speed), `setUpright()`, optionally
 `retune()`
 (a new spec in place, for `setOptions()`; without it the vehicle is made again) and `destroy()`, and its chassis as

@@ -409,6 +409,65 @@ describe("IgeNetReplicationHost / IgeNetReplicationClient", () => {
 		host.destroy();
 	});
 
+	it("keeps a machine's inputs close to the present when they arrive in bursts (inputBuffer)", async () => {
+		const net = igeNetLoopback();
+		const { host } = game(net);
+		const client = new IgeNetReplicationClient<Input>(net.connect(), clientOptions);
+		await client.join([{ name: "Ann" }]);
+		// A stall: eight frames at once, then one a step for three seconds
+		for (let i = 0; i < 8; i++) client.sendInput([{ dx: 1 }]);
+		await settle();
+		const queued: number[] = [];
+		for (let step = 0; step < 90; step++) {
+			client.sendInput([{ dx: 1 }]);
+			await settle();
+			host.update(1000 / 30);
+			queued.push(host.stats().machines[0].inputsQueued);
+		}
+		// The backlog of seven is drained, two at a time each half second, to the one frame it keeps
+		expect(queued[0]).toBeGreaterThanOrEqual(7);
+		expect(Math.max(...queued.slice(-30))).toBeLessThanOrEqual(1);
+		expect(host.stats().machines[0].inputsDrained).toBeGreaterThanOrEqual(6);
+		host.destroy();
+	});
+
+	it("drops no input frames when they arrive steadily, and none at all with inputBuffer Infinity", async () => {
+		for (const inputBuffer of [1, Infinity]) {
+			const net = igeNetLoopback();
+			const host = new IgeNetReplicationHost<Input>(net.listener, {
+				schemas: defs, inputSchema: inputDefs, sendRate: 30, inputBuffer,
+				join: (machine: IgeNetReplicationMachine) => {
+					machine.viewer.subscribe("world");
+					host.replicator.create("dot", "d", { name: "d" }, { scope: "world" });
+					return ["d"];
+				},
+				step: (dt, tick, inputs) => inputs.forEach((input) => {
+					const dot = host.replicator.get("d")!;
+					dot.write({ x: (dot.values.x as number) + input.dx * SPEED * dt });
+				})
+			});
+			const client = new IgeNetReplicationClient<Input>(net.connect(), clientOptions);
+			await client.join([{ name: "Ann" }]);
+			// Steady (one frame ahead), then a burst that Infinity must keep whole
+			client.sendInput([{ dx: 1 }]);
+			for (let step = 0; step < 60; step++) {
+				client.sendInput([{ dx: 1 }]);
+				await settle();
+				host.update(1000 / 30);
+			}
+			if (inputBuffer === 1) expect(host.stats().machines[0].inputsDrained).toBe(0);
+			else {
+				for (let i = 0; i < 6; i++) client.sendInput([{ dx: 1 }]);
+				await settle();
+				for (let step = 0; step < 60; step++) host.update(1000 / 30);
+				await settle();
+				expect(host.stats().machines[0].inputsDrained).toBe(0);
+				expect(client.pendingInputs()).toEqual([]);
+			}
+			host.destroy();
+		}
+	});
+
 	it("creates, updates and destroys objects on the client, and sends nothing for objects nobody writes", async () => {
 		const net = igeNetLoopback();
 		const { host, left } = game(net);

@@ -111,6 +111,9 @@ const MIN_COMBINED_GRIP = 0.1;
  * its controller, wheels and collision tester), and the body (which frees
  * its shape).
  */
+/** A change of steering (share of the lock) that wakes a sleeping vehicle (smaller ones come from speed noise). */
+const STEER_WAKE = 1e-3;
+
 export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	_physics: IgeJoltBackend;
 	_jolt: typeof JoltApi;
@@ -127,6 +130,8 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	_kinematic: boolean = false;
 	_enabled: boolean = true;
 	_driving: boolean = false;
+	/** The steering given last (a change wakes it). */
+	_right: number = 0;
 	/** The handbrake grip the handbrake's wheels' sideways curves are set for (1: full grip). */
 	_handbrakeGrip: number = 1;
 	/** The handbrake grip the curves are set for. */
@@ -387,7 +392,9 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 
 	setInput (forward: number, right: number, brake: number, handbrake: number): void {
 		this._controller.SetDriverInput(forward, right, brake, handbrake);
-		this._driving = forward !== 0 || right !== 0 || brake !== 0 || handbrake !== 0;
+		// What wakes it: the throttle, the brake, the steering moving (not the handbrake held, or the wheels left turned)
+		this._driving = forward !== 0 || brake !== 0 || Math.abs(right - this._right) > STEER_WAKE;
+		this._right = right;
 		// Locked tyres lose most of their sideways grip (Jolt keeps it all):
 		// the handbrake's wheels' sideways curves are scaled by this
 		this._handbrakeGrip = 1 - (1 - this._spec.handbrakeGrip) * handbrake;
@@ -597,6 +604,10 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		out.ground = this._physics._handleOf(wheel.GetContactBodyID()) ?? null;
 	}
 
+	awake (): boolean {
+		return this._body.IsActive();
+	}
+
 	rpm (): number {
 		return this._controller.GetEngine().GetCurrentRPM();
 	}
@@ -690,7 +701,10 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		const torque = rotateBy({ x: dx > 0 ? local.x / dx : 0, y: dy > 0 ? local.y / dy : 0, z: dz > 0 ? local.z / dz : 0 }, q.x, q.y, q.z, q.w);
 		this._vec2.Set(linear.x / inverseMass, linear.y / inverseMass, linear.z / inverseMass);
 		this._vec3.Set(torque.x + (extra?.x ?? 0), torque.y + (extra?.y ?? 0), torque.z + (extra?.z ?? 0));
-		this._physics._bodies.AddForceAndTorque(this._id, this._vec2, this._vec3, this._jolt.EActivation_Activate);
+		// Wake it if it's asleep, but don't restart an awake body's sleep timer: Jolt's Activate does, and assists push
+		// every step, so it would never come to rest
+		const activation = this._body.IsActive() ? this._jolt.EActivation_DontActivate : this._jolt.EActivation_Activate;
+		this._physics._bodies.AddForceAndTorque(this._id, this._vec2, this._vec3, activation);
 	}
 
 	scaleGrip (wheels: number, handbrakeWheels: number): void {

@@ -107,6 +107,23 @@ export interface IgeJoltTuning {
 	maxBodyPairs?: number;
 	/** Most contacts solved in a step (default 20000). Keep at about 20000 or less: Jolt sizes a per-step buffer from it. */
 	maxContactConstraints?: number;
+	/**
+	 * Worker threads a world steps on with the multithreaded build (default: the cores less one, at most 8). Worlds
+	 * sharing a process share its cores: give each a few rather than all.
+	 */
+	workerThreads?: number;
+	/**
+	 * Megabytes of WebAssembly memory for the Jolt instance the world is in (default 128, the jolt-physics
+	 * package's own size, which can't grow). Every world in an instance shares it: an empty world reserves about
+	 * 10 MB, plus about 100 bytes per `maxBodyPairs` and 300 per `maxContactConstraints` (22 MB at the defaults, 14 MB
+	 * at 16384 and 8192), before anything is added. Rounded up to 64 KB; at most 4096.
+	 */
+	memory?: number;
+	/**
+	 * "shared" (default): every world in the page or process with the same build (threaded or not) and `memory`
+	 * uses one loaded Jolt. "own": this world loads its own, with its own memory (and, threaded, its own 16 workers).
+	 */
+	instance?: "shared" | "own";
 }
 
 export interface IgePhysics3dOptions {
@@ -136,7 +153,8 @@ export interface IgePhysics3dOptions {
 	 * the page is cross-origin isolated (served with COOP/COEP headers,
 	 * needed for SharedArrayBuffer), true to require it, false never. Jolt
 	 * has a multithreaded build; a backend without one runs on the main
-	 * thread whatever this says.
+	 * thread whatever this says. In Node (a server) true works (on
+	 * worker_threads) and "auto" is single-threaded.
 	 */
 	threads: boolean | "auto";
 	/** Most bodies the world holds (default 10240). Backends that allocate up front size for it. */

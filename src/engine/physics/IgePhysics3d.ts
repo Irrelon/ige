@@ -733,7 +733,7 @@ export class IgePhysics3d extends IgeEventingClass {
 		let steps = 0;
 		const started = performance.now();
 		while (this._accumulator >= step) {
-			for (const character of this._characters) character._update(step);
+			for (const character of this._characters) character.step(step);
 			for (const vehicle of this._vehicles) vehicle._preStep(step);
 			for (const floater of this._floaters) floater._preStep();
 			for (const craft of this._crafts) craft._preStep(step);

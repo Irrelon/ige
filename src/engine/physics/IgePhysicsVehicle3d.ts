@@ -280,6 +280,10 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 		return this._airborne;
 	}
 
+	asleep (): boolean {
+		return !this._destroyed && this._enabled && !this._kinematic && !this._backend.awake();
+	}
+
 	upright (): boolean;
 	upright (val: boolean): this;
 	upright (val?: boolean): boolean | this {
@@ -537,9 +541,24 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 		// Grip that grows with speed (the arcade's), not for the handbrake's wheels while it's on
 		const grip = this._grip(speed);
 		backend.scaleGrip(grip, 1 + (grip - 1) * (1 - input.handbrake));
-		this._assist(dt, forward);
-		this._rotationControl(dt);
+		// Asleep with nothing asked of it (the handbrake and the steering held are nothing): leave it asleep. The
+		// assists push it every step (downforce at the slightest speed, anti-rollover on a slope), which would wake it
+		if (!this._resting(forward, brake)) {
+			this._assist(dt, forward);
+			this._rotationControl(dt);
+		}
 		backend.preStep(dt);
+	}
+
+	/**
+	 * Whether it's asleep (at rest, the simulation not stepping it) and
+	 * nothing asks it to move: no throttle or brake (as shaped this step),
+	 * no pitch or roll, and no steering to rock it off its roof.
+	 */
+	_resting (forward: number, brake: number): boolean {
+		const input = this._input;
+		if (forward !== 0 || brake !== 0 || input.pitch || input.roll || this._backend.awake()) return false;
+		return !(input.right && this._spec.selfRighting && this.tilt() >= SELF_RIGHT_TILT);
 	}
 
 	/** How far into the arcade's high-speed turning a forward speed (IGE units per second) is: 0 below 60% of yawAssist.highSpeed, 1 from it. */

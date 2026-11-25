@@ -10,7 +10,8 @@ export interface IgeNetCertificate {
 	expires: Date;
 }
 
-const der = (tag: number, ...parts: Uint8Array[]): Uint8Array => {
+// ArrayLike: Node Buffers pass under every TypeScript (5.9 made Uint8Array generic over its buffer, and a Buffer's may be shared)
+const der = (tag: number, ...parts: ArrayLike<number>[]): Uint8Array => {
 	let length = 0;
 	for (const part of parts) length += part.length;
 	const header = length < 128 ? [tag, length] : length < 256 ? [tag, 0x81, length] : [tag, 0x82, length >> 8, length & 255];
@@ -80,5 +81,5 @@ export function igeNetSelfSignedCert (options: { name?: string; days?: number } 
 
 /** The SHA-256 hash (hex) of a PEM certificate. */
 export function igeNetCertHash (certPem: string): string {
-	return createHash("sha256").update(new X509Certificate(certPem).raw).digest("hex");
+	return createHash("sha256").update(new Uint8Array(new X509Certificate(certPem).raw)).digest("hex");
 }

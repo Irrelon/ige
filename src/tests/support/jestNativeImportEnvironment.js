@@ -9,6 +9,8 @@ class NativeImportEnvironment extends TestEnvironment {
 	constructor (config, context) {
 		super(config, context);
 		this.global.igeNativeImport = (name) => import(name);
+		// The WebAssembly those modules load with (this realm's, not the test's)
+		this.global.igeNativeWebAssembly = WebAssembly;
 	}
 }
 
