@@ -1,4 +1,5 @@
 import type { IgeNetEntityAddOptions, IgeNetEntityHost } from "@/engine/network/entities/IgeNetEntityHost";
+import { igePhaseGet, igePhaseSet, type IgePhaseEffect, type IgePhaseInput } from "@/engine/webgl/IgePhase";
 import { igeNetLatestEntityHost } from "@/engine/network/entities/igeNetEntityHostRef";
 import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import { markSceneChanged } from "@/engine/utils/sceneChange";
@@ -1500,6 +1501,27 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	occludedColor (color?: { r: number; g: number; b: number; a?: number } | null) {
 		if (color === undefined) return this._occludedColor ?? null;
 		this._occludedColor = color ? { r: color.r, g: color.g, b: color.b, a: color.a ?? 0.5 } : null;
+		this._renderChanged();
+		return this;
+	}
+
+	/**
+	 * Puts this entity, and everything mounted under it, partly out of phase with the world (WebGL renderer): the body
+	 * goes glassy (the scene shows through, faintly tinted and darkened), the edge a shimmering rim with red, green and
+	 * blue fringes that ripple, and now and then it flickers solid. `amount` 0 is normal, 1 a faint ghost that's mostly
+	 * its edge; a thing mostly out of phase casts no shadow. Noise and flicker are a pure function of a time value
+	 * (engine time unless `time` is given or igeEffectTime() is set), so a paused or scrubbed recording repeats.
+	 * `phase(null)` clears it; `phase()` gives the effect (settings, `set()`, `time()`) or null: bind it to an
+	 * IgeTimeline to animate `effect.amount`, `effect.flicker` and the rest. See guides/phase-effects.md.
+	 * @example #A precursor flickering in and out
+	 *     ghost.phase({ amount: 0.8, flicker: 0.6, edgeColor: { r: 0.4, g: 0.8, b: 1 } });
+	 */
+	phase (input: IgePhaseInput | null): this;
+	phase (): IgePhaseEffect | null;
+	phase (input?: IgePhaseInput | null) {
+		if (input === undefined) return igePhaseGet(this);
+		const effect = igePhaseSet(this, input);
+		if (effect) effect.onChange = () => this._renderChanged();
 		this._renderChanged();
 		return this;
 	}
