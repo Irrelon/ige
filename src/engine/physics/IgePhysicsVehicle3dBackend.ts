@@ -99,7 +99,7 @@ export interface IgeVehicleSpec extends IgeVehicleDrivetrain {
 	steering: { rate: number; highSpeed: number; highSpeedLock: number; slip: number };
 	/** Arcade assists (IgePhysicsVehicle3d applies them through the backend's accelerate()). */
 	/** highSpeed in IGE units per second, highSpeedRate in full locks a second. */
-	yawAssist: { strength: number; lateralG: number; highSpeedG: number; highSpeed: number; highSpeedRate: number };
+	yawAssist: { strength: number; lateralG: number; highSpeedG: number; highSpeed: number; highSpeedRate: number; highSpeedGrip: number };
 	/** slideSpeed in IGE units per second. */
 	stabilityAssist: { strength: number; slideSpeed: number };
 	/** Share of the weight pushing down at 50 m/s. */
@@ -245,6 +245,12 @@ export interface IgeVehicleBackend {
 	 * or disabled.
 	 */
 	accelerate (linear: Vec3, angular: Vec3, torque?: Vec3): void;
+	/**
+	 * Multiply the tyres' sideways grip from the next step: every wheel's by
+	 * `wheels`, the wheels the handbrake holds by `handbrakeWheels` instead
+	 * (1 and 1: as specified). Grip that grows with speed (the arcade's).
+	 */
+	scaleGrip (wheels: number, handbrakeWheels: number): void;
 	/**
 	 * Balance on (as made) or off. Off, a motorcycle's lean controller
 	 * stops holding it up and the pitch and roll limit (maxTilt) goes, so it
@@ -502,7 +508,8 @@ export function resolveVehicleSpec (options: IgePhysicsVehicleOptions, unitsPerM
 			lateralG,
 			highSpeedG: Math.max(0.05, options.yawAssist?.highSpeedG ?? Math.max(lateralG, 3)),
 			highSpeed: Math.max(0.01 * u, options.yawAssist?.highSpeed ?? 28 * u),
-			highSpeedRate: Math.max(0.01, options.yawAssist?.highSpeedRate ?? 2 * (steering.rate ?? base.steering.rate))
+			highSpeedRate: Math.max(0.01, options.yawAssist?.highSpeedRate ?? 2 * (steering.rate ?? base.steering.rate)),
+			highSpeedGrip: Math.max(0.1, options.yawAssist?.highSpeedGrip ?? 1)
 		},
 		stabilityAssist: {
 			strength: unit(options.stabilityAssist?.strength, assisted),

@@ -534,6 +534,9 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 		}
 
 		backend.setInput(forward, this._steer * this._lock(speed), brake, input.handbrake);
+		// Grip that grows with speed (the arcade's), not for the handbrake's wheels while it's on
+		const grip = this._grip(speed);
+		backend.scaleGrip(grip, 1 + (grip - 1) * (1 - input.handbrake));
 		this._assist(dt, forward);
 		this._rotationControl(dt);
 		backend.preStep(dt);
@@ -543,6 +546,11 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 	_fast (speed: number): number {
 		const high = this._spec.yawAssist.highSpeed;
 		return Math.max(0, Math.min(1, (Math.abs(speed) - 0.6 * high) / (0.4 * high)));
+	}
+
+	/** The tyres' sideways grip at a forward speed (IGE units per second), as a multiple of their own: yawAssist.highSpeedGrip at speed. */
+	_grip (speed: number): number {
+		return 1 + (this._spec.yawAssist.highSpeedGrip - 1) * this._fast(speed);
 	}
 
 	/** The sideways acceleration (g) a full stick asks for at a forward speed (IGE units per second). */
@@ -691,7 +699,8 @@ export class IgePhysicsVehicle3d extends IgeEventingClass implements IgePhysicsV
 		this._cornering += (Math.max(-CORNERING_MOST * G, Math.min(CORNERING_MOST * G, accelAcross)) - this._cornering) * Math.min(1, dt / CORNERING_SMOOTHING);
 		this._assistAcross = acrossAssist;
 		if (spec.antiRollover > 0 && halfTrack > 0) {
-			const lower = height - halfTrack / spec.antiRollover;
+			// More grip at speed corners harder on the tyres: anti-rollover rises with it
+			const lower = height - halfTrack / (spec.antiRollover * this._grip(along * u));
 			if (lower > 0) rollTorque = spec.mass * this._cornering * lower;
 		}
 		const roll = rollTorque ? { x: -f.x * rollTorque, y: -f.y * rollTorque, z: -f.z * rollTorque } : undefined;

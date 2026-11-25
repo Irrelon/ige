@@ -131,6 +131,9 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 	_handbrakeGrip: number = 1;
 	/** The handbrake grip the curves are set for. */
 	_appliedHandbrake: number = 1;
+	/** scaleGrip(): every wheel's sideways grip, the handbrake's wheels', and what the curves are set for. */
+	_gripScale = { wheels: 1, handbrake: 1 };
+	_appliedGripScale = { wheels: 1, handbrake: 1 };
 	/** Balancing (setUpright()). */
 	_upright: boolean = true;
 	/** The controls being held, for combined grip: only a wheel being driven or braked spins or locks. */
@@ -486,8 +489,13 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		});
 
 		const handbrake = Math.round(this._handbrakeGrip / GRIP_STEP) * GRIP_STEP;
-		const handbrakeChanged = handbrake !== this._appliedHandbrake;
+		const applied = this._appliedGripScale;
+		const all = Math.round(this._gripScale.wheels / GRIP_STEP) * GRIP_STEP, held = Math.round(this._gripScale.handbrake / GRIP_STEP) * GRIP_STEP;
+		const scaleChanged = all !== applied.wheels || held !== applied.handbrake;
+		const handbrakeChanged = handbrake !== this._appliedHandbrake || scaleChanged;
 		this._appliedHandbrake = handbrake;
+		applied.wheels = all;
+		applied.handbrake = held;
 		this._wheels.forEach((wheel, index) => {
 			const w = spec.wheels[index];
 			const scale = tyreScale(w.grip);
@@ -499,8 +507,10 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 			const across = this._gripAcross[index];
 			const acrossChanged = Math.abs(across - this._curveAcross[index]) >= GRIP_STEP || (across === 1 && this._curveAcross[index] !== 1);
 			if (acrossChanged) this._curveAcross[index] = across > 1 - GRIP_STEP / 2 ? 1 : across;
-			if (acrossChanged || (handbrakeChanged && w.handbrakeTorque > 0)) {
-				setLateralCurve(settings.mLateralFriction, scale * this._curveAcross[index] * (w.handbrakeTorque > 0 ? handbrake : 1));
+			if (acrossChanged || scaleChanged || (handbrakeChanged && w.handbrakeTorque > 0)) {
+				// Jolt grips with sqrt(tyre x ground): the curve takes the square of a grip multiplier
+				const speed = w.handbrakeTorque > 0 ? held : all;
+				setLateralCurve(settings.mLateralFriction, scale * this._curveAcross[index] * speed * speed * (w.handbrakeTorque > 0 ? handbrake : 1));
 			}
 		});
 	}
@@ -681,6 +691,11 @@ export class IgeJoltVehicle3d implements IgeVehicleBackend {
 		this._vec2.Set(linear.x / inverseMass, linear.y / inverseMass, linear.z / inverseMass);
 		this._vec3.Set(torque.x + (extra?.x ?? 0), torque.y + (extra?.y ?? 0), torque.z + (extra?.z ?? 0));
 		this._physics._bodies.AddForceAndTorque(this._id, this._vec2, this._vec3, this._jolt.EActivation_Activate);
+	}
+
+	scaleGrip (wheels: number, handbrakeWheels: number): void {
+		this._gripScale.wheels = wheels;
+		this._gripScale.handbrake = handbrakeWheels;
 	}
 
 	setUpright (on: boolean): void {

@@ -194,6 +194,13 @@ export interface IgePhysicsVehicleOptions {
 		highSpeed?: number;
 		/** How fast the steering follows the input at highSpeed, full locks a second (default twice steering.rate). */
 		highSpeedRate?: number;
+		/**
+		 * The tyres' sideways grip at highSpeed and above, as a multiple of their own (blending from 1 at 60% of
+		 * highSpeed): grip that grows with speed, so the tyres hold the arcade turn themselves and the car stays on
+		 * its line instead of drifting (default 1). The handbrake's wheels don't get it while it's on, so handbrake
+		 * slides still happen at speed.
+		 */
+		highSpeedGrip?: number;
 	};
 	/**
 	 * Arcade stability: a torque that holds the vehicle's rate of turn to
@@ -216,8 +223,9 @@ export interface IgePhysicsVehicleOptions {
 	 * corner this hard without tipping has it act lower while cornering (a
 	 * torque against the tyres' roll), so it leans but doesn't roll over
 	 * (default 2.5, or twice the tyres' grip if more, for cars; 0 for
-	 * motorcycles: none). Cars with a low centre of mass are hardly
-	 * touched; a van or bus gets most of it.
+	 * motorcycles: none). It rises with yawAssist.highSpeedGrip at speed.
+	 * Cars with a low centre of mass are hardly touched; a van or bus gets
+	 * most of it.
 	 */
 	antiRollover?: number;
 	/**

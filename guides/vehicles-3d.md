@@ -158,7 +158,7 @@ anti-roll bar (`antiRoll`, 10,000 N/m; 0 for none): stiffer keeps the body flatt
 | `handbrakeGrip` | 0.4 | Sideways grip the handbrake's wheels keep |
 | `friction` | 0.4 | The body's own, when it scrapes along things |
 | `steering` | rate 4, highSpeed 30 m/s, highSpeedLock 0.35, slip 2.5 | See "Driving" and "Arcade assists" |
-| `yawAssist` | strength 1 (cars), lateralG the tyres' grip, highSpeedG 3, highSpeed 28 m/s, highSpeedRate twice steering.rate | See "Arcade assists" |
+| `yawAssist` | strength 1 (cars), lateralG the tyres' grip, highSpeedG 3, highSpeed 28 m/s, highSpeedRate twice steering.rate, highSpeedGrip 1 | See "Arcade assists" |
 | `stabilityAssist` | strength 1 (cars), slideSpeed 15 m/s | See "Arcade assists" |
 | `antiRollover` | 2.5 g, or twice the grip (cars) | See "Arcade assists" |
 | `downforce` | 0 | Share of the weight pushing down at 50 m/s |
@@ -281,6 +281,11 @@ physics.addVehicle(entity, {
   the handbrake is on, and while the driven wheels spin under throttle below `stabilityAssist.slideSpeed` (15 m/s), so
   handbrake turns, power slides and doughnuts still happen; it comes back over 0.8 s after (eased in), so a slide let
   go of carries on a little and is then caught. A vehicle sliding more than 70 degrees has spun, and is left to it.
+- **Grip at speed** (`yawAssist.highSpeedGrip`, default 1): the tyres' sideways grip rises from their own at 60% of
+  `highSpeed` to this multiple of it at `highSpeed`, so the tyres hold the arcade turn themselves and the car stays on
+  its line ("on rails") instead of drifting round it on the stability's push. At 4 g and 120 km/h the default car
+  drifts 4 to 5 degrees with none and about 2 with 3. The handbrake's wheels don't get it while it's on, so handbrake
+  slides still happen at speed, and anti-rollover rises with it.
 - **Anti-rollover** (`antiRollover`, g; default 2.5, or twice the tyres' grip if more, for cars): the tyres' sideways
   force acts at the ground, below the centre of mass, and rolls the body out of a turn. Measured from each step's
   change in velocity (less gravity and the assists' own push), it's met with a torque that makes the centre of mass act
@@ -297,7 +302,8 @@ themselves).
 In the tests, a saloon with less grip at the back than the front spins round at 120 km/h in a full-stick turn, a lane
 change and even a quarter-second tap without the assists, and slides under 6 degrees with them; the default car turns
 at 3 g at 120 km/h (a 38 m radius), reaches 90% of it within 0.2 s, at half the stick about half as hard, as before
-below 60 km/h, and stops turning within half a second of a lane change; a tall van rolls over at full lock at 50 km/h
+below 60 km/h, and stops turning within half a second of a lane change; with three times the grip at speed it drifts
+under 60% as much round a 4 g turn, still swings round on the handbrake at 100 km/h, and is unchanged below 60; a tall van rolls over at full lock at 50 km/h
 without anti-rollover and leans under 8 degrees with it; a handbrake turn swings as far as without the assists, and a
 powerful car without traction control still does doughnuts. In the driving spike (ige-gta, `docs/spikes/driving.md`),
 the game's cars at 100 km/h turn on a 24 to 29 m radius and reach 90% of the turn in 0.10 to 0.15 s, with no spins or
@@ -476,8 +482,9 @@ and kinematic targets. Underneath, the world's backend makes an `IgeVehicleBacke
 (`IgeVehicleBackendSpec`, `IgePhysicsVehicle3dBackend.ts`): `setInput()`, `preStep()`, `readPose()`,
 `readVelocity()`, `readWheel()` (which reports the ground's body handle), `rpm()`, `gear()`, `shift()`, `setState()`,
 `setKinematic()`, `moveKinematic()`, `setEnabled()`, `addAngularVelocity()`, `accelerate()` (a force and a torque that
-give the chassis an acceleration for a step, and a further torque in N·m: the arcade assists), `setUpright()`,
-optionally `retune()`
+give the chassis an acceleration for a step, and a further torque in N·m: the arcade assists), `scaleGrip()` (a
+multiple of the tyres' sideways grip, another for the handbrake's wheels: grip at speed), `setUpright()`, optionally
+`retune()`
 (a new spec in place, for `setOptions()`; without it the vehicle is made again) and `destroy()`, and its chassis as
 `body`, so raycasts, sensors and impacts find it. The chassis includes the spec's wheel `guards`, which collide but
 don't count towards its mass. A wheel must find a step up to its `stepHeight` from above.
@@ -510,7 +517,8 @@ Seven things in the Jolt backend are worth knowing when tuning:
   wheel, spring and stops where they were; `readWheel()` takes the extra length back off. Jolt's cylinder cast reports
   where it first overlaps (with no slope limit) and the suspension pushes along that normal, hence rays for cars.
 - Combined grip (`_updateGrip()`) scales each wheel's sideways tyre curve before each step from Jolt's slip ratio in
-  the last one. A wheel at the edge of spinning flicks between spinning and rolling from step to step, so its slip is
+  the last one. `scaleGrip()` scales the curve by the square of its multiple (Jolt grips with the square root of
+  tyre times ground), in steps of 5%. A wheel at the edge of spinning flicks between spinning and rolling from step to step, so its slip is
   held at its recent peak (falling by 40% a step) and the scale eased.
 - Car wheels cast rays from the lower edge of the tyre's tread, half its width out, as the body rolls (`_placeRays()`):
   a tilted cylinder rests on that edge, which widens the track, and rays from the middle of the tyre made a van roll
@@ -535,6 +543,7 @@ road-tile kerbs at 10, 30 and 60 km/h, head-on and at 30 degrees, keep wheels ou
 front wheel out of a wall with guards, do doughnuts with combined grip, pull a heavy bus away on its clutch, change
 options while driving, and check the arcade assists: no spin at full stick, in a lane change or a tap at 120 km/h for a
 car that spins without them, the high-speed turn at 120 km/h (how hard, how quickly, in proportion to the stick, the
-same as before below 60 km/h), settling after a lane change, a tall van kept on its wheels by anti-rollover, handbrake
-turns and doughnuts as without them, and none on motorcycles.
+same as before below 60 km/h), grip at speed (less drift, the handbrake still swinging the car), settling after a lane
+change, a tall van kept on its wheels by anti-rollover, handbrake turns and doughnuts as without them, and none on
+motorcycles.
 `src/tests/IgeJoltVehicle3d.test.ts` checks that Jolt gets back every byte a vehicle takes.

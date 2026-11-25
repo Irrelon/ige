@@ -1119,6 +1119,28 @@ describe.each(physicsTestBackends())("IgePhysics3d vehicles up kerbs, guards, gr
 		expect(settled).toBeLessThan(0.5);
 	});
 
+	it("grips harder at speed with highSpeedGrip: on its line rather than drifting, the handbrake still swinging it, as before when slow", () => {
+		// A hard turn at 120 km/h (4 g): the assists alone drift the car round it; with three times the grip at speed its
+		// tyres hold it
+		const drift = manoeuvre(atSpeed({ yawAssist: { highSpeedG: 4 } }, 120, -60000), 2, () => 1);
+		const planted = manoeuvre(atSpeed({ yawAssist: { highSpeedG: 4, highSpeedGrip: 3 } }, 120, -55000), 2, () => 1);
+		expect(drift.slide).toBeGreaterThan(4);
+		expect(planted.slide).toBeLessThan(drift.slide * 0.6);
+		expect(planted.turn).toBeGreaterThan(drift.turn * 0.9);
+
+		// The handbrake's wheels don't get it: a handbrake turn at 100 km/h still swings round
+		const vehicle = atSpeed({ yawAssist: { highSpeedG: 4, highSpeedGrip: 3 } }, 100, -50000);
+		const before = heading(vehicle);
+		run(physics, 0.8, () => vehicle.drive({ right: 1, handbrake: 1 }));
+		expect(Math.abs(heading(vehicle) - before)).toBeGreaterThan(60);
+
+		// Below 60 km/h it changes nothing
+		const slow = manoeuvre(atSpeed({}, 40, -45000), 2, () => 1);
+		const slowGrippy = manoeuvre(atSpeed({ yawAssist: { highSpeedGrip: 3 } }, 40, -40000), 2, () => 1);
+		expect(slowGrippy.turn).toBeCloseTo(slow.turn, 1);
+		expect(slowGrippy.slide).toBeCloseTo(slow.slide, 1);
+	});
+
 	it("keeps a tall van on its wheels at full lock with anti-rollover, which rolls over without it", () => {
 		// 3 tonnes, its centre of mass 1.1 m up over a 1.7 m track: it can't corner at its tyres' 1.2 g without tipping
 		const van = (extra: Partial<IgePhysicsVehicleOptions>): IgePhysicsVehicleOptions => ({
