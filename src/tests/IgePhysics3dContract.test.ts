@@ -365,6 +365,64 @@ describe.each(physicsTestBackends())("IgePhysics3d contract on $name", (backend)
 			run(physics, 2);
 			expectRestingAt(crate.entity._translate.y, 25);
 		});
+
+		it("when kinematic, are put back where their entity is now, still, without sweeping across from where they were taken out", () => {
+			addFloor(physics);
+			// A wall taken out at x = -100 and its entity moved to x = +600 meanwhile; a crate touches its face where it
+			// was, another stands just beside its way across, a third just short of where it ends up
+			const wall = new IgeEntity().translateTo(-100, 100, 0);
+			const wallBody = physics.addBody(wall, { type: "kinematic", shape: box(20, 100, 100) });
+			const crates = [addDynamic(-55, 25, 0), addDynamic(250, 25, 130), addDynamic(655, 25, 0)];
+			run(physics, 0.5);
+			wallBody.enabled(false);
+			run(physics, 0.2, () => wall.translateTo(600, 100, 0));
+			wallBody.enabled(true);
+			expect(wallBody.velocity().x).toBe(0);
+			let fastest = 0, wallFastest = 0;
+			run(physics, 1, () => {
+				for (const crate of crates) fastest = Math.max(fastest, Math.hypot(crate.body.velocity().x, crate.body.velocity().z));
+				wallFastest = Math.max(wallFastest, Math.abs(wallBody.velocity().x));
+			});
+
+			// No crate was shoved (the sweep threw the first at over 400 m/s), and the wall never moved fast
+			expect(fastest).toBeLessThan(1);
+			expect(wallFastest).toBeLessThan(1);
+			expect(crates.map((crate) => Math.round(crate.entity._translate.x))).toEqual([-55, 250, 655]);
+			// The wall is where its entity is, standing still there
+			expect(wallBody.getState().position.x).toBeCloseTo(600, 3);
+			expect(physics.raycast({ x: 600, y: 500, z: 0 }, { x: 0, y: -1, z: 0 }, 1000)?.entity).toBe(wall);
+			expect(physics.raycast({ x: -100, y: 500, z: 0 }, { x: 0, y: -1, z: 0 }, 1000)?.entity).not.toBe(wall);
+		});
+
+		it("when dynamic, are put back where they were taken out, still; moving the entity meanwhile is undone, a teleport isn't", () => {
+			addFloor(physics);
+			const crate = addDynamic(0, 25, 0, { friction: 0 });
+			const between = addDynamic(-250, 25, 0);
+			run(physics, 0.5);
+
+			// Sliding when taken out: put back where it was, and still (it doesn't carry on, or sweep to its entity)
+			crate.body.setVelocity(300, 0, 0);
+			run(physics, 0.1);
+			const x = crate.body.getState().position.x;
+			expect(x).toBeGreaterThan(20);
+			crate.body.enabled(false);
+			crate.entity.translateTo(500, 25, 0);
+			crate.body.enabled(true);
+			expect(crate.body.velocity().x).toBeCloseTo(0, 3);
+			run(physics, 0.2);
+			expect(crate.entity._translate.x).toBeCloseTo(x, 0);
+
+			// Teleported while out: put back there, still, nothing on the way touched
+			crate.body.enabled(false);
+			crate.body.teleport(-500, 25, 0);
+			crate.body.enabled(true);
+			let fastest = 0;
+			run(physics, 0.5, () => {
+				fastest = Math.max(fastest, Math.hypot(between.body.velocity().x, between.body.velocity().z));
+			});
+			expect(Math.abs(crate.entity._translate.x + 500)).toBeLessThan(1);
+			expect(fastest).toBeLessThan(1);
+		});
 	});
 
 	describe("collision layers", () => {

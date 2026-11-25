@@ -8,6 +8,7 @@ import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgeTrackedPoint2d, IgeTrackedPoint3d } from "@/engine/core/IgeTrackedPoint";
+import { type IgeSubtreeCull, igeSubtreeCullRoots } from "@/engine/core/IgeSubtreeCull";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
 import { newIdHex } from "@/engine/utils/ids";
 import { toIso } from "@/engine/utils/maths";
@@ -15,6 +16,7 @@ import { synthesize } from "@/engine/utils/synthesize";
 import { IgeQuadGeometry } from "@/engine/geometry/IgeQuadGeometry";
 import { isClient } from "@/engine/utils/clientServer";
 import {
+	IgeBehaviourType,
 	IgeIsometricDepthSortMode,
 	IgeMountMode
 } from "@/enums";
@@ -22,7 +24,6 @@ import type { IgeComponent } from "@/engine/core/IgeComponent";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
-import type { IgeBehaviourType } from "@/enums";
 import type { IgeBehaviourStore } from "@/types/IgeBehaviourStore";
 import type { IgeCanAcceptComponents } from "@/types/IgeCanAcceptComponents";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
@@ -78,6 +79,10 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_shadowStableSince: number = 0;
 	/** Casts a shadow that is never cached (see IgeWebGlRenderer.shadowCaching()). */
 	_shadowDynamic: boolean = false;
+	/** Set on an entity culled with everything under it (IgeEntity.cullSubtree()): its box and what changed under it. */
+	_subtreeCull?: IgeSubtreeCull;
+	/** Marks this object as noted by a culled-as-one entity above it (see IgeSubtreeCull.note()). */
+	_subtreeStamp: number = 0;
 	_tileWidth: number = 1;
 	_tileHeight: number = 1;
 	_tileDepth: number = 1;
@@ -119,6 +124,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_tfDirty: boolean = true;
 	/** True for objects that rebuild or alter their own matrices every frame (viewports, cameras). */
 	_tfNoFast: boolean = false;
+	/** _tfDirty was set through _markTfDirty() since the last rebuild (so the change has been passed on). */
+	_tfNoted: boolean = false;
 	_oldBounds2d: IgePoint2d;
 	_oldBounds3d: IgePoint3d;
 
@@ -128,7 +135,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		const t = new IgeTrackedPoint2d(v.x, v.y);
 		t.owner = this;
 		this._b2d = t;
-		this._tfDirty = true;
+		this._markTfDirty();
 	}
 
 	/** 3d bounds. Assigning a point stores a tracked copy of it. */
@@ -137,7 +144,32 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		const t = new IgeTrackedPoint3d(v.x, v.y, v.z);
 		t.owner = this;
 		this._b3d = t;
+		this._markTfDirty();
+	}
+
+	/**
+	 * Something that feeds this object's transform was written (the tracked points call this on the first write since
+	 * the last rebuild): sets _tfDirty, and tells any entity above it that's culled with everything under it
+	 * (IgeEntity.cullSubtree()) that it moved.
+	 */
+	_markTfDirty (): void {
 		this._tfDirty = true;
+		this._tfNoted = true;
+		if (igeSubtreeCullRoots.count) this._subtreeChanged();
+	}
+
+	/**
+	 * Tells the entities above this one that are culled with everything under them (IgeEntity.cullSubtree()) that it
+	 * changed (moved relative to them, was mounted or shown, got a new mesh), so their box grows round it before it's
+	 * next used. `self`: this one's own box too, when it's culled that way (a change to what it draws itself; it moving
+	 * doesn't change its own box, which is in its own space). Costs nothing while no entity is culled that way.
+	 */
+	_subtreeChanged (self: boolean = false): void {
+		if (!igeSubtreeCullRoots.count) return;
+		for (let o: IgeObject | null = self ? this : this._parent; o; o = o._parent) {
+			const cull = o._subtreeCull;
+			if (cull) cull.note(this);
+		}
 	}
 	_highlight: boolean;
 	_pointerEventsActive: boolean;
@@ -541,7 +573,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 			// Apply the optional adjustment matrix
 			this._worldMatrix.multiply(this._adjustmentMatrix);
 			// The world matrix no longer matches its inputs: rebuild it next update
-			this._tfDirty = true;
+			this._markTfDirty();
 		}
 
 		if (!inverse) {
@@ -886,6 +918,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 		obj._children.push(this);
 		this._parent._childMounted(this);
+		// A new part of whatever is culled as one above it
+		this._subtreeChanged();
 
 		obj.updateTransform();
 		obj.aabb(true);
@@ -1405,6 +1439,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 			id,
 			method: behaviour
 		});
+		// The renderer runs preTick behaviours as it walks the scene: something culled as one above can't skip it now
+		if (type === IgeBehaviourType.preTick) this._subtreeChanged();
 
 		return this;
 	}
@@ -1817,6 +1853,11 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		// has been held somewhere, shows that the object
 		// should no longer be interacted with
 		this._alive = false;
+
+		if (this._subtreeCull) {
+			this._subtreeCull = undefined;
+			igeSubtreeCullRoots.count--;
+		}
 
 		// Remove ourselves from any parent
 		this.unMount();

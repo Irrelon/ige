@@ -17,6 +17,8 @@ export interface IgePhysicsBodyWorld {
 	unitsPerMetre (): number;
 	removeBody (body: IgePhysicsBody3d): void;
 	removeSensor (sensor: IgePhysicsSensor3d): void;
+	/** Put a kinematic body where its entity is now, at once and still. */
+	_placeKinematic (body: IgePhysicsBody3d): void;
 }
 
 const IDENTITY: Quat = { x: 0, y: 0, z: 0, w: 1 };
@@ -244,7 +246,12 @@ export class IgePhysicsBody3d extends IgeEventingClass {
 		return this;
 	}
 
-	/** Gets / sets whether the body takes part in the simulation (e.g. off while a character is dead). */
+	/**
+	 * Gets / sets whether the body takes part in the simulation (e.g. off while a character is dead). Put back, it's
+	 * still. A kinematic body is placed where its entity is now: it doesn't sweep across from where it was taken out
+	 * (which would shove whatever it met on the way as hard as that one-step jump's speed). A dynamic body is where it
+	 * was taken out (it leads its entity, so moving the entity meanwhile is undone; teleport() moves it).
+	 */
 	enabled (): boolean;
 	enabled (val: boolean): this;
 	enabled (val?: boolean): boolean | this {
@@ -252,6 +259,7 @@ export class IgePhysicsBody3d extends IgeEventingClass {
 		if (val === this._enabled || this._destroyed) return this;
 		this._enabled = val;
 		this._physics._backend.setBodyEnabled(this._handle, val);
+		if (val && this.type === "kinematic") this._physics._placeKinematic(this);
 		if (val) this._capture(true);
 		return this;
 	}

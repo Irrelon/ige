@@ -833,20 +833,40 @@ export class IgePhysics3d extends IgeEventingClass {
 	}
 
 	_moveKinematicBodies (dt: number): void {
-		const u = this._options.unitsPerMetre;
 		const backend = this._backend;
 		const position = this._scratch;
 		for (const body of this._list) {
 			if (body.type !== "kinematic" || !body._enabled) continue;
-			const entity = body.entity;
-			entity.updateTransform();
-			const m = entity._worldMatrix4?.matrix;
-			if (!m) continue;
-			const q = body.options.lockRotation ? this._scratchQuat : matrixToQuaternion(m);
-			const o = body._worldOffset(q);
-			position.x = (m[12] + o.x) / u; position.y = (m[13] + o.y) / u; position.z = (m[14] + o.z) / u;
-			backend.moveKinematic(body._handle, position, q, dt);
+			const q = this._kinematicPose(body, position);
+			if (q) backend.moveKinematic(body._handle, position, q, dt);
 		}
+	}
+
+	/**
+	 * Where a kinematic body's entity puts it: its position (metres) into `position`, and its rotation returned (null
+	 * while the entity has no world matrix).
+	 */
+	_kinematicPose (body: IgePhysicsBody3d, position: Vec3): Quat | null {
+		const u = this._options.unitsPerMetre;
+		const entity = body.entity;
+		entity.updateTransform();
+		const m = entity._worldMatrix4?.matrix;
+		if (!m) return null;
+		const q = body.options.lockRotation ? this._scratchQuat : matrixToQuaternion(m);
+		const o = body._worldOffset(q);
+		position.x = (m[12] + o.x) / u; position.y = (m[13] + o.y) / u; position.z = (m[14] + o.z) / u;
+		return q;
+	}
+
+	/**
+	 * Put a kinematic body where its entity is now, at once and still: as it's put back into the simulation, so it
+	 * doesn't sweep across from where it was taken out.
+	 */
+	_placeKinematic (body: IgePhysicsBody3d): void {
+		const position = this._scratch;
+		const q = this._kinematicPose(body, position);
+		if (q) this._backend.setBodyTransform(body._handle, position, q, false);
+		this._backend.setBodyVelocity(body._handle, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 });
 	}
 
 	/** Remember the velocity of bodies that report impacts, before a step. */

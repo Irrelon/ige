@@ -34,6 +34,9 @@ class IgeEditorComponent extends IgeComponent {
 	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
+		// The scene graph tree shows each entity's time, and debug timing is off by default
+		ige.engine.debugTiming(true);
+
 		this._showStats = 0;
 
 		this._templateCache = {};
