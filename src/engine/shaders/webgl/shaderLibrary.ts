@@ -4,6 +4,7 @@ import { modelVertexShader } from "@/engine/shaders/webgl/model.vert";
 import { modelFragmentShader } from "@/engine/shaders/webgl/model.frag";
 import { litVertexShader } from "@/engine/shaders/webgl/lit.vert";
 import { litFragmentShader } from "@/engine/shaders/webgl/lit.frag";
+import { phaseFragmentShader } from "@/engine/shaders/webgl/phase.frag";
 import { shadowVertexShader } from "@/engine/shaders/webgl/shadow.vert";
 import { shadowFragmentShader } from "@/engine/shaders/webgl/shadow.frag";
 import { skinnedVertexShader } from "@/engine/shaders/webgl/skinned.vert";
@@ -189,6 +190,13 @@ const INSTANCED_SHADER_IDS = [
 {
 	const lit = IgeShaderLibrary.get("lit")!;
 	IgeShaderLibrary.register("lit_fade", lit.vertex, `#define USE_LOD_FADE\n${lit.fragment}`, `${lit.description} (cross-fading levels of detail)`);
+}
+
+// The lit and skinned shaders with the phase effect laid over them (IgeEntity.phase(); phase.frag.ts). Never instanced:
+// a phased item is drawn on its own, with its own settings.
+for (const id of ["lit", "skinned"]) {
+	const source = IgeShaderLibrary.get(id)!;
+	IgeShaderLibrary.register(`${id}_phase`, source.vertex, phaseFragmentShader, `${source.description} (phase effect)`);
 }
 
 for (const id of INSTANCED_SHADER_IDS) {

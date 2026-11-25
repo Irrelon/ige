@@ -1,5 +1,6 @@
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgePhaseEffect } from "@/engine/webgl/IgePhase";
 import type { IgeWebGlGeometry } from "@/engine/webgl/IgeWebGlGeometry";
 import type { IgeWebGlProgram } from "@/engine/webgl/IgeWebGlProgram";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
@@ -41,6 +42,10 @@ export interface IgeWebGlRenderItem {
 	occluded?: { r: number; g: number; b: number; a: number } | null;
 	/** The outline round this item's entity (or an ancestor's), see IgeEntity.outline(). */
 	outline?: { r: number; g: number; b: number; a: number; width: number } | null;
+	/** The phase effect on this item's entity (or an ancestor's), how out of phase it is this frame and the time it's drawn at (see IgeEntity.phase()). */
+	phase?: IgePhaseEffect | null;
+	phaseK?: number;
+	phaseTime?: number;
 	geometry: IgeWebGlGeometry;
 	/** Source material data (entity or model primitive). */
 	materialData: IgeMaterialData | null;

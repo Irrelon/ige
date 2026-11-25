@@ -63,6 +63,8 @@ import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
 import { type IgeUiSettings, type IgeUiView, placeUi } from "@/engine/webgl/IgeUiLayout";
 import { type IgeUiQuad, IgeWebGlUiPass } from "@/engine/webgl/IgeWebGlUiPass";
 import { IgePanelTargets } from "@/engine/webgl/IgePanelTarget";
+import { IGE_LENS_MAX, IgeLens, type IgeLensDraw, type IgeLensInput, IgeLensPass, igeLensScreen } from "@/engine/webgl/IgeLens";
+import { igePhaseApply, type IgePhaseEffect } from "@/engine/webgl/IgePhase";
 import { type IgeOutlineRect, IgeWebGlOutlinePass, OUTLINE_MAX_RADIUS, outlineGroups, outlineOf, outlineRect } from "@/engine/webgl/IgeWebGlOutlinePass";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
@@ -153,7 +155,9 @@ const LIT_ITEM_UNIFORMS: IgeGpuUniform[] = [
 	{ name: "u_hasNormalMap", type: "i32" }, { name: "u_hasMetallicRoughnessTexture", type: "i32" }, { name: "u_hasAoTexture", type: "i32" },
 	{ name: "u_normalScale", type: "f32" }, { name: "u_aoStrength", type: "f32" },
 	// Cross-fading between levels of detail (the lit_fade program only; see IgeObject._lodFade)
-	{ name: "u_lodFade", type: "f32" }
+	{ name: "u_lodFade", type: "f32" },
+	// The phase effect (the lit_phase and skinned_phase programs only; see IgePhase.ts)
+	{ name: "u_phase", type: "vec4" }, { name: "u_phaseEdge", type: "vec4" }, { name: "u_phaseBody", type: "vec4" }, { name: "u_phaseRipple", type: "vec4" }
 ];
 
 /** A lit program's whole block: the view's, the bone palette's size (skinned, instanced), an item's, its bones (skinned, not instanced). */
@@ -604,6 +608,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/** Each view's outlined items this frame (see IgeEntity.outline()), drawn after the post-processing. */
 	protected _outlineJobs: { items: IgeWebGlRenderItem[]; matrices: IgeCameraMatrices; view: IgeOutlineRect }[] = [];
 	protected _outlinePass?: IgeWebGlOutlinePass;
+	/** Lenses by id (see lens()), and the pass that draws them over a finished view. */
+	protected _lenses = new Map<string, IgeLens>();
+	protected _lensPass?: IgeLensPass;
+	protected _lensDraws: IgeLensDraw[] = [];
 	protected _outlineSpheres = new Float32Array(64);
 	protected _occludedSaved?: Float32Array;
 	/** Drawing occluded silhouettes (flat colour): emissive maps aren't used. */
@@ -1008,6 +1016,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._postProcess?.contextLost();
 		this._outlinePass?.contextLost();
 		this._outlinePass = undefined;
+		this._lensPass?.contextLost();
+		this._lensPass = undefined;
 		this.log("WebGL context lost!", "warning");
 		this.emit("contextLost");
 	};
@@ -2559,6 +2569,54 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Lensing: a distortion that bends each view's picture round a point in the world, with an optional bright ring
+	 * and dark core (see IgeLens.ts and guides/phase-effects.md). `lens(id, settings)` makes or changes the lens `id`
+	 * and returns it (`set()` / `time()` on it; bind it to an IgeTimeline to animate `effect.strength` and the rest),
+	 * `lens(id, null)` removes it, `lens(id)` gives it or undefined. Up to IGE_LENS_MAX act in a view; each view places
+	 * them with its own camera (split screen, panels), after the scene and before post-processing.
+	 * @example #A collapsing star
+	 *     renderer.lens("star", { x: 0, y: 0, z: 0, radius: 400, strength: 0.8, ring: 1 });
+	 */
+	lens (id: string, input: IgeLensInput | null): IgeLens | undefined;
+	lens (id: string): IgeLens | undefined;
+	lens (id: string, input?: IgeLensInput | null): IgeLens | undefined {
+		if (input === undefined) return this._lenses.get(id);
+		if (input === null) {
+			this._lenses.delete(id);
+			markSceneChanged();
+			return undefined;
+		}
+		let lens = this._lenses.get(id);
+		if (!lens) this._lenses.set(id, lens = new IgeLens());
+		return lens.set(input);
+	}
+
+	/** The ids of the lenses set. */
+	lensIds (): string[] {
+		return [...this._lenses.keys()];
+	}
+
+	/** Lenses over a view just drawn (the framebuffer bound), placed with its camera. */
+	protected _applyLenses (viewport: IgeViewport, matrices: IgeCameraMatrices, x: number, y: number, w: number, h: number): void {
+		const draws = this._lensDraws;
+		draws.length = 0;
+		const view = matrices.view.matrix;
+		const right = { x: view[0], y: view[4], z: view[8] };
+		const rect = { x0: x, y0: y, x1: x + w, y1: y + h };
+		const id = viewport.id();
+		for (const lens of this._lenses.values()) {
+			if (!lens.active() || (lens.viewports && !lens.viewports.includes(id))) continue;
+			const screen = igeLensScreen(lens.settings, matrices.viewProjection.matrix, right, rect);
+			if (screen) draws.push({ screen, lens });
+			if (draws.length >= IGE_LENS_MAX) break;
+		}
+		if (draws.length === 0) return;
+		this._lensPass ??= new IgeLensPass(this._canvasContext as WebGL2RenderingContext);
+		this._lensPass.apply(draws, x, y, w, h);
+		this._stateManager?.reset();
+	}
+
+	/**
 	 * Gets / sets whether each frame is timed on the GPU (a timer query round its drawing) for `stats().gpuMs` (on by
 	 * default; nothing happens where the browser has no timer query). Dynamic resolution times frames either way.
 	 */
@@ -3620,6 +3678,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		item.depthPrepass = item.transparent && !!(overrideData?.depthPrepass ?? materialData?.depthPrepass);
 		item.castShadow = !entity._noShadowCast && !item.transparent;
 		item.shadowOnly = entity._shadowOnly;
+		// Out of phase (IgeEntity.phase()): a transparent, glassy item that casts a shadow only while mostly in phase
+		igePhaseApply(item);
 
 		// Skeleton: compute skin matrices once per frame (dirty-guarded) and
 		// give each skeleton a bone palette row for instanced draws.
@@ -4141,6 +4201,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._gpuHandBack(panelTarget ? webGl2Framebuffer(device, panelTarget.renderColor, panelTarget.renderDepth) : inPanel ? null : this._postProcess?.targetFramebuffer() ?? null, vpX, vpY, vpWidth, vpHeight);
 		}
 
+		// Lenses (renderer.lens()) bend the finished view
+		if (this._lenses.size > 0) this._applyLenses(viewport, matrices, vpX, vpY, vpWidth, vpHeight);
+
 		// Outlined items: drawn round once the frame's finished (and post-processed)
 		if (outlined && !inPanel) (this._outlineJobs ??= []).push({ items: outlined, matrices, view: this._frameScale === 1 ? { x0: vpX, y0: vpY, x1: vpX + vpWidth, y1: vpY + vpHeight } : { x0: Math.floor((viewport._translate?.x || 0) * dpr), y0: Math.floor((viewport._translate?.y || 0) * dpr), x1: Math.floor((viewport._translate?.x || 0) * dpr) + Math.floor(viewport._bounds2d.x * dpr), y1: Math.floor((viewport._translate?.y || 0) * dpr) + Math.floor(viewport._bounds2d.y * dpr) } });
 
@@ -4256,14 +4319,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/** A lit mesh's pipeline for how it's drawn (kept on the mesh, by kind and state). */
-	protected _litPipeline(skinned: boolean, instanced: boolean, geometry: IgeWebGlGeometry, state: LitState, fade: boolean = false): IgeGpuRenderPipeline {
-		// (A fading mesh, never skinned or instanced: the lit_fade program, kept after the rest)
+	protected _litPipeline(skinned: boolean, instanced: boolean, geometry: IgeWebGlGeometry, state: LitState, fade: boolean = false, phase: boolean = false): IgeGpuRenderPipeline {
+		// (A fading mesh, never skinned or instanced: the lit_fade program, kept after the rest; a phased one, never instanced: lit_phase or skinned_phase)
 		const fading = fade && !skinned && !instanced;
-		const slot = fading ? 64 + state : (state * 2 + (skinned ? 1 : 0)) * 2 + (instanced ? 1 : 0);
+		phase = phase && !instanced;
+		const slot = phase ? 128 + state * 2 + (skinned ? 1 : 0) : fading ? 64 + state : (state * 2 + (skinned ? 1 : 0)) * 2 + (instanced ? 1 : 0);
 		const kept = (geometry.gpuLitPipelines ??= [])[slot];
 		if (kept) return kept;
 		const base = skinned ? "skinned" : "lit";
-		const id = fading ? "lit_fade" : instanced ? `${base}_instanced` : base;
+		const id = phase ? `${base}_phase` : fading ? "lit_fade" : instanced ? `${base}_instanced` : base;
 		const { layout, key } = meshLayout(geometry);
 		const st = litState(state);
 		return geometry.gpuLitPipelines[slot] = this._gpuPrograms!.pipeline(`lit|${id}|${state}|${key}`, () => ({
@@ -4473,13 +4537,24 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 	}
 
+	/** A phased item's uniforms (the phase programs'; see IgePhase.ts and phase.frag.ts). */
+	protected _writePhase (data: Float32Array, at: Record<string, number>, item: IgeWebGlRenderItem, phase: IgePhaseEffect): void {
+		const s = phase.settings;
+		data.set([item.phaseK ?? 0, item.phaseTime ?? 0, s.shimmer, Math.max(0.1, s.edgePower)], at.u_phase);
+		data.set([s.edgeR, s.edgeG, s.edgeB, s.edgeStrength], at.u_phaseEdge);
+		data.set([s.tintR, s.tintG, s.tintB, s.opacity], at.u_phaseBody);
+		const wave = s.rippleScale > 0 ? s.rippleScale : Math.max(item.radius, 1e-3) * 0.35;
+		data.set([1 / wave, s.split, 0, 0], at.u_phaseRipple);
+	}
+
 	/** One lit item drawn in a state. */
 	protected _drawLitItem(pass: IgeGpuRenderPass, item: IgeWebGlRenderItem, state: LitState): void {
 		{
 			const skinned = !!item.skeleton;
 			const geometry = item.drawGeometry;
 			if (!geometry.gpuVertex) return;
-			const pipeline = this._litPipeline(skinned, false, geometry, state);
+			const phase = state === LitState.Transparent && item.phase ? item.phase : null;
+			const pipeline = this._litPipeline(skinned, false, geometry, state, false, !!phase);
 			const block = this._litBlock(skinned, false);
 			const { data, at } = block;
 			pass.setPipeline(pipeline);
@@ -4488,6 +4563,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._setLitMaps(pass, block, item, item.gpuMaps, state);
 			data[at.u_hasVertexColors] = geometry.hasVertexColors ? 1 : 0;
 			this._writeItemUniforms(block, item, geometry);
+			if (phase) this._writePhase(data, at, item, phase);
 			if (skinned) this._writeBones(block, item);
 			pass.setUniforms(data, [block.itemFrom, data.length]);
 			this._drawMesh(pass, geometry, 1);
@@ -5750,6 +5826,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._uiPass = undefined;
 		this._outlinePass?.destroy();
 		this._outlinePass = undefined;
+		this._lensPass?.destroy();
+		this._lensPass = undefined;
 		this._geometryManager?.cleanup();
 		this._shaderManager?.deleteAllPrograms();
 		this._textureManager?.clearState();

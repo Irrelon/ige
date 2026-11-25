@@ -241,6 +241,13 @@ const NUMERIC: ReadonlySet<IgeTimelineProperty> = new Set(["position", "rotation
 /** A sound's playback rate for a timeline rate: the speed (sound has no backwards), kept to what audio allows. */
 export const igeTimelineSoundRate = (rate: number): number => Math.min(Math.max(Math.abs(rate), 0.1), 8);
 
+/** Anything with numeric settings a timeline can animate as `effect.<name>`: a phase effect (`entity.phase()`), a lens (`renderer.lens(id)`). */
+export interface IgeTimelineEffectTarget {
+	set (settings: Record<string, number>): unknown;
+	has (name: string): boolean;
+	time (t: number | null): unknown;
+}
+
 /** The effect a bound target carries (a panel's `effect`), or the target itself if it is one (has `set`). */
 function effectOf (target: any): { set?: (s: Record<string, number>) => unknown; has?: (n: string) => boolean; time?: (t: number) => unknown; source?: IgeRecorderTimeSource; history?: () => boolean } | undefined {
 	if (!target) return undefined;
@@ -388,8 +395,8 @@ export class IgeTimeline extends IgeEventingClass {
 	 * Name the things the tracks refer to: entities (position, visibility, ... and particle systems), and panels for
 	 * `camera` tracks. Binding applies the state at the current time.
 	 */
-	bind (name: string, target: IgeEntity | IgePanelViewport | IgeParticleSystem3d): this;
-	bind (targets: Record<string, IgeEntity | IgePanelViewport | IgeParticleSystem3d>): this;
+	bind (name: string, target: IgeEntity | IgePanelViewport | IgeParticleSystem3d | IgeTimelineEffectTarget): this;
+	bind (targets: Record<string, IgeEntity | IgePanelViewport | IgeParticleSystem3d | IgeTimelineEffectTarget>): this;
 	bind (nameOrTargets: string | Record<string, unknown>, target?: unknown): this {
 		if (typeof nameOrTargets === "string") this._targets.set(nameOrTargets, target);
 		else for (const [name, t] of Object.entries(nameOrTargets)) this._targets.set(name, t);
