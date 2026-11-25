@@ -93,6 +93,8 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	_resized: boolean = false;
 	_timeScaleLastTimestamp: number = 0;
 	lastTick: number = 0;
+	/** lastTick before rounding to a millisecond, for _tickDelta. */
+	_lastTickExact: number = 0;
 	_setTickout: IgeAnyFunction[] = [];
 
 	// The engine entity is always "in view" as in, no occlusion will stop it from rendering
@@ -1481,7 +1483,13 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 		this.incrementTime(timeStamp, this._timeScaleLastTimestamp);
 
 		this._timeScaleLastTimestamp = timeStamp;
-		timeStamp = Math.floor(this._currentTime);
+		// The tick's time in whole milliseconds (_tickStart, lastTick), but
+		// its delta from the exact time: a 120 Hz frame is 8.33 ms, and deltas
+		// of whole milliseconds (8, 8, 9) made everything placed by elapsed
+		// time, such as physics interpolated between fixed steps, judder by
+		// up to a millisecond's movement a frame (2.4 cm at 130 km/h)
+		const exactTime = this._currentTime;
+		timeStamp = Math.floor(exactTime);
 
 		if (this._state === IgeEngineState.started) {
 			// Alternate the boolean frame alternator flag
@@ -1500,6 +1508,7 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 			// (this is only applied when running as the client - the
 			// server always has a clientNetDiff of zero)
 			this._tickStart = timeStamp - this._clientNetDiff;
+			const exactStart = exactTime - this._clientNetDiff;
 
 			if (!this.lastTick) {
 				// This is the first time we've run so set the tick delta
@@ -1508,7 +1517,7 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 			} else {
 				// Calculate the tick delta - how much time has elapsed
 				// between the last time we ran engineStep() and now
-				this._tickDelta = this._tickStart - this.lastTick;
+				this._tickDelta = exactStart - this._lastTickExact;
 			}
 
 			// Check for unborn entities that should be born now
@@ -1563,6 +1572,7 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 			// Record the lastTick value, so we can
 			// calculate delta on the next tick
 			this.lastTick = this._tickStart;
+			this._lastTickExact = exactStart;
 			this._frames++;
 
 			// Record the number of drawings we've done this frame in our

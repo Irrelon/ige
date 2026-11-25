@@ -4,6 +4,7 @@ import type { IgeWebGlProgram } from "@/engine/webgl/IgeWebGlProgram";
 import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
 import type { IgeGpuRenderPass, IgeGpuSamplerDesc, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
 import { type IgeWebGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import { IGE_MAX_SHADOW_CASCADES, type IgeShadowFitBox, igeFitShadowBox, igeShadowBoxMatrix, igeShadowCascadeTile, igeShadowLightBasis } from "@/engine/webgl/IgeShadowFit";
 
 /**
  * Shadow map configuration.
@@ -22,14 +23,51 @@ export interface IgeShadowMapConfig {
 }
 
 /**
- * Shadow map data for a single light: its depth, drawn on the GPU device.
+ * One cascade of a directional light's shadow map (see IgeWebGlRenderer.shadowCascades()): its light space matrix,
+ * the tile of the map it's drawn into, and the slice of the view's depth it shadows.
+ */
+export interface IgeShadowCascade {
+	matrix: Float32Array;
+	/** Its tile in texels: x, y, width, height from the map's bottom-left. */
+	viewport: [number, number, number, number];
+	/** Its tile as fractions of the map: x, y, width, height. */
+	tile: [number, number, number, number];
+	/** The view depth its slice starts at (its blend with the slice before aside). */
+	start: number;
+	/** And ends at (Infinity for the last). */
+	split: number;
+	/** Where its box's part of the view starts: `start` less the part of the slice before that fades into it. */
+	from: number;
+}
+
+/**
+ * Shadow map data for a single light: its depth, drawn on the GPU device, and its cascades (one: the whole map).
  */
 interface ShadowMapData {
 	depth: IgeGpuTexture;
+	/** The first cascade's matrix (the whole map's, with one). */
 	lightSpaceMatrix: Float32Array;
 	size: number;
 	bias: number;
 	normalBias: number;
+	/** IGE_MAX_SHADOW_CASCADES of them, the first `cascadeCount` in use. */
+	cascades: IgeShadowCascade[];
+	cascadeCount: number;
+	/** The far part of each slice faded into the next (a fraction of its depth). */
+	cascadeBlend: number;
+	/** The view depth shadows have faded out by (the fitted map's distance; 0: they don't fade, the square's). */
+	fadeEnd: number;
+}
+
+/** The cached static casters of one cascade's tile (or of the whole map, with one cascade). */
+export interface IgeShadowCacheTile {
+	/** Light space matrix the tile was rendered with. */
+	matrix: Float32Array;
+	/** Checksums of the static caster set the tile holds. */
+	signatureA: number;
+	signatureB: number;
+	count: number;
+	valid: boolean;
 }
 
 /**
@@ -40,13 +78,10 @@ interface ShadowMapData {
 export interface IgeShadowCacheData {
 	depth: IgeGpuTexture;
 	size: number;
-	/** Light space matrix the cache was rendered with. */
-	matrix: Float32Array;
-	/** Checksums of the static caster set the cache holds. */
-	signatureA: number;
-	signatureB: number;
-	count: number;
-	valid: boolean;
+	/** Each cascade's tile (the first is the whole map with one cascade), redrawn on its own. */
+	tiles: IgeShadowCacheTile[];
+	/** How many cascades the tiles were laid out for (a change redraws them all). */
+	layout: number;
 	/** The shadow map currently holds exactly the cached depth (no moving casters drawn). */
 	mapHoldsCache: boolean;
 }
@@ -115,7 +150,7 @@ export class IgeShadowSignature {
 		this.count++;
 	}
 
-	matches (cache: Pick<IgeShadowCacheData, "signatureA" | "signatureB" | "count">): boolean {
+	matches (cache: Pick<IgeShadowCacheTile, "signatureA" | "signatureB" | "count">): boolean {
 		return cache.count === this.count && cache.signatureA === this.a && cache.signatureB === this.b;
 	}
 }
@@ -303,14 +338,20 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		this.deleteShadowCache(lightId);
 
 		this._device.invalidate();
-		const depth = this._device.createTexture({ width: cfg.size, height: cfg.size, format: "depth32float", sampler: NEAREST, label: `${lightId} shadow map` });
+		const depth = this._device.createTexture({ width: cfg.size, height: cfg.size, format: "depth32float", sampler: NEAREST, memory: "shadowMaps", label: `${lightId} shadow map` });
 
+		const cascades: IgeShadowCascade[] = [];
+		for (let i = 0; i < IGE_MAX_SHADOW_CASCADES; i++) cascades.push({ matrix: new Float32Array(16), viewport: [0, 0, cfg.size, cfg.size], tile: [0, 0, 1, 1], start: 0, split: Infinity, from: 0 });
 		this._shadowMaps.set(lightId, {
 			depth,
-			lightSpaceMatrix: new Float32Array(16),
+			lightSpaceMatrix: cascades[0].matrix,
 			size: cfg.size,
 			bias: cfg.bias,
-			normalBias: cfg.normalBias
+			normalBias: cfg.normalBias,
+			cascades,
+			cascadeCount: 1,
+			cascadeBlend: 0,
+			fadeEnd: 0
 		});
 
 		this.log(`Created shadow map for ${lightId} (${cfg.size}x${cfg.size})`);
@@ -343,14 +384,13 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		if (existing && existing.size === shadowMap.size) return existing;
 		if (existing) this.deleteShadowCache(lightId);
 
+		const tiles: IgeShadowCacheTile[] = [];
+		for (let i = 0; i < IGE_MAX_SHADOW_CASCADES; i++) tiles.push({ matrix: new Float32Array(16), signatureA: 0, signatureB: 0, count: -1, valid: false });
 		const cache: IgeShadowCacheData = {
-			depth: this._device.createTexture({ width: shadowMap.size, height: shadowMap.size, format: "depth32float", sampler: NEAREST, label: `${lightId} static shadow casters` }),
+			depth: this._device.createTexture({ width: shadowMap.size, height: shadowMap.size, format: "depth32float", sampler: NEAREST, memory: "shadowMaps", label: `${lightId} static shadow casters` }),
 			size: shadowMap.size,
-			matrix: new Float32Array(16),
-			signatureA: 0,
-			signatureB: 0,
-			count: -1,
-			valid: false,
+			tiles,
+			layout: 1,
 			mapHoldsCache: false
 		};
 		this._shadowCaches.set(lightId, cache);
@@ -366,13 +406,24 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Begin rendering static casters into a light's cache (cleared first).
-	 * Finish with endShadowPass().
+	 * Begin rendering static casters into a light's cache (cleared first, unless `clear` is false: only the tiles
+	 * being redrawn are cleared then, with clearShadowTile()). Finish with endShadowPass().
 	 */
-	beginShadowCachePass(lightId: string): IgeGpuRenderPass | null {
+	beginShadowCachePass(lightId: string, clear: boolean = true): IgeGpuRenderPass | null {
 		const cache = this._shadowCaches.get(lightId);
 		if (!this._enabled || !cache) return null;
-		return this._device.beginRenderPass({ depthStencil: { target: cache.depth, depthLoadOp: "clear", depthClearValue: 1 } });
+		return this._device.beginRenderPass({ depthStencil: { target: cache.depth, depthLoadOp: clear ? "clear" : "load", depthClearValue: 1 } });
+	}
+
+	/** Draw into one cascade's tile of a shadow pass: the viewport set to it, scissored to it; `clear` clears its depth first. */
+	shadowTile(pass: IgeGpuRenderPass, lightId: string, index: number, clear: boolean = false): boolean {
+		const shadowMap = this._shadowMaps.get(lightId);
+		if (!shadowMap) return false;
+		const [x, y, w, h] = shadowMap.cascades[index].viewport;
+		pass.setViewport(x, y, w, h);
+		pass.setScissorRect(shadowMap.cascadeCount > 1 ? [x, y, w, h] : null);
+		if (clear) pass.clear([1, 1, 1, 1], [x, y, w, h], 1);
+		return true;
 	}
 
 	/**
@@ -464,10 +515,110 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 			);
 		}
 
-		// Copy to shadow map data
+		// Copy to shadow map data (the whole map, one cascade, no fade)
+		this.setCascadeCount(lightId, 1);
+		shadowMap.fadeEnd = 0;
 		shadowMap.lightSpaceMatrix.set(this._lightSpaceMatrix.matrix);
 
 		return shadowMap.lightSpaceMatrix;
+	}
+
+	/**
+	 * Fit a directional light's shadow map round what a view sees (see IgeShadowFit): `points` are the corners of the
+	 * volume that can take shadows (x, y, z triples, igeShadowFitVolume()), `box` the view's fitted box, kept between
+	 * frames. The box is snapped to the map's texels, steps through a ladder of sizes, and with `follow` false is left
+	 * where it is while it still holds the view (shadow caching). Its depth spans at least the shadow planes' far -
+	 * near, so the bias means what it did. Returns the light space matrix (null: the light has no map).
+	 */
+	fitLightSpaceMatrix(
+		lightId: string,
+		light: IgeDirectionalLight,
+		points: ArrayLike<number>,
+		count: number,
+		box: IgeShadowFitBox,
+		options: { slack: number; follow: boolean }
+	): Float32Array | null {
+		const shadowMap = this._shadowMaps.get(lightId);
+		if (!shadowMap || count === 0) return null;
+		this.setCascadeCount(lightId, 1);
+		return this.fitCascade(lightId, light, 0, points, count, box, options);
+	}
+
+	/**
+	 * How many cascades a light's map is drawn in (1 to IGE_MAX_SHADOW_CASCADES; see IgeWebGlRenderer.shadowCascades()):
+	 * one is the whole map, more are a 2 x 2 grid of half-size tiles. `blend` is the far part of each slice faded into
+	 * the next. Each cascade's matrix is fitted after with fitCascade(), its slice set with setCascadeSlice().
+	 */
+	setCascadeCount(lightId: string, count: number, blend: number = 0): void {
+		const shadowMap = this._shadowMaps.get(lightId);
+		if (!shadowMap) return;
+		const n = Math.min(Math.max(1, Math.floor(count)), IGE_MAX_SHADOW_CASCADES);
+		shadowMap.cascadeCount = n;
+		shadowMap.cascadeBlend = n > 1 ? blend : 0;
+		const size = shadowMap.size;
+		for (let i = 0; i < IGE_MAX_SHADOW_CASCADES; i++) {
+			const c = shadowMap.cascades[i];
+			const tile = igeShadowCascadeTile(i, n);
+			c.tile = tile;
+			c.viewport = [Math.round(tile[0] * size), Math.round(tile[1] * size), Math.round(tile[2] * size), Math.round(tile[3] * size)];
+			c.start = 0;
+			c.split = Infinity;
+			c.from = 0;
+		}
+	}
+
+	/**
+	 * The view depth a light's shadows have faded out by: over the last tenth of it they fade, so they don't end in a
+	 * line (the fitted map's distance; 0, the default, for none).
+	 */
+	setShadowFade(lightId: string, end: number): void {
+		const shadowMap = this._shadowMaps.get(lightId);
+		if (shadowMap) shadowMap.fadeEnd = end > 0 && end < Infinity ? end : 0;
+	}
+
+	/**
+	 * Where cascade `index`'s slice of the view's depth starts and ends (view depths; the last ends at Infinity), and
+	 * where its box's part of the view starts (`from`: the start less the slice before's blend).
+	 */
+	setCascadeSlice(lightId: string, index: number, start: number, split: number, from: number = start): void {
+		const c = this._shadowMaps.get(lightId)?.cascades[index];
+		if (!c) return;
+		c.start = start;
+		c.split = split;
+		c.from = from;
+	}
+
+	/**
+	 * Fit one cascade's matrix round `count` points (its slice of the view, igeShadowFitVolume()) in its tile, as
+	 * fitLightSpaceMatrix() fits the whole map. Returns its matrix.
+	 */
+	fitCascade(
+		lightId: string,
+		light: IgeDirectionalLight,
+		index: number,
+		points: ArrayLike<number>,
+		count: number,
+		box: IgeShadowFitBox,
+		options: { slack: number; follow: boolean }
+	): Float32Array | null {
+		const shadowMap = this._shadowMaps.get(lightId);
+		if (!shadowMap || count === 0) return null;
+		const cascade = shadowMap.cascades[index];
+		const basis = igeShadowLightBasis(light.direction() as { x: number; y: number; z: number });
+		igeFitShadowBox(box, points, count, basis, {
+			mapSize: cascade.viewport[2],
+			depthSpan: Math.max(this._shadowFar - this._shadowNear, 1e-3),
+			slack: options.slack,
+			follow: options.follow
+		});
+		igeShadowBoxMatrix(box, basis, cascade.matrix);
+		return cascade.matrix;
+	}
+
+	/** A light's cascades in use (one: the whole map), or an empty list when it has no map. */
+	getCascades(lightId: string): readonly IgeShadowCascade[] {
+		const shadowMap = this._shadowMaps.get(lightId);
+		return shadowMap ? shadowMap.cascades.slice(0, shadowMap.cascadeCount) : [];
 	}
 
 	/**
@@ -516,11 +667,12 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		// Set shadow uniforms
 		program.setUniform1i("u_hasShadowMap", 1);
 		program.setUniform1i("u_shadowMap", textureUnit);
-		program.setUniformMatrix4fv("u_lightSpaceMatrix", shadowMap.lightSpaceMatrix);
+		program.setUniform1i("u_shadowCascadeCount", 1);
+		program.setUniformMatrix4fv("u_shadowCascadeMatrices[0]", shadowMap.lightSpaceMatrix);
+		program.setUniform4f("u_shadowCascadeTiles[0]", 0, 0, 1, 1);
 		program.setUniform1f("u_shadowBias", shadowMap.bias);
 		program.setUniform1f("u_shadowNormalBias", shadowMap.normalBias);
-		program.setUniform1f("u_shadowMapSize", shadowMap.size);
-		program.setUniform1i("u_usePackedDepth", 0);
+		program.setUniform2f("u_shadowTexel", 1 / shadowMap.size, 1 / shadowMap.size);
 
 		// Restore active texture to unit 0 so state manager stays in sync
 		gl.activeTexture(gl.TEXTURE0);
@@ -539,11 +691,22 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 			return null;
 		}
 		block[at.u_hasShadowMap] = 1;
-		block.set(shadowMap.lightSpaceMatrix, at.u_lightSpaceMatrix);
+		const n = shadowMap.cascadeCount;
+		block[at.u_shadowCascadeCount] = n;
+		for (let i = 0; i < IGE_MAX_SHADOW_CASCADES; i++) {
+			const c = shadowMap.cascades[Math.min(i, n - 1)];
+			block.set(c.matrix, at.u_shadowCascadeMatrices + i * 16);
+			block.set(c.tile, at.u_shadowCascadeTiles + i * 4);
+			// (The last in use, and any after it, take every depth beyond: no slice ends there)
+			block[at.u_shadowCascadeSplits + i] = i < n - 1 ? c.split : 3.4e38;
+			block[at.u_shadowCascadeStarts + i] = c.start;
+		}
+		block[at.u_shadowCascadeBlend] = shadowMap.cascadeBlend;
+		block[at.u_shadowFadeEnd] = shadowMap.fadeEnd;
 		block[at.u_shadowBias] = shadowMap.bias;
 		block[at.u_shadowNormalBias] = shadowMap.normalBias;
-		block[at.u_shadowMapSize] = shadowMap.size;
-		block[at.u_usePackedDepth] = 0;
+		block[at.u_shadowTexel] = 1 / shadowMap.size;
+		block[at.u_shadowTexel + 1] = 1 / shadowMap.size;
 		return shadowMap.depth;
 	}
 
@@ -620,8 +783,8 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const d = this._device;
 		d.invalidate();
 		const float = this._pointShadowFormat === "r32f" && d.limits.floatTargets;
-		const atlas = d.createTexture({ width: atlasWidth, height: atlasHeight, format: float ? "r32float" : "rgba8unorm", sampler: NEAREST, label: `${lightId} point shadow atlas` });
-		const depth = d.createTexture({ width: atlasWidth, height: atlasHeight, format: "depth16unorm", sampler: NEAREST, label: `${lightId} point shadow depth` });
+		const atlas = d.createTexture({ width: atlasWidth, height: atlasHeight, format: float ? "r32float" : "rgba8unorm", sampler: NEAREST, memory: "shadowMaps", label: `${lightId} point shadow atlas` });
+		const depth = d.createTexture({ width: atlasWidth, height: atlasHeight, format: "depth16unorm", sampler: NEAREST, memory: "shadowMaps", label: `${lightId} point shadow depth` });
 
 		const lightSpaceMatrices: IgeMatrix4[] = [];
 		for (let i = 0; i < 6; i++) {

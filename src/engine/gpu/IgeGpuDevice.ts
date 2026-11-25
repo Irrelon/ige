@@ -24,6 +24,15 @@ export type IgeGpuTextureFormat = "rgba8unorm" | "r8unorm" | "rgba16float" | "rg
 
 export type IgeGpuFilter = "nearest" | "linear";
 
+/**
+ * What a buffer or texture holds, as its memory is counted (IgeGpuDevice.memory()): meshes' vertices and indices,
+ * pictures drawn with, offscreen frames drawn into, shadow maps, and data written each frame (instances, bones).
+ */
+export type IgeGpuMemoryKind = "geometry" | "textures" | "renderTargets" | "shadowMaps" | "buffers";
+
+/** Bytes of GPU memory, by kind. */
+export type IgeGpuMemory = Record<IgeGpuMemoryKind, number>;
+
 export type IgeGpuAddressMode = "clamp-to-edge" | "repeat" | "mirror-repeat";
 
 export type IgeGpuCompare = "never" | "less" | "equal" | "less-equal" | "greater" | "not-equal" | "greater-equal" | "always";
@@ -62,6 +71,8 @@ export interface IgeGpuTextureDesc {
 	 * then resolved into a single-sampled one (resolveTexture); never sampled itself. Up to limits.maxSamples.
 	 */
 	sampleCount?: number;
+	/** What it's counted as in memory() (default: a multisampled or depth texture "renderTargets", any other "textures"). */
+	memory?: IgeGpuMemoryKind;
 	label?: string;
 }
 
@@ -97,6 +108,10 @@ export interface IgeGpuBufferDesc {
 	usage: "vertex" | "index";
 	/** Written whole most frames (a frame's instances): a backend may give it new storage each time rather than wait. */
 	stream?: boolean;
+	/** What it's counted as in memory() (default "buffers"). */
+	memory?: IgeGpuMemoryKind;
+	/** Its contents, written as it's made (one upload rather than an empty buffer and a write). */
+	data?: ArrayBufferView;
 	label?: string;
 }
 
@@ -127,7 +142,16 @@ export interface IgeGpuShaderModule {
 	label?: string;
 }
 
-export type IgeGpuVertexFormat = "float32" | "float32x2" | "float32x3" | "float32x4" | "uint8x4" | "unorm8x4" | "uint16x4" | "uint32" | "sint32";
+/**
+ * Vertex attribute formats (WebGPU's names). The `unorm` and `snorm` ones are integers the GPU reads as floats from 0 to
+ * 1 or -1 to 1 (compact meshes: positions, normals and texture coordinates in 8 or 16 bits); `uint` and `sint` are read
+ * as integers.
+ */
+export type IgeGpuVertexFormat =
+	| "float32" | "float32x2" | "float32x3" | "float32x4"
+	| "unorm8x2" | "unorm8x4" | "snorm8x2" | "snorm8x4"
+	| "unorm16x2" | "unorm16x4" | "snorm16x2" | "snorm16x4"
+	| "uint8x4" | "uint16x4" | "uint32" | "sint32";
 
 export interface IgeGpuVertexAttribute {
 	shaderLocation: number;
@@ -343,6 +367,13 @@ export interface IgeGpuDevice {
 	destroyTexture (texture: IgeGpuTexture): void;
 
 	createSampler (desc: IgeGpuSamplerDesc): IgeGpuSampler;
+
+	/**
+	 * The memory its buffers and textures hold now, in bytes by kind: each counted from its size and format as made,
+	 * resized, written (a streamed buffer: its last write) and destroyed. What the driver adds (alignment, a
+	 * multisampled target's resolve, mipmaps it pads) isn't known, nor anything made outside the device.
+	 */
+	memory (): IgeGpuMemory;
 
 	createShaderModule (desc: IgeGpuShaderModuleDesc): IgeGpuShaderModule;
 	createRenderPipeline (desc: IgeGpuRenderPipelineDesc): IgeGpuRenderPipeline;

@@ -1,6 +1,7 @@
-import type JoltApi from "jolt-physics";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
+import type { IgePhysicsBackendRagdollDesc, IgePhysicsBodyHandle, IgePhysicsRagdollHandle } from "@/engine/physics/IgePhysicsBackend";
+import type { IgePhysicsBodyState, IgeRagdollState } from "@/engine/physics/IgePhysics3dTypes";
 import { invertMat4 } from "@/engine/webgl/IgeRaycast";
 import { findBoneIndex } from "@/engine/webgl/IgeAnimationRetarget";
 import { humanoidBones } from "@/engine/webgl/IgeHumanoidBones";
@@ -44,7 +45,8 @@ export interface IgeRagdollOptions {
 	 * Come to rest, at the latest this many seconds (of simulated time)
 	 * after the fall: the bodies and joints are removed and the skeleton
 	 * keeps its last pose, so a body that has settled costs nothing to
-	 * simulate. It rests sooner if Jolt puts every part to sleep first.
+	 * simulate. It rests sooner if the simulation puts every part to sleep
+	 * first.
 	 * Without it the ragdoll is simulated until destroy().
 	 */
 	restAfter?: number;
@@ -52,7 +54,8 @@ export interface IgeRagdollOptions {
 
 interface PartState {
 	boneIndex: number;
-	body: JoltApi.Body;
+	/** The backend's body. */
+	body: IgePhysicsBodyHandle;
 	/** Bone world matrix relative to the body's (IGE units, includes the bone's scale). */
 	offset: Float32Array;
 }
@@ -194,8 +197,6 @@ export function autoRagdollParts (entity: IgeEntity): IgeRagdollPart[] {
 	return parts;
 }
 
-let nextGroupId = 1;
-
 /**
  * A ragdoll made from a skinned entity's skeleton: a capsule body per part,
  * joined with swing-twist joints, that drives the skeleton every step so
@@ -207,7 +208,12 @@ export class IgeRagdoll3d {
 	readonly entity: IgeEntity;
 	_physics: IgePhysics3d;
 	_parts: PartState[] = [];
-	_constraints: JoltApi.Constraint[] = [];
+	/** Each part's capsule (IGE units) and the density they were made with: for raycasts and buoyancy. */
+	_partShapes: { radius: number; halfHeight: number }[] = [];
+	_density: number = 1000;
+	/** The backend's joints and bodies. */
+	_handle?: IgePhysicsRagdollHandle;
+	_pose = new Float64Array(7);
 	_partOfBone: Int32Array;
 	_order: number[];
 	_frozenLocal: Float32Array;
@@ -235,7 +241,6 @@ export class IgeRagdoll3d {
 		entity._updateSkeletonMatrices();
 		entity.skeletalAnimation()?.stop();
 
-		const jolt = physics._jolt;
 		const u = physics.unitsPerMetre();
 		const bones = skeleton.data.bones;
 		const joints = jointPositions(entity, skeleton);
@@ -249,11 +254,16 @@ export class IgeRagdoll3d {
 
 		// Parts don't collide with each other (capsules overlap at the joints)
 		const layer = options.layer ? physics._layerIndex(options.layer) : physics._defaultLayer(false);
-		const filter = new jolt.GroupFilterTable(Math.max(1, parts.length));
-		for (let i = 0; i < parts.length; i++) {
-			for (let j = i + 1; j < parts.length; j++) filter.DisableCollision(i, j);
-		}
-		const groupId = nextGroupId++;
+		const desc: IgePhysicsBackendRagdollDesc = {
+			layer,
+			parts: [],
+			joints: [],
+			density: options.density ?? 1000,
+			friction: options.friction ?? 0.6,
+			linearDamping: 0.1,
+			angularDamping: 0.3
+		};
+		const offsets: { boneIndex: number; offset: Float32Array }[] = [];
 
 		const velocity = options.velocity;
 		const directions: Vec3[] = [];
@@ -292,23 +302,13 @@ export class IgeRagdoll3d {
 			const centre = { x: start.x + dir.x * length / 2, y: start.y + dir.y * length / 2, z: start.z + dir.z * length / 2 };
 			const q = quatFromUp(dir);
 
-			const shape = new jolt.CapsuleShape(halfHeight / u, radius / u, undefined);
-			physics._rvec.Set(centre.x / u, centre.y / u, centre.z / u);
-			physics._quat.Set(q.x, q.y, q.z, q.w);
-			const settings = new jolt.BodyCreationSettings(shape, physics._rvec, physics._quat, jolt.EMotionType_Dynamic, layer);
-			settings.mFriction = options.friction ?? 0.6;
-			settings.mLinearDamping = 0.1;
-			settings.mAngularDamping = 0.3;
-			const group = new jolt.CollisionGroup(filter, groupId, partIndex);
-			settings.mCollisionGroup = group;
-			jolt.destroy(group);
-			const body = physics._bodies.CreateBody(settings);
-			jolt.destroy(settings);
-			physics._bodies.AddBody(body.GetID(), jolt.EActivation_Activate);
-			if (velocity) {
-				physics._vec.Set(velocity.x / u, velocity.y / u, velocity.z / u);
-				physics._bodies.SetLinearVelocity(body.GetID(), physics._vec);
-			}
+			this._partShapes.push({ radius, halfHeight });
+			desc.parts.push({
+				position: { x: centre.x / u, y: centre.y / u, z: centre.z / u },
+				rotation: q,
+				radius: radius / u,
+				halfHeight: halfHeight / u
+			});
 
 			// Bone world (IGE units) relative to the body
 			const boneWorld = multiply(new Float32Array(16), entityWorld, skeleton.worldMatrices.subarray(boneIndex * 16, boneIndex * 16 + 16));
@@ -316,13 +316,13 @@ export class IgeRagdoll3d {
 			const offset = multiply(new Float32Array(16), invertMat4(bodyWorld)!, boneWorld);
 
 			this._partOfBone[boneIndex] = partIndex;
-			this._parts.push({ boneIndex, body, offset });
+			offsets.push({ boneIndex, offset });
 		});
 
 		// Join each part to the nearest part above it at its base joint
 		const swing = ((options.swingLimit ?? 50) * Math.PI) / 180;
 		const twist = ((options.twistLimit ?? 25) * Math.PI) / 180;
-		this._parts.forEach((part, partIndex) => {
+		offsets.forEach((part, partIndex) => {
 			let parentPart = -1;
 			for (let b = bones[part.boneIndex].parentIndex; b >= 0 && parentPart < 0; b = bones[b].parentIndex) {
 				parentPart = this._partOfBone[b];
@@ -337,26 +337,25 @@ export class IgeRagdoll3d {
 			if (plen < 1e-3) { px = 0; py = -axis.z; pz = axis.y; plen = Math.hypot(px, py, pz); }
 			px /= plen; py /= plen; pz /= plen;
 
-			const c = new jolt.SwingTwistConstraintSettings();
-			c.mSpace = jolt.EConstraintSpace_WorldSpace;
-			physics._rvec.Set(joint.x / u, joint.y / u, joint.z / u);
-			c.mPosition1 = physics._rvec;
-			c.mPosition2 = physics._rvec;
-			physics._vec.Set(axis.x, axis.y, axis.z);
-			c.mTwistAxis1 = physics._vec;
-			c.mTwistAxis2 = physics._vec;
-			physics._vec.Set(px, py, pz);
-			c.mPlaneAxis1 = physics._vec;
-			c.mPlaneAxis2 = physics._vec;
-			c.mNormalHalfConeAngle = swing;
-			c.mPlaneHalfConeAngle = swing;
-			c.mTwistMinAngle = -twist;
-			c.mTwistMaxAngle = twist;
-			const constraint = c.Create(this._parts[parentPart].body, part.body);
-			jolt.destroy(c);
-			physics._system.AddConstraint(constraint);
-			this._constraints.push(constraint);
+			desc.joints.push({
+				parent: parentPart,
+				child: partIndex,
+				position: { x: joint.x / u, y: joint.y / u, z: joint.z / u },
+				twistAxis: { ...axis },
+				planeAxis: { x: px, y: py, z: pz },
+				swingLimit: swing,
+				twistLimit: twist
+			});
 		});
+
+		this._density = desc.density;
+		const made = physics._backend.createRagdoll(desc);
+		this._handle = made.ragdoll;
+		this._parts = offsets.map((part, index) => ({ boneIndex: part.boneIndex, body: made.parts[index], offset: part.offset }));
+		if (velocity) {
+			const v = { x: velocity.x / u, y: velocity.y / u, z: velocity.z / u };
+			for (const part of this._parts) physics._backend.setBodyVelocity(part.body, v, null);
+		}
 
 		this.sync();
 	}
@@ -367,14 +366,61 @@ export class IgeRagdoll3d {
 		const u = physics.unitsPerMetre();
 		const targets = partIndex === undefined ? this._parts : [this._parts[partIndex]];
 		const share = partIndex === undefined ? 1 / this._parts.length : 1;
-		physics._vec.Set((x * share) / u, (y * share) / u, (z * share) / u);
-		for (const part of targets) physics._bodies.AddImpulse(part.body.GetID(), physics._vec);
+		const impulse = { x: (x * share) / u, y: (y * share) / u, z: (z * share) / u };
+		for (const part of targets) physics._backend.addImpulse(part.body, impulse);
 		return this;
 	}
 
-	/** Whether every part has come to rest (Jolt has put them to sleep). */
+	/** Whether every part has come to rest (the simulation has put them to sleep). */
 	asleep (): boolean {
-		return this._parts.every((part) => !part.body.IsActive());
+		const backend = this._physics._backend;
+		return this._parts.every((part) => !backend.bodyAwake(part.body));
+	}
+
+	/**
+	 * Each part's body as plain numbers safe to send or keep as JSON (its
+	 * centre, rotation and velocities), to carry a falling body on in
+	 * another world: make the ragdoll there with the same parts, then
+	 * setState(). Empty once it has rested or been destroyed.
+	 */
+	getState (): IgeRagdollState {
+		const backend = this._physics._backend;
+		const u = this._physics.unitsPerMetre();
+		const pose = this._pose;
+		return {
+			parts: this._parts.map((part) => {
+				backend.readBodyPose(part.body, pose);
+				const v = { x: 0, y: 0, z: 0 }, w = { x: 0, y: 0, z: 0 };
+				backend.readBodyVelocity(part.body, v, w);
+				return {
+					position: { x: pose[0] * u, y: pose[1] * u, z: pose[2] * u },
+					rotation: { x: pose[3], y: pose[4], z: pose[5], w: pose[6] },
+					velocity: { x: v.x * u, y: v.y * u, z: v.z * u },
+					angularVelocity: w,
+					asleep: !backend.bodyAwake(part.body)
+				};
+			})
+		};
+	}
+
+	/** Put each part in a state from getState() (a ragdoll made with the same parts), and pose the skeleton. */
+	setState (state: IgeRagdollState): this {
+		if (this._destroyed) return this;
+		if (state.parts.length !== this._parts.length) {
+			throw new Error(`IgeRagdoll3d: the state has ${state.parts.length} parts, the ragdoll ${this._parts.length}`);
+		}
+		const backend = this._physics._backend;
+		const u = this._physics.unitsPerMetre();
+		state.parts.forEach((s: IgePhysicsBodyState, index) => {
+			const body = this._parts[index].body;
+			const p = s.position, r = s.rotation, v = s.velocity, w = s.angularVelocity;
+			const len = Math.hypot(r.x, r.y, r.z, r.w) || 1;
+			backend.setBodyTransform(body, { x: p.x / u, y: p.y / u, z: p.z / u }, { x: r.x / len, y: r.y / len, z: r.z / len, w: r.w / len }, !s.asleep);
+			backend.setBodyVelocity(body, { x: v.x / u, y: v.y / u, z: v.z / u }, { ...w });
+			backend.setBodyAwake(body, !s.asleep);
+		});
+		this.sync();
+		return this;
 	}
 
 	/**
@@ -413,8 +459,9 @@ export class IgeRagdoll3d {
 			if (partIndex >= 0) {
 				// Bone model matrix = entity^-1 * body * offset
 				const part = this._parts[partIndex];
-				const p = part.body.GetPosition(), r = part.body.GetRotation();
-				compose(this._scratch, p.GetX() * u, p.GetY() * u, p.GetZ() * u, r.GetX(), r.GetY(), r.GetZ(), r.GetW());
+				const pose = this._pose;
+				this._physics._backend.readBodyPose(part.body, pose);
+				compose(this._scratch, pose[0] * u, pose[1] * u, pose[2] * u, pose[3], pose[4], pose[5], pose[6]);
 				multiply(this._scratch2, this._scratch, part.offset);
 				multiply(out, this._entityInverse, this._scratch2);
 
@@ -448,14 +495,8 @@ export class IgeRagdoll3d {
 	_free (): void {
 		if (this._destroyed) return;
 		this._destroyed = true;
-		const physics = this._physics;
-		for (const constraint of this._constraints) physics._system.RemoveConstraint(constraint);
-		for (const part of this._parts) {
-			const id = part.body.GetID();
-			physics._bodies.RemoveBody(id);
-			physics._bodies.DestroyBody(id);
-		}
-		this._constraints.length = 0;
+		if (this._handle) this._physics._backend.destroyRagdoll(this._handle);
+		this._handle = undefined;
 		this._parts.length = 0;
 	}
 }

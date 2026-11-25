@@ -79,6 +79,16 @@ export interface IgeNetReplicationHostOptions<Input> {
 	maxRewind?: number;
 	/** Input frames a player may have queued before older ones are dropped (default 8). */
 	maxQueuedInputs?: number;
+	/**
+	 * Input frames a machine may keep waiting, to ride out jitter in when they arrive (default 1). Steps take one
+	 * frame each, so a frame that arrives late leaves a step with none and the next with two, and from then on the
+	 * machine's inputs are a step further behind the present; jitter ratchets that up to maxQueuedInputs (267 ms at
+	 * 30 Hz). A machine that has had more than this many frames left waiting after every step for half a second has its
+	 * oldest dropped (at most two at a time), so its inputs stay as close to the present as its jitter allows. A
+	 * dropped frame isn't applied: games should send presses as counts or held states, not one-frame flags.
+	 * Infinity keeps every frame.
+	 */
+	inputBuffer?: number;
 	/** Clock for timing (ms), for tests. */
 	now?: () => number;
 	/** A replicator the game keeps its objects in already (made before the host, so the world can be built without one). Default: a new one. */
@@ -94,6 +104,11 @@ interface MachineState<Input> {
 	current: Input[];
 	/** How far behind the present the machine's view was for the input applied, in ticks. */
 	lag: number;
+	/** The fewest frames waiting at any step of the current half-second, and how many steps of it have passed. */
+	lowest: number;
+	window: number;
+	/** Frames dropped to keep the queue short (inputBuffer). */
+	drained: number;
 }
 
 let nextMachine = 1;
@@ -297,7 +312,7 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 			machine.viewer.close();
 			return;
 		}
-		const state: MachineState<Input> = { machine, connection, queue: [], received: 0, applied: 0, current: [], lag: 0 };
+		const state: MachineState<Input> = { machine, connection, queue: [], received: 0, applied: 0, current: [], lag: 0, lowest: Infinity, window: 0, drained: 0 };
 		this._machines.set(machine.id, state);
 		link.joined(state);
 		this._send(connection, {
@@ -410,7 +425,21 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 		this.replicator.tick = this.tick;
 		const inputs = new Map<string, Input>();
 		this._lags.clear();
+		const buffer = this._options.inputBuffer ?? 1;
+		const window = Math.max(1, Math.round(this.tickRate / 2));
 		for (const state of this._machines.values()) {
+			// More than `buffer` left waiting after every step of the window: the machine's inputs are further behind
+			// than its jitter needs, so drop the oldest (applying the newer ones a step sooner from now on)
+			state.lowest = Math.min(state.lowest, Math.max(0, state.queue.length - 1));
+			if (++state.window >= window) {
+				const excess = Math.min(2, state.lowest - buffer);
+				if (excess > 0 && state.queue.length > excess) {
+					state.queue.splice(0, excess);
+					state.drained += excess;
+				}
+				state.lowest = Infinity;
+				state.window = 0;
+			}
 			const frame = state.queue.shift();
 			if (frame) {
 				state.current = frame.inputs;
@@ -440,7 +469,12 @@ export class IgeNetReplicationHost<Input = Record<string, unknown>> extends IgeE
 			...this.replicator.stats,
 			rates: this.replicator.rates(),
 			bytesByKind: this.replicator.bytesByKind(),
-			machines: [...this._machines.values()].map((m) => ({ id: m.machine.id, bytes: m.machine.viewer.stats.bytes, ...m.machine.viewer.report() })),
+			machines: [...this._machines.values()].map((m) => ({
+				id: m.machine.id, bytes: m.machine.viewer.stats.bytes,
+				// Input frames waiting now, and dropped so far to keep that short (inputBuffer)
+				inputsQueued: m.queue.length, inputsDrained: m.drained,
+				...m.machine.viewer.report()
+			})),
 			report: this.replicator.report()
 		};
 	}

@@ -12,7 +12,7 @@
  * (texParameteri), as GL's do; a sampler set with it in a draw overrides it there (a sampler object).
  */
 import type {
-	IgeGpuBlendFactor, IgeGpuBuffer, IgeGpuBufferDesc, IgeGpuCompare, IgeGpuDevice, IgeGpuLimits, IgeGpuRenderPass, IgeGpuRenderPassDesc, IgeGpuRenderPipeline,
+	IgeGpuBlendFactor, IgeGpuBuffer, IgeGpuBufferDesc, IgeGpuCompare, IgeGpuDevice, IgeGpuLimits, IgeGpuMemory, IgeGpuMemoryKind, IgeGpuRenderPass, IgeGpuRenderPassDesc, IgeGpuRenderPipeline,
 	IgeGpuRenderPipelineDesc, IgeGpuRenderTarget, IgeGpuSampler, IgeGpuSamplerDesc, IgeGpuShaderModule, IgeGpuShaderModuleDesc, IgeGpuStencilOperation,
 	IgeGpuSurface, IgeGpuTexture, IgeGpuTextureDesc, IgeGpuTextureFormat, IgeGpuUniform, IgeGpuVertexBufferLayout, IgeGpuVertexFormat
 } from "@/engine/gpu/IgeGpuDevice";
@@ -37,6 +37,9 @@ interface GlTexture extends IgeGpuTexture {
 	_external?: boolean;
 	/** The device's generation it was made in (older: made again as it's next used, after a lost context). */
 	_gen: number;
+	/** What it's counted as in memory(), and the bytes counted. */
+	_mem: IgeGpuMemoryKind;
+	_bytes: number;
 }
 
 interface GlSurface extends IgeGpuSurface {
@@ -49,6 +52,8 @@ interface GlBuffer extends IgeGpuBuffer {
 	_target: number;
 	_stream: boolean;
 	_gen: number;
+	_mem: IgeGpuMemoryKind;
+	_bytes: number;
 }
 
 interface GlUniform {
@@ -172,8 +177,15 @@ const VERTEX_FORMATS: Record<IgeGpuVertexFormat, [number, number, boolean, boole
 	float32x2: [2, 0x1406, false, false],
 	float32x3: [3, 0x1406, false, false],
 	float32x4: [4, 0x1406, false, false],
-	uint8x4: [4, 0x1401, false, true],
+	unorm8x2: [2, 0x1401, true, false],
 	unorm8x4: [4, 0x1401, true, false],
+	snorm8x2: [2, 0x1400, true, false],
+	snorm8x4: [4, 0x1400, true, false],
+	unorm16x2: [2, 0x1403, true, false],
+	unorm16x4: [4, 0x1403, true, false],
+	snorm16x2: [2, 0x1402, true, false],
+	snorm16x4: [4, 0x1402, true, false],
+	uint8x4: [4, 0x1401, false, true],
 	uint16x4: [4, 0x1403, false, true],
 	uint32: [1, 0x1405, false, true],
 	sint32: [1, 0x1404, false, true]
@@ -231,7 +243,9 @@ export function webGl2ExternalTexture (device: IgeWebGl2GpuDevice, tex: WebGLTex
 	if (!t) {
 		t = {
 			kind: "texture", width: 0, height: 0, layers: 1, format: "rgba8unorm", mipmaps: false, sampleCount: 1,
-			_tex: tex, _rb: null, _target: device.gl.TEXTURE_2D, _sampler: {}, _gen: device._gen, _external: true
+			_tex: tex, _rb: null, _target: device.gl.TEXTURE_2D, _sampler: {}, _gen: device._gen, _external: true,
+			// (Counted by its owner)
+			_mem: "textures", _bytes: 0
 		};
 		externals.set(tex, t);
 	}
@@ -266,6 +280,8 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	/** Counts restores: a resource made in an older one is made again as it's next used. */
 	_gen = 0;
 	lost = false;
+	/** Bytes held by kind (memory()). */
+	_memory: IgeGpuMemory = { geometry: 0, textures: 0, renderTargets: 0, shadowMaps: 0, buffers: 0 };
 
 	constructor (gl: GL) {
 		this.gl = gl;
@@ -297,6 +313,8 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		if (!this.lost) return;
 		this.lost = false;
 		this._gen++;
+		// (Counted again as each is made again: what's forgotten with the old context isn't held)
+		this._memory = { geometry: 0, textures: 0, renderTargets: 0, shadowMaps: 0, buffers: 0 };
 		this._samplers.clear();
 		// (Extensions are the context's: turned on again)
 		if (this.limits.floatTargets) this.gl.getExtension("EXT_color_buffer_float");
@@ -326,16 +344,35 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		this.invalidate();
 	}
 
+	memory (): IgeGpuMemory {
+		return { ...this._memory };
+	}
+
+	/** A buffer or texture now holds `bytes` (0: destroyed). One made before a lost context counts once it's made again. */
+	_account (r: { _mem: IgeGpuMemoryKind; _bytes: number; _gen: number }, bytes: number): void {
+		if (r._gen === this._gen) this._memory[r._mem] += bytes - r._bytes;
+		r._bytes = bytes;
+	}
+
 	// ---------------------------------------------------------------- buffers
 
 	createBuffer (desc: IgeGpuBufferDesc): IgeGpuBuffer {
 		const gl = this.gl;
 		const target = desc.usage === "index" ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-		const b: GlBuffer = { kind: "buffer", size: desc.size, usage: desc.usage, label: desc.label, _buf: gl.createBuffer()!, _target: target, _stream: !!desc.stream, _gen: this._gen };
+		const b: GlBuffer = { kind: "buffer", size: desc.size, usage: desc.usage, label: desc.label, _buf: gl.createBuffer()!, _target: target, _stream: !!desc.stream, _gen: this._gen, _mem: desc.memory ?? "buffers", _bytes: 0 };
+		if (desc.data && desc.data.byteLength > desc.size) {
+			throw new Error(`IgeGpuDevice: ${desc.label ?? "a buffer"}'s data (${desc.data.byteLength} bytes) is bigger than its size (${desc.size})`);
+		}
 		if (desc.size > 0) {
 			this._bindBuffer(b);
-			gl.bufferData(target, desc.size, desc.stream ? gl.STREAM_DRAW : gl.STATIC_DRAW);
+			// (Made with its contents: one copy, no zero-filled storage written over)
+			if (desc.data && desc.data.byteLength === desc.size) gl.bufferData(target, desc.data, desc.stream ? gl.STREAM_DRAW : gl.STATIC_DRAW);
+			else {
+				gl.bufferData(target, desc.size, desc.stream ? gl.STREAM_DRAW : gl.STATIC_DRAW);
+				if (desc.data && desc.data.byteLength > 0) gl.bufferSubData(target, 0, desc.data);
+			}
 		}
+		this._account(b, desc.size);
 		return b;
 	}
 
@@ -349,6 +386,8 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			this._bindBuffer(b);
 			gl.bufferData(b._target, b.size, b._stream ? gl.STREAM_DRAW : gl.STATIC_DRAW);
 		}
+		b._bytes = 0;
+		this._account(b, b.size);
 	}
 
 	writeBuffer (buffer: IgeGpuBuffer, offset: number, data: ArrayBufferView): void {
@@ -358,6 +397,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			// (A frame's worth: new storage the data's size, nothing waited on)
 			gl.bufferData(b._target, data, gl.STREAM_DRAW);
 			b.size = data.byteLength;
+			this._account(b, b.size);
 			return;
 		}
 		if (offset + data.byteLength > b.size) {
@@ -368,6 +408,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 
 	destroyBuffer (buffer: IgeGpuBuffer): void {
 		const b = buffer as GlBuffer;
+		this._account(b, 0);
 		if (b._gen === this._gen) this.gl.deleteBuffer(b._buf);
 		if (this._state.arrayBuffer === b._buf) this._state.arrayBuffer = undefined;
 	}
@@ -398,7 +439,9 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			kind: "texture", width: 0, height: 0, layers: 0, format: desc.format, mipmaps: !!desc.mipmaps, sampleCount: samples, label: desc.label,
 			_tex: samples > 1 ? null : gl.createTexture()!, _rb: samples > 1 ? gl.createRenderbuffer()! : null, _target: layered ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D,
 			_sampler: { magFilter: "linear", minFilter: "linear", mipmapFilter: "none", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" },
-			_gen: this._gen
+			_gen: this._gen,
+			_mem: desc.memory ?? (samples > 1 || desc.format.startsWith("depth") ? "renderTargets" : "textures"),
+			_bytes: 0
 		};
 		this.resizeTexture(t, desc.width, desc.height, desc.layers);
 		if (!t._rb) this._applySampler(t, { ...t._sampler, ...(desc.sampler ?? {}) }, true);
@@ -412,6 +455,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		const gl = this.gl;
 		t._gen = this._gen;
 		if (t._external) return;
+		t._bytes = 0;
 		t._fbos = undefined;
 		t._users = undefined;
 		if (t._rb) t._rb = gl.createRenderbuffer()!;
@@ -431,6 +475,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			gl.bindRenderbuffer(gl.RENDERBUFFER, t._rb);
 			if (width > 0 && height > 0) gl.renderbufferStorageMultisample(gl.RENDERBUFFER, Math.min(t.sampleCount, this.limits.maxSamples), f.internal, width, height);
 			gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+			this._account(t, this._textureBytes(t));
 			return;
 		}
 		this._bindScratch(t);
@@ -441,6 +486,15 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			t.layers = 1;
 			if (width > 0 && height > 0) gl.texImage2D(t._target, 0, f.internal, width, height, 0, f.format, f.type, null);
 		}
+		this._account(t, this._textureBytes(t));
+	}
+
+	/** A texture's storage in bytes: every texel of every layer (and sample), its smaller levels a third more. */
+	_textureBytes (t: GlTexture): number {
+		if (t._external) return 0;
+		const samples = t._rb ? Math.max(1, Math.min(t.sampleCount, this.limits.maxSamples || 1)) : 1;
+		const bytes = t.width * t.height * Math.max(1, t.layers) * FORMATS[t.format].bytes * samples;
+		return Math.round(t.mipmaps ? (bytes * 4) / 3 : bytes);
 	}
 
 	writeTexture (texture: IgeGpuTexture, data: ArrayBufferView, region: { x?: number; y?: number; layer?: number; width: number; height: number; mipLevel?: number }, opts?: { premultiply?: boolean }): void {
@@ -470,6 +524,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		const s = source as { naturalWidth?: number; naturalHeight?: number; videoWidth?: number; videoHeight?: number; width?: number; height?: number };
 		t.width = s.naturalWidth || s.videoWidth || s.width || t.width;
 		t.height = s.naturalHeight || s.videoHeight || s.height || t.height;
+		this._account(t, this._textureBytes(t));
 	}
 
 	copyTargetToTexture (source: IgeGpuRenderTarget, rect: [number, number, number, number], texture: IgeGpuTexture, at: [number, number] = [0, 0]): void {
@@ -493,6 +548,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	destroyTexture (texture: IgeGpuTexture): void {
 		const gl = this.gl, t = texture as GlTexture;
 		if (t._external) return;
+		this._account(t, 0);
 		if (t._gen === this._gen) {
 			if (t._tex) gl.deleteTexture(t._tex);
 			if (t._rb) gl.deleteRenderbuffer(t._rb);

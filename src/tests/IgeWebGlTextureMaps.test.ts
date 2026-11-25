@@ -215,7 +215,7 @@ describe("Mipmaps for material maps", () => {
 		URL.createObjectURL = () => "blob:x";
 		URL.revokeObjectURL = () => undefined;
 		await tm.createTextureFromBlob("base", {} as Blob);
-		await tm.createTextureFromBlob("map", {} as Blob, { mipmaps: true });
+		await tm.createTextureFromBlob("map", {} as Blob, undefined, true);
 		const [base, map] = tm.createTextureFromImage.mock.calls.map((c: any[]) => c[2]);
 		expect(base).toMatchObject({ generateMipmaps: false, minFilter: gl.LINEAR });
 		expect(map).toMatchObject({ generateMipmaps: true, minFilter: gl.LINEAR_MIPMAP_LINEAR, magFilter: gl.LINEAR });
@@ -226,8 +226,8 @@ describe("Mipmaps for material maps", () => {
 		const calls: [string, unknown][] = [];
 		r._textureManager = {
 			getBlobTexture: () => null,
-			createTextureFromBlob: (id: string, _blob: Blob, options?: unknown) => {
-				calls.push([id, options]);
+			createTextureFromBlob: (id: string, _blob: Blob, sampler?: unknown, mipmaps?: boolean) => {
+				calls.push([id, { sampler, mipmaps }]);
 				return new Promise(() => undefined);
 			}
 		};
@@ -243,11 +243,18 @@ describe("Mipmaps for material maps", () => {
 			aoTextureId: "ao", aoTextureBlob: blob
 		});
 		const by = Object.fromEntries(calls);
-		expect(by.normal).toEqual({ mipmaps: true });
-		expect(by.mr).toEqual({ mipmaps: true });
-		expect(by.ao).toEqual({ mipmaps: true });
-		expect(by.base).toBeUndefined();
-		expect(by.emissive).toBeUndefined();
+		expect(by.normal).toEqual({ sampler: undefined, mipmaps: true });
+		expect(by.mr).toEqual({ sampler: undefined, mipmaps: true });
+		expect(by.ao).toEqual({ sampler: undefined, mipmaps: true });
+		expect(by.base).toEqual({ sampler: undefined, mipmaps: false });
+		expect(by.emissive).toEqual({ sampler: undefined, mipmaps: false });
 		expect(calls).toHaveLength(5);
+		// ...unless modelTextureMipmaps(true) (off by default)
+		expect(new IgeWebGlRenderer().modelTextureMipmaps()).toBe(false);
+		r.modelTextureMipmaps(true);
+		r._pendingBlobTextures = new Set();
+		calls.length = 0;
+		r._applyMaterialData(item, { textureId: "base", textureBlob: blob });
+		expect(Object.fromEntries(calls).base).toEqual({ sampler: undefined, mipmaps: true });
 	});
 });

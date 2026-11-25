@@ -28,6 +28,9 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	// WebGL 2 can mipmap textures of any size
 	protected _webGl2: boolean;
 
+	// Bytes each texture made here holds, by id (smart textures drawn per entity are counted from their entries)
+	protected _textureBytes: Map<string, number> = new Map();
+
 	constructor(
 		gl: WebGLRenderingContext | WebGL2RenderingContext,
 		resourceManager: IgeWebGlResourceManager
@@ -130,6 +133,8 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, opts.magFilter);
 
 		// Generate mipmaps if requested
+		const size = imageSize(image);
+		let mipmapped = false;
 		if (opts.generateMipmaps) {
 			// Check if image dimensions are power of 2
 			const isPowerOf2 = (value: number) => (value & (value - 1)) === 0;
@@ -137,6 +142,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			const height = (image as any).height || 0;
 			if (width > 0 && height > 0 && (this._webGl2 || (isPowerOf2(width) && isPowerOf2(height)))) {
 				gl.generateMipmap(gl.TEXTURE_2D);
+				mipmapped = true;
 			} else if (width > 0 && height > 0) {
 				this.log(
 					`Cannot generate mipmaps for texture "${textureId}" - dimensions must be power of 2`,
@@ -148,7 +154,22 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		// Unbind texture
 		gl.bindTexture(gl.TEXTURE_2D, null);
 
+		// RGBA, 8 bits a channel, and its smaller levels a third more
+		this._textureBytes.set(textureId, Math.round(size.width * size.height * 4 * (mipmapped ? 4 / 3 : 1)));
 		return texture;
+	}
+
+	/**
+	 * Bytes of GPU memory the textures made here hold: each counted from its size (4 bytes a texel, a third more
+	 * with mipmaps), the default white texture and smart textures drawn per entity included.
+	 */
+	memoryBytes(): number {
+		let total = this._defaultWhiteTexture ? 4 : 0;
+		for (const [id, bytes] of this._textureBytes) {
+			if (this._resourceManager.getTexture(id)) total += bytes;
+		}
+		for (const entry of this._entitySmartTextures.values()) total += entry.width * entry.height * 4;
+		return total;
 	}
 
 	/**
@@ -309,9 +330,16 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	/**
 	 * Create a WebGL texture from a Blob (e.g., from GLTF embedded image).
 	 * Returns a promise since image loading is asynchronous.
-	 * `options.mipmaps` makes mipmaps and filters trilinearly (material maps; base colour and emissive don't).
+	 * @param sampler The glTF sampler's filters and wraps (GL constants):
+	 * a minFilter asking for mipmaps gets them, LINEAR or NEAREST none.
+	 * @param mipmaps Mipmaps when the sampler doesn't say (default false).
 	 */
-	async createTextureFromBlob(textureId: string, blob: Blob, options?: { mipmaps?: boolean }): Promise<WebGLTexture | null> {
+	async createTextureFromBlob(
+		textureId: string,
+		blob: Blob,
+		sampler?: { magFilter?: number; minFilter?: number; wrapS?: number; wrapT?: number },
+		mipmaps: boolean = false
+	): Promise<WebGLTexture | null> {
 		// Check cache first
 		if (this._blobTextureCache.has(textureId)) {
 			return this._blobTextureCache.get(textureId) || null;
@@ -335,16 +363,17 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 
 				// Create WebGL texture from loaded image
 				// Note: GLTF textures use flipY: false because GLTF UV coordinates
-				// expect origin at top-left, which matches the natural image orientation
-				// Use LINEAR filter (not LINEAR_MIPMAP_LINEAR) to avoid mipmap generation issues, except for
-				// material maps (options.mipmaps): they have mipmaps and trilinear filtering, so detail doesn't shimmer
-				const mipmaps = !!options?.mipmaps;
+				// expect origin at top-left, which matches the natural image orientation.
+				// Mipmapped (WebGL 2 mipmaps any size) when the sampler asks, or when asked and the sampler doesn't say
+				const gl = this._gl;
+				const minFilter = sampler?.minFilter;
+				const mipmapped = minFilter !== undefined ? minFilter >= gl.NEAREST_MIPMAP_NEAREST && minFilter <= gl.LINEAR_MIPMAP_LINEAR : mipmaps;
 				const texture = this.createTextureFromImage(textureId, img, {
-					wrapS: this._gl.REPEAT,
-					wrapT: this._gl.REPEAT,
-					minFilter: mipmaps ? this._gl.LINEAR_MIPMAP_LINEAR : this._gl.LINEAR,
-					magFilter: this._gl.LINEAR,
-					generateMipmaps: mipmaps,
+					wrapS: sampler?.wrapS ?? gl.REPEAT,
+					wrapT: sampler?.wrapT ?? gl.REPEAT,
+					minFilter: minFilter ?? (mipmapped ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR),
+					magFilter: sampler?.magFilter ?? gl.LINEAR,
+					generateMipmaps: mipmapped,
 					flipY: false
 				});
 
@@ -457,6 +486,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
 		gl.bindTexture(gl.TEXTURE_2D, null);
+		this._textureBytes.set(textureId, canvas.width * canvas.height * 4);
 
 		return true;
 	}
@@ -488,6 +518,9 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 
 		// Allocate storage
 		gl.texImage2D(gl.TEXTURE_2D, 0, intFormat, width, height, 0, fmt, typ, null);
+		const channels = fmt === gl.RGBA ? 4 : fmt === gl.RGB ? 3 : fmt === (gl as WebGL2RenderingContext).RG ? 2 : 1;
+		const channelBytes = typ === gl.FLOAT ? 4 : typ === (gl as WebGL2RenderingContext).HALF_FLOAT ? 2 : 1;
+		this._textureBytes.set(textureId, width * height * channels * channelBytes);
 
 		// Set parameters
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -570,6 +603,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	 */
 	deleteTexture(textureId: string): void {
 		this._resourceManager.deleteTexture(textureId);
+		this._textureBytes.delete(textureId);
 		this._igeTextureMap.delete(textureId);
 		this._igeTextureVersions.delete(textureId);
 		this._preFilteredFrame.delete(textureId);
@@ -600,4 +634,13 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			activeTextureUnit: this._activeTextureUnit
 		};
 	}
+}
+
+/** An image's, canvas's, bitmap's or video frame's size in pixels (0 when it has none yet). */
+function imageSize (image: TexImageSource): { width: number; height: number } {
+	const i = image as { naturalWidth?: number; naturalHeight?: number; videoWidth?: number; videoHeight?: number; displayWidth?: number; displayHeight?: number; width?: number; height?: number };
+	return {
+		width: i.naturalWidth || i.videoWidth || i.displayWidth || i.width || 0,
+		height: i.naturalHeight || i.videoHeight || i.displayHeight || i.height || 0
+	};
 }
