@@ -26,9 +26,9 @@ void main() {
 	if (k <= 0.0) return;
 	vec4 lit = gl_FragColor;
 	vec3 N = normalize(v_worldNormal);
-	if (!gl_FrontFacing) N = -N;
 	vec3 V = normalize(u_cameraPosition - v_worldPosition);
-	float edge = 1.0 - clamp(dot(N, V), 0.0, 1.0);
+	// (abs: the same for a surface seen from behind, and for meshes wound either way)
+	float edge = 1.0 - clamp(abs(dot(N, V)), 0.0, 1.0);
 	// Position along the body, in waves, so the ripple travels over it
 	float along = dot(v_worldPosition, vec3(0.62, 1.0, 0.78)) * u_phaseRipple.x;
 	vec3 rim;
@@ -36,7 +36,7 @@ void main() {
 		float ch = float(c);
 		float r = phaseRipple(u_phase.y, u_phase.z, ch, along + edge * 0.9);
 		// Each channel's rim sits a little further in or out, and the ripple moves it
-		float shifted = clamp(edge + u_phaseRipple.y * (r - 0.5) * 0.8 + u_phaseRipple.y * (ch - 1.0) * 0.12, 0.0, 1.0);
+		float shifted = clamp(edge + u_phaseRipple.y * (r - 0.5) * 0.5 + u_phaseRipple.y * (ch - 1.0) * 0.12, 0.0, 1.0);
 		float f = pow(shifted, u_phase.w) * (0.55 + 0.45 * r);
 		rim[c] = f;
 	}

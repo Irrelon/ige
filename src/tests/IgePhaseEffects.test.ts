@@ -1,4 +1,6 @@
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeTimeline } from "@/engine/timeline/IgeTimeline";
+import { timeline } from "@/engine/timeline/IgeTimelineBuilder";
 import { igeEffectNow, igeEffectTime } from "@/engine/webgl/IgeEffectTime";
 import { IGE_LENS_EINSTEIN, IgeLens, igeLensRingRadius, igeLensScreen, igeLensSource } from "@/engine/webgl/IgeLens";
 import {
@@ -204,5 +206,28 @@ describe("lensing maths", () => {
 		expect(lens.has("ringColor")).toBe(false);
 		lens.time(7);
 		expect(lens.now()).toBe(7);
+	});
+});
+
+describe("timeline tracks", () => {
+	it("animates a phase effect's and a lens's settings (effect.<name>) and gives them the timeline's time, the same on every seek", () => {
+		const e = new IgeEntity();
+		e.phase({ amount: 0 });
+		const lens = new IgeLens();
+		const data = timeline({ duration: 10 })
+			.track("ghost", (t) => t.at(0, { effect: { amount: 0 } }).at(4, { effect: { amount: 1 } }, "linear"))
+			.track("rift", (t) => t.at(0, { effect: { strength: 0 } }).at(10, { effect: { strength: 2 } }, "linear"))
+			.build();
+		const tl = new IgeTimeline(data).bind({ ghost: e.phase()!, rift: lens });
+		tl.seek(2);
+		expect(e.phase()!.settings.amount).toBeCloseTo(0.5);
+		expect(e.phase()!.now()).toBeCloseTo(2);
+		expect(lens.settings.strength).toBeCloseTo(0.4);
+		expect(lens.now()).toBeCloseTo(2);
+		const solid = e.phase()!.ghostliness();
+		tl.seek(9);
+		tl.seek(2);
+		expect(e.phase()!.ghostliness()).toBe(solid);
+		e.phase(null);
 	});
 });

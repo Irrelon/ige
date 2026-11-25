@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Phase effects - Isogenic Engine</title>
+  <script src="./index.bundle.js" type="module"></script>
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; background: #000; }
+    #hud {
+      position: absolute; top: 8px; left: 8px; z-index: 1000; white-space: pre;
+      font: 12px/1.4 monospace; color: #fff; background: rgba(0, 0, 0, 0.6); padding: 8px 10px; border-radius: 4px;
+    }
+    #bar {
+      position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 1000; display: flex; gap: 12px; align-items: center;
+      font: 12px/1.4 monospace; color: #fff; background: rgba(0, 0, 0, 0.6); padding: 6px 10px; border-radius: 4px;
+    }
+    #bar input[type=range] { flex: 1; }
+    #flash { position: absolute; inset: 0; z-index: 900; background: #fff; opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+<div id="flash"></div>
+<div id="hud">Loading...</div>
+<div id="bar">
+  <span>V: view (planet, figure, star) · K: collapse the star · R: reset · Space: pause · P: post-processing</span>
+  <input id="scrub" type="range" min="0" max="75" step="0.01" value="0" />
+  <span id="clock">t = 0.00</span>
+</div>
+</body>
+</html>

@@ -45,7 +45,7 @@ export type IgePhaseSettingName = keyof IgePhaseSettings;
 
 export const IGE_PHASE_DEFAULTS: Readonly<IgePhaseSettings> = {
 	amount: 0, flicker: 0, flickerSpeed: 1, seed: 0,
-	edgeR: 0.45, edgeG: 0.85, edgeB: 1, edgeStrength: 1.6, edgePower: 2.5, split: 0.35, shimmer: 1, rippleScale: 0,
+	edgeR: 0.45, edgeG: 0.85, edgeB: 1, edgeStrength: 1.6, edgePower: 3, split: 0.35, shimmer: 1, rippleScale: 0,
 	tintR: 0.55, tintG: 0.75, tintB: 1, opacity: 0.16
 };
 
