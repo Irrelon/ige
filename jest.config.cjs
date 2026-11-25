@@ -11,6 +11,8 @@ module.exports = {
 	// Add any other Jest configuration options here
 	modulePaths: [compilerOptions.baseUrl],
 	moduleNameMapper: {
-		"^@/(.*)$": "<rootDir>/src/$1"
+		"^@/(.*)$": "<rootDir>/src/$1",
+		// meshoptimizer's ES module decoder, which the engine imports, as CommonJS
+		"^meshoptimizer/decoder$": "<rootDir>/src/tests/support/meshoptDecoder.cjs"
 	}
 };

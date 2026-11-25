@@ -63,18 +63,18 @@ export interface IgeMergedGeometry {
 	pieces: number;
 }
 
-/** A typed array that grows as it's written. */
+/** A typed array that grows as it's written. Its writer keeps count of how much of it is used and says so on each reserve. */
 class Grow<T extends Float32Array | Uint32Array> {
 	a: T;
-	n = 0;
 	constructor (make: new (size: number) => T, size: number) {
 		this.a = new make(Math.max(size, 16));
 	}
 
-	reserve (extra: number): void {
-		if (this.n + extra <= this.a.length) return;
-		const b = new (this.a.constructor as new (size: number) => T)(Math.max(this.n + extra, this.a.length * 2));
-		b.set(this.a.subarray(0, this.n) as any);
+	/** Room for `extra` more after the `used` already written, which are kept. */
+	reserve (used: number, extra: number): void {
+		if (used + extra <= this.a.length) return;
+		const b = new (this.a.constructor as new (size: number) => T)(Math.max(used + extra, this.a.length * 2));
+		b.set(this.a.subarray(0, used) as any);
 		this.a = b;
 	}
 }
@@ -90,6 +90,7 @@ class MergeWriter {
 	computeTangents = false;
 	idx: Grow<Uint32Array>;
 	verts = 0;
+	indexCount = 0;
 	pieces = 0;
 
 	constructor (normals: boolean, uvs: boolean, colors: boolean, room: number, tangents: boolean = false) {
@@ -101,13 +102,15 @@ class MergeWriter {
 		this.idx = new Grow(Uint32Array, room * 2);
 	}
 
+	/** Room for `verts` more vertices and `indices` more indices (a piece's triangles can need more than its vertices). */
 	reserve (verts: number, indices: number): void {
-		this.pos.reserve(verts * 3);
-		this.nrm?.reserve(verts * 3);
-		this.uv?.reserve(verts * 2);
-		this.col?.reserve(verts * 4);
-		this.tan?.reserve(verts * 4);
-		this.idx.reserve(indices);
+		const used = this.verts;
+		this.pos.reserve(used * 3, verts * 3);
+		this.nrm?.reserve(used * 3, verts * 3);
+		this.uv?.reserve(used * 2, verts * 2);
+		this.col?.reserve(used * 4, verts * 4);
+		this.tan?.reserve(used * 4, verts * 4);
+		this.idx.reserve(this.indexCount, indices);
 	}
 }
 
@@ -261,18 +264,17 @@ function addPiece (w: MergeWriter, piece: IgeMergePiece, src: IgeVertexArrays & 
 	};
 
 	const tri = piece.triangle;
-	const idx = w.idx;
 	if (!tri) {
 		// Every vertex as it is, indices offset
 		w.reserve(count, triCount * 3);
 		const base = w.verts;
 		for (let v = 0; v < count; v++) write(v);
-		const a = idx.a;
+		const a = w.idx.a;
 		for (let t = 0; t < triCount; t++) {
 			const i0 = indices ? indices[t * 3] : t * 3, i1 = indices ? indices[t * 3 + 1] : t * 3 + 1, i2 = indices ? indices[t * 3 + 2] : t * 3 + 2;
-			a[idx.n++] = base + i0;
-			a[idx.n++] = base + (mirrored ? i2 : i1);
-			a[idx.n++] = base + (mirrored ? i1 : i2);
+			a[w.indexCount++] = base + i0;
+			a[w.indexCount++] = base + (mirrored ? i2 : i1);
+			a[w.indexCount++] = base + (mirrored ? i1 : i2);
 		}
 	} else {
 		// Triangle by triangle: dropped ones leave their vertices out, recoloured ones get vertices of their own
@@ -292,10 +294,10 @@ function addPiece (w: MergeWriter, piece: IgeMergePiece, src: IgeVertexArrays & 
 				o1 = remap[i1] >= 0 ? remap[i1] : (remap[i1] = write(i1));
 				o2 = remap[i2] >= 0 ? remap[i2] : (remap[i2] = write(i2));
 			}
-			const a = idx.a;
-			a[idx.n++] = o0;
-			a[idx.n++] = mirrored ? o2 : o1;
-			a[idx.n++] = mirrored ? o1 : o2;
+			const a = w.idx.a;
+			a[w.indexCount++] = o0;
+			a[w.indexCount++] = mirrored ? o2 : o1;
+			a[w.indexCount++] = mirrored ? o1 : o2;
 		}
 	}
 	w.pieces++;
@@ -309,7 +311,7 @@ function finish (w: MergeWriter, material: unknown, id: string, options: IgeMerg
 	if (w.nrm) arrays.normals = w.nrm.a.slice(0, verts * 3);
 	if (w.uv) arrays.uvs = w.uv.a.slice(0, verts * 2);
 	if (w.col) arrays.colors = w.col.a.slice(0, verts * 4);
-	const indices = verts <= 65535 ? Uint16Array.from(w.idx.a.subarray(0, w.idx.n)) : w.idx.a.slice(0, w.idx.n);
+	const indices = verts <= 65535 ? Uint16Array.from(w.idx.a.subarray(0, w.indexCount)) : w.idx.a.slice(0, w.indexCount);
 	if (w.tan) arrays.tangents = w.tan.a.slice(0, verts * 4);
 	else if (w.computeTangents) {
 		const tangents = igeComputeTangents({ vertices, normals: arrays.normals as Float32Array, uvs: arrays.uvs as Float32Array, indices });
@@ -329,5 +331,5 @@ function finish (w: MergeWriter, material: unknown, id: string, options: IgeMerg
 	} else {
 		Object.assign(geometry, arrays);
 	}
-	return { material, geometry, triangles: w.idx.n / 3, vertices: verts, pieces: w.pieces };
+	return { material, geometry, triangles: w.indexCount / 3, vertices: verts, pieces: w.pieces };
 }

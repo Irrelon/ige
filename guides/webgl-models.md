@@ -40,6 +40,44 @@ Models face +Z and stand upright as authored; don't add corrective rotations.
 sheets), glTF models and animation files, and JSON in one call with one progress callback. It reuses anything already
 loaded under the same id, and rejects listing every file that failed once all have settled.
 
+### Smaller files: gltfpack
+
+`gltfpack` (meshoptimizer's packer for the web) shrinks a model file several times over, and the loader reads what it
+writes:
+
+```sh
+npx gltfpack -i character.glb -o character.min.glb -kn -km -af 0       # quantised
+npx gltfpack -i character.glb -o character.min.glb -kn -km -af 0 -cc   # quantised and meshopt-compressed
+```
+
+- **Quantised** meshes (`KHR_mesh_quantization`, gltfpack's default): 16-bit positions and texture coordinates, 8-bit
+  normals and skin weights, kept that compact on the GPU too (see "Quantised glTF" in
+  [`streaming-geometry.md`](streaming-geometry.md)). About half the file.
+- **Meshopt-compressed** on top (`-c`, or `-cc` for more): a third to a half smaller again as served raw or gzipped,
+  though only a few percent once brotli has had both. Both names of the extension are read: gltfpack's default
+  `EXT_meshopt_compression`, and Khronos's `KHR_meshopt_compression` (`-ce khr`, which also writes version 1 of the
+  vertex codec: a little smaller again; it needs gltfpack and meshoptimizer 0.25 or later, and the engine uses 1.3).
+  Decoded by meshoptimizer's WebAssembly decoder (the `meshoptimizer` package, a dependency of the engine, imported as
+  `meshoptimizer/decoder` and loaded the first time a file needs it); decoding takes a few milliseconds a megabyte. A
+  game that bundles the engine's source (Vite) should list `meshoptimizer` in `resolve.dedupe`, so the engine's import
+  and the game's are one copy. `igeDecodeMeshopt(json, buffers, await igeMeshoptDecoder())` (`IgeMeshopt.ts`) decodes a
+  file's buffers without the loader, e.g. in a worker.
+- **`-kn`** keeps named nodes, so parts can still be shown by name. gltfpack hangs each mesh on an unnamed child of
+  its node and drops the mesh's name; a part with neither name is named after the nearest named node above it, so
+  `model(m, { parts: ["Body_01"] })` works on the packed file as on the original. `-km` keeps materials apart.
+- **Characters:** skinned positions are turned back into model units by the skin's inverse bind matrices; rotations
+  are stored in 16 bits (12 when meshopt-compressed: `-ar`), translations and scales in 16 (`-at`, `-as`). Tracks
+  that never move a bone from its rest pose are dropped (a bone no clip moves plays at rest, so nothing changes), and
+  ones that barely move it are made constant. gltfpack resamples clips at 30 keys a second by default (`-af`), which
+  moves the keys, and a clip's end by a fraction of a frame, when the file's rate is another: `-af 0` keeps them.
+- **Texture coordinates** get 12 bits of their range by default (`-vt`): a sixth of a texel on a 1024 px texture
+  spread over the whole of it. `-vt 14` for textures sampled without filtering (pixel art, colour swatches).
+
+Toony Tiny Citizens' two customizable characters (143 parts and 77 clips each, `-vt 14`) go from 7.1 MB to 3.7 MB
+quantised and 2.3 MB meshopt-compressed (2.1, 1.1 and 0.9 MB with brotli). Played side by side with the originals,
+every bone stays within 0.4 mm and 0.1° quantised (1.4 mm and 0.12° meshopt-compressed); surfaces within 2 mm in the
+most extreme poses, from the 8-bit skin weights.
+
 `material()` overrides the model's material values for that entity only, e.g. a tint or a hit flash, and
 `material(null)` restores them:
 
@@ -473,8 +511,8 @@ Characters, debris and ragdolls with Jolt physics: see [`physics-3d.md`](physics
 Cities and terrain streamed in chunks: merge each chunk's pieces into one mesh per material in a worker
 (`mergeGeometry()`), keep the vertices compact (16 bytes, not 32), hand the meshes to the main thread ready to upload,
 and let the renderer upload them a few a frame (`renderer.uploadBudget()`). Quantised glTF files
-(`KHR_mesh_quantization`, as `gltfpack` writes them) load and stay compact on the GPU. See
-[`streaming-geometry.md`](streaming-geometry.md).
+(`KHR_mesh_quantization`, as `gltfpack` writes them) load and stay compact on the GPU, meshopt-compressed ones too
+("Smaller files: gltfpack", above). See [`streaming-geometry.md`](streaming-geometry.md).
 
 Far away and from high up, groups of chunks are drawn as low-detail proxies, one draw a group: `IgeHlod`, see
 "Far away: HLOD" in the same guide.

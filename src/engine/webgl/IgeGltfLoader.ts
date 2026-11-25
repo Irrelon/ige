@@ -1,5 +1,6 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { igeDecodeMeshopt, igeIsMeshoptFallback, igeMeshoptDecoder, igeUsesMeshopt } from "@/engine/webgl/IgeMeshopt";
 import { igeComputeTangents } from "@/engine/webgl/IgeTangents";
 import { multiplyMat4 } from "@/engine/webgl/IgeModelParts";
 import { IgeWebGlMaterial, IgeWebGlPBRMaterial } from "@/engine/webgl/IgeWebGlMaterial";
@@ -192,7 +193,10 @@ export interface IgeGltfPrimitive {
 
 /**
  * GLTF/GLB model loader for WebGL renderer.
- * Supports GLTF 2.0 specification.
+ * Supports GLTF 2.0 specification, and what gltfpack writes: quantised
+ * meshes (KHR_mesh_quantization, KHR_texture_transform) and meshopt
+ * compression (EXT_meshopt_compression, KHR_meshopt_compression; see
+ * IgeMeshopt.ts).
  */
 export class IgeGltfLoader extends IgeBaseClass {
 	classId = "IgeGltfLoader";
@@ -244,6 +248,7 @@ export class IgeGltfLoader extends IgeBaseClass {
 			binary = result.binary;
 		}
 		const buffers = await this._loadBuffers(json, baseUrl, binary);
+		await this._decodeMeshopt(json, buffers);
 		const model = await this._parseGltf(json, buffers, baseUrl, id);
 		this._modelCache.set(id, model);
 		return model;
@@ -279,6 +284,7 @@ export class IgeGltfLoader extends IgeBaseClass {
 
 		// Load binary buffers if not GLB
 		const buffers = await this._loadBuffers(gltfData, baseUrl, binaryData);
+		await this._decodeMeshopt(gltfData, buffers);
 
 		// Parse the GLTF data
 		const model = await this._parseGltf(gltfData, buffers, baseUrl, id);
@@ -342,7 +348,8 @@ export class IgeGltfLoader extends IgeBaseClass {
 	}
 
 	/**
-	 * Load external buffers referenced in GLTF.
+	 * Load the buffers referenced in a glTF, by index. A meshopt fallback buffer isn't fetched: decoding fills it
+	 * (_decodeMeshopt()).
 	 */
 	protected async _loadBuffers(
 		gltf: any,
@@ -358,22 +365,35 @@ export class IgeGltfLoader extends IgeBaseClass {
 
 			if (embeddedBinary && i === 0 && !bufferDef.uri) {
 				// GLB embedded binary
-				buffers.push(embeddedBinary);
+				buffers[i] = embeddedBinary;
+			} else if (igeIsMeshoptFallback(bufferDef)) {
+				// Filled by decoding
+				continue;
 			} else if (bufferDef.uri) {
 				if (bufferDef.uri.startsWith("data:")) {
 					// Base64 encoded data URI
 					const base64 = bufferDef.uri.split(",")[1];
 					const binary = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-					buffers.push(binary.buffer);
+					buffers[i] = binary.buffer;
 				} else {
 					// External file
 					const response = await fetch(baseUrl + bufferDef.uri);
-					buffers.push(await response.arrayBuffer());
+					buffers[i] = await response.arrayBuffer();
 				}
 			}
 		}
 
 		return buffers;
+	}
+
+	/**
+	 * Meshopt-compressed buffer views (EXT_meshopt_compression or KHR_meshopt_compression: gltfpack -c, -cc) decoded
+	 * into the buffers they point at, so the rest of the file reads as usual. The decoder loads on the first file that
+	 * needs it.
+	 */
+	protected async _decodeMeshopt(gltf: any, buffers: ArrayBuffer[]): Promise<void> {
+		if (!igeUsesMeshopt(gltf)) return;
+		igeDecodeMeshopt(gltf, buffers, await igeMeshoptDecoder());
 	}
 
 	/**
