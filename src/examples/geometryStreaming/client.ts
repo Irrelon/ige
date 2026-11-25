@@ -157,7 +157,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			const dt = now - last;
 			last = now;
 			const stats = renderer.stats();
-			this.geometryPeak = Math.max(this.geometryPeak, stats.geometryBytes);
+			this.geometryPeak = Math.max(this.geometryPeak, stats.gpuMemory.geometry);
 			if (this.recording) {
 				this.frames.push(dt);
 				this.chunkMs.push(streamer.frameMs);
@@ -166,7 +166,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			const c = streamer.counts();
 			hud.textContent = `${setup}\nchunks shown ${c.shown}, waiting ${c.pending}, uploads queued ${stats.uploadsQueued}\n` +
 				`frame ${dt.toFixed(1)} ms, chunk work ${streamer.frameMs.toFixed(1)} ms, uploads ${stats.uploadMs.toFixed(1)} ms\n` +
-				`chunk meshes on the GPU ${(stats.geometryBytes / 1048576).toFixed(1)} MB (peak ${(this.geometryPeak / 1048576).toFixed(1)})\n` +
+				`meshes on the GPU ${(stats.gpuMemory.geometry / 1048576).toFixed(1)} MB (peak ${(this.geometryPeak / 1048576).toFixed(1)})\n` +
 				`draws ${stats.drawCalls + stats.instancedDrawCalls}, triangles ${(stats.triangles / 1000).toFixed(0)}k` +
 				(this.recording ? `\nrecording ${(((now - start) / 1000)).toFixed(0)} / 40 s` : "");
 			requestAnimationFrame(tick);
@@ -219,7 +219,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			trianglesPerChunk: Math.round(built.reduce((a, b) => a + b.triangles, 0) / Math.max(1, built.length)),
 			blocksPerChunk: Math.round(built.reduce((a, b) => a + b.blocks, 0) / Math.max(1, built.length)),
 			geometryMbPeak: +(this.geometryPeak / 1048576).toFixed(1),
-			geometryMbEnd: +(this.renderer!.stats().geometryBytes / 1048576).toFixed(1),
+			geometryMbEnd: +(this.renderer!.stats().gpuMemory.geometry / 1048576).toFixed(1),
 			jsHeapMb: (performance as any).memory ? +((performance as any).memory.usedJSHeapSize / 1048576).toFixed(0) : null
 		};
 	}

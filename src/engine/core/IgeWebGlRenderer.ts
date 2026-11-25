@@ -257,8 +257,6 @@ export interface IgeWebGlRenderStats {
 	uploadMs: number;
 	/** Meshes waiting for their turn to upload (uploadBudget()); their entities aren't drawn meanwhile. */
 	uploadsQueued: number;
-	/** Bytes held on the GPU by every mesh's vertex and index buffers. */
-	geometryBytes: number;
 }
 
 /**
@@ -624,8 +622,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		uploads: 0,
 		uploadBytes: 0,
 		uploadMs: 0,
-		uploadsQueued: 0,
-		geometryBytes: 0
+		uploadsQueued: 0
 	};
 
 	/** Meshes uploaded within a per-frame budget (see uploadBudget()); unlimited by default. Made as first needed. */
@@ -634,8 +631,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _uploadWaiters?: Map<string, ((uploaded: boolean) => void)[]>;
 	/** The mesh each plain-geometry entity last drew: drawn meanwhile when its new one is waiting to upload. */
 	protected _drawnGeometry?: WeakMap<IgeEntity, IgeGeometryData3d>;
-	/** Generate mipmaps for model (glTF) textures whose sampler doesn't say otherwise (see modelTextureMipmaps()). */
-	protected _modelTextureMipmaps = true;
+	/** Generate mipmaps for model (glTF) textures whose sampler doesn't ask for them (see modelTextureMipmaps()). */
+	protected _modelTextureMipmaps = false;
 	/** Scratch for a draw's world matrix with its mesh's position decode applied. */
 	protected _decodedWorld?: Float32Array;
 
@@ -1217,11 +1214,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
-	 * Gets / sets whether model (glTF) textures get mipmaps when their sampler doesn't say (on by default): far
-	 * surfaces then sample a smaller copy instead of shimmering. A sampler whose minFilter asks for none (LINEAR or
-	 * NEAREST) is kept as it is. Applies to textures made from then on.
-	 * @example #A flat-colour atlas whose swatches bleed into each other far away: no mipmaps
-	 *     renderer.modelTextureMipmaps(false);
+	 * Gets / sets whether model (glTF) base colour and emissive textures get mipmaps when their sampler doesn't say
+	 * (off by default): far surfaces then sample a smaller copy instead of shimmering. A sampler whose minFilter asks
+	 * for mipmaps gets them either way, and one that asks for none (LINEAR or NEAREST) is kept as it is. Normal,
+	 * metallic-roughness and occlusion maps always have them. Applies to textures made from then on.
+	 * @example #Mipmaps for every model texture, so distant facades don't shimmer
+	 *     renderer.modelTextureMipmaps(true);
 	 */
 	modelTextureMipmaps(): boolean;
 	modelTextureMipmaps(enabled: boolean): this;
@@ -2493,7 +2491,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		stats.uploads = frame.uploads;
 		stats.uploadBytes = frame.bytes;
 		stats.uploadMs = frame.ms;
-		stats.geometryBytes = this._geometryManager?.gpuBytes?.() ?? 0;
 		queue.beginFrame();
 		stats.uploadsQueued = queue.length;
 		if (queue.length > 0) markSceneChanged();
@@ -2762,7 +2759,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * Start uploading a model texture image (once); it is used as soon as
 	 * the upload completes.
 	 */
-	protected _requestBlobTexture(textureId: string, blob: Blob, sampler?: IgeMaterialData["textureSampler"], mipmaps: boolean = this._modelTextureMipmaps): void {
+	protected _requestBlobTexture(textureId: string, blob: Blob, sampler?: IgeMaterialData["textureSampler"], mipmaps: boolean = !!this._modelTextureMipmaps): void {
 		if (!this._textureManager || this._pendingBlobTextures.has(textureId)) return;
 
 		this._pendingBlobTextures.add(textureId);

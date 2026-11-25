@@ -203,7 +203,7 @@ describe("Material data maps", () => {
 });
 
 describe("Mipmaps for material maps", () => {
-	it("the texture manager makes mipmaps and trilinear filtering when asked, and none when not", async () => {
+	it("the texture manager makes mipmaps and trilinear filtering only when asked", async () => {
 		const gl = { REPEAT: 1, LINEAR: 2, LINEAR_MIPMAP_LINEAR: 3 };
 		const tm = Object.create(IgeWebGlTextureManager.prototype) as any;
 		tm._gl = gl;
@@ -214,16 +214,15 @@ describe("Mipmaps for material maps", () => {
 		(globalThis as any).Image = class { width = 4; height = 4; onload?: () => void; set src (_: string) { setTimeout(() => this.onload?.(), 0); } };
 		URL.createObjectURL = () => "blob:x";
 		URL.revokeObjectURL = () => undefined;
-		await tm.createTextureFromBlob("base", {} as Blob, undefined, false);
+		await tm.createTextureFromBlob("base", {} as Blob);
 		await tm.createTextureFromBlob("map", {} as Blob, undefined, true);
 		const [base, map] = tm.createTextureFromImage.mock.calls.map((c: any[]) => c[2]);
 		expect(base).toMatchObject({ generateMipmaps: false, minFilter: gl.LINEAR });
 		expect(map).toMatchObject({ generateMipmaps: true, minFilter: gl.LINEAR_MIPMAP_LINEAR, magFilter: gl.LINEAR });
 	});
 
-	it("the renderer asks for mipmaps for the three maps, and base colour and emissive follow modelTextureMipmaps()", () => {
+	it("the renderer asks for mipmaps for the three maps and not for base colour or emissive", () => {
 		const r = fakeRenderer(true);
-		r._modelTextureMipmaps = false;
 		const calls: [string, unknown][] = [];
 		r._textureManager = {
 			getBlobTexture: () => null,
@@ -250,5 +249,12 @@ describe("Mipmaps for material maps", () => {
 		expect(by.base).toEqual({ sampler: undefined, mipmaps: false });
 		expect(by.emissive).toEqual({ sampler: undefined, mipmaps: false });
 		expect(calls).toHaveLength(5);
+		// ...unless modelTextureMipmaps(true) (off by default)
+		expect(new IgeWebGlRenderer().modelTextureMipmaps()).toBe(false);
+		r.modelTextureMipmaps(true);
+		r._pendingBlobTextures = new Set();
+		calls.length = 0;
+		r._applyMaterialData(item, { textureId: "base", textureBlob: blob });
+		expect(Object.fromEntries(calls).base).toEqual({ sampler: undefined, mipmaps: true });
 	});
 });

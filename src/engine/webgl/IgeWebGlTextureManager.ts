@@ -332,13 +332,13 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	 * Returns a promise since image loading is asynchronous.
 	 * @param sampler The glTF sampler's filters and wraps (GL constants):
 	 * a minFilter asking for mipmaps gets them, LINEAR or NEAREST none.
-	 * @param mipmaps Mipmaps when the sampler doesn't say (default true).
+	 * @param mipmaps Mipmaps when the sampler doesn't say (default false).
 	 */
 	async createTextureFromBlob(
 		textureId: string,
 		blob: Blob,
 		sampler?: { magFilter?: number; minFilter?: number; wrapS?: number; wrapT?: number },
-		mipmaps: boolean = true
+		mipmaps: boolean = false
 	): Promise<WebGLTexture | null> {
 		// Check cache first
 		if (this._blobTextureCache.has(textureId)) {
@@ -364,7 +364,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 				// Create WebGL texture from loaded image
 				// Note: GLTF textures use flipY: false because GLTF UV coordinates
 				// expect origin at top-left, which matches the natural image orientation.
-				// Mipmapped (WebGL 2 mipmaps any size) unless the sampler says not
+				// Mipmapped (WebGL 2 mipmaps any size) when the sampler asks, or when asked and the sampler doesn't say
 				const gl = this._gl;
 				const minFilter = sampler?.minFilter;
 				const mipmapped = minFilter !== undefined ? minFilter >= gl.NEAREST_MIPMAP_NEAREST && minFilter <= gl.LINEAR_MIPMAP_LINEAR : mipmaps;

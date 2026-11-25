@@ -30,7 +30,6 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 	protected _sharedQuadGeometry?: IgeWebGlGeometry;
 
 	// Bytes held by every geometry's buffers on the GPU
-	protected _bytes = 0;
 
 	constructor(
 		gl: WebGL2RenderingContext,
@@ -143,7 +142,6 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		this._upload(geometry, packed.data, data.indices ?? undefined);
 		if (data.indices) geometry.setIndexData(data.indices);
 		geometry.gpuBytes = packed.data.byteLength + (data.indices?.byteLength ?? 0);
-		this._bytes += geometry.gpuBytes;
 
 		// Its vertex attributes, by the layout it was packed in
 		for (const a of packed.attributes) {
@@ -168,11 +166,6 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		// creates many geometries.
 		this._geometries.set(geometryId, geometry);
 		return geometry;
-	}
-
-	/** Bytes held on the GPU by every geometry's vertex and index buffers. */
-	gpuBytes(): number {
-		return this._bytes;
 	}
 
 	/**
@@ -264,7 +257,6 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		}
 
 		// Delete buffers
-		this._bytes -= geometry.gpuBytes;
 		if (geometry.gpuVertex) this._device.destroyBuffer(geometry.gpuVertex);
 		if (geometry.gpuIndex) this._device.destroyBuffer(geometry.gpuIndex);
 		geometry.vertexBuffer = geometry.indexBuffer = null;

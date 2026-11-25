@@ -188,7 +188,9 @@ describe("packed geometry on the GPU", () => {
 	it("uploads a worker's packed mesh as it is, in its compact formats, and counts its bytes", async () => {
 		const calls: { fn: string; args: unknown[] }[] = [];
 		const gl = recordingGl(calls);
-		const manager = new IgeWebGlGeometryManager(gl, {} as any, new IgeWebGl2GpuDevice(gl));
+		const device = new IgeWebGl2GpuDevice(gl);
+		const manager = new IgeWebGlGeometryManager(gl, {} as any, device);
+		const before = device.memory().geometry; // the sprites' shared quad
 		const model = await new IgeGltfLoader().parse(quantisedQuad(), "quad4");
 		const data = getModelParts(model)[0].geometryData;
 		const worker = { ...data, id: "fromWorker", packed: packVertices(data, data.vertexEncodings) };
@@ -200,14 +202,14 @@ describe("packed geometry on the GPU", () => {
 		expect(uploads).toHaveLength(2);
 		expect((uploads[0].args[1] as Uint8Array).buffer).toBe(worker.packed.data);
 		expect(geometry.gpuBytes).toBe(4 * 16 + 12);
-		expect(manager.gpuBytes()).toBe(4 * 16 + 12);
+		expect(device.memory().geometry - before).toBe(4 * 16 + 12);
 		expect(meshLayout(geometry).layout.attributes.map((a) => a.format)).toEqual(["snorm16x4", "snorm8x4", "unorm16x2"]);
 		expect(meshLayout(geometry).layout.arrayStride).toBe(16);
 		expect(Array.from(geometry.positionDecode!)).toEqual([32767, 0, 0, 0, 0, 32767, 0, 0, 0, 0, 32767, 0, 0, 0, 0, 1]);
 		// Bounds in the mesh's own units (the decode isn't in them)
 		expect(geometry.boundsCenterY).toBeCloseTo(1000, 0);
 		manager.deleteGeometry("fromWorker");
-		expect(manager.gpuBytes()).toBe(0);
+		expect(device.memory().geometry).toBe(before);
 	});
 
 	it("gives a mesh with tangents an a_tangent attribute, so its normal map is used", () => {

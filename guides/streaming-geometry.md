@@ -153,16 +153,17 @@ bytes per millisecond measured so far. Unlimited is the default (meshes upload w
   resolves `true` once it's on the GPU (`false` if released first). Lower priorities go first: pass the distance to
   the camera to upload the nearest chunks first.
 - `renderer.geometryUploaded(mesh)` says whether it's there.
-- `renderer.stats()`: `uploads`, `uploadBytes` and `uploadMs` this frame, `uploadsQueued`, and `geometryBytes` (every
-  mesh's vertex and index buffers on the GPU, exact).
+- `renderer.stats()`: `uploads`, `uploadBytes` and `uploadMs` this frame, `uploadsQueued`, and `gpuMemory.geometry`
+  (every mesh's vertex and index buffers on the GPU, exact).
 - With render on demand, frames keep coming while meshes wait.
 
 ## Mipmaps for model textures
 
-Textures in glTF files now get mipmaps, so distant surfaces don't shimmer. A sampler whose `minFilter` asks for
-mipmaps gets them; one that says `LINEAR` or `NEAREST` gets none; none said, `renderer.modelTextureMipmaps()`
-decides (on by default). A flat-colour atlas whose swatches bleed together far away can turn them off:
-`renderer.modelTextureMipmaps(false)`. The sampler's wrap and filter modes are used too.
+Textures in glTF files get mipmaps when they ask for them, so distant surfaces don't shimmer. A sampler whose
+`minFilter` asks for mipmaps gets them; one that says `LINEAR` or `NEAREST` gets none; none said,
+`renderer.modelTextureMipmaps()` decides (off by default, as before, since a flat-colour atlas's swatches bleed together
+far away; `renderer.modelTextureMipmaps(true)` turns them on). Normal, metallic-roughness and occlusion maps always
+have them. The sampler's wrap and filter modes are used too.
 
 ## Measured
 
@@ -199,4 +200,4 @@ averages of 100 to 460), so compare runs with each other, not with a quiet machi
 - Set `renderer.uploadBudget({ bytes, ms })` once.
 - Put chunks in by making their entities; call `discardGeometryArrays()` on each mesh.
 - Take chunks out with `entity.destroy()` and `renderer.releaseGeometry(mesh)`.
-- Watch `stats().uploadMs`, `uploadsQueued` and `geometryBytes`.
+- Watch `stats().uploadMs`, `uploadsQueued` and `gpuMemory.geometry`.

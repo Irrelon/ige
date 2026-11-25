@@ -22,7 +22,9 @@ function mockGl (): WebGL2RenderingContext {
 function renderer (): any {
 	const r = Object.create(IgeWebGlRenderer.prototype) as any;
 	const gl = mockGl();
-	r._geometryManager = new IgeWebGlGeometryManager(gl, {} as any, new IgeWebGl2GpuDevice(gl));
+	// (The renderer's device: gpuMemory() counts its buffers)
+	r._device = new IgeWebGl2GpuDevice(gl);
+	r._geometryManager = new IgeWebGlGeometryManager(gl, {} as any, r._device);
 	r._gpuOnlyGeometry = new Set();
 	r._stats = {};
 	return r;
@@ -42,11 +44,12 @@ function mesh (id: string, n = 1000): IgeGeometryData3d {
 describe("the renderer's upload budget", () => {
 	it("uploads as meshes are first drawn when there's no budget (as before)", () => {
 		const r = renderer();
+		const before = r.gpuMemory().geometry; // the sprites' shared quad
 		for (let i = 0; i < 5; i++) expect(r._getGeometry(mesh(`m${i}`))).toBeTruthy();
 		r._endUploadFrame();
 		expect(r._stats.uploads).toBe(5);
 		expect(r._stats.uploadBytes).toBe(5 * (1000 * 32 + 2000));
-		expect(r._stats.geometryBytes).toBe(5 * (1000 * 32 + 2000));
+		expect(r.stats().gpuMemory.geometry - before).toBe(5 * (1000 * 32 + 2000));
 		expect(r._stats.uploadsQueued).toBe(0);
 	});
 

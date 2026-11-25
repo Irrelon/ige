@@ -378,7 +378,7 @@ console.log(`${gpuMs?.toFixed(1)} ms on the GPU, ${(gpuMemory.total / 1048576).t
 | `renderer.shadowSharing(threshold)` | Split-screen views close together share one shadow map |
 | `ige.engine.renderOnDemand(true)` | Draw only when something visible changed (strategy games, menus); setters such as `material()`, `texture()` and `opacity()` count as changes, edits to objects in place need `ige.engine.manualRender()` |
 | `renderer.debugDraw({ bounds, shadowFrustum })`, `debugLine()` | See culling, LOD levels and shadow coverage |
-| `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame; GPU time and memory (see above); uploads and GPU bytes held by meshes (`geometryBytes`) |
+| `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame; GPU time and memory (see above; meshes' bytes are `gpuMemory.geometry`); uploads |
 | `renderer.uploadBudget({ bytes, ms })` | Spread mesh uploads across frames, so streaming in chunks doesn't stutter (see [`streaming-geometry.md`](streaming-geometry.md)) |
 | `quantiseGeometry(mesh)` | Half the GPU memory for a mesh: 16-bit positions, 8-bit normals, 16-bit texture coordinates |
 
@@ -401,7 +401,7 @@ PBR lighting on and off).
   (`normalTexture`, `normalScale`, `metallicRoughnessTexture`, `aoTexture`, `aoStrength`: an `IgeTexture` each, or an
   `...TextureId` with `...TextureBlob` for a glTF image). A normal map on a mesh made in code needs `tangents` on its
   geometry data (`igeComputeTangents(geometry)` makes them). Shadow, outline, silhouette and decal passes ignore maps.
-- **Mipmaps**: the three maps always get mipmaps and trilinear filtering; base colour and emissive textures get them as their glTF sampler says, or by `renderer.modelTextureMipmaps()` (on by default). Mipmaps cost a third more texture memory for each texture.
+- **Mipmaps**: the three maps always get mipmaps and trilinear filtering; base colour and emissive textures get them when their glTF sampler asks, or with `renderer.modelTextureMipmaps(true)` (off by default). Mipmaps cost a third more texture memory for each texture.
 - **Cost**: a mesh with no maps pays nothing: no extra vertex data, texture binds or batch splits. A mesh with maps adds
   4 floats a vertex (tangent; 4 bytes in `IGE_QUANTISED_ENCODINGS`), up to three textures bound for its draw, and items with different maps don't share an
   instanced draw. Map textures go through the texture manager, so a lost WebGL context brings them back, and
@@ -419,8 +419,8 @@ and let the renderer upload them a few a frame (`renderer.uploadBudget()`). Quan
 (`KHR_mesh_quantization`, as `gltfpack` writes them) load and stay compact on the GPU. See
 [`streaming-geometry.md`](streaming-geometry.md).
 
-Textures in glTF files get mipmaps (as their sampler asks; on when it doesn't say). A flat-colour atlas whose swatches
-bleed together far away can turn them off with `renderer.modelTextureMipmaps(false)`.
+Textures in glTF files get mipmaps when their sampler asks for them. `renderer.modelTextureMipmaps(true)` gives them to
+those whose sampler doesn't say (off by default: a flat-colour atlas's swatches would bleed together far away).
 
 ## Freeing resources
 
