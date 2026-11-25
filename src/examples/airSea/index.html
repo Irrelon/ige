@@ -81,14 +81,25 @@
     }
     @keyframes blink { to { visibility: hidden; } }
     #event { color: #b8c2cc; max-width: 260px; margin-top: 4px; }
+
+    #tuning { top: 60px; right: 12px; width: 320px; font-size: 12px; max-height: calc(100vh - 300px); overflow-y: auto; }
+    #tuning[hidden] { display: none; }
+    #tuning .head { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #ffd166; }
+    #tuning .row { display: grid; grid-template-columns: 96px 1fr 70px; align-items: center; gap: 6px; margin: 3px 0; }
+    #tuning .row.buttons { display: flex; gap: 6px; margin-top: 8px; }
+    #tuning .value { text-align: right; font-variant-numeric: tabular-nums; }
+    #tuning .muted { color: #b8c2cc; }
+    #tuning .note { margin-top: 6px; min-height: 14px; word-break: break-all; user-select: text; }
+    #tuning input[type=range] { width: 100%; }
+    #tuning button { background: #2b3542; color: #fff; border: 1px solid #4a5868; border-radius: 4px; padding: 3px 9px; font: inherit; cursor: pointer; }
   </style>
 </head>
 <body>
 <div id="info" class="panel">
   <h2>Air and sea</h2>
-  <div class="muted"><kbd>1</kbd>-<kbd>6</kbd> or <kbd>C</kbd> pick a craft, <kbd>R</kbd> put it back at its start, <kbd>H</kbd> hide this</div>
+  <div class="muted"><kbd>1</kbd>-<kbd>6</kbd> or <kbd>C</kbd> pick a craft, <kbd>R</kbd> put it back at its start, <kbd>P</kbd> tuning, <kbd>H</kbd> hide this</div>
   <div class="more">
-    <div style="margin-top: 6px;"><b>Planes</b>: <kbd>W</kbd> <kbd>S</kbd> throttle, <kbd>↑</kbd> <kbd>↓</kbd> nose down and up, <kbd>←</kbd> <kbd>→</kbd> roll, <kbd>A</kbd> <kbd>D</kbd> rudder and nose wheel, <kbd>Space</kbd> brakes, <kbd>G</kbd> gear, <kbd>F</kbd> flaps</div>
+    <div style="margin-top: 6px;"><b>Planes</b>: <kbd>W</kbd> <kbd>S</kbd> throttle, <kbd>↑</kbd> <kbd>↓</kbd> nose down and up, <kbd>←</kbd> <kbd>→</kbd> roll, <kbd>A</kbd> <kbd>D</kbd> rudder and nose wheel, <kbd>Space</kbd> brakes, <kbd>G</kbd> gear, <kbd>F</kbd> flaps (gear down near the ground, it flares for you)</div>
     <div><b>Helicopter</b>: <kbd>W</kbd> <kbd>S</kbd> up and down (let go: it holds height), arrows tilt (let go: it levels and slows), <kbd>A</kbd> <kbd>D</kbd> turn</div>
     <div><b>Boat</b>: <kbd>W</kbd> <kbd>S</kbd> ahead and astern, <kbd>A</kbd> <kbd>D</kbd> or <kbd>←</kbd> <kbd>→</kbd> rudder</div>
     <div class="muted" style="margin-top: 6px;">Gamepad: right trigger throttle (or up), left trigger brakes (or down), left stick pitch and roll (or rudder), bumpers yaw, A gear, X flaps, Y next craft, B reset</div>
@@ -97,6 +108,8 @@
 </div>
 
 <div id="crafts" class="panel"></div>
+
+<div id="tuning" class="panel" hidden></div>
 
 <div id="hud" class="panel">
   <div class="name" id="craftName"></div>

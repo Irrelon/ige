@@ -27,15 +27,19 @@ import { AIRCRAFT_PRESETS } from "@/engine/physics/IgePhysicsCraft3dPresets";
  * flying where it points. The stick sets turn rates, reached through the
  * body's inertia and scaled by airspeed (the controls do little when
  * slow). With assists, wings and nose level themselves when the stick is
- * let go and banked turns are coordinated. Stalled, the nose drops by
- * itself until the wing flies again. Landing gear is sprung struts found
- * by rays down to the ground, with brakes and nose-wheel steering;
- * retractable. Floats are buoyancy points on the water.
+ * let go, banked turns are coordinated, a hard pull flies at the edge of
+ * the stall rather than over it (unless it's slow), and low over the
+ * ground with the gear down it flares itself. Stalled, the nose drops by
+ * itself until the wing flies again, in about stallRecovery seconds.
+ * Landing gear is sprung struts found by rays down to the ground, with
+ * brakes and nose-wheel steering, retractable, forgiving of firm and
+ * crooked touchdowns. Floats are buoyancy points on the water.
  *
  * Helicopters: the rotor pushes along the body's up; the collective sets
  * a climb or descent rate (with assists: centred, it holds height, and it
  * eases down onto the ground); the cyclic tilts it to a target angle
- * (released: it levels and slows to a hover); the tail rotor yaws it.
+ * (released: level within levelTime, then it leans back against its drift
+ * and brakes to a hover); the tail rotor yaws it.
  *
  * All in metres and SI units inside; IGE units at the API.
  */
@@ -52,12 +56,32 @@ const INDUCED = 0.045;
 const GEAR_DRAG = 0.02;
 /** Side force coefficient per unit of sideslip: keeps it flying where it points. */
 const SIDE_FORCE = 0.8;
+/** Auto-flare: the sink (m/s) it eases to at the ground, and more per metre above it; how hard it eases (per second) and at most (g). */
+const FLARE_SINK = 0.4;
+const FLARE_EASE = 0.35;
+const FLARE_GAIN = 3;
+const FLARE_MOST = 0.5;
+/** Auto-flare: the nose-up attitude it eases to (main wheels first). */
+const FLARE_PITCH = 5 * DEG;
+/** Helicopters, cyclic let go: braking of the drift (per second, and at most m/s²), and lean back against it (share of maxTilt per m/s). */
+const HOVER_BRAKE = 0.8;
+const HOVER_BRAKE_MOST = 3;
+const HOVER_LEAN = 0.08;
 /** The bounce of default gear springs (Hz). */
 const GEAR_FREQUENCY = 1.5;
 /** Tyre grip sideways, rolling resistance, and braking grip. */
 const TYRE_GRIP = 0.9;
 const ROLLING = 0.02;
 const BRAKING = 0.8;
+/** Touching down: seconds the tyres take to grip fully sideways, and their grip at first. */
+const TOUCHDOWN_TIME = 0.5;
+const TOUCHDOWN_GRIP = 0.3;
+/** On its wheels: roll damping (per second), so a wing-low touchdown doesn't rock it from wheel to wheel. */
+const GEAR_ROLL_DAMPING = 6;
+/** Gear struts: damping springing back out, against going in. */
+const REBOUND = 2.5;
+/** Share of the way up from the ground to the centre of mass that the tyres' grip acts (1: it can't tip the aircraft). */
+const TIP_GUARD = 0.7;
 
 export interface IgeGearSpec {
 	/** Metres from the entity's origin. */
@@ -87,11 +111,14 @@ export interface IgeAircraftSpec {
 	engine: "propeller" | "jet";
 	spoolTime: number;
 	stallAngle: number;
+	stallRecovery: number;
 	pitchRate: number;
 	rollRate: number;
 	yawRate: number;
 	response: number;
 	controlSpeed: number;
+	/** Planes: metres above the ground (or water, on floats) at which the auto-flare starts. */
+	flareHeight: number;
 	flaps: { lift: number; drag: number };
 	gear: IgeGearSpec[];
 	retractable: boolean;
@@ -101,6 +128,7 @@ export interface IgeAircraftSpec {
 	climbRate: number;
 	descentRate: number;
 	maxTilt: number;
+	levelTime: number;
 	spinUp: number;
 	friction: number;
 	extrapolate: number;
@@ -214,11 +242,13 @@ export function resolveAircraftSpec (options: IgePhysicsAircraftOptions, u: numb
 		engine,
 		spoolTime: Math.max(0.05, options.spoolTime ?? preset.spoolTime),
 		stallAngle,
+		stallRecovery: Math.max(0.2, options.stallRecovery ?? (preset.stallRecovery || 1)),
 		pitchRate: (options.pitchRate ?? preset.pitchRate) * DEG,
 		rollRate: (options.rollRate ?? preset.rollRate) * DEG,
 		yawRate: (options.yawRate ?? preset.yawRate) * DEG,
 		response: Math.max(0.05, options.response ?? preset.response),
 		controlSpeed: Math.max(1, (options.controlSpeed ?? stallSpeed * 1.3 * u) / u),
+		flareHeight: clamp(stallSpeed * 0.3, 5, 12),
 		flaps: { lift: options.flaps?.lift ?? preset.flaps.lift, drag: options.flaps?.drag ?? preset.flaps.drag },
 		gear,
 		retractable: options.retractable ?? (preset.retractable && gear.length > 0),
@@ -228,6 +258,7 @@ export function resolveAircraftSpec (options: IgePhysicsAircraftOptions, u: numb
 		climbRate: Math.max(0.1, (options.climbRate ?? preset.climbRate * u) / u),
 		descentRate: Math.max(0.1, (options.descentRate ?? preset.descentRate * u) / u),
 		maxTilt: (options.maxTilt ?? preset.maxTilt) * DEG,
+		levelTime: Math.max(0.1, options.levelTime ?? (preset.levelTime || 0.5)),
 		spinUp: Math.max(0.05, options.spinUp ?? (preset.spinUp || 3)),
 		friction: options.friction ?? 0.5,
 		extrapolate: options.extrapolate ?? 0.25,
@@ -284,8 +315,13 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 	_flaps: number = 0;
 	_aoa: number = 0;
 	_stalled: boolean = false;
+	/** Planes: seconds left after a stall in which the assists hold it out of another. */
+	_recovering: number = 0;
 	_wheels: WheelState[];
 	_wheelsDown: boolean = false;
+	/** Seconds since the wheels were last on the ground, and seconds left of a touchdown (the tyres spinning up). */
+	_wheelsAir: number = 1;
+	_touchdown: number = 0;
 	_floats?: IgeBuoyancySolver;
 	_floatsRest: number = 1;
 	_hit: IgePhysicsBackendRaycastHit = { body: {}, distance: 0, normal: { x: 0, y: 1, z: 0 } };
@@ -356,14 +392,14 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 	}
 
 	/** Metres from the origin down to what's below (the ground, or the water's surface), up to a distance; Infinity past it. */
-	_heightBelow (most: number): number {
+	_heightBelow (most: number, water: boolean = true): number {
 		const f = this._frame, u = this._u;
 		const from = { x: f.position.x, y: f.position.y + 1, z: f.position.z };
 		let height = Infinity;
 		if (this._host._backend.raycast(from, { x: 0, y: -1, z: 0 }, most + 1, this._layer, this._hit, this.body._handle)) height = Math.max(0, this._hit.distance - 1);
-		const water = this._host._water;
-		if (water) {
-			const surface = water.heightAt(f.position.x * u, f.position.z * u) / u;
+		const sea = water ? this._host._water : null;
+		if (sea) {
+			const surface = sea.heightAt(f.position.x * u, f.position.z * u) / u;
 			if (Number.isFinite(surface) && f.position.y - surface < most) height = Math.min(height, Math.max(0, f.position.y - surface));
 		}
 		return height;
@@ -471,6 +507,10 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 		const steer = input.yaw * (1 - 0.75 * smoothstep(5, 35, Math.abs(along)));
 		const d = _d;
 		d.x = -frame.up.x; d.y = -frame.up.y; d.z = -frame.up.z;
+		// Just touched down, the tyres skid sideways a moment as they spin up, so a crabbed landing swings the nose
+		// round into its track rather than snatching it sideways
+		this._touchdown = Math.max(0, this._touchdown - dt);
+		const skid = 1 - (1 - TOUCHDOWN_GRIP) * (this._touchdown / TOUCHDOWN_TIME);
 		for (let i = 0; i < spec.gear.length; i++) {
 			const w = spec.gear[i], state = this._wheels[i];
 			state.previous = state.compression;
@@ -494,13 +534,14 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 			state.compression = Math.min(pushed, w.travel);
 			down = true;
 
-			// The strut: spring and damper (and very stiff once it bottoms out)
+			// The strut: spring and damper, damped harder springing back out (so a firm touchdown doesn't bounce), and
+			// very stiff once it bottoms out, soaking up the blow rather than throwing it back
 			const point = _b;
 			point.x = top.x + d.x * dist; point.y = top.y + d.y * dist; point.z = top.z + d.z * dist;
 			const v = frame.pointVelocity(point, _c);
 			const closing = v.x * d.x + v.y * d.y + v.z * d.z;
-			let load = w.stiffness * Math.min(pushed, w.travel) + w.damping * closing;
-			if (pushed > w.travel) load += (pushed - w.travel) * w.stiffness * 20;
+			let load = w.stiffness * Math.min(pushed, w.travel) + w.damping * closing * (closing < 0 ? REBOUND : 1);
+			if (pushed > w.travel) load += (pushed - w.travel) * w.stiffness * 20 + Math.max(0, closing) * w.damping * 4;
 			load = Math.max(0, load);
 
 			// The tyre: rolling along its heading (turned by the steering), gripping sideways
@@ -516,18 +557,26 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 			const rolling = v.x * fx + v.y * fy + v.z * fz;
 			const sliding = v.x * sx + v.y * sy + v.z * sz;
 			const share = this._frame.mass * w.share;
-			const grip = TYRE_GRIP * load;
+			// A steering (nose) wheel castors at speed, so touching down crabbed the main wheels swing the nose round
+			// into the direction it's going
+			const grip = TYRE_GRIP * load * skid * (w.steer > 0 ? 1 - 0.7 * smoothstep(8, 25, Math.abs(rolling)) : 1);
 			const side = clamp(-sliding * share / dt * 0.35, -grip, grip);
 			const brake = w.brake ? input.brake : 0;
 			const holding = (ROLLING + BRAKING * brake) * load;
 			const roll = -Math.sign(rolling) * Math.min(Math.abs(rolling) * share / dt * 0.35, holding);
 			const force = _a;
-			force.x = -d.x * load + sx * side + fx * roll;
-			force.y = -d.y * load + sy * side + fy * roll;
-			force.z = -d.z * load + sz * side + fz * roll;
+			force.x = -d.x * load; force.y = -d.y * load; force.z = -d.z * load;
+			this._force(force, point);
+			// The tyre's grip and drag act part way up towards the centre of mass, so they can't tip it over on its gear
+			const c = frame.com;
+			const raise = TIP_GUARD * Math.max(0, (c.x - point.x) * -d.x + (c.y - point.y) * -d.y + (c.z - point.z) * -d.z);
+			point.x -= d.x * raise; point.y -= d.y * raise; point.z -= d.z * raise;
+			force.x = sx * side + fx * roll; force.y = sy * side + fy * roll; force.z = sz * side + fz * roll;
 			this._force(force, point);
 			state.spinRate = rolling / w.radius;
 		}
+		if (down && !this._wheelsDown && this._wheelsAir > 0.25) this._touchdown = TOUCHDOWN_TIME;
+		this._wheelsAir = down ? 0 : this._wheelsAir + dt;
 		this._wheelsDown = down;
 	}
 
@@ -537,7 +586,7 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 		const x = Math.abs(alpha), sign = alpha < 0 ? -1 : 1;
 		if (x <= stall) return spec.liftSlope * alpha + flaps;
 		const peak = spec.liftSlope * stall * sign + flaps;
-		let cl = peak * (1 - 0.45 * smoothstep(0, 8 * DEG, x - stall));
+		let cl = peak * (1 - 0.35 * smoothstep(0, 8 * DEG, x - stall));
 		if (x > 30 * DEG) cl *= Math.max(0, Math.cos((x - 30 * DEG) * 1.5));
 		return cl;
 	}
@@ -552,6 +601,9 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 			else this._floats.submerged = 0;
 		}
 		const onGround = this._wheelsDown || onWater > 0;
+		const airborne = !onGround;
+		const m = frame.mass;
+		const g = Math.abs(this._host.gravity());
 
 		const v = frame.velocity;
 		const speed = Math.hypot(v.x, v.y, v.z);
@@ -561,13 +613,20 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 		const stall = spec.stallAngle - this._flaps * 2 * DEG;
 		const flapLift = this._flaps * spec.flaps.lift * spec.clMax;
 		// Stalls past the stall angle, flies again a little under it
-		this._stalled = !onGround && speed > 3 && Math.abs(alpha) > (this._stalled ? stall - 2 * DEG : stall);
+		const wasStalled = this._stalled;
+		this._stalled = airborne && speed > 3 && Math.abs(alpha) > (this._stalled ? stall - 2 * DEG : stall);
+		// Once it flies again the assists hold it out of another stall, until it has some speed again
+		if (wasStalled && !this._stalled && spec.assists && airborne) this._recovering = spec.stallRecovery;
+		else if (!airborne) this._recovering = 0;
+		else if (speed > spec.stallSpeed * 1.15) this._recovering = Math.max(0, this._recovering - dt);
 
 		// Aerodynamic forces at the centre of mass
 		const q = 0.5 * AIR * speed * speed;
 		const area = spec.wingArea;
 		const force = _a;
 		force.x = 0; force.y = 0; force.z = 0;
+		// How fast the airflow is turning towards the wing's up (rad/s): the angle of attack falls at this rate unless the nose follows
+		let pathRate = 0;
 		if (speed > 0.5) {
 			const ix = v.x / speed, iy = v.y / speed, iz = v.z / speed;
 			const cl = this._lift(alpha, stall, flapLift);
@@ -579,6 +638,7 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 				lx /= ll; ly /= ll; lz /= ll;
 				const lift = q * area * cl;
 				force.x += lx * lift; force.y += ly * lift; force.z += lz * lift;
+				pathRate = clamp((lift / m - g * ly) / Math.max(speed, 5), -2, 2);
 			}
 			let cd = spec.cd0 + INDUCED * cl * cl + this._flaps * spec.flaps.drag + (spec.retractable || spec.gear.length ? this._gear * GEAR_DRAG : 0);
 			if (Math.abs(alpha) > stall) cd += 1.1 * Math.sin(Math.abs(alpha)) ** 2;
@@ -590,6 +650,18 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 		}
 		const thrust = this._engine * spec.thrust * (spec.engine === "propeller" ? clamp(1 - 0.5 * speed / spec.maxSpeed, 0.35, 1) : 1);
 		force.x += frame.forward.x * thrust; force.y += frame.forward.y * thrust; force.z += frame.forward.z * thrust;
+
+		// Auto-flare (assists): low over the ground (or the water, on floats) with the gear down and sinking, the
+		// sink eases off as it gets lower (like a cushion of air under the wing) and the nose comes up a little
+		let flaring = false;
+		if (spec.assists && airborne && v.y < -0.2 && (this._floats || (spec.gear.length > 0 && this._gear >= 1))) {
+			const height = this._heightBelow(spec.flareHeight + 1, !!this._floats);
+			if (height < spec.flareHeight) {
+				flaring = true;
+				const sinking = -v.y - (FLARE_SINK + FLARE_EASE * height);
+				if (sinking > 0) force.y += m * Math.min(FLARE_GAIN * sinking, FLARE_MOST * g);
+			}
+		}
 		this._force(force);
 
 		// Control: the stick sets turn rates, reached at the response rate, and
@@ -601,11 +673,9 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 		let pitchEffect = Math.max(effect, wash);
 		let yawEffect = Math.max(effect, wash, onWater > 0 ? 0.6 * Math.min(1, onWater) : 0);
 		const rollEffect = onGround ? effect * 0.3 : effect;
-		const airborne = !onGround;
 		const k = 1 / spec.response;
 		const bank = frame.roll();
 		const pitchNow = frame.pitch();
-		const g = Math.abs(this._host.gravity());
 
 		// With assists, a banked turn is flown for you: the nose comes round
 		// at the rate the bank turns the flight path
@@ -617,19 +687,34 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 		else if (spec.assists && airborne && Math.abs(bank) < 80 * DEG) noseUp = clamp(-pitchNow * 0.6, -spec.pitchRate * 0.25, spec.pitchRate * 0.25);
 		else noseUp = 0;
 		if (Math.abs(bank) < 80 * DEG) noseUp += turn * Math.sin(bank);
+		// Flaring, the nose eases up to a landing attitude (unless the stick pushes it down)
+		if (flaring && input.pitch <= 0) noseUp = Math.max(noseUp, clamp((FLARE_PITCH - pitchNow) * 2, 0, spec.pitchRate * 0.3));
 		let rollRight: number;
 		if (input.roll) rollRight = input.roll * spec.rollRate;
 		else if (spec.assists && airborne) rollRight = clamp(-bank * 1.2, -spec.rollRate * 0.4, spec.rollRate * 0.4);
 		else rollRight = 0;
 		let yawRight = input.yaw * spec.yawRate;
 		if (Math.abs(bank) < 80 * DEG) yawRight += turn * Math.cos(bank);
+		// On its wheels at speed (assists), the nose follows the way it's rolling: a crabbed touchdown straightens up
+		if (spec.assists && this._wheelsDown && !input.yaw && vb.z > 5) yawRight -= clamp(Math.atan2(vb.x, vb.z) * 4, -spec.yawRate, spec.yawRate);
 
-		// Stalled: the nose drops by itself until the wing flies again
+		// With assists, a pull flies at the edge of the stall rather than over it: the nose comes up no faster than the
+		// airflow follows it there. Not when slow (slow and nose-high it can still stall), but always for a while after
+		// a stall, so it doesn't stall again straight away
+		if (spec.assists && airborne && alpha > 0) {
+			const guard = this._recovering > 0 ? 1 : smoothstep(1, 1.3, speed / spec.stallSpeed);
+			const edge = pathRate + 4 * (stall - 3 * DEG - alpha);
+			if (guard > 0 && noseUp > edge) noseUp += (edge - noseUp) * guard;
+		}
+
+		// Stalled: the nose drops by itself, briskly enough that the wing flies again in about stallRecovery seconds
 		if (this._stalled) {
-			const depth = clamp((Math.abs(alpha) - stall) / (5 * DEG), 0.3, 1);
-			if (alpha > 0) noseUp = Math.min(noseUp, -spec.pitchRate * 0.6 * depth);
-			else noseUp = Math.max(noseUp, spec.pitchRate * 0.6 * depth);
-			pitchEffect = Math.max(pitchEffect, 0.6);
+			const quick = 1.5 / spec.stallRecovery;
+			const under = stall - 4 * DEG;
+			if (alpha > 0) noseUp = Math.min(noseUp, pathRate - (alpha - under) * quick);
+			else noseUp = Math.max(noseUp, pathRate + (-alpha - under) * quick);
+			noseUp = clamp(noseUp, -spec.pitchRate * 1.5, spec.pitchRate * 1.5);
+			pitchEffect = 1;
 		}
 
 		const most = 1.5 * k, gain = 4 * k;
@@ -641,6 +726,7 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 		// A little damping whatever the airspeed, so it doesn't tumble on
 		noseUpAccel += w.x * 0.5 * (1 - pitchEffect);
 		rollAccel -= w.z * 0.5 * (1 - rollEffect);
+		if (this._wheelsDown) rollAccel -= w.z * GEAR_ROLL_DAMPING;
 		yawAccel += w.y * 0.5 * (1 - yawEffect);
 		_c.x = -noseUpAccel; _c.y = -yawAccel; _c.z = rollAccel;
 		this._torque(frame.torqueFor(_c, _a));
@@ -698,21 +784,35 @@ export class IgePhysicsAircraft3d extends IgePhysicsCraft3d implements IgePhysic
 		force.x -= c * v.x * across;
 		force.z -= c * v.z * across;
 		force.y -= 0.3 * m * v.y;
+		const control = this._rotor * (sitting && collective <= 0.05 ? 0 : 1);
+		// With assists, how far each axis of the cyclic is let go (a stick near the middle blends in, so small
+		// movements fly slowly)
+		const freePitch = 1 - smoothstep(0.05, 0.3, Math.abs(input.pitch));
+		const freeRoll = 1 - smoothstep(0.05, 0.3, Math.abs(input.roll));
+		if (spec.assists && control > 0) {
+			// Let go, it brakes its drift across the ground (as well as leaning back against it, below)
+			const fx = frame.forward.x, fz = frame.forward.z, fl = Math.hypot(fx, fz) || 1;
+			const hx = fx / fl, hz = fz / fl;
+			const along = freePitch * clamp((v.x * hx + v.z * hz) * HOVER_BRAKE, -HOVER_BRAKE_MOST, HOVER_BRAKE_MOST);
+			const sideways = freeRoll * clamp((v.x * hz - v.z * hx) * HOVER_BRAKE, -HOVER_BRAKE_MOST, HOVER_BRAKE_MOST);
+			force.x -= m * control * (hx * along + hz * sideways);
+			force.z -= m * control * (hz * along - hx * sideways);
+		}
 		this._force(force);
 		const vb = frame.toBody(v, _c);
 
 		// The cyclic tilts it; the tail rotor yaws it
 		const w = frame.toBody(frame.angular, _b);
-		const control = this._rotor * (sitting && collective <= 0.05 ? 0 : 1);
 		const k = 1 / spec.response;
 		let pitchDownAccel: number, rollAccel: number;
 		if (spec.assists) {
-			// Stick to a target tilt; released, it levels and leans back against its drift to a hover
-			let pitchTarget = input.pitch * spec.maxTilt;
-			let rollTarget = input.roll * spec.maxTilt;
-			if (!input.pitch) pitchTarget = -clamp(vb.z / spec.maxSpeed * 3, -0.7, 0.7) * spec.maxTilt;
-			if (!input.roll) rollTarget = clamp(vb.x / spec.maxSpeed * 3, -0.7, 0.7) * spec.maxTilt;
-			const stiffness = 10, damping = 2 * 0.85 * Math.sqrt(stiffness);
+			// Stick to a target tilt, and let go, back level within levelTime (critically damped: no overshoot), leaning
+			// back against its drift to a hover
+			const lean = (speed: number) => clamp(speed * HOVER_LEAN, -0.6, 0.6) * spec.maxTilt;
+			const pitchTarget = input.pitch * spec.maxTilt - freePitch * lean(vb.z);
+			const rollTarget = input.roll * spec.maxTilt + freeRoll * lean(vb.x);
+			const rate = 5 / spec.levelTime;
+			const stiffness = rate * rate, damping = 2 * rate;
 			pitchDownAccel = stiffness * (pitchTarget + frame.pitch()) - damping * w.x;
 			rollAccel = stiffness * wrap(rollTarget - frame.roll()) - damping * w.z;
 		} else {

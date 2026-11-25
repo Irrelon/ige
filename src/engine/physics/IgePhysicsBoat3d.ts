@@ -19,7 +19,8 @@ import { BOAT_PRESETS } from "@/engine/physics/IgePhysicsCraft3dPresets";
  * (little forwards, a lot sideways, damped turning), a propeller that only
  * pushes while it's under water, a rudder that turns the boat harder the
  * faster it goes, planing (the hull lifts and the bow rises at speed), and
- * arcade help: it leans into turns, is hard to capsize and rights itself.
+ * arcade help: it leans into turns, is hard to capsize and rights itself,
+ * and leaping clear of the water it holds itself about level.
  */
 
 type Vec3 = IgePhysicsVec3;
@@ -140,6 +141,12 @@ export function resolveBoatSpec (options: IgePhysicsBoatOptions, u: number): Ige
 	};
 }
 
+/** The tightest turn at speed, g across the water. */
+const TURN_MOST = 2.5;
+/** Clear of the water: how quickly it levels itself (rad/s, critically damped), to a little bow-up. */
+const AIR_LEVEL = 2.5;
+const AIR_PITCH = 3 * Math.PI / 180;
+
 const _a = vec();
 const _b = vec();
 const _c = vec();
@@ -234,6 +241,7 @@ export class IgePhysicsBoat3d extends IgePhysicsCraft3d implements IgePhysicsBoa
 		const under = this._hull.apply(frame, world);
 		if (under <= 0) {
 			this._propInWater = false;
+			this._airborneAttitude(1);
 			return;
 		}
 		const m = frame.mass;
@@ -254,13 +262,15 @@ export class IgePhysicsBoat3d extends IgePhysicsCraft3d implements IgePhysicsBoa
 		_c.x = frame.forward.x * resistance; _c.y = frame.forward.y * resistance; _c.z = frame.forward.z * resistance;
 		this._force(_c);
 
-		// The propeller: pushes only while it's under water
+		// The propeller: pushes only while it's under water. It pushes level with the centre of mass (not from
+		// down at the propeller), so full throttle can't stand the boat on its stern
 		const prop = frame.pointToWorld(spec.propeller, _a);
 		this._propInWater = water.heightAt(prop.x * u, prop.z * u) / u > prop.y;
 		if (this._propInWater && this._engine !== 0) {
 			const push = this._engine > 0 ? this._engine * spec.thrust : this._engine * spec.thrust * spec.reverse;
 			_c.x = frame.forward.x * push; _c.y = frame.forward.y * push; _c.z = frame.forward.z * push;
-			this._force(_c, prop);
+			_b.x = spec.propeller.x; _b.y = spec.centreOfMass.y; _b.z = spec.propeller.z;
+			this._force(_c, frame.pointToWorld(_b, _a));
 		}
 
 		// Planing: at speed the hull lifts out of the water
@@ -276,7 +286,8 @@ export class IgePhysicsBoat3d extends IgePhysicsCraft3d implements IgePhysicsBoa
 		let authority = clamp(Math.abs(ahead) / spec.turnSpeed, 0, 1);
 		if (this._propInWater) authority = Math.max(authority, 0.35 * Math.abs(this._engine));
 		const astern = ahead < -0.5 || (Math.abs(ahead) <= 0.5 && this._engine < 0) ? -1 : 1;
-		const yawTarget = input.steer * spec.turnRate * authority * astern;
+		// ...but no tighter than a few g across the water, so it stays on its keel at speed
+		const yawTarget = input.steer * Math.min(spec.turnRate * authority, (TURN_MOST * g) / Math.max(Math.abs(ahead), 1)) * astern;
 		const yawRight = -w.y;
 		const yawMost = spec.turnRate * 4;
 		// The rudder is sized to overcome the keel's drag at the turn rate it's after
@@ -306,6 +317,20 @@ export class IgePhysicsBoat3d extends IgePhysicsCraft3d implements IgePhysicsBoa
 		_a.x = -noseUp * inWater;
 		_a.y = -yawAccel;
 		_a.z = rollRight * inWater;
+		this._torque(frame.torqueFor(_a, _b));
+		if (inWater < 1) this._airborneAttitude(1 - inWater);
+	}
+
+	/** Leaping clear of the water, it holds itself about level, so it lands flat rather than on its stern or its side. */
+	_airborneAttitude (share: number): void {
+		const frame = this._frame;
+		const w = frame.toBody(frame.angular, _c);
+		const stiffness = AIR_LEVEL * AIR_LEVEL, damping = 2 * AIR_LEVEL;
+		let roll = frame.roll();
+		if (roll > Math.PI) roll -= 2 * Math.PI;
+		_a.x = -(stiffness * (AIR_PITCH - frame.pitch()) + damping * w.x) * share;
+		_a.y = 0;
+		_a.z = (-stiffness * roll - damping * w.z) * share;
 		this._torque(frame.torqueFor(_a, _b));
 	}
 
