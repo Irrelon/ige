@@ -11,7 +11,10 @@ import type { IgeSkeleton, IgeSkeletonData } from "@/types/IgeSkeletonData";
  * the same model, so they must be treated as read-only.
  */
 export interface IgeModelPart {
-	/** The glTF node's name (or its mesh's), e.g. "Body_17_doctor": what IgeEntity.model() parts match. */
+	/**
+	 * The glTF node's name (or its mesh's, or else the nearest named node's above it), e.g. "Body_17_doctor": what
+	 * IgeEntity.model() parts match.
+	 */
 	name?: string;
 	geometryData: IgeGeometryData3d;
 	materialData: IgeMaterialData;
@@ -40,13 +43,13 @@ export function getModelParts (model: IgeGltfModel): IgeModelPart[] {
 	parts = [];
 	const materials = model.materials.map((mat, index) => toMaterialData(model, mat, index));
 
-	const addMesh = (meshIndex: number, matrix: Float32Array | undefined, skinned: boolean, name?: string) => {
+	const addMesh = (meshIndex: number, matrix: Float32Array | undefined, skinned: boolean, name?: string, inherited?: string) => {
 		const mesh = model.meshes[meshIndex];
 		if (!mesh) return;
 		for (const primitive of mesh.primitives) {
 			const isSkinned = skinned && !!(primitive.geometry.boneWeights && primitive.geometry.boneIndices);
 			parts!.push({
-				name: name ?? (mesh as { name?: string }).name,
+				name: name ?? (mesh as { name?: string }).name ?? inherited,
 				geometryData: primitive.geometry,
 				materialData: materials[primitive.materialIndex ?? 0] || { color: { r: 1, g: 1, b: 1, a: 1 } },
 				matrix: isSkinned ? undefined : matrix,
@@ -59,22 +62,24 @@ export function getModelParts (model: IgeGltfModel): IgeModelPart[] {
 	const scene = model.scenes?.[model.defaultSceneIndex] || model.scenes?.[0];
 
 	if (nodes && nodes.length && scene) {
-		const visit = (nodeIndex: number, parentMatrix: Float32Array | undefined) => {
+		// A part is named by its node, else its mesh, else the nearest named node above it (`inherited`): gltfpack's
+		// -kn hangs each mesh on an unnamed child of the named node it was on, and drops the mesh's name
+		const visit = (nodeIndex: number, parentMatrix: Float32Array | undefined, inherited: string | undefined) => {
 			const node = nodes[nodeIndex];
 			if (!node) return;
 			const local = nodeLocalMatrix(node);
 			const world = parentMatrix ? (local ? multiplyMat4(parentMatrix, local) : parentMatrix) : local;
 
 			if (node.mesh !== undefined) {
-				addMesh(node.mesh, world && !isIdentity(world) ? world : undefined, node.skin !== undefined, node.name);
+				addMesh(node.mesh, world && !isIdentity(world) ? world : undefined, node.skin !== undefined, node.name, inherited);
 			}
 
 			if (node.children) {
-				for (const child of node.children) visit(child, world);
+				for (const child of node.children) visit(child, world, node.name ?? inherited);
 			}
 		};
 
-		for (const root of scene.nodeIndices) visit(root, undefined);
+		for (const root of scene.nodeIndices) visit(root, undefined, undefined);
 	} else {
 		// No scene graph: place every mesh at the model origin
 		for (let i = 0; i < model.meshes.length; i++) addMesh(i, undefined, !!model.skins?.length);
