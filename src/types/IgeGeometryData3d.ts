@@ -19,6 +19,12 @@ export interface IgeGeometryData3d extends IgeAbstractData3d {
 	uvs?: Float32Array; // Texture coordinates (u, v)
 	tangents?: Float32Array; // Tangent data for normal mapping
 	colors?: Float32Array; // Vertex colors (r, g, b, a)
+	/**
+	 * What the vertex colours are, for linear lighting (IgeWebGlRenderer.linearLighting(); without it this changes
+	 * nothing): "srgb" (the default: picked as colours are picked, by eye, in hex or CSS) is decoded to linear light as
+	 * each vertex is drawn; "linear" is used as it is (glTF's COLOR_0, linear by the glTF spec, so the loader sets it).
+	 */
+	colorSpace?: "srgb" | "linear";
 	indices?: Uint16Array | Uint32Array; // Index data for indexed rendering
 
 	// Skinning data for skeletal animation

@@ -47,6 +47,8 @@ export class IgeWebGlGeometry extends IgeBaseClass {
 	indexType: number = 0x1403;
 	/** Whether the vertex buffer has an a_color attribute. */
 	hasVertexColors: boolean = false;
+	/** Its vertex colours are linear light already (IgeGeometryData3d.colorSpace "linear"): not decoded under linear lighting. */
+	linearColors: boolean = false;
 	/** Has a tangent attribute (a_tangent), so a normal map can be applied. */
 	hasTangents: boolean = false;
 	/**

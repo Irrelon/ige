@@ -10,7 +10,10 @@ import { ige } from "@/engine/instance";
 import { isClient, isServer } from "@/engine/utils/clientServer";
 import { IgeWebGlResourceManager } from "@/engine/webgl/IgeWebGlResourceManager";
 import { IgeWebGlShaderManager } from "@/engine/webgl/IgeWebGlShaderManager";
-import { IgeWebGlTextureManager } from "@/engine/webgl/IgeWebGlTextureManager";
+import { IgeWebGlTextureManager, igeTextureKey, type IgeTextureRole } from "@/engine/webgl/IgeWebGlTextureManager";
+import { igeColorDefines } from "@/engine/shaders/webgl/chunks";
+import { igeSrgbToLinear } from "@/engine/utils/igeColorSpace";
+import { igeAnisotropyLevel } from "@/engine/gpu/IgeGpuTextureFormats";
 import { IgeWebGlGeometryManager } from "@/engine/webgl/IgeWebGlGeometryManager";
 import { IgeWebGlCameraController } from "@/engine/webgl/IgeWebGlCameraController";
 import { IgeWebGlStateManager } from "@/engine/webgl/IgeWebGlStateManager";
@@ -291,8 +294,17 @@ export interface IgeWebGlRenderStats {
 export interface IgeWebGlGpuMemory extends IgeGpuMemory {
 	/** The canvas's drawing buffer: colour, depth and stencil, its antialiasing samples and the picture shown. An estimate. */
 	canvas: number;
-	/** All of the above. */
+	/** All of the above (geometry, textures, renderTargets, shadowMaps, buffers and canvas). */
 	total: number;
+	/**
+	 * `textures` split by what they hold: colour maps (base colour and emissive maps, sprites, particles, decals,
+	 * smart textures, UI pictures; both copies of one kept sRGB-encoded under linear lighting), normal maps, and the rest
+	 * (metallic-roughness and occlusion maps, the UI's glyph pages, the renderer's own small textures). Parts of
+	 * `textures`, so not added to `total` again.
+	 */
+	colorMaps: number;
+	normalMaps: number;
+	otherMaps: number;
 }
 
 /**
@@ -487,6 +499,19 @@ function parseHexColor (color: string): [number, number, number] {
 			parseInt(hex.substring(4, 6), 16) / 255
 		];
 		hexColorCache.set(color, rgb);
+	}
+	return rgb;
+}
+
+const linearHexColorCache: Map<string, [number, number, number]> = new Map();
+
+/** A "#rrggbb" colour as linear light (cached): an sRGB hex colour under linear lighting. */
+function parseHexColorLinear (color: string): [number, number, number] {
+	let rgb = linearHexColorCache.get(color);
+	if (!rgb) {
+		const [r, g, b] = parseHexColor(color);
+		rgb = [igeSrgbToLinear(r), igeSrgbToLinear(g), igeSrgbToLinear(b)];
+		linearHexColorCache.set(color, rgb);
 	}
 	return rgb;
 }
@@ -813,6 +838,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._resourceManager = new IgeWebGlResourceManager(this._canvasContext, this._webglVersion);
 		this._shaderManager = new IgeWebGlShaderManager(this._canvasContext, this._resourceManager);
 		this._textureManager = new IgeWebGlTextureManager(this._canvasContext, this._resourceManager);
+		this._textureManager.srgbColors(this._linear);
+		this._applyAnisotropy();
 		this._geometryManager = new IgeWebGlGeometryManager(gl2, this._resourceManager, device);
 		this._cameraController = new IgeWebGlCameraController();
 		this._stateManager = new IgeWebGlStateManager(this._canvasContext);
@@ -1073,6 +1100,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._resourceManager = new IgeWebGlResourceManager(gl, this._webglVersion);
 		this._shaderManager = new IgeWebGlShaderManager(gl, this._resourceManager);
 		this._textureManager = new IgeWebGlTextureManager(gl, this._resourceManager);
+		this._textureManager.srgbColors(this._linear);
+		this._applyAnisotropy();
+		// (Model textures asked for on the old context are asked for again as they're next drawn)
+		this._pendingBlobTextures.clear();
 		this._geometryManager = new IgeWebGlGeometryManager(gl as WebGL2RenderingContext, this._resourceManager, device);
 		this._stateManager = new IgeWebGlStateManager(gl);
 		// (The shadow manager keeps its lights' settings: its maps are made again at the same sizes)
@@ -1119,6 +1150,102 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	protected _pbr = false;
+
+	/**
+	 * Gets / sets linear lighting (off by default; a game opts in). With it on, colours are lit as light really adds
+	 * up: colour textures (base colour and emissive maps, particles, decals) are stored sRGB and decoded to linear
+	 * light by the GPU as they're sampled (filtered and mipmapped in linear light), the colours a game gives (material
+	 * colours, light colours, the hemisphere ambient, fog, the clear colour, vertex colours, particle and decal
+	 * colours, silhouettes) are converted to linear light once where they come in, the lighting is done in linear
+	 * light, and the result is encoded to sRGB once at the end: in the post-processing's composite after tone mapping,
+	 * or at the end of each shader drawing straight to the screen. Normal, metallic-roughness and occlusion maps stay
+	 * as they are, and so do glTF's colour factors and vertex colours (linear already, by the glTF spec). Sprites
+	 * (2D), the UI layer, outlines and overlays aren't lit and look the same either way.
+	 *
+	 * Hand-picked colours look different lit this way (mid tones lighter, falloffs and shadows harsher, lights mixing
+	 * more naturally), so a game that turns it on retunes its look: see guides/textures-and-colour.md. Switching at run
+	 * time works: colour textures are uploaded again in the other form as they're next drawn (a glTF model's image is
+	 * decoded again, its old copy standing in meanwhile), and the programs compiled again (once each).
+	 * @example #Turn on linear lighting (with PBR and tone mapping, the usual set for realistic art)
+	 *     renderer.linearLighting(true).pbr(true).postProcess({ enabled: true, toneMapping: "aces" });
+	 */
+	linearLighting(): boolean;
+	linearLighting(enabled: boolean): this;
+	linearLighting(enabled?: boolean): boolean | this {
+		if (enabled === undefined) return this._linear;
+		if (enabled === this._linear) return this;
+		this._linear = enabled;
+		this._textureManager?.srgbColors(enabled);
+		markSceneChanged();
+		return this;
+	}
+
+	protected _linear = false;
+
+	/**
+	 * Gets / sets anisotropic filtering for mipmapped textures: up to this many samples along a surface seen at a
+	 * slant, so roads, pavements and floors stay sharp into the distance where trilinear filtering blurs them. 1 is off
+	 * (the default); 4 to 16 are usual. Capped at what the GPU allows (maxAnisotropy(); 1 without
+	 * EXT_texture_filter_anisotropic, when this does nothing), and applied to the textures made already as well as
+	 * those made after. The getter gives the level in use. It costs texture reads only where surfaces are at a slant.
+	 * @example #Sharp roads at a grazing angle
+	 *     renderer.anisotropy(8);
+	 */
+	anisotropy(): number;
+	anisotropy(level: number): this;
+	anisotropy(level?: number): number | this {
+		// (Before it's set up the GPU's most isn't known: what was asked)
+		if (level === undefined) return this._textureManager ? igeAnisotropyLevel(this._anisotropy, this.maxAnisotropy()) : this._anisotropy;
+		this._anisotropy = Number.isFinite(level) ? Math.max(1, level) : 1;
+		this._applyAnisotropy();
+		markSceneChanged();
+		return this;
+	}
+
+	/** The most anisotropic filtering the GPU allows (1 without EXT_texture_filter_anisotropic, or before the renderer is set up). */
+	maxAnisotropy(): number {
+		return this._textureManager?.maxAnisotropy() ?? 1;
+	}
+
+	protected _anisotropy = 1;
+
+	/** The anisotropic filtering asked for, on the texture manager's textures and the renderer's own mipmapped one (the default decals). */
+	protected _applyAnisotropy(): void {
+		const tm = this._textureManager;
+		if (!tm) return;
+		tm.anisotropy(this._anisotropy);
+		// (The texture manager bound textures with its own GL: the device forgets what it knew was bound first)
+		this._device?.invalidate();
+		if (this._defaultDecalTexture && this._device) this._device.setSampler(this._defaultDecalTexture, { maxAnisotropy: tm.anisotropy() });
+	}
+
+	/**
+	 * Which compile of the scene's programs the pass being drawn uses (igeColorDefines()): 0 as they always were
+	 * (linear lighting off), 1 linear light out (into post-processing's target), 2 sRGB out (straight to the screen or
+	 * a panel).
+	 */
+	protected _colorVariant: 0 | 1 | 2 = 0;
+
+	/** A colour texture is drawn from its sRGB-encoded copy: linear lighting, and the texture not marked as data. */
+	protected _srgbColor(texture: IgeTexture): boolean {
+		return this._linear && texture._colorSpace !== "linear";
+	}
+
+	/** A data map (normal, metallic-roughness, occlusion) is decoded only when its texture says it's sRGB. */
+	protected _srgbData(texture: IgeTexture): boolean {
+		return this._linear && texture._colorSpace === "srgb";
+	}
+
+	/** u_hasVertexColors for a mesh: 0 none, 1 used as they are, 2 sRGB ones decoded to linear light (linear lighting's programs only). */
+	protected _vertexColorFlag(geometry: IgeWebGlGeometry): number {
+		if (!geometry.hasVertexColors) return 0;
+		return this._colorVariant && !geometry.linearColors ? 2 : 1;
+	}
+
+	/** A colour (0 to 1) as the pass being drawn takes it: as it is, or as linear light under linear lighting. */
+	protected _inLight(c: number): number {
+		return this._linear ? igeSrgbToLinear(c) : c;
+	}
 
 	/**
 	 * Gets / sets distance fog applied by the lit shaders. Distance is
@@ -1456,6 +1583,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (!id || !this._textureManager) return this;
 		this._textureManager.deleteTexture(id);
 		this._pendingBlobTextures.delete(id);
+		this._pendingBlobTextures.delete(igeTextureKey(id, true));
 		return this;
 	}
 
@@ -2041,8 +2169,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const device = this._device!, programs = this._gpuPrograms!;
 		this._lineBuffer ??= device.createBuffer({ size: 0, usage: "vertex", stream: true, label: "debug lines" });
 		device.writeBuffer(this._lineBuffer, 0, this._debugLineData.subarray(0, vertices * DEBUG_LINE_FLOATS));
-		const pipeline = programs.pipeline("debug_line", () => ({
-			module: programs.module("debug_line", EFFECT_ATTRIBUTES),
+		const variant = this._colorVariant || 0;
+		const pipeline = programs.pipeline(variant ? `debug_line|c${variant}` : "debug_line", () => ({
+			module: programs.module("debug_line", EFFECT_ATTRIBUTES, igeColorDefines(variant)),
 			vertex: { buffers: [LINE_LAYOUT] },
 			primitive: { topology: "line-list" },
 			blend: NORMAL_BLEND,
@@ -2547,14 +2676,21 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * The GPU memory the renderer holds now, in bytes by kind: mesh vertices and indices (`geometry`), images and
 	 * canvases drawn with (`textures`), offscreen frames (`renderTargets`: post-processing, dynamic resolution,
 	 * panels, outlines), shadow maps and their static caches (`shadowMaps`), data written each frame (`buffers`:
-	 * instances, bones, particles, decals) and an estimate of the canvas's own buffers (`canvas`). Counted from what
-	 * the renderer made, so the driver's own overhead isn't in it.
+	 * instances, bones, particles, decals) and an estimate of the canvas's own buffers (`canvas`). Textures are also
+	 * split by what they hold (`colorMaps`, `normalMaps`, `otherMaps`, parts of `textures`). Counted from what the
+	 * renderer made (each texture by its format and every level of its mip chain), so the driver's own overhead isn't
+	 * in it.
 	 */
 	gpuMemory(): IgeWebGlGpuMemory {
 		const m = this._device?.memory() ?? { geometry: 0, textures: 0, renderTargets: 0, shadowMaps: 0, buffers: 0 };
-		const textures = m.textures + (this._textureManager?.memoryBytes() ?? 0);
+		const roles = this._textureManager?.memoryByRole() ?? { color: 0, normal: 0, data: 0 };
+		const textures = m.textures + roles.color + roles.normal + roles.data;
 		const canvas = this._canvasBytes();
-		return { ...m, textures, canvas, total: m.geometry + textures + m.renderTargets + m.shadowMaps + m.buffers + canvas };
+		return {
+			...m, textures, canvas, total: m.geometry + textures + m.renderTargets + m.shadowMaps + m.buffers + canvas,
+			// (The device's own textures, glyph pages and the default dots, count as other)
+			colorMaps: roles.color, normalMaps: roles.normal, otherMaps: m.textures + roles.data
+		};
 	}
 
 	/** An estimate of the canvas's own buffers: colour and depth-stencil (each sample, when antialiased, and the resolved colour), and the picture shown. */
@@ -2688,6 +2824,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._dynamicRes.frame({ now: performance.now(), gpuMs: sceneGpuMs, continuous, capMs: cap });
 		}
 		const post = this._postProcessor();
+		// (Under linear lighting the offscreen frame holds linear light, encoded by the composite)
+		if (post) post.linear = this._linear;
 		const postActive = !!post && post.begin(this._canvasElement!.width, this._canvasElement!.height);
 		this._frameScale = postActive ? post!.renderScale ?? 1 : 1;
 		if (timing) this._gpuTimer?.begin();
@@ -2695,7 +2833,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			? { width: Math.max(1, Math.round(this._canvasElement!.width * this._frameScale)), height: Math.max(1, Math.round(this._canvasElement!.height * this._frameScale)) }
 			: { width: this._canvasElement!.width, height: this._canvasElement!.height };
 		gl.viewport(0, 0, size.width, size.height);
-		gl.clearColor(cc.r, cc.g, cc.b, cc.a);
+		// (The clear colour is sRGB: as linear light into a linear offscreen frame, which the composite encodes back)
+		if (postActive && this._linear) gl.clearColor(igeSrgbToLinear(cc.r), igeSrgbToLinear(cc.g), igeSrgbToLinear(cc.b), cc.a);
+		else gl.clearColor(cc.r, cc.g, cc.b, cc.a);
 		gl.depthMask(true);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -3518,13 +3658,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * Start uploading a model texture image (once); it is used as soon as
 	 * the upload completes.
 	 */
-	protected _requestBlobTexture(textureId: string, blob: Blob, sampler?: IgeMaterialData["textureSampler"], mipmaps: boolean = !!this._modelTextureMipmaps): void {
-		if (!this._textureManager || this._pendingBlobTextures.has(textureId)) return;
+	protected _requestBlobTexture(textureId: string, blob: Blob, sampler?: IgeMaterialData["textureSampler"], mipmaps: boolean = !!this._modelTextureMipmaps, srgb: boolean = false, role: IgeTextureRole = "color"): void {
+		const key = igeTextureKey(textureId, srgb);
+		if (!this._textureManager || this._pendingBlobTextures.has(key)) return;
 
-		this._pendingBlobTextures.add(textureId);
-		this._textureManager.createTextureFromBlob(textureId, blob, sampler, mipmaps).then((texture) => {
+		this._pendingBlobTextures.add(key);
+		this._textureManager.createTextureFromBlob(textureId, blob, sampler, mipmaps, srgb, role).then((texture) => {
 			if (!texture) {
 				this.log(`Failed to create model texture "${textureId}"`, "warning");
+			} else {
+				// (Made: no longer waited for. Its copy in the other colour space may since have gone, see linearLighting())
+				this._pendingBlobTextures.delete(key);
 			}
 			markSceneChanged();
 		});
@@ -3836,7 +3980,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			if (this._textureManager.getBlobTexture(id)) item.mapBlobIds[k] = id;
 			else {
 				item.mapBlobIds[k] = undefined;
-				if (blob) this._requestBlobTexture(id, blob, undefined, true); // material maps always get mipmaps
+				// Material maps always get mipmaps; they hold data, never sRGB-encoded
+				if (blob) this._requestBlobTexture(id, blob, undefined, true, false, k === MAP_NORMAL ? "normal" : "data");
 			}
 		}
 	}
@@ -3848,14 +3993,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _applyMaterialData(item: IgeWebGlRenderItem, materialData: IgeMaterialData): void {
 		const mat = item.material;
 		const color = materialData.color;
+		// Under linear lighting a colour given in sRGB (a game's, by default) is converted to linear light here, once
+		// for the item; a glTF material's (colorSpace "linear") is linear light already
+		const toLinear = this._linear && materialData.colorSpace !== "linear";
 		if (color) {
 			if (typeof color === "object") {
-				mat.r = color.r;
-				mat.g = color.g;
-				mat.b = color.b;
+				mat.r = toLinear ? igeSrgbToLinear(color.r) : color.r;
+				mat.g = toLinear ? igeSrgbToLinear(color.g) : color.g;
+				mat.b = toLinear ? igeSrgbToLinear(color.b) : color.b;
 				mat.a = color.a ?? 1;
 			} else {
-				const rgb = parseHexColor(color);
+				const rgb = toLinear ? parseHexColorLinear(color) : parseHexColor(color);
 				mat.r = rgb[0];
 				mat.g = rgb[1];
 				mat.b = rgb[2];
@@ -3864,9 +4012,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (materialData.metallic !== undefined) mat.metallic = materialData.metallic;
 		if (materialData.roughness !== undefined) mat.roughness = materialData.roughness;
 		if (materialData.emissiveColor) {
-			mat.emissiveR = materialData.emissiveColor.r;
-			mat.emissiveG = materialData.emissiveColor.g;
-			mat.emissiveB = materialData.emissiveColor.b;
+			mat.emissiveR = toLinear ? igeSrgbToLinear(materialData.emissiveColor.r) : materialData.emissiveColor.r;
+			mat.emissiveG = toLinear ? igeSrgbToLinear(materialData.emissiveColor.g) : materialData.emissiveColor.g;
+			mat.emissiveB = toLinear ? igeSrgbToLinear(materialData.emissiveColor.b) : materialData.emissiveColor.b;
 			// A negative intensity tells the shader to multiply the emissive by the vertex colours
 			// (emissiveVertexColor): it rides in the existing uniform and per-instance slot
 			mat.emissiveIntensity = (materialData.emissiveIntensity ?? 1) * (materialData.emissiveVertexColor ? -1 : 1);
@@ -3889,10 +4037,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			if (emissiveTexture) {
 				if (emissiveTexture._loaded) item.emissiveTexture = emissiveTexture;
 			} else if (emissiveId && this._textureManager) {
-				if (this._textureManager.getBlobTexture(emissiveId)) {
-					item.emissiveBlobTextureId = emissiveId;
-				} else if (materialData.emissiveTextureBlob) {
-					this._requestBlobTexture(emissiveId, materialData.emissiveTextureBlob);
+				// (Under linear lighting its sRGB copy; its other copy, if there, stands in while that's made)
+				if (this._textureManager.getBlobTexture(emissiveId, this._linear)) item.emissiveBlobTextureId = emissiveId;
+				if (!this._textureManager.hasBlobTexture(emissiveId, this._linear) && materialData.emissiveTextureBlob) {
+					this._requestBlobTexture(emissiveId, materialData.emissiveTextureBlob, undefined, undefined, this._linear);
 				}
 			}
 		}
@@ -3918,10 +4066,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		const textureId = materialData.textureId;
 		if (textureId && this._textureManager) {
-			if (this._textureManager.getBlobTexture(textureId)) {
-				item.blobTextureId = textureId;
-			} else if (materialData.textureBlob) {
-				this._requestBlobTexture(textureId, materialData.textureBlob, materialData.textureSampler);
+			// (Under linear lighting its sRGB copy; its other copy, if there, stands in while that's made)
+			if (this._textureManager.getBlobTexture(textureId, this._linear)) item.blobTextureId = textureId;
+			if (!this._textureManager.hasBlobTexture(textureId, this._linear) && materialData.textureBlob) {
+				this._requestBlobTexture(textureId, materialData.textureBlob, materialData.textureSampler, undefined, this._linear);
 			}
 		}
 	}
@@ -4164,6 +4312,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		const device = this._gpuBegin();
 		const post = inPanel ? null : this._postProcess?.target();
+		// Under linear lighting: linear light into post-processing's target (its composite encodes it), sRGB-encoded at
+		// the end of each program straight to the screen or a panel
+		this._colorVariant = !this._linear ? 0 : post ? 1 : 2;
 		// A panel draws into its own target, from its corner
 		const panelTarget = inPanel ? this._panelTarget : null;
 		if (panelTarget) {
@@ -4176,7 +4327,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			// Always scissor the clear so split-screen viewports don't wipe each other; drawing itself is already confined
 			// by the viewport
 			const cc = this._clearColor;
-			pass.clear([cc.r, cc.g, cc.b, cc.a], [vpX, vpY, vpWidth, vpHeight], 1);
+			if (this._colorVariant === 1) pass.clear([igeSrgbToLinear(cc.r), igeSrgbToLinear(cc.g), igeSrgbToLinear(cc.b), cc.a], [vpX, vpY, vpWidth, vpHeight], 1);
+			else pass.clear([cc.r, cc.g, cc.b, cc.a], [vpX, vpY, vpWidth, vpHeight], 1);
 			pass.setScissorRect(viewport._clipping ? [vpX, vpY, vpWidth, vpHeight] : null);
 			this._writeLitView(matrices);
 
@@ -4272,7 +4424,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			data[at.u_cameraPosition + 1] = cam.y;
 			data[at.u_cameraPosition + 2] = cam.z;
 
-			this._lightManager?.writeLightUniforms(data, at);
+			this._lightManager?.writeLightUniforms(data, at, this._linear);
 
 			if (this.shadowsEnabled() && this._shadowManager) {
 				textures[0] = this._shadowManager.writeShadowUniforms(data, at, this._shadowLightId);
@@ -4303,9 +4455,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const fogMode = fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0;
 			data[at.u_fogMode] = fogMode;
 			if (fogMode) {
-				data[at.u_fogColor] = fog.color.r;
-				data[at.u_fogColor + 1] = fog.color.g;
-				data[at.u_fogColor + 2] = fog.color.b;
+				data[at.u_fogColor] = this._inLight(fog.color.r);
+				data[at.u_fogColor + 1] = this._inLight(fog.color.g);
+				data[at.u_fogColor + 2] = this._inLight(fog.color.b);
 				data[at.u_fogNear] = fog.near;
 				data[at.u_fogFar] = fog.far;
 				data[at.u_fogDensity] = fog.density;
@@ -4320,18 +4472,20 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 	/** A lit mesh's pipeline for how it's drawn (kept on the mesh, by kind and state). */
 	protected _litPipeline(skinned: boolean, instanced: boolean, geometry: IgeWebGlGeometry, state: LitState, fade: boolean = false, phase: boolean = false): IgeGpuRenderPipeline {
-		// (A fading mesh, never skinned or instanced: the lit_fade program, kept after the rest; a phased one, never instanced: lit_phase or skinned_phase)
+		// (A fading mesh, never skinned or instanced: the lit_fade program, kept after the rest; a phased one, never instanced:
+		// lit_phase or skinned_phase, kept after those; linear lighting's compiles (_colorVariant) kept after all those, 256 slots each)
 		const fading = fade && !skinned && !instanced;
 		phase = phase && !instanced;
-		const slot = phase ? 128 + state * 2 + (skinned ? 1 : 0) : fading ? 64 + state : (state * 2 + (skinned ? 1 : 0)) * 2 + (instanced ? 1 : 0);
+		const variant = this._colorVariant || 0;
+		const slot = (phase ? 128 + state * 2 + (skinned ? 1 : 0) : fading ? 64 + state : (state * 2 + (skinned ? 1 : 0)) * 2 + (instanced ? 1 : 0)) + variant * 256;
 		const kept = (geometry.gpuLitPipelines ??= [])[slot];
 		if (kept) return kept;
 		const base = skinned ? "skinned" : "lit";
 		const id = phase ? `${base}_phase` : fading ? "lit_fade" : instanced ? `${base}_instanced` : base;
 		const { layout, key } = meshLayout(geometry);
 		const st = litState(state);
-		return geometry.gpuLitPipelines[slot] = this._gpuPrograms!.pipeline(`lit|${id}|${state}|${key}`, () => ({
-			module: this._gpuPrograms!.module(id),
+		return geometry.gpuLitPipelines[slot] = this._gpuPrograms!.pipeline(`lit|${id}|${state}|${key}${variant ? `|c${variant}` : ""}`, () => ({
+			module: this._gpuPrograms!.module(id, undefined, igeColorDefines(variant)),
 			vertex: { buffers: instanced ? [layout, INSTANCE_LAYOUT] : [layout] },
 			...st,
 			primitive: { topology: meshTopology(geometry), cullMode: st.primitive?.cullMode ?? "none" },
@@ -4347,13 +4501,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 */
 	protected _prepareTextures(into: { gpuBase?: WebGLTexture | null; gpuEmissive?: WebGLTexture | null; gpuMaps?: (WebGLTexture | null)[]; blobTextureId?: string; texture?: IgeTexture }, item: IgeWebGlRenderItem): void {
 		const tm = this._textureManager!;
+		// (Base colour and emissive maps are colours: their sRGB copies under linear lighting)
 		let base: WebGLTexture | null | undefined;
-		if (into.blobTextureId) base = tm.getBlobTexture(into.blobTextureId);
-		else if (into.texture) base = tm.getTextureForIgeTexture(into.texture);
+		if (into.blobTextureId) base = tm.getBlobTexture(into.blobTextureId, this._linear);
+		else if (into.texture) base = tm.getTextureForIgeTexture(into.texture, this._srgbColor(into.texture));
 		into.gpuBase = base || tm.getDefaultWhiteTexture();
 		let emissive: WebGLTexture | null | undefined;
-		if (item.emissiveBlobTextureId) emissive = tm.getBlobTexture(item.emissiveBlobTextureId);
-		else if (item.emissiveTexture) emissive = tm.getTextureForIgeTexture(item.emissiveTexture);
+		if (item.emissiveBlobTextureId) emissive = tm.getBlobTexture(item.emissiveBlobTextureId, this._linear);
+		else if (item.emissiveTexture) emissive = tm.getTextureForIgeTexture(item.emissiveTexture, this._srgbColor(item.emissiveTexture));
 		into.gpuEmissive = emissive || null;
 
 		// The material maps, for an item that has any (none: nothing made, nothing bound)
@@ -4364,7 +4519,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const maps = into.gpuMaps ??= [null, null, null];
 		for (let k = 0; k < 3; k++) {
 			const id = item.mapBlobIds[k], texture = item.mapTextures[k];
-			maps[k] = (id ? tm.getBlobTexture(id) : texture ? tm.getTextureForIgeTexture(texture) : null) || null;
+			maps[k] = (id ? tm.getBlobTexture(id) : texture ? tm.getTextureForIgeTexture(texture, this._srgbData(texture), k === MAP_NORMAL ? "normal" : "data") : null) || null;
 		}
 	}
 
@@ -4489,7 +4644,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._setMesh(pass, geometry);
 			this._setLitTextures(pass, batch.gpuBase, batch.gpuEmissive);
 			this._setLitMaps(pass, block, batch.items[0], batch.gpuMaps, state);
-			data[at.u_hasVertexColors] = geometry.hasVertexColors ? 1 : 0;
+			data[at.u_hasVertexColors] = this._vertexColorFlag(geometry);
 
 			if (instanced) {
 				const count = batch.items.length;
@@ -4561,7 +4716,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._setMesh(pass, geometry);
 			this._setLitTextures(pass, item.gpuBase, item.gpuEmissive);
 			this._setLitMaps(pass, block, item, item.gpuMaps, state);
-			data[at.u_hasVertexColors] = geometry.hasVertexColors ? 1 : 0;
+			data[at.u_hasVertexColors] = this._vertexColorFlag(geometry);
 			this._writeItemUniforms(block, item, geometry);
 			if (phase) this._writePhase(data, at, item, phase);
 			if (skinned) this._writeBones(block, item);
@@ -4600,9 +4755,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			mat.r = mat.g = mat.b = 0;
 			mat.a = c.a;
 			mat.opacity = 1;
-			mat.emissiveR = c.r;
-			mat.emissiveG = c.g;
-			mat.emissiveB = c.b;
+			// (The silhouette colour is sRGB: as linear light under linear lighting, encoded back as it's drawn)
+			mat.emissiveR = this._inLight(c.r);
+			mat.emissiveG = this._inLight(c.g);
+			mat.emissiveB = this._inLight(c.b);
 			mat.emissiveIntensity = 1;
 		}
 		this._drawingSilhouettes = true;
@@ -4654,6 +4810,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const entity = sprites[i];
 			const texture = entity._texture!;
 			const perEntity = texture._renderMode === IgeTextureRenderMode.smartTexture || texture._rendersPerEntity;
+			// (Pictures as they are, whatever the lighting: a sprite's colours are decoded after filtering, if at all, see _drawSprites)
 			if (perEntity) {
 				current = tm.getSmartTexture(texture, entity, this._devicePixelRatio, this._frameId) || tm.getDefaultWhiteTexture();
 				bound = undefined;
@@ -4673,8 +4830,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const quad = this._geometryManager.getSharedQuadGeometry();
 		if (!quad?.gpuVertex) return;
 		const device = this._device!, programs = this._gpuPrograms!;
-		const pipeline = (additive: boolean) => programs.pipeline(`sprite|${transparent ? 1 : 0}|${additive ? 1 : 0}`, () => ({
-			module: programs.module("sprite", EFFECT_ATTRIBUTES),
+		// Sprites aren't lit: under linear lighting they keep the program they had (straight to the screen), or into
+		// post-processing's linear frame have their finished colour decoded to linear light (2D looks the same either way)
+		const variant = this._colorVariant === 1 ? 1 : 0;
+		const pipeline = (additive: boolean) => programs.pipeline(`sprite|${transparent ? 1 : 0}|${additive ? 1 : 0}${variant ? `|c${variant}` : ""}`, () => ({
+			module: programs.module("sprite", EFFECT_ATTRIBUTES, igeColorDefines(variant)),
 			vertex: { buffers: [meshLayout(quad).layout] },
 			primitive: { topology: "triangle-list" },
 			blend: additive ? EFFECT_BLENDS.additive : NORMAL_BLEND,
@@ -5215,6 +5375,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 		this._outlinePass ??= new IgeWebGlOutlinePass(this._device!);
 		const pass = this._outlinePass;
+		// (The mask is read by its alpha: the program variant only has to be one that's made)
+		this._colorVariant = this._linear ? 2 : 0;
 		const target = gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
 		const width = gl.drawingBufferWidth, height = gl.drawingBufferHeight;
 		const dpr = this._devicePixelRatio;
@@ -5380,7 +5542,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const device = this._device;
 		const texture = device.createTexture({
 			width: cell * 2, height: cell * 2, format: "rgba8unorm", mipmaps: true, label: "default decals",
-			sampler: { minFilter: "linear", mipmapFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }
+			sampler: { minFilter: "linear", mipmapFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge", maxAnisotropy: this._textureManager?.anisotropy() ?? 1 }
 		});
 		device.copyImageToTexture(canvas, texture, { premultiply: false, flipY: false });
 		device.generateMipmaps(texture);
@@ -5396,10 +5558,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _effectPipeline(kind: "particle" | "decal" | "decal_mesh", blend: "normal" | "additive" | "multiply"): IgeGpuRenderPipeline {
 		const programs = this._gpuPrograms!;
 		const id = kind === "decal_mesh" ? kind : `${kind}_instanced`;
-		return programs.pipeline(`effect|${id}|${blend}`, () => {
+		const variant = this._colorVariant || 0;
+		return programs.pipeline(`effect|${id}|${blend}${variant ? `|c${variant}` : ""}`, () => {
 			const quad = meshLayout(this._geometryManager!.getSharedQuadGeometry()!).layout;
 			return {
-				module: programs.module(id, EFFECT_ATTRIBUTES),
+				module: programs.module(id, EFFECT_ATTRIBUTES, igeColorDefines(variant)),
 				vertex: { buffers: kind === "particle" ? [quad, PARTICLE_LAYOUT] : kind === "decal" ? [quad, DECAL_LAYOUT] : [DECAL_MESH_LAYOUT] },
 				primitive: { topology: "triangle-list", cullMode: "none" },
 				blend: EFFECT_BLENDS[blend],
@@ -5456,7 +5619,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/** A particle or decal system's own texture (the texture manager's, made as first asked for), or the white one. */
 	protected _systemTexture(texture: IgeTexture | undefined): WebGLTexture | null {
 		if (!texture || !this._textureManager) return null;
-		return this._textureManager.getTextureForIgeTexture(texture) || this._textureManager.getDefaultWhiteTexture();
+		return this._textureManager.getTextureForIgeTexture(texture, this._srgbColor(texture)) || this._textureManager.getDefaultWhiteTexture();
 	}
 
 	/**

@@ -19,8 +19,11 @@
 
 // ---------------------------------------------------------------- formats and states
 
-/** Texture formats in use. */
-export type IgeGpuTextureFormat = "rgba8unorm" | "r8unorm" | "rgba16float" | "rgba32float" | "r32float" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float";
+/**
+ * Texture formats in use ("rgba8unorm-srgb": colours stored sRGB-encoded, decoded to linear light as they're sampled
+ * and encoded as they're drawn into). Each one's bytes and block are in IgeGpuTextureFormats.ts.
+ */
+export type IgeGpuTextureFormat = "rgba8unorm" | "rgba8unorm-srgb" | "r8unorm" | "rgba16float" | "rgba32float" | "r32float" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float";
 
 export type IgeGpuFilter = "nearest" | "linear";
 
@@ -46,6 +49,11 @@ export interface IgeGpuSamplerDesc {
 	addressModeV?: IgeGpuAddressMode;
 	/** A depth texture read as a comparison (shadow maps). */
 	compare?: IgeGpuCompare;
+	/**
+	 * Anisotropic filtering: up to this many samples along a surface seen at a slant (a road ahead), for a mipmapped
+	 * texture. 1 or none: off. Capped at limits.maxAnisotropy.
+	 */
+	maxAnisotropy?: number;
 }
 
 /** A sampler: made once (createSampler), set with a texture (IgeGpuRenderPass.setTexture). */
@@ -319,6 +327,8 @@ export interface IgeGpuLimits {
 	maxSamples: number;
 	/** Float formats (rgba16float, rgba32float, r32float) can be drawn into (WebGL2: EXT_color_buffer_float). */
 	floatTargets: boolean;
+	/** The most anisotropic filtering a sampler can ask for (WebGL2: EXT_texture_filter_anisotropic; 1 without it). */
+	maxAnisotropy: number;
 }
 
 export interface IgeGpuDevice {

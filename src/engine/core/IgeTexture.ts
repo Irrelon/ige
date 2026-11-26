@@ -18,6 +18,12 @@ import type { IgeTextureCellArray } from "@/types/IgeTextureCellArray";
 const urlForLog = (url?: string): string => (url?.startsWith("data:") ? "(data URL)" : String(url));
 
 /**
+ * What a texture's colours are under linear lighting (IgeTexture.colorSpace()): "auto" by the slot it fills, "srgb"
+ * decoded to linear light wherever it's used, "linear" used as it is wherever it's used.
+ */
+export type IgeTextureColorSpace = "auto" | "srgb" | "linear";
+
+/**
  * Creates a new texture.
  */
 export class IgeTexture extends IgeAsset {
@@ -41,6 +47,8 @@ export class IgeTexture extends IgeAsset {
 	 * showing the image itself.
 	 */
 	_rendersPerEntity: boolean = false;
+	/** What its colours are under linear lighting (see colorSpace()). */
+	_colorSpace: IgeTextureColorSpace = "auto";
 	_destroyed: boolean = false;
 	_url?: string;
 	_preFilters: IgeSmartFilter[] = [];
@@ -540,6 +548,24 @@ export class IgeTexture extends IgeAsset {
 			);
 			this._textureCtx.restore();
 		});
+	}
+
+	/**
+	 * Gets / sets what the texture's colours are, for linear lighting (IgeWebGlRenderer.linearLighting(); without it
+	 * this changes nothing). "auto" (the default) goes by the slot it fills: as an entity's texture, a material's base
+	 * colour or emissive map, a sprite, a particle or a decal it's a picture whose colours are sRGB-encoded, decoded to
+	 * linear light as it's sampled; as a normal, metallic-roughness or occlusion map it's data, used as it is.
+	 * "linear" never decodes it: numbers drawn in a colour slot (a lookup, a height picture shown as it is, colours
+	 * already in linear light). "srgb" always does, in any slot. The UI layer draws every picture as it is.
+	 * @example #A data picture shown on a plane, its numbers kept as they are
+	 *     heightPicture.colorSpace("linear");
+	 */
+	colorSpace (val: IgeTextureColorSpace): this;
+	colorSpace (): IgeTextureColorSpace;
+	colorSpace (val?: IgeTextureColorSpace): this | IgeTextureColorSpace {
+		if (val === undefined) return this._colorSpace;
+		this._colorSpace = val;
+		return this;
 	}
 
 	smoothing (val: boolean): this;

@@ -18,6 +18,11 @@ import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 export interface IgeMergeSource extends IgeVertexArrays {
 	indices?: ArrayLike<number>;
 	packed?: IgePackedVertices;
+	/**
+	 * What its vertex colours are (IgeGeometryData3d.colorSpace, sRGB when not given). The merged mesh is "linear"
+	 * when every piece's own colours are (glTF pieces'), else sRGB; colours are copied as they are either way.
+	 */
+	colorSpace?: "srgb" | "linear";
 }
 
 /** One piece to merge. */
@@ -92,6 +97,8 @@ class MergeWriter {
 	verts = 0;
 	indexCount = 0;
 	pieces = 0;
+	/** Every piece's own vertex colours are linear light (glTF's): the merged mesh's are said to be too. */
+	linearColors = false;
 
 	constructor (normals: boolean, uvs: boolean, colors: boolean, room: number, tangents: boolean = false) {
 		this.pos = new Grow(Float32Array, room * 3);
@@ -121,9 +128,9 @@ function pieceHasTangents (s: IgeVertexArrays): boolean {
 }
 
 /** The arrays of a piece's mesh (a packed one unpacked). */
-function sourceArrays (g: IgeMergeSource): IgeVertexArrays & { indices?: ArrayLike<number> } {
+function sourceArrays (g: IgeMergeSource): IgeVertexArrays & { indices?: ArrayLike<number>; colorSpace?: "srgb" | "linear" } {
 	if (g.vertices) return g;
-	if (g.packed) return { ...unpackVertices(g.packed), indices: g.indices };
+	if (g.packed) return { ...unpackVertices(g.packed), indices: g.indices, colorSpace: g.colorSpace };
 	throw new Error("mergeGeometry: a piece has no vertices");
 }
 
@@ -160,6 +167,8 @@ export function mergeGeometry (pieces: IgeMergePiece[], options: IgeMergeOptions
 			room += Math.floor(s.vertices!.length / 3);
 		}
 		const w = new MergeWriter(normals, uvs, colors, room, withTangents === list.length);
+		// (Linear only when every piece with colours has its own, linear ones: a piece's `color` is taken as sRGB)
+		w.linearColors = colors && list.every((p, i) => sources[i].colorSpace === "linear" && !!sources[i].colors);
 		w.computeTangents = withTangents > 0 && withTangents < list.length && normals && uvs;
 		for (let i = 0; i < list.length; i++) addPiece(w, list[i], sources[i]);
 		out.push(finish(w, material, `${options.id ?? "merged"}_${n++}`, options));
@@ -168,7 +177,7 @@ export function mergeGeometry (pieces: IgeMergePiece[], options: IgeMergeOptions
 }
 
 /** One piece written into its material's mesh. */
-function addPiece (w: MergeWriter, piece: IgeMergePiece, src: IgeVertexArrays & { indices?: ArrayLike<number> }): void {
+function addPiece (w: MergeWriter, piece: IgeMergePiece, src: IgeVertexArrays & { indices?: ArrayLike<number>; colorSpace?: "srgb" | "linear" }): void {
 	const pos = src.vertices!;
 	const count = Math.floor(pos.length / 3);
 	if (count === 0) return;
@@ -325,6 +334,7 @@ function finish (w: MergeWriter, material: unknown, id: string, options: IgeMerg
 		boundingBox: { min: b.min, max: b.max },
 		boundingSphere: { center: b.center, radius: b.radius }
 	};
+	if (w.col && w.linearColors) geometry.colorSpace = "linear";
 	if (options.pack) {
 		geometry.packed = packVertices(arrays, options.pack);
 		if (options.keepArrays) Object.assign(geometry, arrays);

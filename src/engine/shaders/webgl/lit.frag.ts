@@ -1,4 +1,4 @@
-import { instanceMaterialVaryingsChunk } from "@/engine/shaders/webgl/chunks";
+import { colorSpaceChunk, instanceMaterialVaryingsChunk } from "@/engine/shaders/webgl/chunks";
 
 /**
  * PBR Lit fragment shader.
@@ -13,6 +13,10 @@ import { instanceMaterialVaryingsChunk } from "@/engine/shaders/webgl/chunks";
  * For PBR materials:
  * - Set u_usePBR to 1
  * - Set metallic, roughness, and optionally PBR textures
+ *
+ * Under linear lighting (IGE_LINEAR, see colorSpaceChunk) every colour coming in is linear light already (sRGB
+ * textures decoded by the GPU, colours converted on the CPU, vertex colours in the vertex shader), so the lighting
+ * below is in linear light; IGE_SRGB_OUTPUT encodes the result for the screen.
  */
 export const litFragmentShader = `
 precision highp float;
@@ -135,6 +139,8 @@ uniform float u_pointShadowFarPlane[MAX_SHADOW_POINT_LIGHTS];
 uniform float u_pointShadowBias[MAX_SHADOW_POINT_LIGHTS];
 uniform float u_pointShadowFaceSize[MAX_SHADOW_POINT_LIGHTS];   // Face size in pixels
 uniform mat4 u_pointShadowMatrices[12];                          // 6 matrices per light, 2 lights max
+
+${colorSpaceChunk}
 
 // Constants
 const float PI = 3.14159265359;
@@ -733,7 +739,12 @@ void main() {
 		return;
 	}
 
-	// Output final color (no gamma correction - let the display handle it)
+#if defined(IGE_SRGB_OUTPUT) && !defined(IGE_LIT_WRAPPED)
+	// Linear light encoded for the screen, once (no post-processing after this to do it). A shader that wraps this
+	// main (defining IGE_LIT_WRAPPED) gets the linear result and encodes its own at its end instead.
+	finalColor = igeLinearToSrgb(finalColor);
+#endif
+	// Output final color (without linear lighting, lit in the screen's own sRGB numbers as it always was)
 	gl_FragColor = vec4(finalColor, finalAlpha);
 }
 `;

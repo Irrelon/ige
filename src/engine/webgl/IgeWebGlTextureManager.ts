@@ -1,10 +1,40 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
+import { igeAnisotropyLevel, igeTextureBytes, igeTextureFormatFromGl } from "@/engine/gpu/IgeGpuTextureFormats";
 import type { IgeWebGlResourceManager } from "@/engine/webgl/IgeWebGlResourceManager";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 /**
+ * What a texture holds, as its memory is counted (IgeWebGlRenderer.gpuMemory()): colours (base colour and emissive
+ * maps, sprites, particles, decals, UI pictures), a normal map, or other data (metallic-roughness and occlusion maps,
+ * render targets made here, lookups).
+ */
+export type IgeTextureRole = "color" | "normal" | "data";
+
+/** Bytes of GPU memory by what the textures hold (see IgeTextureRole). */
+export type IgeTextureRoleBytes = Record<IgeTextureRole, number>;
+
+/**
+ * The key a texture's GPU copy is kept under: its id, and "#srgb" after it for the copy stored sRGB-encoded (a colour
+ * map under linear lighting, decoded to linear light as it's sampled). The two copies are separate GL textures.
+ */
+export function igeTextureKey (id: string, srgb: boolean): string {
+	return srgb ? `${id}#srgb` : id;
+}
+
+/** SRGB8_ALPHA8: 8-bit RGBA whose colours are decoded from sRGB to linear light as they're sampled (WebGL 2). */
+const SRGB8_ALPHA8 = 0x8c43;
+/** EXT_texture_filter_anisotropic's texture parameter and limit. */
+const TEXTURE_MAX_ANISOTROPY = 0x84fe, MAX_TEXTURE_MAX_ANISOTROPY = 0x84ff;
+
+/**
  * Manages WebGL texture creation, updates, and state for the renderer.
+ *
+ * Colour maps under linear lighting (IgeWebGlRenderer.linearLighting()) are kept as a second copy stored
+ * sRGB-encoded (SRGB8_ALPHA8, see igeTextureKey()), so the GPU decodes them to linear light as it samples them, before
+ * filtering and with mipmaps made from the decoded colours. Normal, metallic-roughness and occlusion maps, and
+ * pictures the UI layer draws straight to the screen, stay as they are. Which a texture is comes from the slot it
+ * fills (the caller says), or from IgeTexture.colorSpace() when the game says.
  */
 export class IgeWebGlTextureManager extends IgeBaseClass {
 	classId = "IgeWebGlTextureManager";
@@ -28,8 +58,16 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	// WebGL 2 can mipmap textures of any size
 	protected _webGl2: boolean;
 
-	// Bytes each texture made here holds, by id (smart textures drawn per entity are counted from their entries)
-	protected _textureBytes: Map<string, number> = new Map();
+	// Bytes each texture made here holds and what it holds, by key (smart textures drawn per entity are counted from their entries)
+	protected _textureBytes: Map<string, { bytes: number; role: IgeTextureRole }> = new Map();
+
+	/** The keys of the mipmapped textures made here: the ones anisotropic filtering applies to. */
+	protected _mipmapped: Set<string> = new Set();
+	/** The anisotropic filtering mipmapped textures get (1: off), and the most the GPU allows (1 without the extension). */
+	protected _anisotropy: number = 1;
+	protected _maxAnisotropy: number = 1;
+	/** Colour maps for the scene are made sRGB-encoded (linear lighting): a colour map's copy in the other space is then stale. */
+	protected _srgbColors: boolean = false;
 
 	constructor(
 		gl: WebGLRenderingContext | WebGL2RenderingContext,
@@ -39,6 +77,10 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		this._gl = gl;
 		this._resourceManager = resourceManager;
 		this._webGl2 = typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext;
+		// (Asking for the extension turns it on)
+		if (gl.getExtension("EXT_texture_filter_anisotropic")) {
+			this._maxAnisotropy = Math.max(1, Number(gl.getParameter(MAX_TEXTURE_MAX_ANISOTROPY)) || 1);
+		}
 
 		// Create the default white texture
 		this._createDefaultWhiteTexture();
@@ -83,7 +125,10 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Create a WebGL texture from an image element.
+	 * Create a WebGL texture from an image element, kept as `textureId` (a key: see igeTextureKey()).
+	 * @param options.srgb Stored sRGB-encoded (SRGB8_ALPHA8, WebGL 2): its colours decoded to linear light as it's
+	 * sampled. A colour map under linear lighting.
+	 * @param options.role What it holds, as its memory is counted (default "color").
 	 */
 	createTextureFromImage(
 		textureId: string,
@@ -95,6 +140,8 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			magFilter?: number;
 			generateMipmaps?: boolean;
 			flipY?: boolean;
+			srgb?: boolean;
+			role?: IgeTextureRole;
 		}
 	): WebGLTexture | null {
 		const gl = this._gl;
@@ -123,8 +170,9 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, opts.flipY ? 1 : 0);
 		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
 
-		// Upload image data
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+		// Upload image data (a colour map under linear lighting stored sRGB-encoded, for the GPU to decode as it samples)
+		const srgb = !!options?.srgb && this._webGl2;
+		gl.texImage2D(gl.TEXTURE_2D, 0, srgb ? SRGB8_ALPHA8 : gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
 		// Set texture parameters
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, opts.wrapS);
@@ -151,32 +199,113 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			}
 		}
 
+		// Anisotropic filtering, when it's on, for a mipmapped texture (one that isn't keeps none: GL's default)
+		if (mipmapped) {
+			this._mipmapped.add(textureId);
+			if (this._anisotropy > 1) gl.texParameterf(gl.TEXTURE_2D, TEXTURE_MAX_ANISOTROPY, this._anisotropy);
+		} else {
+			this._mipmapped.delete(textureId);
+		}
+
 		// Unbind texture
 		gl.bindTexture(gl.TEXTURE_2D, null);
 
-		// RGBA, 8 bits a channel, and its smaller levels a third more
-		this._textureBytes.set(textureId, Math.round(size.width * size.height * 4 * (mipmapped ? 4 / 3 : 1)));
+		// RGBA, 8 bits a channel (sRGB-encoded or not, the same size), and every level of its mip chain
+		this._textureBytes.set(textureId, {
+			bytes: igeTextureBytes(srgb ? "rgba8unorm-srgb" : "rgba8unorm", size.width, size.height, { mipmaps: mipmapped }),
+			role: options?.role ?? "color"
+		});
 		return texture;
 	}
 
 	/**
-	 * Bytes of GPU memory the textures made here hold: each counted from its size (4 bytes a texel, a third more
-	 * with mipmaps), the default white texture and smart textures drawn per entity included.
+	 * Bytes of GPU memory the textures made here hold: each counted from its size, format and mip chain (see
+	 * IgeGpuTextureFormats), the default white texture and smart textures drawn per entity included.
 	 */
 	memoryBytes(): number {
-		let total = this._defaultWhiteTexture ? 4 : 0;
-		for (const [id, bytes] of this._textureBytes) {
-			if (this._resourceManager.getTexture(id)) total += bytes;
+		const roles = this.memoryByRole();
+		return roles.color + roles.normal + roles.data;
+	}
+
+	/**
+	 * memoryBytes() by what the textures hold: colour maps (base colour, emissive, sprites, smart textures, UI
+	 * pictures), normal maps, and other data (metallic-roughness and occlusion maps, render targets made here, the
+	 * default white texture).
+	 */
+	memoryByRole(): IgeTextureRoleBytes {
+		const out: IgeTextureRoleBytes = { color: 0, normal: 0, data: this._defaultWhiteTexture ? 4 : 0 };
+		for (const [key, info] of this._textureBytes) {
+			if (this._resourceManager.getTexture(key)) out[info.role] += info.bytes;
 		}
-		for (const entry of this._entitySmartTextures.values()) total += entry.width * entry.height * 4;
-		return total;
+		for (const entry of this._entitySmartTextures.values()) out.color += entry.width * entry.height * 4;
+		return out;
+	}
+
+	/**
+	 * Gets / sets the anisotropic filtering mipmapped textures are sampled with: up to this many samples along a
+	 * surface seen at a slant (a road or a floor ahead), so it stays sharp where trilinear filtering blurs it. 1 is
+	 * off (the default); capped at maxAnisotropy(). Applies to the textures made already and those made after.
+	 */
+	anisotropy(): number;
+	anisotropy(level: number): this;
+	anisotropy(level?: number): number | this {
+		if (level === undefined) return this._anisotropy;
+		const next = igeAnisotropyLevel(level, this._maxAnisotropy);
+		if (next === this._anisotropy) return this;
+		this._anisotropy = next;
+		const gl = this._gl;
+		for (const key of this._mipmapped) {
+			const texture = this._resourceManager.getTexture(key);
+			if (!texture) {
+				this._mipmapped.delete(key);
+				continue;
+			}
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+			gl.texParameterf(gl.TEXTURE_2D, TEXTURE_MAX_ANISOTROPY, next);
+		}
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		this._boundTextures.fill(null);
+		return this;
+	}
+
+	/** The most anisotropic filtering the GPU allows (EXT_texture_filter_anisotropic; 1 without it). */
+	maxAnisotropy(): number {
+		return this._maxAnisotropy;
+	}
+
+	/**
+	 * Gets / sets whether the scene's colour maps are made sRGB-encoded now (linear lighting on). A colour map made for
+	 * the scene from then on lets go of its copy in the other space (the copy that stood in while it was made), so
+	 * switching linear lighting at run time doesn't keep both.
+	 */
+	srgbColors(): boolean;
+	srgbColors(val: boolean): this;
+	srgbColors(val?: boolean): boolean | this {
+		if (val === undefined) return this._srgbColors;
+		this._srgbColors = val && this._webGl2;
+		return this;
+	}
+
+	/**
+	 * A scene colour map was just made in the space the scene uses now: its copy in the other space (made before
+	 * linear lighting was switched, kept to stand in meanwhile) goes. A copy that holds data, or one drawn by the UI
+	 * layer (made unencoded while linear lighting is on), stays.
+	 */
+	protected _dropStaleTwin(id: string, srgb: boolean, role: IgeTextureRole): void {
+		if (role !== "color" || srgb !== this._srgbColors) return;
+		const twin = igeTextureKey(id, !srgb);
+		if (this._textureBytes.get(twin)?.role === "color") this._deleteKey(twin);
 	}
 
 	/**
 	 * Create a WebGL texture from an IGE texture.
+	 * @param srgb Its copy stored sRGB-encoded (see igeTextureKey()): a colour map under linear lighting.
+	 * @param role What it holds, as its memory is counted (default "color").
 	 */
-	createTextureFromIgeTexture(igeTexture: IgeTexture): WebGLTexture | null {
-		const textureId = igeTexture.id() || "unknown";
+	createTextureFromIgeTexture(igeTexture: IgeTexture, srgb: boolean = false, role: IgeTextureRole = "color"): WebGLTexture | null {
+		const id = igeTexture.id() || "unknown";
+		srgb = srgb && this._webGl2;
+		const textureId = igeTextureKey(id, srgb);
 
 		// Check if already created
 		if (this._igeTextureMap.has(textureId)) {
@@ -209,11 +338,14 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			minFilter: canUseMipmaps ? this._gl.LINEAR_MIPMAP_LINEAR : this._gl.LINEAR,
 			magFilter: this._gl.LINEAR,
 			generateMipmaps: canUseMipmaps,
-			flipY: false
+			flipY: false,
+			srgb,
+			role
 		});
 
 		if (webglTexture) {
 			this._igeTextureMap.set(textureId, webglTexture);
+			this._dropStaleTwin(id, srgb, role);
 		}
 
 		return webglTexture;
@@ -242,6 +374,8 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	 * viewports show the entity), unless the entity has cache(true): then it
 	 * redraws only when the entity's cache is marked dirty
 	 * (entity.cacheDirty(true)) or its size changes.
+	 *
+	 * Uploaded as drawn under linear lighting too: sprites and the UI layer show pictures as they are.
 	 */
 	getSmartTexture(igeTexture: IgeTexture, entity: any, pixelRatio: number, frameId: number): WebGLTexture | null {
 		const script = igeTexture.script;
@@ -333,13 +467,20 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	 * @param sampler The glTF sampler's filters and wraps (GL constants):
 	 * a minFilter asking for mipmaps gets them, LINEAR or NEAREST none.
 	 * @param mipmaps Mipmaps when the sampler doesn't say (default false).
+	 * @param srgb Stored sRGB-encoded, kept under igeTextureKey(textureId, true): a base colour or emissive map under
+	 * linear lighting.
+	 * @param role What it holds, as its memory is counted (default "color").
 	 */
 	async createTextureFromBlob(
-		textureId: string,
+		id: string,
 		blob: Blob,
 		sampler?: { magFilter?: number; minFilter?: number; wrapS?: number; wrapT?: number },
-		mipmaps: boolean = false
+		mipmaps: boolean = false,
+		srgb: boolean = false,
+		role: IgeTextureRole = "color"
 	): Promise<WebGLTexture | null> {
+		srgb = srgb && this._webGl2;
+		const textureId = igeTextureKey(id, srgb);
 		// Check cache first
 		if (this._blobTextureCache.has(textureId)) {
 			return this._blobTextureCache.get(textureId) || null;
@@ -374,11 +515,14 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 					minFilter: minFilter ?? (mipmapped ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR),
 					magFilter: sampler?.magFilter ?? gl.LINEAR,
 					generateMipmaps: mipmapped,
-					flipY: false
+					flipY: false,
+					srgb,
+					role
 				});
 
 				if (texture) {
 					this._blobTextureCache.set(textureId, texture);
+					this._dropStaleTwin(id, srgb, role);
 					this.log(`Created texture "${textureId}" from blob (${img.width}x${img.height})`);
 				}
 
@@ -401,17 +545,20 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Get a cached blob texture synchronously (returns null if not yet loaded).
+	 * Get a cached blob texture synchronously (returns null if not yet loaded). Asked for the sRGB-encoded copy
+	 * (`srgb`) or the other, and it isn't made yet, its copy in the other space stands in (linear lighting switched
+	 * while a model was showing: the new copy's image is still decoding).
 	 */
-	getBlobTexture(textureId: string): WebGLTexture | null {
-		return this._blobTextureCache.get(textureId) || null;
+	getBlobTexture(textureId: string, srgb: boolean = false): WebGLTexture | null {
+		srgb = srgb && this._webGl2;
+		return this._blobTextureCache.get(igeTextureKey(textureId, srgb)) || this._blobTextureCache.get(igeTextureKey(textureId, !srgb)) || null;
 	}
 
 	/**
-	 * Check if a blob texture is cached.
+	 * Check if a blob texture is cached (its sRGB-encoded copy, with `srgb`; only that one).
 	 */
-	hasBlobTexture(textureId: string): boolean {
-		return this._blobTextureCache.has(textureId);
+	hasBlobTexture(textureId: string, srgb: boolean = false): boolean {
+		return this._blobTextureCache.has(igeTextureKey(textureId, srgb && this._webGl2));
 	}
 
 	/**
@@ -486,7 +633,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
 		gl.bindTexture(gl.TEXTURE_2D, null);
-		this._textureBytes.set(textureId, canvas.width * canvas.height * 4);
+		this._textureBytes.set(textureId, { bytes: canvas.width * canvas.height * 4, role: "color" });
 
 		return true;
 	}
@@ -518,9 +665,12 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 
 		// Allocate storage
 		gl.texImage2D(gl.TEXTURE_2D, 0, intFormat, width, height, 0, fmt, typ, null);
+		// A sized internal format counts as its format does; an unsized one by its channels and type
+		const known = igeTextureFormatFromGl(intFormat);
 		const channels = fmt === gl.RGBA ? 4 : fmt === gl.RGB ? 3 : fmt === (gl as WebGL2RenderingContext).RG ? 2 : 1;
 		const channelBytes = typ === gl.FLOAT ? 4 : typ === (gl as WebGL2RenderingContext).HALF_FLOAT ? 2 : 1;
-		this._textureBytes.set(textureId, width * height * channels * channelBytes);
+		const bytes = known ? igeTextureBytes(known, width, height) : width * height * channels * channelBytes;
+		this._textureBytes.set(textureId, { bytes, role: "data" });
 
 		// Set parameters
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -565,17 +715,21 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 
 	/**
 	 * Get WebGL texture for an IGE texture.
+	 * @param srgb Its copy stored sRGB-encoded (see igeTextureKey()): a colour map drawn in the scene under linear
+	 * lighting. The UI layer, normal maps and data maps take the other.
+	 * @param role What it holds, as its memory is counted (default "color").
 	 */
-	getTextureForIgeTexture(igeTexture: IgeTexture): WebGLTexture | null {
-		const textureId = igeTexture.id();
-		if (!textureId) {
+	getTextureForIgeTexture(igeTexture: IgeTexture, srgb: boolean = false, role: IgeTextureRole = "color"): WebGLTexture | null {
+		const id = igeTexture.id();
+		if (!id) {
 			return null;
 		}
+		const textureId = igeTextureKey(id, srgb && this._webGl2);
 
 		// Pre-filters redraw the texture's canvas whenever it is drawn (e.g.
 		// animated effects); here that happens once per frame
-		if (igeTexture._preFilters.length && this._preFilteredFrame.get(textureId) !== this.frameId) {
-			this._preFilteredFrame.set(textureId, this.frameId);
+		if (igeTexture._preFilters.length && this._preFilteredFrame.get(id) !== this.frameId) {
+			this._preFilteredFrame.set(id, this.frameId);
 			igeTexture._runPreFilters();
 			igeTexture._imageVersion++;
 		}
@@ -588,7 +742,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		}
 
 		this._igeTextureMap.delete(textureId);
-		const texture = this.createTextureFromIgeTexture(igeTexture);
+		const texture = this.createTextureFromIgeTexture(igeTexture, srgb, role);
 		this._igeTextureVersions.set(textureId, version);
 		return texture;
 	}
@@ -599,21 +753,28 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	protected _preFilteredFrame: Map<string, number> = new Map();
 
 	/**
-	 * Delete a texture.
+	 * Delete a texture (both its copies: as it is, and sRGB-encoded).
 	 */
 	deleteTexture(textureId: string): void {
-		this._resourceManager.deleteTexture(textureId);
-		this._textureBytes.delete(textureId);
-		this._igeTextureMap.delete(textureId);
-		this._igeTextureVersions.delete(textureId);
+		this._deleteKey(textureId);
+		this._deleteKey(igeTextureKey(textureId, true));
 		this._preFilteredFrame.delete(textureId);
-		this._blobTextureCache.delete(textureId);
 
 		// Clean up smart texture canvas if exists
 		const canvas = this._smartTextureCanvases.get(textureId);
 		if (canvas) {
 			this._smartTextureCanvases.delete(textureId);
 		}
+	}
+
+	/** One GPU copy of a texture let go of (see igeTextureKey()). */
+	protected _deleteKey(key: string): void {
+		this._resourceManager.deleteTexture(key);
+		this._textureBytes.delete(key);
+		this._mipmapped.delete(key);
+		this._igeTextureMap.delete(key);
+		this._igeTextureVersions.delete(key);
+		this._blobTextureCache.delete(key);
 	}
 
 	/**

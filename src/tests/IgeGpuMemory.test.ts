@@ -53,8 +53,9 @@ describe("GPU device memory", () => {
 		const d = new IgeWebGl2GpuDevice(mockGl());
 		const picture = d.createTexture({ width: 256, height: 256, format: "rgba8unorm" });
 		expect(d.memory().textures).toBe(256 * 256 * 4);
+		// Every level of the mip chain: 256 x 256 down to 1 x 1 (87,381 texels)
 		const mipmapped = d.createTexture({ width: 256, height: 256, format: "rgba8unorm", mipmaps: true });
-		expect(d.memory().textures).toBe(256 * 256 * 4 + Math.round((256 * 256 * 4 * 4) / 3));
+		expect(d.memory().textures).toBe(256 * 256 * 4 + 87381 * 4);
 		d.destroyTexture(mipmapped);
 		const glyphs = d.createTexture({ width: 512, height: 512, layers: 3, format: "r8unorm" });
 		expect(d.memory().textures).toBe(256 * 256 * 4 + 512 * 512 * 3);
@@ -106,21 +107,27 @@ describe("GPU device memory", () => {
 });
 
 describe("Texture manager memory", () => {
-	it("counts each texture it makes at 4 bytes a texel (a third more with mipmaps), and lets go of deleted ones", () => {
+	it("counts each texture it makes by its format and every level of its mip chain, and lets go of deleted ones", () => {
 		const gl = mockGl();
 		const textures = new IgeWebGlTextureManager(gl, new IgeWebGlResourceManager(gl, 2));
 		// The default 1x1 white texture
 		expect(textures.memoryBytes()).toBe(4);
 		textures.createTextureFromImage("atlas", { width: 64, height: 32 } as unknown as TexImageSource);
 		expect(textures.memoryBytes()).toBe(4 + 64 * 32 * 4);
-		const mipmapped = Math.round((32 * 32 * 4 * 4) / 3);
+		// 32 x 32, 16 x 16, ... 1 x 1: 1,365 texels
+		const mipmapped = 1365 * 4;
 		textures.createTextureFromImage("sprite", { naturalWidth: 32, naturalHeight: 32, width: 32, height: 32 } as unknown as TexImageSource, { generateMipmaps: true });
 		expect(textures.memoryBytes()).toBe(4 + 64 * 32 * 4 + mipmapped);
 		// Replaced at a new size: counted once, at that size
 		textures.createTextureFromImage("atlas", { width: 16, height: 16 } as unknown as TexImageSource);
 		expect(textures.memoryBytes()).toBe(4 + 16 * 16 * 4 + mipmapped);
-		textures.deleteTexture("atlas");
-		textures.deleteTexture("sprite");
+		// By what they hold: both colour maps (the default), and a normal map
+		textures.createTextureFromImage("bumps", { width: 8, height: 8 } as unknown as TexImageSource, { role: "normal" });
+		expect(textures.memoryByRole()).toEqual({ color: 16 * 16 * 4 + mipmapped, normal: 8 * 8 * 4, data: 4 });
+		// A render target made here, by its sized format (RGBA16F: 8 bytes a texel)
+		textures.createEmptyTexture("target", 10, 10, 0x881a);
+		expect(textures.memoryByRole().data).toBe(4 + 10 * 10 * 8);
+		for (const id of ["atlas", "sprite", "bumps", "target"]) textures.deleteTexture(id);
 		expect(textures.memoryBytes()).toBe(4);
 	});
 });
@@ -129,13 +136,14 @@ describe("Renderer GPU memory report", () => {
 	it("adds the device's kinds, the texture manager's textures and an estimate of the canvas", () => {
 		const r = Object.create(IgeWebGlRenderer.prototype) as any;
 		r._device = { memory: () => ({ geometry: 10, textures: 20, renderTargets: 30, shadowMaps: 40, buffers: 50 }) };
-		r._textureManager = { memoryBytes: () => 5 };
+		r._textureManager = { memoryByRole: () => ({ color: 3, normal: 1, data: 1 }) };
 		r._contextLost = false;
 		r._canvasContext = { drawingBufferWidth: 800, drawingBufferHeight: 600, getContextAttributes: () => ({ antialias: true, depth: true, stencil: true }) };
 		const m = (r as IgeWebGlRenderer).gpuMemory();
 		// Antialiased: 4 samples of colour and depth-stencil, the resolved colour, and the picture shown
 		const canvas = 800 * 600 * ((4 + 4) * 4 + 4 + 4);
-		expect(m).toEqual({ geometry: 10, textures: 25, renderTargets: 30, shadowMaps: 40, buffers: 50, canvas, total: 155 + canvas });
+		// Textures split by what they hold (the device's own count as other), not added to the total again
+		expect(m).toEqual({ geometry: 10, textures: 25, renderTargets: 30, shadowMaps: 40, buffers: 50, canvas, total: 155 + canvas, colorMaps: 3, normalMaps: 1, otherMaps: 21 });
 		// Without antialiasing or depth: the colour buffer and the picture shown
 		r._canvasContext.getContextAttributes = () => ({ antialias: false, depth: false, stencil: false });
 		expect((r as IgeWebGlRenderer).gpuMemory().canvas).toBe(800 * 600 * 8);

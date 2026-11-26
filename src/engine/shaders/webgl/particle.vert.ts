@@ -1,3 +1,5 @@
+import { colorSpaceChunk } from "@/engine/shaders/webgl/chunks";
+
 /**
  * Particle vertex shader (IgeParticleSystem3d).
  * Expands the shared quad into a camera-facing square per particle.
@@ -28,6 +30,7 @@ uniform mat4 u_projectionMatrix;
 
 varying vec2 v_uv;
 varying vec4 v_color;
+${colorSpaceChunk}
 
 void main() {
 	// Camera right/up in world space are the first two rows of the view rotation
@@ -37,6 +40,10 @@ void main() {
 
 	v_uv = a_uv;
 	v_color = PARTICLE_COLOR;
+#ifdef IGE_LINEAR
+	// Its colour, picked by eye, as linear light (once a corner, not for every pixel)
+	v_color.rgb = igeSrgbToLinear(v_color.rgb);
+#endif
 	gl_Position = u_projectionMatrix * u_viewMatrix * vec4(worldPos, 1.0);
 }
 `;

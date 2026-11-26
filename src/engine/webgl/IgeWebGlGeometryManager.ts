@@ -151,6 +151,7 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 			if (a.name === "tangent") geometry.hasTangents = true;
 		}
 		geometry.setVertexData(packed.data, packed.count);
+		geometry.linearColors = data.colorSpace === "linear";
 		if (packed.positionDecode) geometry.positionDecode = positionDecodeMatrix(packed.positionDecode);
 		if (packed.uvDecode) geometry.uvDecode = [packed.uvDecode.scale[0], packed.uvDecode.scale[1], packed.uvDecode.offset[0], packed.uvDecode.offset[1]];
 

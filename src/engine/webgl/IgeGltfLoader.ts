@@ -564,6 +564,7 @@ export class IgeGltfLoader extends IgeBaseClass {
 			// Create default material
 			const defaultMat = new IgeWebGlMaterial("default");
 			defaultMat.color(0.8, 0.8, 0.8, 1);
+			defaultMat.colorSpace("linear");
 			materials.push(defaultMat);
 			return materials;
 		}
@@ -571,6 +572,8 @@ export class IgeGltfLoader extends IgeBaseClass {
 		for (const matDef of gltf.materials) {
 			const material = new IgeWebGlPBRMaterial(matDef.name);
 			material.name(matDef.name || "Untitled");
+			// glTF's colour factors are linear light (its spec): not converted again under linear lighting
+			material.colorSpace("linear");
 
 			// Parse PBR metallic-roughness
 			if (matDef.pbrMetallicRoughness) {
@@ -763,9 +766,10 @@ export class IgeGltfLoader extends IgeBaseClass {
 			geometry.uvs = this._getAccessorData(gltf, primitive.attributes.TEXCOORD_0, buffers);
 		}
 
-		// Parse vertex colors
+		// Parse vertex colors (linear light, by the glTF spec: used as they are under linear lighting)
 		if (primitive.attributes.COLOR_0 !== undefined) {
 			geometry.colors = this._getAccessorData(gltf, primitive.attributes.COLOR_0, buffers);
+			geometry.colorSpace = "linear";
 		}
 
 		// Tangents, only for a mesh whose material has a normal map (others would carry them for nothing): the

@@ -21,6 +21,13 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	url?: string;
 	/** Material color - can be a CSS string or RGBA object */
 	color?: string | IgeMaterialColor;
+	/**
+	 * What `color` and `emissiveColor` are, for linear lighting (IgeWebGlRenderer.linearLighting(); without it this
+	 * changes nothing): "srgb" (the default: colours as a game picks them, hex, CSS or 0 to 1 by eye) is converted to
+	 * linear light once, as the material is drawn; "linear" is used as it is (a glTF material's factors, linear by the
+	 * glTF spec: the loader sets it). An entity's own material() override is its own: sRGB unless it says.
+	 */
+	colorSpace?: "srgb" | "linear";
 	transparent?: boolean;
 	/**
 	 * How the object's colour combines with what is behind it. "additive"

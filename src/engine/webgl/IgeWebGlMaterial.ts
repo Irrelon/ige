@@ -41,6 +41,8 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 
 	// Base color (RGBA)
 	protected _color: { r: number; g: number; b: number; a: number } = { r: 1, g: 1, b: 1, a: 1 };
+	/** What the colour and emissive colour are, for linear lighting (see colorSpace()). */
+	protected _colorSpace: "srgb" | "linear" = "srgb";
 
 	// Textures
 	protected _diffuseTexture?: IgeTexture;
@@ -110,6 +112,19 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 			return this;
 		}
 		return this._color;
+	}
+
+	/**
+	 * Gets / sets what its colour and emissive colour are, for linear lighting (IgeWebGlRenderer.linearLighting()):
+	 * "srgb" (the default: picked by eye, in hex or CSS) is converted to linear light as it's drawn; "linear" is used as
+	 * it is. The glTF loader's materials are "linear" (glTF's factors are, by its spec).
+	 */
+	colorSpace(): "srgb" | "linear";
+	colorSpace(val: "srgb" | "linear"): this;
+	colorSpace(val?: "srgb" | "linear"): "srgb" | "linear" | this {
+		if (val === undefined) return this._colorSpace;
+		this._colorSpace = val;
+		return this;
 	}
 
 	/**
@@ -359,6 +374,7 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 		const cloned = new IgeWebGlMaterial();
 		cloned._name = this._name + " (Clone)";
 		cloned._color = { ...this._color };
+		cloned._colorSpace = this._colorSpace;
 		cloned._diffuseTexture = this._diffuseTexture;
 		cloned._normalTexture = this._normalTexture;
 		cloned._emissiveTexture = this._emissiveTexture;
@@ -493,6 +509,7 @@ export class IgeWebGlPBRMaterial extends IgeWebGlMaterial {
 		// Copy base material properties
 		cloned._name = this._name + " (Clone)";
 		cloned._color = { ...this._color };
+		cloned._colorSpace = this._colorSpace;
 		cloned._diffuseTexture = this._diffuseTexture;
 		cloned._normalTexture = this._normalTexture;
 		cloned._emissiveTexture = this._emissiveTexture;
