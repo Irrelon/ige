@@ -1,3 +1,5 @@
+import { colorSpaceChunk } from "@/engine/shaders/webgl/chunks";
+
 /**
  * Decal vertex shader (IgeDecalSystem3d).
  * Lays the shared quad flat on the ground (XZ plane) at each decal's
@@ -34,6 +36,7 @@ uniform float u_atlasGrid; // Cells per side of the texture atlas
 varying vec2 v_uv;
 varying vec4 v_color;
 varying vec3 v_worldPosition;
+${colorSpaceChunk}
 
 void main() {
 	float c = cos(DECAL_SHAPE.x);
@@ -46,6 +49,9 @@ void main() {
 	vec2 cellXY = vec2(mod(cell, u_atlasGrid), floor(cell / u_atlasGrid));
 	v_uv = (a_uv + cellXY) / u_atlasGrid;
 	v_color = DECAL_COLOR;
+#ifdef IGE_LINEAR
+	v_color.rgb = igeSrgbToLinear(v_color.rgb);
+#endif
 	v_worldPosition = worldPos;
 	gl_Position = u_projectionMatrix * u_viewMatrix * vec4(worldPos, 1.0);
 }

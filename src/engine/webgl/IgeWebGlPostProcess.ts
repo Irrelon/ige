@@ -29,10 +29,19 @@
  * It runs once over the whole canvas, after every viewport has drawn, on the
  * GPU device (IgeGpuDevice): its targets are device textures, its passes the
  * device's (the multisampled frame resolved with resolveTexture).
+ *
+ * Under linear lighting (`linear`, set by the renderer from linearLighting())
+ * the frame holds linear light: bloom, depth of field, exposure and tone
+ * mapping work on it, then the composite encodes it to sRGB once, before the
+ * contrast, saturation, vignette and dither (which so work on the picture as
+ * shown, as they do without linear lighting). Its 8-bit targets (hdr off, or
+ * offscreen only for the picture effects or a render scale) are then sRGB
+ * ones, so dark colours keep their precision.
  */
 
 import type { IgeGpuRenderPipeline, IgeGpuTexture, IgeGpuTextureFormat, IgeGpuUniform } from "@/engine/gpu/IgeGpuDevice";
 import { type IgeWebGl2GpuDevice, webGl2Framebuffer } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import { colorSpaceChunk } from "@/engine/shaders/webgl/chunks";
 
 export type IgePostToneMapping = "none" | "aces" | "reinhard";
 
@@ -277,7 +286,7 @@ uniform float u_blur;
 uniform float u_ghost;
 uniform vec2 u_ghostShift;
 uniform vec3 u_ghostColor;
-
+${colorSpaceChunk}
 vec3 aces(vec3 x) {
 	const float a = 2.51, b = 0.03, c = 2.43, d = 0.59, e = 0.14;
 	return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
@@ -322,6 +331,11 @@ void main() {
 	c *= vec3(1.0 + u_temperature * 0.08, 1.0 + u_temperature * 0.01, 1.0 - u_temperature * 0.08);
 	if (u_tone == 1) c = aces(c);
 	else if (u_tone == 2) c = c / (1.0 + c);
+#ifdef IGE_LINEAR
+	// Linear light encoded for the screen, once, after tone mapping: the grading, vignette and dither below work on
+	// the picture as it's shown, as they do without linear lighting
+	c = igeLinearToSrgb(c);
+#endif
 	c = (c - 0.5) * u_contrast + 0.5;
 	float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
 	c = mix(vec3(l), c, u_saturation);
@@ -403,6 +417,10 @@ export class IgeWebGlPostProcess {
 	protected _far = 1000;
 	protected _perspective = true;
 	protected _passes: Record<PassName, Pass> | null = null;
+	/** The composite for linear lighting (encoding to sRGB after tone mapping), made as first used. */
+	protected _linearComposite: Pass | null = null;
+	/** The 8-bit targets are sRGB ones (linear lighting). */
+	protected _srgb = false;
 	protected _active = false;
 	protected _failed = false;
 	/**
@@ -410,6 +428,11 @@ export class IgeWebGlPostProcess {
 	 * that size (even with post-processing off) and the composite upscales it, linear, to the canvas.
 	 */
 	renderScale = 1;
+	/**
+	 * The frame holds linear light (IgeWebGlRenderer.linearLighting()): the composite encodes it to sRGB after tone
+	 * mapping, and 8-bit targets are sRGB ones. The renderer sets it before each frame.
+	 */
+	linear = false;
 
 	constructor (device: IgeWebGl2GpuDevice, settings: Partial<IgePostProcessSettings> = {}) {
 		this._device = device;
@@ -514,8 +537,8 @@ export class IgeWebGlPostProcess {
 			this._blur(a1, b1, s.bloomRadius * 1.5);
 		}
 
-		// Composite to the canvas
-		this._pass("composite", d.surface(), [sceneTex, bloomOn ? this._bloom[0] : scene, bloomOn ? this._bloom[2] : scene], (b, at) => {
+		// Composite to the canvas (encoded to sRGB after tone mapping, under linear lighting)
+		this._pass(this.linear ? "compositeLinear" : "composite", d.surface(), [sceneTex, bloomOn ? this._bloom[0] : scene, bloomOn ? this._bloom[2] : scene], (b, at) => {
 			b[at.u_bloom] = bloomOn ? s.bloom : 0;
 			b[at.u_exposure] = s.exposure;
 			b[at.u_tone] = s.toneMapping === "aces" ? 1 : s.toneMapping === "reinhard" ? 2 : 0;
@@ -556,8 +579,10 @@ export class IgeWebGlPostProcess {
 	dispose (): void {
 		this._freeTargets();
 		if (this._passes) {
-			for (const p of new Set(Object.values(this._passes).map((x) => (x.pipeline as unknown as { _module: never })._module))) this._device.destroyShaderModule(p);
+			const passes = [...Object.values(this._passes), ...(this._linearComposite ? [this._linearComposite] : [])];
+			for (const p of new Set(passes.map((x) => (x.pipeline as unknown as { _module: never })._module))) this._device.destroyShaderModule(p);
 			this._passes = null;
+			this._linearComposite = null;
 		}
 	}
 
@@ -568,6 +593,7 @@ export class IgeWebGlPostProcess {
 		this._bloom = [];
 		this._dofDepth = this._dofHalf = this._dofOut = null;
 		this._passes = null;
+		this._linearComposite = null;
 		this._w = this._h = 0;
 		this._active = false;
 	}
@@ -589,16 +615,19 @@ export class IgeWebGlPostProcess {
 			}
 			this._passes = passes;
 		}
-		// (On for the picture effects alone, nothing's tone mapped: plain 8-bit colour, half the memory to move)
+		// (On for the picture effects alone, nothing's tone mapped: plain 8-bit colour, half the memory to move; sRGB
+		// 8-bit under linear lighting, so linear light keeps its dark shades)
 		const half = this.settings.hdr && this.settings.enabled && d.limits.floatTargets;
+		const srgb = this.linear && !half;
 		const samples = Math.max(0, Math.min(this.settings.samples, d.limits.maxSamples));
-		if (width === this._w && height === this._h && half === this._half && samples === this._samples && this._msaaColor) return;
+		if (width === this._w && height === this._h && half === this._half && srgb === this._srgb && samples === this._samples && this._msaaColor) return;
 		this._freeTargets();
 		this._w = width;
 		this._h = height;
 		this._half = half;
+		this._srgb = srgb;
 		this._samples = samples;
-		const format: IgeGpuTextureFormat = half ? "rgba16float" : "rgba8unorm";
+		const format: IgeGpuTextureFormat = half ? "rgba16float" : srgb ? "rgba8unorm-srgb" : "rgba8unorm";
 
 		this._msaaColor = d.createTexture({ width, height, format, sampleCount: samples, sampler: LINEAR, memory: "renderTargets", label: "post frame" });
 		this._msaaDepth = d.createTexture({ width, height, format: "depth24plus-stencil8", sampleCount: samples, sampler: NEAREST, memory: "renderTargets", label: "post frame depth" });
@@ -610,7 +639,7 @@ export class IgeWebGlPostProcess {
 	}
 
 	protected _target (w: number, h: number): IgeGpuTexture {
-		return this._device.createTexture({ width: w, height: h, format: this._half ? "rgba16float" : "rgba8unorm", sampler: LINEAR, memory: "renderTargets", label: "post target" });
+		return this._device.createTexture({ width: w, height: h, format: this._half ? "rgba16float" : this._srgb ? "rgba8unorm-srgb" : "rgba8unorm", sampler: LINEAR, memory: "renderTargets", label: "post target" });
 	}
 
 	/** Depth of field: resolve the depth, blur at half size by how out of focus each sample is, then blend by depth. Returns the texture to composite. */
@@ -654,8 +683,8 @@ export class IgeWebGlPostProcess {
 	}
 
 	/** One full-screen triangle into `target` (a texture, or the canvas: its whole), reading `textures` in their slots. */
-	protected _pass (name: PassName, target: IgeGpuTexture | ReturnType<IgeWebGl2GpuDevice["surface"]>, textures: IgeGpuTexture[], set: (block: Float32Array, at: Readonly<Record<string, number>>) => void): void {
-		const { pipeline, block } = this._passes![name];
+	protected _pass (name: PassName | "compositeLinear", target: IgeGpuTexture | ReturnType<IgeWebGl2GpuDevice["surface"]>, textures: IgeGpuTexture[], set: (block: Float32Array, at: Readonly<Record<string, number>>) => void): void {
+		const { pipeline, block } = name === "compositeLinear" ? this._linearCompositePass() : this._passes![name];
 		set(block, pipeline.uniformOffsets);
 		const pass = this._device.beginRenderPass({ color: { target } });
 		pass.setPipeline(pipeline);
@@ -663,6 +692,18 @@ export class IgeWebGlPostProcess {
 		pass.setUniforms(block);
 		pass.draw(3);
 		pass.end();
+	}
+
+	/** The composite compiled for linear lighting (IGE_LINEAR: sRGB-encoded after tone mapping), made as first used. */
+	protected _linearCompositePass (): Pass {
+		if (this._linearComposite) return this._linearComposite;
+		const d = this._device, def = PASSES.composite;
+		const module = d.createShaderModule({ vertex: VERT, fragment: def.fragment.replace("#version 300 es\n", "#version 300 es\n#define IGE_LINEAR\n"), label: "post composite linear" });
+		const pipeline = d.createRenderPipeline({
+			module, vertex: { buffers: [] }, primitive: { topology: "triangle-list" },
+			uniforms: def.uniforms, textures: def.textures.map((t) => ({ name: t })), label: "post composite linear"
+		});
+		return (this._linearComposite = { pipeline, block: new Float32Array(pipeline.uniformSize) });
 	}
 
 	/** Separable blur: a -> b horizontally, b -> a vertically. */

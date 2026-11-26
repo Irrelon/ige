@@ -458,8 +458,10 @@ console.log(`${gpuMs?.toFixed(1)} ms on the GPU, ${(gpuMemory.total / 1048576).t
 - `gpuMemory` is in bytes, by kind: `geometry` (mesh vertices and indices), `textures` (images and canvases drawn
   with), `renderTargets` (post-processing, dynamic resolution, panels, outlines), `shadowMaps` (and their static
   caches), `buffers` (instances, bones, particles, decals), `canvas` (an estimate of the canvas's own buffers) and
-  `total`. It's counted from what the renderer made (sizes and formats), so the driver's own overhead isn't in it.
-  `renderer.gpuMemory()` gives the same on its own.
+  `total`. It's counted from what the renderer made (sizes, formats and every mip level), so the driver's own overhead
+  isn't in it. `textures` is split too, into `colorMaps`, `normalMaps` and `otherMaps` (parts of it, not added to
+  `total` again; see [`textures-and-colour.md`](textures-and-colour.md)). `renderer.gpuMemory()` gives the same on
+  its own.
 
 ## Performance switches
 
@@ -496,7 +498,8 @@ PBR lighting on and off).
   (`normalTexture`, `normalScale`, `metallicRoughnessTexture`, `aoTexture`, `aoStrength`: an `IgeTexture` each, or an
   `...TextureId` with `...TextureBlob` for a glTF image). A normal map on a mesh made in code needs `tangents` on its
   geometry data (`igeComputeTangents(geometry)` makes them). Shadow, outline, silhouette and decal passes ignore maps.
-- **Mipmaps**: the three maps always get mipmaps and trilinear filtering; base colour and emissive textures get them when their glTF sampler asks, or with `renderer.modelTextureMipmaps(true)` (off by default). Mipmaps cost a third more texture memory for each texture.
+- **Mipmaps**: the three maps always get mipmaps and trilinear filtering; base colour and emissive textures get them when their glTF sampler asks, or with `renderer.modelTextureMipmaps(true)` (off by default). Mipmaps cost a third more texture memory for each texture. `renderer.anisotropy(8)` sharpens mipmapped textures seen at a slant.
+- **Colour and linear lighting**: under `renderer.linearLighting(true)` the base colour and emissive maps are decoded from sRGB by the GPU and the three maps are used as they are; glTF's colour factors and vertex colours are linear already. See [`textures-and-colour.md`](textures-and-colour.md).
 - **Cost**: a mesh with no maps pays nothing: no extra vertex data, texture binds or batch splits. A mesh with maps adds
   4 floats a vertex (tangent; 4 bytes in `IGE_QUANTISED_ENCODINGS`), up to three textures bound for its draw, and items with different maps don't share an
   instanced draw. Map textures go through the texture manager, so a lost WebGL context brings them back, and

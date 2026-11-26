@@ -123,3 +123,29 @@ export const forwardInstanceMaterialChunk = `
 	v_instanceMaterial = a_instanceMaterial;
 #endif
 `;
+
+/**
+ * sRGB and linear light, for linear lighting (IgeWebGlRenderer.linearLighting()). Programs are compiled with
+ * `#define IGE_LINEAR` while it's on (colours given per vertex or instance decoded to linear light as they come in),
+ * and `#define IGE_SRGB_OUTPUT` too when they draw straight to the screen or a panel (their result sRGB-encoded at the
+ * end, as nothing after them will). Into post-processing's target they write linear light and the composite encodes
+ * it. Without the defines a program is exactly what it was. The exact sRGB curves (those the GPU uses for sRGB
+ * textures), so a colour decoded and encoded again comes back the same.
+ */
+export const colorSpaceChunk = `
+#ifdef IGE_LINEAR
+vec3 igeSrgbToLinear(vec3 c) {
+	c = max(c, vec3(0.0));
+	return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
+vec3 igeLinearToSrgb(vec3 c) {
+	c = max(c, vec3(0.0));
+	return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));
+}
+#endif
+`;
+
+/** The defines a program variant is compiled with (see colorSpaceChunk): 0 as it always was, 1 linear light out, 2 sRGB out. */
+export function igeColorDefines (variant: 0 | 1 | 2): string {
+	return variant === 1 ? "#define IGE_LINEAR\n" : variant === 2 ? "#define IGE_LINEAR\n#define IGE_SRGB_OUTPUT\n" : "";
+}

@@ -128,6 +128,7 @@ export function shellGeometry (g: IgeGeometryData3d, bones: Set<number>, options
 		uvs: pick(g.uvs, 2, (n) => new Float32Array(n)),
 		tangents: pick(g.tangents, 4, (n) => new Float32Array(n)),
 		colors: pick(g.colors, 4, (n) => new Float32Array(n)),
+		colorSpace: g.colorSpace,
 		boneWeights: pick(weights, 4, (n) => new Float32Array(n)),
 		boneIndices: pick(joints, 4, (n) => new Uint8Array(n)),
 		indices: used.length > 65535 ? new Uint32Array(indices) : new Uint16Array(indices),

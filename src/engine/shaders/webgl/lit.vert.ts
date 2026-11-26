@@ -1,4 +1,5 @@
 import {
+	colorSpaceChunk,
 	forwardInstanceMaterialChunk,
 	instanceMaterialVaryingsChunk,
 	worldMatrixChunk
@@ -39,8 +40,10 @@ ${instanceMaterialVaryingsChunk}
 
 // Optional per-vertex colour, multiplied into the base colour. Read only
 // when u_hasVertexColors is 1: without the attribute it reads as black.
+// (2, under linear lighting only: sRGB colours, decoded to linear light)
 attribute vec4 a_color;
 uniform int u_hasVertexColors;
+${colorSpaceChunk}
 
 void main() {
 	mat4 worldMatrix = getWorldMatrix();
@@ -54,6 +57,10 @@ void main() {
 	v_worldNormal = normalize(normalMatrix * a_normal);
 
 	v_vertexColor = u_hasVertexColors == 1 ? a_color : vec4(1.0);
+#ifdef IGE_LINEAR
+	// Vertex colours picked by eye (2: sRGB) decoded to linear light; 1 (a glTF's, linear already) used as they are
+	if (u_hasVertexColors == 2) v_vertexColor = vec4(igeSrgbToLinear(a_color.rgb), a_color.a);
+#endif
 
 	// Pass through UV coordinates
 	// Texture transform (scale, then offset); unset (all zero) means none

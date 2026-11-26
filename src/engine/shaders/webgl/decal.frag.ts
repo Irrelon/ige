@@ -1,3 +1,5 @@
+import { colorSpaceChunk } from "@/engine/shaders/webgl/chunks";
+
 /**
  * Decal fragment shader (IgeDecalSystem3d).
  *
@@ -22,6 +24,7 @@ uniform int u_fogMode;
 uniform float u_fogNear;
 uniform float u_fogFar;
 uniform float u_fogDensity;
+${colorSpaceChunk}
 
 void main() {
 	vec4 tex = texture2D(u_texture, v_uv);
@@ -44,10 +47,20 @@ void main() {
 	}
 
 	vec3 color = v_color.rgb * tex.rgb;
+#ifdef IGE_SRGB_OUTPUT
+	// Encoded for the screen; a multiplied decal too (what it multiplies is encoded there, and encoding a product
+	// is close to multiplying the encoded parts)
+	if (u_multiply == 1) {
+		gl_FragColor = vec4(igeLinearToSrgb(mix(vec3(1.0), color, alpha)), 1.0);
+	} else {
+		gl_FragColor = vec4(igeLinearToSrgb(color), alpha);
+	}
+#else
 	if (u_multiply == 1) {
 		gl_FragColor = vec4(mix(vec3(1.0), color, alpha), 1.0);
 	} else {
 		gl_FragColor = vec4(color, alpha);
 	}
+#endif
 }
 `;

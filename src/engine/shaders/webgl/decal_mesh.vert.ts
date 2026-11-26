@@ -1,3 +1,5 @@
+import { colorSpaceChunk } from "@/engine/shaders/webgl/chunks";
+
 /**
  * Projected decal vertex shader (IgeDecalSystem3d.project()). The decal
  * triangles are already in world space with atlas UVs and a per-vertex
@@ -17,10 +19,14 @@ uniform mat4 u_projectionMatrix;
 varying vec2 v_uv;
 varying vec4 v_color;
 varying vec3 v_worldPosition;
+${colorSpaceChunk}
 
 void main() {
 	v_uv = a_uv;
 	v_color = a_color;
+#ifdef IGE_LINEAR
+	v_color.rgb = igeSrgbToLinear(v_color.rgb);
+#endif
 	v_worldPosition = a_position;
 	gl_Position = u_projectionMatrix * u_viewMatrix * vec4(a_position, 1.0);
 }

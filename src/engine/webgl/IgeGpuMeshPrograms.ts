@@ -79,14 +79,18 @@ export class IgeGpuMeshPrograms {
 		this.device = device;
 	}
 
-	/** The shader library's program `id` as a module, its inputs at `attributes`' locations (compiled as first asked for). */
-	module (id: string, attributes: Readonly<Record<string, number>> = MESH_ATTRIBUTES): IgeGpuShaderModule {
-		let m = this._modules.get(id);
+	/**
+	 * The shader library's program `id` as a module, its inputs at `attributes`' locations (compiled as first asked for).
+	 * `defines` (`#define` lines, see igeColorDefines()) go before both its shaders: a variant kept apart from the rest.
+	 */
+	module (id: string, attributes: Readonly<Record<string, number>> = MESH_ATTRIBUTES, defines: string = ""): IgeGpuShaderModule {
+		const key = defines ? `${id}|${defines}` : id;
+		let m = this._modules.get(key);
 		if (m) return m;
 		const src = IgeShaderLibrary.get(id);
 		if (!src) throw new Error(`IgeGpuMeshPrograms: no shader "${id}" in the library`);
-		m = this.device.createShaderModule({ vertex: src.vertex, fragment: src.fragment, attributes: { ...attributes }, label: id });
-		this._modules.set(id, m);
+		m = this.device.createShaderModule({ vertex: defines + src.vertex, fragment: defines + src.fragment, attributes: { ...attributes }, label: defines ? `${id} ${defines.replace(/#define /g, "").trim().replace(/\s+/g, "+")}` : id });
+		this._modules.set(key, m);
 		return m;
 	}
 

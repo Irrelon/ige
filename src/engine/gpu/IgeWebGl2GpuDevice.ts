@@ -16,8 +16,12 @@ import type {
 	IgeGpuRenderPipelineDesc, IgeGpuRenderTarget, IgeGpuSampler, IgeGpuSamplerDesc, IgeGpuShaderModule, IgeGpuShaderModuleDesc, IgeGpuStencilOperation,
 	IgeGpuSurface, IgeGpuTexture, IgeGpuTextureDesc, IgeGpuTextureFormat, IgeGpuUniform, IgeGpuVertexBufferLayout, IgeGpuVertexFormat
 } from "@/engine/gpu/IgeGpuDevice";
+import { igeTextureBytes } from "@/engine/gpu/IgeGpuTextureFormats";
 
 type GL = WebGL2RenderingContext;
+
+/** EXT_texture_filter_anisotropic's parameter and limit (the same in every browser). */
+const TEXTURE_MAX_ANISOTROPY = 0x84fe, MAX_TEXTURE_MAX_ANISOTROPY = 0x84ff;
 
 interface GlTexture extends IgeGpuTexture {
 	width: number;
@@ -146,6 +150,7 @@ function same4 (have: [number, number, number, number] | undefined, want: ArrayL
 
 const FORMATS: Record<IgeGpuTextureFormat, { internal: number; format: number; type: number; bytes: number }> = {
 	rgba8unorm: { internal: 0x8058, format: 0x1908, type: 0x1401, bytes: 4 }, // RGBA8, RGBA, UNSIGNED_BYTE
+	"rgba8unorm-srgb": { internal: 0x8c43, format: 0x1908, type: 0x1401, bytes: 4 }, // SRGB8_ALPHA8, RGBA, UNSIGNED_BYTE
 	r8unorm: { internal: 0x8229, format: 0x1903, type: 0x1401, bytes: 1 }, // R8, RED, UNSIGNED_BYTE
 	rgba16float: { internal: 0x881a, format: 0x1908, type: 0x140b, bytes: 8 }, // RGBA16F, RGBA, HALF_FLOAT
 	rgba32float: { internal: 0x8814, format: 0x1908, type: 0x1406, bytes: 16 }, // RGBA32F, RGBA, FLOAT
@@ -293,7 +298,8 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			maxTextureSlots: Math.min(16, units),
 			maxSamples: gl.getParameter(gl.MAX_SAMPLES) as number,
 			// (Asking for it turns it on)
-			floatTargets: !!gl.getExtension("EXT_color_buffer_float")
+			floatTargets: !!gl.getExtension("EXT_color_buffer_float"),
+			maxAnisotropy: gl.getExtension("EXT_texture_filter_anisotropic") ? Math.max(1, Number(gl.getParameter(MAX_TEXTURE_MAX_ANISOTROPY)) || 1) : 1
 		};
 		this._scratch = Math.min(31, units - 1);
 		const stencil = !!gl.getContextAttributes()?.stencil;
@@ -318,6 +324,7 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		this._samplers.clear();
 		// (Extensions are the context's: turned on again)
 		if (this.limits.floatTargets) this.gl.getExtension("EXT_color_buffer_float");
+		if (this.limits.maxAnisotropy > 1) this.gl.getExtension("EXT_texture_filter_anisotropic");
 		this.invalidate();
 	}
 
@@ -489,12 +496,11 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		this._account(t, this._textureBytes(t));
 	}
 
-	/** A texture's storage in bytes: every texel of every layer (and sample), its smaller levels a third more. */
+	/** A texture's storage in bytes: every texel of every layer (and sample), and every level of its mip chain. */
 	_textureBytes (t: GlTexture): number {
 		if (t._external) return 0;
 		const samples = t._rb ? Math.max(1, Math.min(t.sampleCount, this.limits.maxSamples || 1)) : 1;
-		const bytes = t.width * t.height * Math.max(1, t.layers) * FORMATS[t.format].bytes * samples;
-		return Math.round(t.mipmaps ? (bytes * 4) / 3 : bytes);
+		return igeTextureBytes(t.format, t.width, t.height, { mipmaps: t.mipmaps, layers: t.layers, samples });
 	}
 
 	writeTexture (texture: IgeGpuTexture, data: ArrayBufferView, region: { x?: number; y?: number; layer?: number; width: number; height: number; mipLevel?: number }, opts?: { premultiply?: boolean }): void {
@@ -589,10 +595,13 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 			changes.push([gl.TEXTURE_COMPARE_MODE, next.compare ? gl.COMPARE_REF_TO_TEXTURE : gl.NONE]);
 			if (next.compare) changes.push([gl.TEXTURE_COMPARE_FUNC, COMPARE[next.compare]]);
 		}
+		// (Anisotropy only where the GPU has it, and only set when asked for or changed: off is GL's own default)
+		const aniso = this.limits.maxAnisotropy > 1 && (all ? (next.maxAnisotropy ?? 1) > 1 : (next.maxAnisotropy ?? 1) !== (was.maxAnisotropy ?? 1));
 		t._sampler = next;
-		if (!changes.length) return;
+		if (!changes.length && !aniso) return;
 		this._bindScratch(t);
 		for (const [k, v] of changes) gl.texParameteri(t._target, k, v);
+		if (aniso) gl.texParameterf(t._target, TEXTURE_MAX_ANISOTROPY, Math.max(1, Math.min(next.maxAnisotropy ?? 1, this.limits.maxAnisotropy)));
 	}
 
 	/** A sampler object for a draw's sampler (one per kind, made as first wanted). */
@@ -610,6 +619,9 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		if (desc.compare) {
 			gl.samplerParameteri(s, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
 			gl.samplerParameteri(s, gl.TEXTURE_COMPARE_FUNC, COMPARE[desc.compare]);
+		}
+		if ((desc.maxAnisotropy ?? 1) > 1 && this.limits.maxAnisotropy > 1) {
+			gl.samplerParameterf(s, TEXTURE_MAX_ANISOTROPY, Math.min(desc.maxAnisotropy!, this.limits.maxAnisotropy));
 		}
 		this._samplers.set(key, s);
 		return s;

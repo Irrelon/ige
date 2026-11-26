@@ -8,6 +8,10 @@ import {
 	IgeLightType
 } from "@/engine/webgl/IgeWebGlLight";
 import type { IgeWebGlProgram } from "@/engine/webgl/IgeWebGlProgram";
+import { igeSrgbToLinear } from "@/engine/utils/igeColorSpace";
+
+/** A colour channel as it is (linear lighting off). */
+const asItIs = (v: number): number => v;
 
 /**
  * Most point and spot lights the shader takes at once. Any number can be
@@ -45,6 +49,10 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 
 	// Combined ground colour for hemisphere ambient light (same as the sky when no light sets one)
 	protected _combinedGround: { r: number; g: number; b: number } = { r: 0.1, g: 0.1, b: 0.1 };
+
+	// The same two in linear light, for linear lighting (each light's colour converted before they're added up)
+	protected _combinedAmbientLinear: { r: number; g: number; b: number } = { r: igeSrgbToLinear(0.1), g: igeSrgbToLinear(0.1), b: igeSrgbToLinear(0.1) };
+	protected _combinedGroundLinear: { r: number; g: number; b: number } = { r: igeSrgbToLinear(0.1), g: igeSrgbToLinear(0.1), b: igeSrgbToLinear(0.1) };
 
 	/**
 	 * Add a light to be tracked.
@@ -114,6 +122,7 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 	protected _updateCombinedAmbient(): void {
 		let r = 0, g = 0, b = 0;
 		let gr = 0, gg = 0, gb = 0;
+		let lr = 0, lg = 0, lb = 0, lgr = 0, lgg = 0, lgb = 0;
 
 		for (const light of this._ambientLights) {
 			const data = light.getLightData();
@@ -126,6 +135,13 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 			gr += ground.r * intensity;
 			gg += ground.g * intensity;
 			gb += ground.b * intensity;
+			// (Linear light: each colour converted, then scaled and added, as light adds up)
+			lr += igeSrgbToLinear(data.color.r) * intensity;
+			lg += igeSrgbToLinear(data.color.g) * intensity;
+			lb += igeSrgbToLinear(data.color.b) * intensity;
+			lgr += igeSrgbToLinear(ground.r) * intensity;
+			lgg += igeSrgbToLinear(ground.g) * intensity;
+			lgb += igeSrgbToLinear(ground.b) * intensity;
 		}
 
 		// If no ambient lights, no ambient contribution (fully dark)
@@ -133,6 +149,8 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 
 		this._combinedAmbient = { r, g, b, intensity: 1.0 };
 		this._combinedGround = { r: gr, g: gg, b: gb };
+		this._combinedAmbientLinear = { r: lr, g: lg, b: lb };
+		this._combinedGroundLinear = { r: lgr, g: lgg, b: lgb };
 	}
 
 	/**
@@ -142,6 +160,8 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 		if (this._ambientLights.length === 0) {
 			this._combinedAmbient = { r, g, b, intensity: 1.0 };
 			this._combinedGround = { r, g, b };
+			this._combinedAmbientLinear = { r: igeSrgbToLinear(r), g: igeSrgbToLinear(g), b: igeSrgbToLinear(b) };
+			this._combinedGroundLinear = { ...this._combinedAmbientLinear };
 		}
 	}
 
@@ -254,12 +274,14 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 	 * The light uniforms written into a uniform block (for a pipeline on the GPU device), as applyLightUniforms sets
 	 * them on a program: `at` is where each member starts (the arrays' elements one after another).
 	 */
-	writeLightUniforms(block: Float32Array, at: Readonly<Record<string, number>>): void {
-		const amb = this._combinedAmbient, ground = this._combinedGround;
+	writeLightUniforms(block: Float32Array, at: Readonly<Record<string, number>>, linear: boolean = false): void {
+		const amb = linear ? this._combinedAmbientLinear : this._combinedAmbient, ground = linear ? this._combinedGroundLinear : this._combinedGround;
+		// (Light colours as games pick them are sRGB: under linear lighting each is converted to linear light here)
+		const c = linear ? igeSrgbToLinear : asItIs;
 		block[at.u_ambientLightColor] = amb.r;
 		block[at.u_ambientLightColor + 1] = amb.g;
 		block[at.u_ambientLightColor + 2] = amb.b;
-		block[at.u_ambientLightIntensity] = amb.intensity;
+		block[at.u_ambientLightIntensity] = this._combinedAmbient.intensity;
 		block[at.u_ambientGroundColor] = ground.r;
 		block[at.u_ambientGroundColor + 1] = ground.g;
 		block[at.u_ambientGroundColor + 2] = ground.b;
@@ -271,9 +293,9 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 			block[at.u_directionalLightDir] = -dir.x;
 			block[at.u_directionalLightDir + 1] = -dir.y;
 			block[at.u_directionalLightDir + 2] = -dir.z;
-			block[at.u_directionalLightColor] = data.color.r;
-			block[at.u_directionalLightColor + 1] = data.color.g;
-			block[at.u_directionalLightColor + 2] = data.color.b;
+			block[at.u_directionalLightColor] = c(data.color.r);
+			block[at.u_directionalLightColor + 1] = c(data.color.g);
+			block[at.u_directionalLightColor + 2] = c(data.color.b);
 			block[at.u_directionalLightIntensity] = data.intensity;
 		} else {
 			block[at.u_hasDirectionalLight] = 0;
@@ -287,9 +309,9 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 			block[p3] = data.position.x;
 			block[p3 + 1] = data.position.y;
 			block[p3 + 2] = data.position.z;
-			block[c3] = data.color.r;
-			block[c3 + 1] = data.color.g;
-			block[c3 + 2] = data.color.b;
+			block[c3] = c(data.color.r);
+			block[c3 + 1] = c(data.color.g);
+			block[c3 + 2] = c(data.color.b);
 			block[at.u_pointLightIntensities + i] = data.intensity;
 			block[at.u_pointLightRanges + i] = (data as any).range || 100;
 			block[at.u_pointLightDecays + i] = (data as any).decay || 2;
@@ -307,9 +329,9 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 			block[d3] = dir.x;
 			block[d3 + 1] = dir.y;
 			block[d3 + 2] = dir.z;
-			block[c3] = data.color.r;
-			block[c3 + 1] = data.color.g;
-			block[c3 + 2] = data.color.b;
+			block[c3] = c(data.color.r);
+			block[c3 + 1] = c(data.color.g);
+			block[c3 + 2] = c(data.color.b);
 			block[at.u_spotLightIntensities + i] = data.intensity;
 			block[at.u_spotLightRanges + i] = (data as any).range || 100;
 			block[at.u_spotLightAngles + i] = Math.cos((data as any).angle || Math.PI / 4);

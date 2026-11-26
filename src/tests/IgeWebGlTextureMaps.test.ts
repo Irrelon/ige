@@ -226,6 +226,7 @@ describe("Mipmaps for material maps", () => {
 		const calls: [string, unknown][] = [];
 		r._textureManager = {
 			getBlobTexture: () => null,
+			hasBlobTexture: () => false,
 			createTextureFromBlob: (id: string, _blob: Blob, sampler?: unknown, mipmaps?: boolean) => {
 				calls.push([id, { sampler, mipmaps }]);
 				return new Promise(() => undefined);

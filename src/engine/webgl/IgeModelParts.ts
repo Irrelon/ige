@@ -367,6 +367,9 @@ function toMaterialData (model: IgeGltfModel, mat: IgeWebGlMaterial, index: numb
 		transparent: m.blendMode?.() === "transparent",
 		doubleSided: m.cullMode?.() === "none"
 	};
+	// (A glTF material's colours are linear light: not converted again under linear lighting)
+	const colorSpace = m.colorSpace?.() as "srgb" | "linear" | undefined;
+	if (colorSpace) data.colorSpace = colorSpace;
 
 	if (emissive && (emissive.r > 0 || emissive.g > 0 || emissive.b > 0)) {
 		data.emissiveColor = { r: emissive.r, g: emissive.g, b: emissive.b };
