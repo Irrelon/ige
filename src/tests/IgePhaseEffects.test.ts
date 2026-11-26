@@ -143,6 +143,11 @@ describe("phase effect on entities", () => {
 		expect(phaseFragmentShader).toContain("void litMain()");
 		expect(phaseFragmentShader.match(/void main\(\)/g)).toHaveLength(1);
 	});
+
+	it("under linear lighting the phase shader encodes once, at its end and before its early return", () => {
+		expect(phaseFragmentShader.startsWith("#define IGE_LIT_WRAPPED\n")).toBe(true);
+		expect(phaseFragmentShader.match(/igeLinearToSrgb\(gl_FragColor\.rgb\)/g)).toHaveLength(2);
+	});
 });
 
 describe("lensing maths", () => {

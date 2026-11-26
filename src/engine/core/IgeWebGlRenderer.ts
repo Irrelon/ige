@@ -2748,7 +2748,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 		if (draws.length === 0) return;
 		this._lensPass ??= new IgeLensPass(this._canvasContext as WebGL2RenderingContext);
-		this._lensPass.apply(draws, x, y, w, h);
+		// Under linear lighting into post-processing's target (linear light, encoded by its composite) the ring colour
+		// goes in as linear light too; straight to the screen or a panel the view's already encoded, so it stays as given
+		this._lensPass.apply(draws, x, y, w, h, this._colorVariant === 1 ? igeSrgbToLinear : undefined);
 		this._stateManager?.reset();
 	}
 
@@ -4696,8 +4698,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _writePhase (data: Float32Array, at: Record<string, number>, item: IgeWebGlRenderItem, phase: IgePhaseEffect): void {
 		const s = phase.settings;
 		data.set([item.phaseK ?? 0, item.phaseTime ?? 0, s.shimmer, Math.max(0.1, s.edgePower)], at.u_phase);
-		data.set([s.edgeR, s.edgeG, s.edgeB, s.edgeStrength], at.u_phaseEdge);
-		data.set([s.tintR, s.tintG, s.tintB, s.opacity], at.u_phaseBody);
+		// (Rim and tint as the pass takes colours: linear light under linear lighting)
+		data.set([this._inLight(s.edgeR), this._inLight(s.edgeG), this._inLight(s.edgeB), s.edgeStrength], at.u_phaseEdge);
+		data.set([this._inLight(s.tintR), this._inLight(s.tintG), this._inLight(s.tintB), s.opacity], at.u_phaseBody);
 		const wave = s.rippleScale > 0 ? s.rippleScale : Math.max(item.radius, 1e-3) * 0.35;
 		data.set([1 / wave, s.split, 0, 0], at.u_phaseRipple);
 	}

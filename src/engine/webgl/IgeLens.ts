@@ -172,6 +172,7 @@ const FRAGMENT = `#version 300 es
 precision highp float;
 uniform sampler2D u_src;
 uniform vec4 u_rect;
+uniform vec4 u_tex;
 uniform int u_count;
 uniform vec4 u_a[${IGE_LENS_MAX}];
 uniform vec4 u_b[${IGE_LENS_MAX}];
@@ -205,7 +206,7 @@ void main() {
 		p = c + dv / d * src;
 	}
 	vec2 q = clamp(p, u_rect.xy + 0.5, u_rect.xy + u_rect.zw - 0.5);
-	vec4 col = texture(u_src, (q - u_rect.xy) / u_rect.zw);
+	vec4 col = texture(u_src, (q - u_tex.xy) / u_tex.zw);
 	col.rgb = mix(col.rgb, vec3(0.0), dark) + add * (1.0 - dark);
 	o_color = vec4(col.rgb, 1.0);
 }`;
@@ -238,20 +239,28 @@ export class IgeLensPass {
 
 	constructor (protected _gl: WebGL2RenderingContext) {}
 
-	/** Draws `lenses` over the rectangle (x, y, w, h: device pixels, GL's way up) of the framebuffer bound now. */
-	apply (lenses: IgeLensDraw[], x: number, y: number, w: number, h: number): void {
+	/**
+	 * Draws `lenses` over the rectangle (x, y, w, h: device pixels, GL's way up) of the framebuffer bound now.
+	 * `toLight` converts the ring colour for a target that holds linear light (linear lighting into post-processing).
+	 */
+	apply (lenses: IgeLensDraw[], x: number, y: number, w: number, h: number, toLight?: (c: number) => number): void {
 		const gl = this._gl;
 		if (lenses.length === 0 || w < 1 || h < 1) return;
 		if (!this._program && !this._make()) return;
 		const bound = gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
 		const isFloat = this._targetIsFloat(bound);
-		if (!this._texture || this._w !== w || this._h !== h || this._float !== isFloat) this._size(w, h, isFloat);
+		// WebGL 2 only resolves a multisampled source into a same-sized rectangle, so a multisampled target (post-processing's
+		// frame, a panel's, an antialiased canvas) is resolved whole, same size, and the view's rectangle sampled from that
+		const full = (gl.getParameter(gl.SAMPLES) as number) > 0 ? this._targetSize(bound) : null;
+		const tw = full ? full.w : w, th = full ? full.h : h;
+		if (!this._texture || this._w !== tw || this._h !== th || this._float !== isFloat) this._size(tw, th, isFloat);
 
 		// Resolve the view into the texture
 		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, bound);
 		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this._framebuffer);
 		gl.disable(gl.SCISSOR_TEST);
-		gl.blitFramebuffer(x, y, x + w, y + h, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+		if (full) gl.blitFramebuffer(0, 0, tw, th, 0, 0, tw, th, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+		else gl.blitFramebuffer(x, y, x + w, y + h, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, bound);
 
 		const n = Math.min(lenses.length, IGE_LENS_MAX);
@@ -259,7 +268,8 @@ export class IgeLensPass {
 			const { screen, lens } = lenses[i], s = lens.settings;
 			this._a.set([screen.x, screen.y, screen.radius, s.strength], i * 4);
 			this._b.set([s.ring, Math.max(0.75, s.ringWidth * screen.radius), s.core * screen.radius, s.ripple], i * 4);
-			this._c.set([s.ringR, s.ringG, s.ringB, lens.now() * s.rippleSpeed], i * 4);
+			if (toLight) this._c.set([toLight(s.ringR), toLight(s.ringG), toLight(s.ringB), lens.now() * s.rippleSpeed], i * 4);
+			else this._c.set([s.ringR, s.ringG, s.ringB, lens.now() * s.rippleSpeed], i * 4);
 		}
 
 		const u = this._uniforms;
@@ -274,6 +284,9 @@ export class IgeLensPass {
 		gl.bindTexture(gl.TEXTURE_2D, this._texture);
 		gl.uniform1i(u.u_src, 0);
 		gl.uniform4f(u.u_rect, x, y, w, h);
+		// Where the view's pixels sit in the texture: its own corner when the texture holds only the view, else the whole target
+		if (full) gl.uniform4f(u.u_tex, 0, 0, tw, th);
+		else gl.uniform4f(u.u_tex, x, y, w, h);
 		gl.uniform1i(u.u_count, n);
 		gl.uniform4fv(u.u_a, this._a);
 		gl.uniform4fv(u.u_b, this._b);
@@ -287,6 +300,22 @@ export class IgeLensPass {
 		if (hadBlend) gl.enable(gl.BLEND);
 		if (hadCull) gl.enable(gl.CULL_FACE);
 		if (hadStencil) gl.enable(gl.STENCIL_TEST);
+	}
+
+	/** The size of the framebuffer bound (its renderbuffer's, else the canvas's), or null if it can't be told. */
+	protected _targetSize (bound: WebGLFramebuffer | null): { w: number; h: number } | null {
+		const gl = this._gl;
+		if (!bound) return { w: gl.drawingBufferWidth, h: gl.drawingBufferHeight };
+		const kind = gl.getFramebufferAttachmentParameter(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE) as number;
+		if (kind !== gl.RENDERBUFFER) return null;
+		const rb = gl.getFramebufferAttachmentParameter(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.FRAMEBUFFER_ATTACHMENT_OBJECT_NAME) as WebGLRenderbuffer | null;
+		if (!rb) return null;
+		const was = gl.getParameter(gl.RENDERBUFFER_BINDING) as WebGLRenderbuffer | null;
+		gl.bindRenderbuffer(gl.RENDERBUFFER, rb);
+		const w = gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_WIDTH) as number;
+		const h = gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_HEIGHT) as number;
+		gl.bindRenderbuffer(gl.RENDERBUFFER, was);
+		return w > 0 && h > 0 ? { w, h } : null;
 	}
 
 	/** Whether the colour attachment bound is floating point (an HDR target); the canvas is not. */
@@ -343,7 +372,7 @@ export class IgeLensPass {
 			return false;
 		}
 		this._program = program;
-		for (const name of ["u_src", "u_rect", "u_count", "u_a", "u_b", "u_c"]) this._uniforms[name] = gl.getUniformLocation(program, name);
+		for (const name of ["u_src", "u_rect", "u_tex", "u_count", "u_a", "u_b", "u_c"]) this._uniforms[name] = gl.getUniformLocation(program, name);
 		// One oversized triangle covers the view
 		this._vao = gl.createVertexArray();
 		this._buffer = gl.createBuffer();
