@@ -2,6 +2,7 @@ import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgePanelViewport } from "@/engine/core/IgePanelViewport";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { IgeBehaviourType } from "@/enums";
@@ -78,6 +79,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	scene = new IgeScene2d();
 	viewport = new IgeViewport();
 	viewport2?: IgeViewport;
+	/** ?panel=1: a picture-in-picture view of the star (lens and phase effects in a panel's own target). */
+	panel?: IgePanelViewport;
 	view: View = (views as readonly string[]).includes(params.get("view") ?? "") ? params.get("view") as View : "planet";
 	/** The one time value everything is a function of. */
 	t = Number(params.get("t") ?? 0);
@@ -143,6 +146,14 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.makeStar();
 		this.makeFigures();
 		this.graphics();
+		if (params.get("panel") === "1") {
+			this.panel = new IgePanelViewport({ right: 16, bottom: 16, width: "36%", aspect: 16 / 9 }).scene(this.scene);
+			this.panel.viewport.camera.projectionType("perspective");
+			this.panel.viewport.camera.near(20);
+			this.panel.viewport.camera.far(200000);
+			renderer.addPanel(this.panel);
+			this.panel.show();
+		}
 
 		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "frame", (_e: unknown, tickDelta: number) => this.tick(tickDelta));
 		addEventListener("keydown", (e) => this.key(e.key));
@@ -170,6 +181,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	graphics () {
+		// ?linear=1: linear lighting (rims and tints are converted to linear light)
+		if (params.get("linear") === "1") this.renderer.linearLighting(true);
 		// HDR post-processing with bloom, as Starflight runs it
 		this.renderer.postProcess({ enabled: this.post, hdr: true, toneMapping: "none", bloom: 0.55, bloomThreshold: 1.0, vignette: 0.25 });
 	}
@@ -329,6 +342,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		this.aim(this.viewport, this.view);
 		if (this.viewport2) this.aim(this.viewport2, "star");
+		if (this.panel) this.aim(this.panel.viewport, "star");
 
 		(document.getElementById("clock") as HTMLElement).textContent = `t = ${this.t.toFixed(2)}`;
 		const scrub = document.getElementById("scrub") as HTMLInputElement;
